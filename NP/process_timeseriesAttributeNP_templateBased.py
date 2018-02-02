@@ -10,7 +10,7 @@ import sys
 
 import subprocess
 ## CHANGE THIS to the folder where you've stored the library
-cmd_folder = str("C:\\Users\\rensm\\Dropbox\\PYTHON\\LibraryRENS")
+cmd_folder = str("C:\\Users\\Goes\\Desktop\\Pipeline_BRAxNLD-master\\Pipeline_BRAxNLD-master\\LibraryRENS")
 if cmd_folder not in sys.path:
     sys.path.insert(0, cmd_folder) 
 cmd_subfolder = str(cmd_folder+"\\FDP")
@@ -30,8 +30,8 @@ if cmd_subfolder not in sys.path:
 import csv
 import pdb; #pdb.set_trace()
 import numpy as np
-from os.path import isfile, join, isdir
-from os import listdir, path
+from os.path import isfile, join, isdir, exists
+from os import listdir, path, makedirs
 from warnings import warn
 
 # From my LibraryRENS:
@@ -59,10 +59,10 @@ import cleanupData
 # String representing the different teams
 TeamAstring = 'Team A'
 TeamBstring = 'Team B'
-# Folder that contains the data
-folder = 'C:\\Users\\rensm\\Documents\\PostdocLeiden\\Nonlinear Pedagogy\\Data\\'
+# Folder that contains the data, end with double backslash
+folder = 'C:\\Users\\Goes\\Desktop\\DataNP\\'
 # Folder where any new figures will be saved
-tmpFigFolder = 'C:\\Users\\rensm\\Documents\\PostdocLeiden\\Nonlinear Pedagogy\\Figs\\Temp\\'
+tmpFigFolder = 'C:\\Users\\Goes\\Desktop\\DataNP\\tmp\\'
 # input of raw data, indicate at least one timestamp, entity info and Location info
 timestampString = 'Video time (s)'
 PlayerIDstring = 'jersey n.'
@@ -81,14 +81,21 @@ conversionToMeter = 111111 # https://gis.stackexchange.com/questions/8650/measur
 outputFolder = folder
 # Load all CSV files
 UncorrectedDataFiles = [f for f in listdir(folder) if isfile(join(folder, f)) if '.csv' in f]
-if len(listdir(folder+'corrected')) == 0:
+# Verify if folder exists
+
+# if not, create it
+correctedFolder = folder + 'corrected\\'    
+if not exists(correctedFolder):
+		makedirs(correctedFolder)
+
+if len(listdir(correctedFolder)) == 0:
 	cleanupData.exportClean(UncorrectedDataFiles,folder,TeamAstring,TeamBstring)
 	print('Cleaned the data with cleanupData.py. NB: May need revision.')
-	folder = folder + 'corrected\\'
 else:
 	print('Continued with previously cleaned data.')
-	folder = folder + 'corrected\\'
-# pdb.set_trace()
+
+folder = correctedFolder
+#pdb.set_trace()
 dataFiles = [f for f in listdir(folder) if isfile(join(folder, f)) if '.csv' in f]
 # Preparing the dictionary of the raw data
 headers = {'Ts': timestampString,\
