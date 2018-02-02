@@ -210,6 +210,10 @@ def TeamInds(rawDict,firstFrameTimeseries,windowTimeseries): ######## DOESNT WOR
 ############################################################
 def correctVNorm(rawDict,attributeDict):
 	runs = np.array([i for i,val in enumerate(attributeDict['Run']) if val  != '' ])
+
+	if runs.size == 0:
+		warn('\n!!!!\nExisting attributes seem to be missing.\nCouldnt find runs to normalize velocity.\nVelocity not normalized.')
+		return attributeDict
 	runTimes = rawDict['Time']['TsS'][runs]
 
 	for val in runTimes: # for every run time, make vNorm 0
@@ -248,7 +252,7 @@ def vNorm(rawDict):
 			dTarray.append(TsS[idx] - TsS[idx-1])		
 			
 			if not (TsS[idx] - dTarray[-1]) == prevTime:
-				warn('\nPANICK, time not consequetive\n')
+				warn('\nPANICK, time not conseCutive\n')
 				break
 			prevTime = TsS[idx]
 		else:

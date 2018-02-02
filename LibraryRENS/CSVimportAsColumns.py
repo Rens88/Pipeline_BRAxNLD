@@ -76,8 +76,11 @@ def readPosData(fname,readCols):
 					colFound = 'True'
 					break
 		if colFound == 'False':
-			if duplRequested == 'False':			
-				warn('\nColumn << %s >> not found\n' %val)
+			if duplRequested == 'False':
+				if val != None:
+					warn('\nColumn << %s >> not found\n' %val)
+				# else: ## NB: I believe this line is obsolete.
+				# 	warn('\nColumn << %s >> not found from << %s >>\n' %(val,headers[idx2]))
 			else:
 				warn('\nDuplicate column << %s >> requested, but duplicate not found\n' %val)
 			# Export empty list to avoid data confusion

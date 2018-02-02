@@ -13,7 +13,7 @@ import CSVexcerpt
 if __name__ == '__main__':
 	
 	# fname can include the folder as well
-	newOrAdd(fname,header,data)	
+	newOrAdd(fname,header,data,skippedData)	
 	varDescription(fname,exportDataString,exportFullExplanation)
 	
 	# Filename should probably be 'temp.csv'
@@ -53,10 +53,11 @@ def varDescription(fname,exportDataString,exportFullExplanation):
 
 #########################################################################
 
-def newOrAdd(fname,header,data):
+def newOrAdd(fname,header,data,skippedData):
 	if not isfile(fname):
 		# write new
-
+		if skippedData:
+			warn('\nWARNING first file had skipped data. Output file will be inconsistent, change order')
 		with open(fname, 'w',newline='') as myfile:
 			wr = csv.writer(myfile)
 			wr.writerow(header)
@@ -68,7 +69,20 @@ def newOrAdd(fname,header,data):
 			reader = csv.reader(myfile)
 			existingHeaders = list(next(reader))
 		if len(existingHeaders) != len(header):
-			warn('\nWARNING: original file did not have the same number of columns as the newly exported data.\nConsider creating a new file or at least edit the existingHeaders.')	    
+			if skippedData:
+				newData = [999]*len(existingHeaders)
+				for idx,val in enumerate(existingHeaders):
+					tmp = [data[i] for i,s in enumerate(header) if val == s] # if the new header corresponds to the old header
+					if len(tmp) != 0:
+						newData[idx] = tmp[0]
+					# if idx in header:
+					# 	index = [i for i, s in enumerate(header) if val == s]
+					# 	newData[idx] = data[index]
+				# print(data)
+				data = newData
+				# print(data)
+			else:
+				warn('\nWARNING: original file did not have the same number of columns as the newly exported data.\nConsider creating a new file or at least edit the existingHeaders.')	    
 
 		with open(fname, 'a',newline='') as myfile:
 			wr = csv.writer(myfile)
