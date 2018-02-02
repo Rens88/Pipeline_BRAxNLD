@@ -14,6 +14,7 @@ import CSVexcerpt
 import matplotlib.pyplot as plt
 from matplotlib import colors as mcolors
 import math
+import re
 
 if __name__ == '__main__':		
 	# rawDataCols = column headers of raw data
@@ -137,11 +138,51 @@ def rawData(cols2read,rawData,readRawDataCols,conversionToMeter):
 		if not rawDict['Time']['TsMS'] == []:
 			rawDict['Time']['TsS'] = rawDict['Time']['TsMS'] * 1000
 		elif not rawDict['Time']['Ts'] == []:
-			tmp = np.empty([len(rawDict['Time']['Ts']),1],dtype=np.float64)
+			tmpInMilliSec = np.empty([len(rawDict['Time']['Ts']),1],dtype=np.float64)
 			for i in range(len(rawDict['Time']['Ts'])):
-				mins,secs = rawDict['Time']['Ts'][i].split(':')
-				tmp[i] = (float(mins)*60 + float(secs)) * 1000
-			rawDict['Time']['TsMS'] = tmp			
+				
+				# To avoid rounding errors and reading problems, 
+				# I used a regular expression to convert a timestamp to numbers.
+				# Timestamp can either be h+:mm:ss.d+ or m+:ss.d+
+				# First assume there are 2 ':'
+				tmpString = rawDict['Time']['Ts'][i]
+				regex = r'(\d+):(\d{2}):(\d{2})\.(\d+)'
+				match = re.search(regex,tmpString)
+				if match:
+					grp = match.groups()
+					DecimalCorrection = 10 ** len(grp[2])
+
+					timestamp = int(grp[0])*3600*DecimalCorrection +\
+								int(grp[1])*60*DecimalCorrection +\
+								int(grp[2])*1*DecimalCorrection +\
+								int(grp[3])
+					
+				else:
+					# Apparently, sometimes there's only one
+					regex = r'(\d+):(\d{2})\.(\d+)'
+					match = re.search(regex,tmpString)
+					if match:
+						grp = match.groups()
+						DecimalCorrection = 10 ** len(grp[2])
+
+						timestamp = int(grp[0])*60*DecimalCorrection +\
+									int(grp[1])*1*DecimalCorrection +\
+									int(grp[2])
+					else:
+						warn('\nCould not decipher timestamp.')
+
+				tmpInMilliSec[i] = timestamp / DecimalCorrection * 1000
+
+				# if rawDict['Time']['Ts'][i].count(':') == 1:
+				# 	mins,secs = rawDict['Time']['Ts'][i].split(':')
+				# 	tmp[i] = (float(mins)*60 + float(secs)) * 1000
+				# elif rawDict['Time']['Ts'][i].count(':') == 2:
+				# 	hrs,mins,secs = rawDict['Time']['Ts'][i].split(':')
+				# 	tmp[i] = ( (float(hrs)*60+float(mins)) *60 + float(secs) ) * 1000
+				# else:
+				# 	warn('\nCould not decipher timestamp.')
+								
+			rawDict['Time']['TsMS'] = tmpInMilliSec			
 		else:
 			warn('\n\nCould not find a timestamp.')
 		

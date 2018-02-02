@@ -56,7 +56,7 @@ def PerPlayer(tmin,tmax,inds1,X1,Y1,xLabel,yLabel,tmpFigFolder,stringOut):
 
 	plt.savefig(outputFilename, figsize=(1,1), dpi = 300, bbox_inches='tight')
 	plt.close()
-	print('\n---\nFigure saved as:\n%s\n---\n' %outputFilename)
+	# print('\n---\nFigure saved as:\n%s\n---\n' %outputFilename)
 
 def PairwisePerPlayer(tmin,tmax,inds1,X1,Y1,inds2,X2,Y2,xLabel,yLabel,tmpFigFolder):
 	plt.figure(num=None, figsize=(3.8,3), dpi=300, facecolor='w', edgecolor='k')
@@ -87,7 +87,7 @@ def PairwisePerPlayer(tmin,tmax,inds1,X1,Y1,inds2,X2,Y2,xLabel,yLabel,tmpFigFold
 	outputFilename = tmpFigFolder + 'Timeseries_vNormXSpeed_' + titleString + '.jpg'
 	plt.savefig(outputFilename, figsize=(1,1), dpi = 300, bbox_inches='tight')
 	plt.close()
-	print('\n---\nFigure saved as:\n%s\n---\n' %outputFilename)
+	# print('\n---\nFigure saved as:\n%s\n---\n' %outputFilename)
 
 # def PairwisePerTeam(tmin,tmax,inds1,X1,Y1,inds2,X2,Y2,xLabel,yLabel,tmpFigFolder):
 def PairwisePerTeam(tmin,tmax,X,Y1,Y2,xLabel,yLabel,tmpFigFolder,stringOut,rawDict,attributeDict): # along the same dimension
@@ -128,4 +128,4 @@ def PairwisePerTeam(tmin,tmax,X,Y1,Y2,xLabel,yLabel,tmpFigFolder,stringOut,rawDi
 	outputFilename = tmpFigFolder + 'Timeseries' + stringOut + '_' + titleString + '.jpg'
 	plt.savefig(outputFilename, figsize=(1,1), dpi = 300, bbox_inches='tight')
 	plt.close()
-	print('\n---\nFigure saved as:\n%s\n---\n' %outputFilename)
+	# print('\n---\nFigure saved as:\n%s\n---\n' %outputFilename)

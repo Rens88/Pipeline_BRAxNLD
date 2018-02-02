@@ -18,13 +18,13 @@ import plotTimeseries
 import dataToDict
 import dataToDict2
 import safetyWarning
-import countExistingAttributes
 import exportCSV
 
 if __name__ == '__main__':
 	process(rawDict,TeamAstring,TeamBstring)
 	teamCentroid(indsMatrix,XpositionMatrix,YpositionMatrix,teamAcols,teamBcols)
 	teamSpread(attributeDIct,uniqueTsS,uniquePlayers,teamMatrix,XpositionMatrix,YpositionMatrix,teamAcols,teamBcols,indsMatrix)
+	teamSurface(indsMatrix,XpositionMatrix,YpositionMatrix,teamAcols,teamBcols)
 	groupSurface(X,Y)
 
 #####################################################################################
@@ -38,14 +38,42 @@ def process(rawDict,TeamAstring,TeamBstring):
 	PlayerID = rawDict['Entity']['PlayerID']
 	TeamID = rawDict['Entity']['TeamID']
 	TsS = rawDict['Time']['TsS']
-
-	uniqueTsS = np.unique(TsS)
+	uniqueTsS,tmp = np.unique(TsS,return_counts=True)
 	uniquePlayers = np.unique(PlayerID)
+
+	# Ts = rawDict['Time']['Ts'] # not strictly necessary
+
+	# uniqueTsS,tmp = np.unique(TsS,return_counts=True)
+	# uniquePlayers = np.unique(PlayerID)
+
+	# if any(tmp != np.median(tmp)) or len(uniqueTsS) != len(X) / len(uniquePlayers):
+	# 	# Problem with timestamp. Not every timestamp occurs equally often and/or there isn't the expected number of unique timestamps
+	# 	# singleoccurrence = [uniqueTsS[idx] for idx,val in enumerate(tmp) if val == 1]
+	# 	# for i in singleoccurrence:
+	# 	# 	TsS[np.where(TsS == i)] = i
+	# 	warn('\n!!!!!\nProblem with timestamp: Not every timestamp occurs equally often.\n!!!!!')
+
+	# # np.set_printoptions(threshold=np.nan)
+	# # # print([i for tmp)
+	# # singleoccurrence = [uniqueTsS[idx] for idx,val in enumerate(tmp) if val == 1]
+	# # doubleoccurrence = [uniqueTsS[idx] for idx,val in enumerate(tmp) if val == 18]
+	# # notNine = [uniqueTsS[idx] for idx,val in enumerate(tmp) if val != 9]
+	# # notNineVal = [val for idx,val in enumerate(tmp) if val != 9]
+	# # print(notNineVal)
+	# # print(len(singleoccurrence))
+	# # # print(len(notNine))
+	# # indExample = np.where(TsS == singleoccurrence[0])
+	# # indExample2 = np.where(TsS == doubleoccurrence[0])
+	# # print(indExample)
+	# # print(type(indExample[0][0]))
+	# # print(Ts[indExample[0][0]])
+	# # print(Ts[indExample2[0][0]])
 
 	indsMatrix = np.ones((len(uniqueTsS),1),dtype='int')*999
 	teamMatrix = np.ones((len(uniqueTsS),len(uniquePlayers)),dtype='float64')*999
 	XpositionMatrix = np.ones((len(uniqueTsS),len(uniquePlayers)),dtype='float64')*999
 	YpositionMatrix = np.ones((len(uniqueTsS),len(uniquePlayers)),dtype='float64')*999	
+
 
 	teamAcols = []
 	teamBcols = []
@@ -69,7 +97,9 @@ def process(rawDict,TeamAstring,TeamBstring):
 			indsMatrix[row] = idx
 		else:
 			warn('\nDid not recoganize Team ID string: <%s>' %TeamID[idx])
-
+	# np.set_printoptions(threshold=np.nan)
+	# print(indsMatrix)
+	# pdb.set_trace()
 	tmpAtDi1,CentXA,CentYA,CentXB,CentYB = teamCentroid(indsMatrix,XpositionMatrix,YpositionMatrix,teamAcols,teamBcols)
 	tmpAtDi2 = teamSpread(CentXA,CentYA,CentXB,CentYB,uniqueTsS,uniquePlayers,teamMatrix,XpositionMatrix,YpositionMatrix,teamAcols,teamBcols,indsMatrix)
 	tmpAtDi3 = teamSurface(indsMatrix,XpositionMatrix,YpositionMatrix,teamAcols,teamBcols)
@@ -84,6 +114,8 @@ def process(rawDict,TeamAstring,TeamBstring):
 #####################################################################################
 
 def teamCentroid(indsMatrix,XpositionMatrix,YpositionMatrix,teamAcols,teamBcols):
+	## IDEA: I could add the player's distance to the centroid here
+	
 	# Compute the centroids
 	CentXA = np.nanmean(XpositionMatrix[:,teamAcols],axis=1)
 	CentXB = np.nanmean(XpositionMatrix[:,teamBcols],axis=1)
@@ -99,6 +131,7 @@ def teamCentroid(indsMatrix,XpositionMatrix,YpositionMatrix,teamAcols,teamBcols)
 	tmpYB = np.zeros((dataShape[1]*dataShape[0],1),dtype='float64')* np.nan
 
 	for idx,val in enumerate(indsMatrix): # indsMatrix are the team cells only
+		# print(idx)
 		tmpXA[int(val)] = CentXA[idx]
 		tmpYA[int(val)] = CentXB[idx]
 		tmpXB[int(val)] = CentXA[idx]
@@ -147,7 +180,7 @@ def teamSpread(CentXA,CentYA,CentXB,CentYB,uniqueTsS,uniquePlayers,teamMatrix,Xp
 		tmpStdSpreadA[int(val)] = stdSpreadA[idx]
 		tmpStdSpreadB[int(val)] = stdSpreadB[idx]
 
-	tmpAtDi2 = {'SpreadA': tmpSpreadA, 'SpreadB': tmpSpreadB, 'stdSpreadA': tmpStdSpreadA,'stdSpreadB': stdSpreadB}
+	tmpAtDi2 = {'SpreadA': tmpSpreadA, 'SpreadB': tmpSpreadB, 'stdSpreadA': tmpStdSpreadA,'stdSpreadB': tmpStdSpreadB}
 
 	return tmpAtDi2
 
@@ -169,8 +202,13 @@ def teamSurface(indsMatrix,XpositionMatrix,YpositionMatrix,teamAcols,teamBcols):
 	tmpShapeRatioB = np.zeros((dataShape[1]*dataShape[0],1),dtype='float64')* np.nan
 	tmpWidthB = np.zeros((dataShape[1]*dataShape[0],1),dtype='float64')* np.nan
 	tmpLengthB = np.zeros((dataShape[1]*dataShape[0],1),dtype='float64')* np.nan
-
+	# print(XpositionMatrix)
 	for idx,val in enumerate(indsMatrix):
+		# print('---')
+		# print(XpositionMatrix[idx,teamAcols])
+		# print(YpositionMatrix[idx,teamAcols])		
+		# print('idx = << %s >>' %idx)
+		# print('val = << %s >>' %val)		
 		SurfaceA,sumVerticesA,ShapeRatioA = groupSurface(XpositionMatrix[idx,teamAcols],YpositionMatrix[idx,teamAcols])
 		SurfaceB,sumVerticesB,ShapeRatioB = groupSurface(XpositionMatrix[idx,teamBcols],YpositionMatrix[idx,teamBcols])		
 
@@ -239,7 +277,11 @@ def groupSurface(X,Y):
 			dY = [abs(VXy[i] - VXy[j+i+1]) for j in range(len(VXy) - i-2)]
 			
 			ribDist.extend([math.sqrt(i**2+j**2) for i,j in zip(dX,dY)])
-		return max(ribDist) / min(ribDist) 
+		if min(ribDist) == 0:
+			warn('\nWARNING: Unknown issue with ribs. \nOne or multiple vertices have no length.\nProblem with duplicate timestamp? Lack of position data?')
+			return 999
+		else:
+			return max(ribDist) / min(ribDist) 
 
 	# first, find lowest yvalue (and highest X if equal)
 	indStartY = np.where(Y == np.min(Y))

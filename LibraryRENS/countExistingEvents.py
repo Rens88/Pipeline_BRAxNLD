@@ -20,7 +20,7 @@ if __name__ == '__main__':
 	passes(rawDict,attributeDict,TeamAstring,TeamBstring,exportData,exportDataString,exportFullExplanation,possessionCharacteristics,targetEvents)
 
 def process(rawDict,attributeDict,TeamAstring,TeamBstring,filename,folder,exportData,exportDataString,exportFullExplanation):
-
+	existingAttributesIssues = False
 		# Experimental group label
 	# exportData = [str(filename[9:13]), filename[14:17]]# Always 3 letters? Always same format?
 	# exportDataString = ['expGroupID','expTest']
@@ -35,9 +35,11 @@ def process(rawDict,attributeDict,TeamAstring,TeamBstring,filename,folder,export
 	## goals
 	exportData,exportDataString,exportFullExplanation,targetEvents = goals(rawDict,attributeDict,TeamAstring,TeamBstring,exportData,exportDataString,exportFullExplanation,targetEvents)
 	## possession / turnovers
-	exportData,exportDataString,exportFullExplanation,possessionCharacteristics,targetEvents = possession(rawDict,attributeDict,TeamAstring,TeamBstring,exportData,exportDataString,exportFullExplanation,targetEvents)
+	exportData,exportDataString,exportFullExplanation,possessionCharacteristics,targetEvents,tmp1 = possession(rawDict,attributeDict,TeamAstring,TeamBstring,exportData,exportDataString,exportFullExplanation,targetEvents)
 	## Pass
-	exportData,exportDataString,exportFullExplanation,targetEvents = passes(rawDict,attributeDict,TeamAstring,TeamBstring,exportData,exportDataString,exportFullExplanation,possessionCharacteristics,targetEvents)
+	exportData,exportDataString,exportFullExplanation,targetEvents,tmp2 = passes(rawDict,attributeDict,TeamAstring,TeamBstring,exportData,exportDataString,exportFullExplanation,possessionCharacteristics,targetEvents)
+	if tmp1 or tmp2:
+		existingAttributesIssues = True
 
 	# ############## EXPORT THIS BEAUTY TO CSV
 	# outputFilename = folder + 'output.csv'
@@ -45,15 +47,15 @@ def process(rawDict,attributeDict,TeamAstring,TeamBstring,filename,folder,export
 	# outputFilename = folder + 'outputDescription.txt'
 	# exportCSV.varDescription(outputFilename,exportDataString,exportFullExplanation)
 
-	return exportData,exportDataString,exportFullExplanation,targetEvents
+	return exportData,exportDataString,exportFullExplanation,targetEvents,existingAttributesIssues
 
 def goals(rawDict,attributeDict,TeamAstring,TeamBstring,exportData,exportDataString,exportFullExplanation,targetEvents):
 	count = 0
-	goals = [i for i in attributeDict['Goal '] if i  != '' ]
+	goals = [i for i in attributeDict['Goal'] if i  != '' ]
 
 	goalsOut = np.ones((len(goals),2),dtype='int')*-1
 
-	for idx,i in enumerate(attributeDict['Goal ']):
+	for idx,i in enumerate(attributeDict['Goal']):
 		if not i == '':
 			goalsOut[count,1] = rawDict['Time']['TsS'][idx]
 			if TeamAstring in i:
@@ -92,15 +94,19 @@ def goals(rawDict,attributeDict,TeamAstring,TeamBstring,exportData,exportDataStr
 #################################################################
 
 def possession(rawDict,attributeDict,TeamAstring,TeamBstring,exportData,exportDataString,exportFullExplanation,targetEvents):
+	overwriteOutput = False
+	initLength = len(exportData)
 
-	possessionEvent = [(i,val) for i,val in enumerate(attributeDict['Possession/Turnover ']) if val  != '' ]
+	possessionEvent = [(i,val) for i,val in enumerate(attributeDict['Possession/Turnover']) if val  != '' ]
 	possessionCharacteristics = []
 	dt = []
+
 	for idx,i in enumerate(possessionEvent):
 		curFrame = i[0] # frame
 		curTime = rawDict['Time']['TsS'][i[0]]
 		curStatus = i[1]
 		# Determine per event who has possession from that frame onward
+
 		if not idx == len(possessionEvent)-1:
 			currentPossessionDuration = rawDict['Time']['TsS'][possessionEvent[idx+1][0]-1] - curTime
 			endPossession = possessionEvent[idx+1][0]-1
@@ -162,11 +168,18 @@ def possession(rawDict,attributeDict,TeamAstring,TeamBstring,exportData,exportDa
 			in2 = float(rawDict['Time']['TsS'][endPossession])
 		targetEvents['Possession'].append((in1,in2,currentPossession))								
 
-	if round(sum(dt) / len(dt),7) == round(dt[0],7):
-		# Safe to assume that:
-		frameTime = dt[0]
+	# print(rawDict['Time']['TsS'])
+	if dt == []:
+		warn('\n!!!!\nExisting attributes seem to be missing.\nCouldnt find turnovers to estimate dt.\nOutput set as 999.')
+		frameTime = 0.1
+		overwriteOutput = True
 	else:
-		warn('\nNot sure about frameTime. Check that:\n frameTime = %f' %round(sum(dt) / len(dt),7))
+		if round(sum(dt) / len(dt),7) == round(dt[0],7):
+			# Safe to assume that:
+			frameTime = dt[0]
+		else:
+			frameTime = round(sum(dt) / len(dt),7)
+			warn('\nNot sure about frameTime. Check that:\n frameTime = %f' %frameTime)
 
 	rawDict['Time']['TsS']
 	attributeDict['currentPossession'] = [''] * len(rawDict['Time']['TsS'])
@@ -242,6 +255,12 @@ def possession(rawDict,attributeDict,TeamAstring,TeamBstring,exportData,exportDa
 	exportFullExplanation.append('Total duration (s) of no possession per match.')
 
 	# Average duration of a possession (until turnover / ball loss / end game)
+	if possessionCount == 0 and overwriteOutput:
+		possessionCount = 1
+		possessionCountA = 1		
+		possessionCountB = 1
+		possessionCountNone = 1		
+
 	exportDataString.append('possessionDurationAvg')
 	possessionDurationAvg = possessionDurationSum / possessionCount
 	exportData.append(float(possessionDurationAvg))
@@ -279,13 +298,21 @@ def possession(rawDict,attributeDict,TeamAstring,TeamBstring,exportData,exportDa
 	exportFullExplanation.append('Standard deviation of the duration (s) of no possession per match. NOTE: I did not (yet) compute this variable as it was somewhat annoying to do, and I dont think it is so interesting. Rens.')
 
 	safetyWarning.checkLengthExport(exportData,exportDataString,exportFullExplanation)
-	return exportData,exportDataString,exportFullExplanation,possessionCharacteristics,targetEvents
+
+	if overwriteOutput:
+		warn('\nOutput replaced with 999')
+		for idx,val in enumerate(exportData):
+			if idx >= initLength:
+				exportData[idx] = 999
+
+	return exportData,exportDataString,exportFullExplanation,possessionCharacteristics,targetEvents,overwriteOutput
 
 #################################################################
 #################################################################
 
 def passes(rawDict,attributeDict,TeamAstring,TeamBstring,exportData,exportDataString,exportFullExplanation,possessionCharacteristics,targetEvents):
-
+	overwriteOutput = False
+	initLength = len(exportData)
 	i = [idx for idx,val in enumerate(exportDataString) if val == 'possessionCount']
 
 	possessionCount = exportData[i[0]]
@@ -310,6 +337,11 @@ def passes(rawDict,attributeDict,TeamAstring,TeamBstring,exportData,exportDataSt
 				targetEvents['Passes'].append((float(rawDict['Time']['TsS'][idx]),TeamBstring))								
 			else:
 				warn('\n\nCould not recognize team:\n<<%s>>' %i)
+			if 'oal' in i:
+				# ITS A GOAL NOT A PASS, so skip this file
+				warn('\n!!!!!!!!!!!\nInconsistent data input: Goal was found in the passing column:\nEither improve code or clean up data.\n!!!!!!!!!!!')
+				overwriteOutput = True
+				break
 			count = count + 1
 
 	# To export:
@@ -334,10 +366,10 @@ def passes(rawDict,attributeDict,TeamAstring,TeamBstring,exportData,exportDataSt
 	ind = 0
 	ConsecutivePasses = []
 	PassessPossession = []
+
 	for idx,i in enumerate(possessionCharacteristics):
 		tmp = 0		
 		while passOut[ind][1] >= i[0]: # after the start
-			# print('i did this')
 			if passOut[ind][1] <= i[4]: # before the end
 				# print('found one',passOut[ind][1])
 				tmp = tmp + 1
@@ -351,6 +383,11 @@ def passes(rawDict,attributeDict,TeamAstring,TeamBstring,exportData,exportDataSt
 				break
 		ConsecutivePasses.append(tmp)
 		PassessPossession.append(i[2])
+
+	if ConsecutivePasses == []: # no passes detected, overwrite output
+		overwriteOutput = True
+		ConsecutivePasses = [0,0]
+		PassessPossession = [TeamAstring,TeamBstring]
 
 	exportDataString.append('ConsecutivePassesMax')
 	exportData.append(float(max(ConsecutivePasses)))
@@ -378,6 +415,12 @@ def passes(rawDict,attributeDict,TeamAstring,TeamBstring,exportData,exportDataSt
 	exportFullExplanation.append('Average number of consecutive passes during one possession by %s per match.' %TeamBstring)
 
 	safetyWarning.checkLengthExport(exportData,exportDataString,exportFullExplanation)
-	return exportData,exportDataString,exportFullExplanation,targetEvents
+	if overwriteOutput:
+		warn('\nOutput replaced with 999')
+		for idx,val in enumerate(exportData):
+			if idx >= initLength:
+				exportData[idx] = 999
+
+	return exportData,exportDataString,exportFullExplanation,targetEvents,overwriteOutput
 #################################################################
 #################################################################

@@ -78,4 +78,26 @@ def rawData(filename,folder,headers,conversionToMeter):
 	# Allocate 'rawData'-variables from CSV to local variables
 	rawDict = dataToDict2.rawData(cols2read,rawData,readRawDataCols,conversionToMeter)
 
-	return rawDict
+	# A security measure to pick up any inconsistencies in timestamp
+	# Could potentially be expanded with some automatic corrections
+	timestampIssues = False
+	PlayerID = rawDict['Entity']['PlayerID']
+	TsS = rawDict['Time']['TsS']
+	Ts = rawDict['Time']['Ts']
+	uniqueTsS,tmp = np.unique(TsS,return_counts=True)
+	uniquePlayers = np.unique(PlayerID)
+
+	if any(tmp != np.median(tmp)) or len(uniqueTsS) != len(PlayerID) / len(uniquePlayers):
+		# Problem with timestamp. Not every timestamp occurs equally often and/or there isn't the expected number of unique timestamps
+		# singleoccurrence = [uniqueTsS[idx] for idx,val in enumerate(tmp) if val == 1]
+		# for i in singleoccurrence:
+		# 	TsS[np.where(TsS == i)] = i
+		warn('\n!!!!!\nProblem with timestamp: Not every timestamp occurs equally often.\n!!!!!')
+		indices = np.where(tmp != np.median(tmp))
+		for i in np.nditer(indices):
+			i2 = np.where(uniqueTsS[i]==TsS)
+			# print('Timestamp <%s> occurred <%s> times.' %(uniqueTsS[i],tmp[i]))
+			print('i2 = %s' %np.nditer(i2)[0])
+			print('Timestamp <%s> occurred <%s> times.' %(Ts[np.nditer(i2)[0]],tmp[i]))
+		timestampIssues = True
+	return rawDict,timestampIssues
