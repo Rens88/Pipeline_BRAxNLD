@@ -34,6 +34,7 @@ if __name__ == '__main__':
 
 def attrData(attributeDataCols,attributeData):
 	attrDict = {}
+	attrLabel = {}
 	for idx,val in enumerate(attributeDataCols):
 		if val == 'Speed':
 			Speed = np.empty([len(attributeData[idx]),1],dtype=np.float64)
@@ -43,6 +44,7 @@ def attrData(attributeDataCols,attributeData):
 				else: # missing data					
 					Speed[ind] = np.nan
 			attrDict['Speed'] = Speed
+			attrLabel['Speed'] = 'Speed (m/s)'
 		elif val == 'LPWratio':
 			LPWratio = attributeData[idx]
 			# Check if comma decimal separator
@@ -62,10 +64,12 @@ def attrData(attributeDataCols,attributeData):
 					# Apparently it was a point decimal aftr all
 					break
 			attrDict['LPWratio'] = LPWratio
+			attrLabel['Speed'] = 'LPW Ratio'			
 		else:			
 			attrDict[val] = attributeData[idx]
+			attrLabel[val] = val
 
-	return attrDict
+	return attrDict,attrLabel
 
 ################################################################	
 ################################################################	

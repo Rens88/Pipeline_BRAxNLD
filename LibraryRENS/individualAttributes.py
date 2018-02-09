@@ -1,3 +1,6 @@
+# 09-02-2018 Rens Meerhoff
+# Code has now been merged into spatialAggregation.py
+
 # 30-11-2017 Rens Meerhoff
 # Function to compute INDIVIDUAL timeseries attributes of a range of players in the same dataset.
 # Data should be organized with all players under each other, corresponding to their X and Y positions and Timestamp (in seconds) (TsS).

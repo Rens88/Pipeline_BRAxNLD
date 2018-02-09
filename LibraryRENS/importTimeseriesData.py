@@ -1,3 +1,8 @@
+# 09-02-2018 Rens Meerhoff
+# This script will import the timeseries data based on the strings in the header of a CSV file
+# As input, it is required to specify which string corresponds to Time, Entity and Location -related info.
+# Please note that after this script has been run, there should be no need to load the CSV files again.
+
 # 08-12-2017 Rens Meerhoff
 
 import csv
@@ -28,9 +33,9 @@ def existingAttributes(filename,folder,headers):
 	# Import existing attributes
 	attributeData = CSVimportAsColumns.readPosData(folder + filename,headers)
 	# Allocate 'attribute'-variables from CSV to local variables
-	attributeDict = dataToDict2.attrData(headers,attributeData)
+	attributeDict,attributeLabel = dataToDict2.attrData(headers,attributeData)
 
-	return attributeDict
+	return attributeDict,attributeLabel
 
 def rawData(filename,folder,headers,conversionToMeter):
 	# First, create an empty dictionary
@@ -96,7 +101,6 @@ def rawData(filename,folder,headers,conversionToMeter):
 		indices = np.where(tmp != np.median(tmp))
 		for i in np.nditer(indices):
 			i2 = np.where(uniqueTsS[i]==TsS)
-			# print('Timestamp <%s> occurred <%s> times.' %(uniqueTsS[i],tmp[i]))
 			print('i2 = %s' %np.nditer(i2)[0])
 			print('Timestamp <%s> occurred <%s> times.' %(Ts[np.nditer(i2)[0]],tmp[i]))
 		timestampIssues = True

@@ -44,6 +44,9 @@ def debugPrint(filename,varToPrint,winopen):
 def varDescription(fname,exportDataString,exportFullExplanation):
 	with open(fname,'w') as myfile:
 		for idx,val in enumerate(exportDataString):
+
+			# IDEA: This can be written better using the number of characters of the header and the desired characters before the description starts
+
 			curLine = '%s:\t\t\t %s\n' %(val,exportFullExplanation[idx])
 			if len(val) >= 15:
 				curLine = '%s:\t\t %s\n' %(val,exportFullExplanation[idx])	
@@ -61,20 +64,29 @@ def newOrAdd(fname,header,data,skippedData):
 		with open(fname, 'w',newline='') as myfile:
 			wr = csv.writer(myfile)
 			wr.writerow(header)
-			wr.writerow(data)
+			for row in data:
+				missingValue = [missingValue for missingValue,value in enumerate(row) if value == None]
+				for i in missingValue:
+					row[i] = 'NaN'
+				wr.writerow(row)			
 
 	else:
 		# append
 		with open(fname, 'r') as myfile:
 			reader = csv.reader(myfile)
 			existingHeaders = list(next(reader))
+
+
 		if len(existingHeaders) != len(header):
 			if skippedData:
 				newData = [999]*len(existingHeaders)
 				for idx,val in enumerate(existingHeaders):
+
 					tmp = [data[i] for i,s in enumerate(header) if val == s] # if the new header corresponds to the old header
 					if len(tmp) != 0:
 						newData[idx] = tmp[0]
+					else:
+						newData[idx] = None
 					# if idx in header:
 					# 	index = [i for i, s in enumerate(header) if val == s]
 					# 	newData[idx] = data[index]
@@ -86,4 +98,16 @@ def newOrAdd(fname,header,data,skippedData):
 
 		with open(fname, 'a',newline='') as myfile:
 			wr = csv.writer(myfile)
-			wr.writerow(data)
+			if type(data[0]) != list: # only one row
+				row = data
+				missingValue = [missingValue for missingValue,value in enumerate(row) if value == None]
+				for i in missingValue:
+					row[i] = 'NaN'
+				wr.writerow(row)
+			else:
+				for row in data:
+					# [print('hi'+ i) for i in row]
+					missingValue = [missingValue for missingValue,value in enumerate(row) if value == None]
+					for i in missingValue:
+						row[i] = 'NaN'
+					wr.writerow(row)
