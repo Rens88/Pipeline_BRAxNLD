@@ -21,99 +21,137 @@ import safetyWarning
 import exportCSV
 
 if __name__ == '__main__':
-	process(rawDict,TeamAstring,TeamBstring)
-	teamCentroid(indsMatrix,XpositionMatrix,YpositionMatrix,teamAcols,teamBcols)
-	teamSpread(attributeDIct,uniqueTsS,uniquePlayers,teamMatrix,XpositionMatrix,YpositionMatrix,teamAcols,teamBcols,indsMatrix)
-	teamSurface(indsMatrix,XpositionMatrix,YpositionMatrix,teamAcols,teamBcols)
+	process(rawDict,attributeDict,attributeLabel,TeamAstring,TeamBstring)
+	# IDEA: Could split up module in sub-module with team and individual level attributes separately.
+
+	# Inidividual attributes (CHECK individualAttributes.py for more details, including a start of a script that checks which players are currently in play)
+	vNorm(rawDict, frameRateData)
+	# Nonlinear pedagogy only:
+	# Every new Run (Nonlinear pedagogy data only) has a jump in time (and position), for which velocity is set to 0.
+	correctVNorm(rawDict,attributeDict)
+
+	# Team attributes
+	teamCentroid(indsMatrix,XpositionMatrix,YpositionMatrix,teamAcols,teamBcols,TeamAstring,TeamBstring)
+	teamSpread(attributeDict,uniqueTsS,uniquePlayers,teamMatrix,XpositionMatrix,YpositionMatrix,teamAcols,teamBcols,indsMatrix,TeamAstring,TeamBstring)
+	teamSurface(indsMatrix,XpositionMatrix,YpositionMatrix,teamAcols,teamBcols,TeamAstring,TeamBstring)
 	groupSurface(X,Y)
 
-#####################################################################################
+	obtainIndices(rawDict,TeamAstring,TeamBstring)	
 
-def process(rawDict,TeamAstring,TeamBstring):
-	# Per Match
+
+	#####################################################################################
+	#####################################################################################
+
+def process(rawDict,attributeDict,attributeLabel,TeamAstring,TeamBstring):
+	# Per Match (i.e., file)
 	# Per Team and for both teams
+	indsMatrix,XpositionMatrix,YpositionMatrix,teamAcols,teamBcols,uniqueTsS,uniquePlayers,teamMatrix = \
+	obtainIndices(rawDict,TeamAstring,TeamBstring) # NB: These indices could be useful for different purposes as well
+
+	tmpAtDi1,tmpAtLa1,CentXA,CentYA,CentXB,CentYB = teamCentroid(indsMatrix,XpositionMatrix,YpositionMatrix,teamAcols,teamBcols,TeamAstring,TeamBstring)
+	attributeDict.update(tmpAtDi1)
+	attributeLabel.update(tmpAtLa1)
+
+	tmpAtDi2,tmpAtLa2 = teamSpread(CentXA,CentYA,CentXB,CentYB,uniqueTsS,uniquePlayers,teamMatrix,XpositionMatrix,YpositionMatrix,teamAcols,teamBcols,indsMatrix,TeamAstring,TeamBstring)
+	attributeDict.update(tmpAtDi2)
+	attributeLabel.update(tmpAtLa2)
+
+	tmpAtDi3,tmpAtLa3 = teamSurface(indsMatrix,XpositionMatrix,YpositionMatrix,teamAcols,teamBcols,TeamAstring,TeamBstring)
+	attributeDict.update(tmpAtDi3)
+	attributeLabel.update(tmpAtLa3)
+
+	tmpAtDi4,tmpAtLa4 = vNorm(rawDict)
+	attributeDict.update(tmpAtDi4)
+	attributeLabel.update(tmpAtLa4)
+
+	# Nonlinear pedagogy only:
+	# Every new Run (Nonlinear pedagogy data only) has a jump in time (and position), for which velocity is set to 0.
+	tmpAtDi5 = correctVNorm(rawDict,attributeDict) # Correction only, doesn't need new label.
+	attributeDict.update(tmpAtDi5)
+
+	return attributeDict, attributeLabel
+
+############################################################
+############################################################
+
+def correctVNorm(rawDict,attributeDict):
+	if not 'Run' in attributeDict.keys(): # only normalize if 'runs' exists
+		return {'vNorm':attributeDict['vNorm']}
+	runs = np.array([i for i,val in enumerate(attributeDict['Run']) if val  != '' ])
+
+	if runs.size == 0:
+		warn('\n!!!!\nExisting attributes seem to be missing.\nCouldnt find runs to normalize velocity.\nVelocity not normalized.')
+		return {'vNorm':attributeDict['vNorm']}
+	runTimes = rawDict['Time']['TsS'][runs]
+	# output = attributeDict['vNorm']
+	output = {'vNorm':attributeDict['vNorm']}
+
+	for val in runTimes: # for every run time, make vNorm 0
+		for i,val2 in enumerate(rawDict['Time']['TsS']):
+			if val2 == val:
+				output['vNorm'][i] = 0
+
+	return output
+
+def vNorm(rawDict):
+	PlayerID = rawDict['Entity']['PlayerID']
+	TsS = rawDict['Time']['TsS']	
 
 	X = rawDict['Location']['X']
 	Y = rawDict['Location']['Y']
-	PlayerID = rawDict['Entity']['PlayerID']
-	TeamID = rawDict['Entity']['TeamID']
-	TsS = rawDict['Time']['TsS']
-	uniqueTsS,tmp = np.unique(TsS,return_counts=True)
-	uniquePlayers = np.unique(PlayerID)
 
-	# Ts = rawDict['Time']['Ts'] # not strictly necessary
-
-	# uniqueTsS,tmp = np.unique(TsS,return_counts=True)
-	# uniquePlayers = np.unique(PlayerID)
-
-	# if any(tmp != np.median(tmp)) or len(uniqueTsS) != len(X) / len(uniquePlayers):
-	# 	# Problem with timestamp. Not every timestamp occurs equally often and/or there isn't the expected number of unique timestamps
-	# 	# singleoccurrence = [uniqueTsS[idx] for idx,val in enumerate(tmp) if val == 1]
-	# 	# for i in singleoccurrence:
-	# 	# 	TsS[np.where(TsS == i)] = i
-	# 	warn('\n!!!!!\nProblem with timestamp: Not every timestamp occurs equally often.\n!!!!!')
-
-	# # np.set_printoptions(threshold=np.nan)
-	# # # print([i for tmp)
-	# # singleoccurrence = [uniqueTsS[idx] for idx,val in enumerate(tmp) if val == 1]
-	# # doubleoccurrence = [uniqueTsS[idx] for idx,val in enumerate(tmp) if val == 18]
-	# # notNine = [uniqueTsS[idx] for idx,val in enumerate(tmp) if val != 9]
-	# # notNineVal = [val for idx,val in enumerate(tmp) if val != 9]
-	# # print(notNineVal)
-	# # print(len(singleoccurrence))
-	# # # print(len(notNine))
-	# # indExample = np.where(TsS == singleoccurrence[0])
-	# # indExample2 = np.where(TsS == doubleoccurrence[0])
-	# # print(indExample)
-	# # print(type(indExample[0][0]))
-	# # print(Ts[indExample[0][0]])
-	# # print(Ts[indExample2[0][0]])
-
-	indsMatrix = np.ones((len(uniqueTsS),1),dtype='int')*999
-	teamMatrix = np.ones((len(uniqueTsS),len(uniquePlayers)),dtype='float64')*999
-	XpositionMatrix = np.ones((len(uniqueTsS),len(uniquePlayers)),dtype='float64')*999
-	YpositionMatrix = np.ones((len(uniqueTsS),len(uniquePlayers)),dtype='float64')*999	
-
-
-	teamAcols = []
-	teamBcols = []
-	for idx,val in enumerate(TsS):
-		row = np.where(val == uniqueTsS)[0]
-		col = np.where(PlayerID[idx] == uniquePlayers)[0]
-		
-		XpositionMatrix[row,col] = X[idx]
-		YpositionMatrix[row,col] = Y[idx]		
-		# indsMatrix[row,col] = idx
-		if TeamID[idx] == TeamAstring:
-			teamMatrix[row,col] = 0
-			if not col in teamAcols:
-				teamAcols.append(int(col))
-		elif TeamID[idx] == TeamBstring:
-			teamMatrix[row,col] = 1
-			if not col in teamBcols:
-				teamBcols.append(int(col))
-		elif TeamID[idx] == '':
-			# Store indices, as we're computing team values
-			indsMatrix[row] = idx
+	curPlayer = []
+	dX = []
+	dY = []
+	dTarray = []#np.array([])
+	firstFramePlayers = []
+	for idx, val in enumerate(PlayerID):
+		if val == '':
+			# Team level idx
+			dX.append(np.nan) # TO DO: ?? replace these with the team averages ??
+			dY.append(np.nan)
+			dTarray.append(np.nan)
+		elif val == curPlayer:
+			# Still the same player
+			# --> Continue
+			if firstFramePlayers[-1] == idx-1: # This should mean that it's the second frame of this player
+				dTarray[idx-1] = TsS[idx] - TsS[idx-1]
+			dX.append(X[idx] - X[idx-1])
+			dY.append(Y[idx] - Y[idx-1])
+			dTarray.append(TsS[idx] - TsS[idx-1])		
+			
+			if not (TsS[idx] - dTarray[-1]) == prevTime:
+				warn('\nPANIC, time not consecutive\n')
+				break
+			prevTime = TsS[idx]
 		else:
-			warn('\nDid not recoganize Team ID string: <%s>' %TeamID[idx])
-	# np.set_printoptions(threshold=np.nan)
-	# print(indsMatrix)
-	# pdb.set_trace()
-	tmpAtDi1,CentXA,CentYA,CentXB,CentYB = teamCentroid(indsMatrix,XpositionMatrix,YpositionMatrix,teamAcols,teamBcols)
-	tmpAtDi2 = teamSpread(CentXA,CentYA,CentXB,CentYB,uniqueTsS,uniquePlayers,teamMatrix,XpositionMatrix,YpositionMatrix,teamAcols,teamBcols,indsMatrix)
-	tmpAtDi3 = teamSurface(indsMatrix,XpositionMatrix,YpositionMatrix,teamAcols,teamBcols)
+			# FirstFrame of next player
+			# --> reset
+			firstFramePlayers.append(idx) # not necessary for computing speed, but possibly useful later
+			curPlayer = val
+			dX.append(0)
+			dY.append(0)
+			dTarray.append(0)# first just make it zero, in case only one frame is available
+			prevTime = TsS[idx]
 
-	attrDictOut = tmpAtDi1
-	attrDictOut.update(tmpAtDi2)
-	attrDictOut.update(tmpAtDi3)	
+	# Covered distance on x- and y- axis
+	dX = np.array(dX)
+	dY = np.array(dY)
 
-	return attrDictOut
+	dTarray = np.array(dTarray)
 
+	distFrame = np.sqrt(dX**2 + dY**2) # distance covered per frame
+	vNorm = distFrame / dTarray[0][0] #*100000
+	# IDEA: Could add distSummed
+
+	output = {'vNorm':vNorm,'distFrame':distFrame}
+	labels = {'vNorm':'Speed (m/s)','distFrame':'Distance covered (m)'}
+	return output,labels
+
+	#####################################################################################
 #####################################################################################
-#####################################################################################
 
-def teamCentroid(indsMatrix,XpositionMatrix,YpositionMatrix,teamAcols,teamBcols):
+def teamCentroid(indsMatrix,XpositionMatrix,YpositionMatrix,teamAcols,teamBcols,TeamAstring,TeamBstring):
 	## IDEA: I could add the player's distance to the centroid here
 	
 	# Compute the centroids
@@ -131,19 +169,23 @@ def teamCentroid(indsMatrix,XpositionMatrix,YpositionMatrix,teamAcols,teamBcols)
 	tmpYB = np.zeros((dataShape[1]*dataShape[0],1),dtype='float64')* np.nan
 
 	for idx,val in enumerate(indsMatrix): # indsMatrix are the team cells only
-		# print(idx)
 		tmpXA[int(val)] = CentXA[idx]
 		tmpYA[int(val)] = CentXB[idx]
 		tmpXB[int(val)] = CentXA[idx]
 		tmpYB[int(val)] = CentYA[idx]
-
+	# the Data
 	tmpAtDi1 = {'TeamCentXA': tmpXA, 'TeamCentYA': tmpYA, 'TeamCentXB': tmpXB,'TeamCentYB': tmpYB}
-
-	return tmpAtDi1,CentXA,CentYA,CentXB,CentYB # Export dictionary to CSV (after simple temporal aggregation)
+	# the Strings	
+	tmpXAString = 'X-position of %s (m)' %TeamAstring
+	tmpYAString = 'Y-position of %s (m)' %TeamAstring
+	tmpXBString = 'X-position of %s (m)' %TeamBstring
+	tmpYBString = 'Y-position of %s (m)' %TeamBstring			
+	tmpAtLa1 = {'TeamCentXA': tmpXAString, 'TeamCentYA': tmpYAString, 'TeamCentXB': tmpXBString,'TeamCentYB': tmpYBString}
+	return tmpAtDi1,tmpAtLa1,CentXA,CentYA,CentXB,CentYB # Export dictionary to CSV (after simple temporal aggregation)
 
 #####################################################################################
 
-def teamSpread(CentXA,CentYA,CentXB,CentYB,uniqueTsS,uniquePlayers,teamMatrix,XpositionMatrix,YpositionMatrix,teamAcols,teamBcols,indsMatrix):
+def teamSpread(CentXA,CentYA,CentXB,CentYB,uniqueTsS,uniquePlayers,teamMatrix,XpositionMatrix,YpositionMatrix,teamAcols,teamBcols,indsMatrix,TeamAstring,TeamBstring):
 	# Spread
 	# (average) Distance of each player to center.
 	# Dist to centre:
@@ -180,13 +222,19 @@ def teamSpread(CentXA,CentYA,CentXB,CentYB,uniqueTsS,uniquePlayers,teamMatrix,Xp
 		tmpStdSpreadA[int(val)] = stdSpreadA[idx]
 		tmpStdSpreadB[int(val)] = stdSpreadB[idx]
 
+	# The data
 	tmpAtDi2 = {'SpreadA': tmpSpreadA, 'SpreadB': tmpSpreadB, 'stdSpreadA': tmpStdSpreadA,'stdSpreadB': tmpStdSpreadB}
-
-	return tmpAtDi2
+	# The labels
+	tmpSpreadAString = 'Average distance to center of %s (m)' %TeamAstring
+	tmpStdSpreadAString = 'Standard deviation of distance to center of %s (m)' %TeamAstring
+	tmpSpreadBString = 'Average distance to center of %s (m)' %TeamBstring
+	tmpStdSpreadBString = 'Standard deviation of distance to center of %s (m)' %TeamBstring	
+	tmpAtLa2 = {'SpreadA': tmpSpreadAString, 'SpreadB': tmpSpreadBString, 'stdSpreadA': tmpStdSpreadAString,'stdSpreadB': tmpStdSpreadBString}
+	return tmpAtDi2,tmpAtLa2
 
 #####################################################################################
 
-def teamSurface(indsMatrix,XpositionMatrix,YpositionMatrix,teamAcols,teamBcols):
+def teamSurface(indsMatrix,XpositionMatrix,YpositionMatrix,teamAcols,teamBcols,TeamAstring,TeamBstring):
 
 	# Return in format attributeDict
 	dataShape = np.shape(XpositionMatrix) # Number of data entries
@@ -202,13 +250,8 @@ def teamSurface(indsMatrix,XpositionMatrix,YpositionMatrix,teamAcols,teamBcols):
 	tmpShapeRatioB = np.zeros((dataShape[1]*dataShape[0],1),dtype='float64')* np.nan
 	tmpWidthB = np.zeros((dataShape[1]*dataShape[0],1),dtype='float64')* np.nan
 	tmpLengthB = np.zeros((dataShape[1]*dataShape[0],1),dtype='float64')* np.nan
-	# print(XpositionMatrix)
+
 	for idx,val in enumerate(indsMatrix):
-		# print('---')
-		# print(XpositionMatrix[idx,teamAcols])
-		# print(YpositionMatrix[idx,teamAcols])		
-		# print('idx = << %s >>' %idx)
-		# print('val = << %s >>' %val)		
 		SurfaceA,sumVerticesA,ShapeRatioA = groupSurface(XpositionMatrix[idx,teamAcols],YpositionMatrix[idx,teamAcols])
 		SurfaceB,sumVerticesB,ShapeRatioB = groupSurface(XpositionMatrix[idx,teamBcols],YpositionMatrix[idx,teamBcols])		
 
@@ -240,7 +283,24 @@ def teamSurface(indsMatrix,XpositionMatrix,YpositionMatrix,teamAcols,teamBcols):
 	'WidthA': tmpWidthA,'WidthB': tmpWidthB, \
 	'LengthA': tmpLengthA,'LengthB': tmpLengthB }
 
-	return tmpAtDi3
+	tmpSurfaceAString = 'Surface area of %s (m^2)' %TeamAstring
+	tmpSurfaceBString = 'Surface area of %s (m^2)' %TeamBstring
+	tmpsumVerticesAString = 'Circumference of surface area of %s (m)' %TeamAstring
+	tmpsumVerticesBString = 'Circumference of surface area of %s (m)' %TeamBstring
+	tmpShapeRatioAString = 'Uniformity of surface area of %s (1 = uniform, closer to 0 = elongated)' %TeamAstring
+	tmpShapeRatioBString = 'Uniformity of surface area of %s (1 = uniform, closer to 0 = elongated)' %TeamBstring
+	tmpWidthAString = 'Distance along X-axis %s (m)' %TeamAstring
+	tmpWidthBString = 'Distance along X-axis %s (m)' %TeamBstring
+	tmpLengthAString = 'Distance along Y-axis %s (m)' %TeamAstring
+	tmpLengthBString = 'Distance along Y-axis %s (m)' %TeamBstring
+
+	# Export labels
+	tmpAtLa3 = {'SurfaceA': tmpSurfaceAString, 'SurfaceB': tmpSurfaceBString, \
+	'sumVerticesA': tmpsumVerticesAString,'sumVerticesB': tmpsumVerticesBString, \
+	'ShapeRatioA': tmpShapeRatioAString,'ShapeRatioB': tmpShapeRatioBString, \
+	'WidthA': tmpWidthAString,'WidthB': tmpWidthBString, \
+	'LengthA': tmpLengthAString,'LengthB': tmpLengthBString }	
+	return tmpAtDi3,tmpAtLa3
 
 #####################################################################################
 
@@ -343,9 +403,48 @@ def groupSurface(X,Y):
 		VerticesX.append(NextX)
 		VerticesY.append(NextY)	
 
-	# print('Number of iterations required = ',countIteration)
 	Surface = PolyArea(VerticesX,VerticesY)
 	sumVertices = Circumference(VerticesX,VerticesY)
 	ShapeRatio = RibRatio(VerticesX,VerticesY)
 
 	return Surface,sumVertices,ShapeRatio
+
+def obtainIndices(rawDict,TeamAstring,TeamBstring):
+	X = rawDict['Location']['X']
+	Y = rawDict['Location']['Y']
+	PlayerID = rawDict['Entity']['PlayerID']
+	TeamID = rawDict['Entity']['TeamID']
+	TsS = rawDict['Time']['TsS']
+	uniqueTsS,tmp = np.unique(TsS,return_counts=True)
+	uniquePlayers = np.unique(PlayerID)
+
+	indsMatrix = np.ones((len(uniqueTsS),1),dtype='int')*999
+	teamMatrix = np.ones((len(uniqueTsS),len(uniquePlayers)),dtype='float64')*999
+	XpositionMatrix = np.ones((len(uniqueTsS),len(uniquePlayers)),dtype='float64')*999
+	YpositionMatrix = np.ones((len(uniqueTsS),len(uniquePlayers)),dtype='float64')*999	
+
+	teamAcols = []
+	teamBcols = []
+	for idx,val in enumerate(TsS):
+		row = np.where(val == uniqueTsS)[0]
+		col = np.where(PlayerID[idx] == uniquePlayers)[0]
+		
+		XpositionMatrix[row,col] = X[idx]
+		YpositionMatrix[row,col] = Y[idx]		
+
+		if TeamID[idx] == TeamAstring:
+			teamMatrix[row,col] = 0
+			if not col in teamAcols:
+				teamAcols.append(int(col))
+		elif TeamID[idx] == TeamBstring:
+			teamMatrix[row,col] = 1
+			if not col in teamBcols:
+				teamBcols.append(int(col))
+		elif TeamID[idx] == '':
+			# Store indices, as we're computing team values
+			indsMatrix[row] = idx
+		else:
+			warn('\nDid not recoganize Team ID string: <%s>' %TeamID[idx])	
+
+	return indsMatrix,XpositionMatrix,YpositionMatrix,teamAcols,teamBcols,uniqueTsS,uniquePlayers,teamMatrix
+
