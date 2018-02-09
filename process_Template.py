@@ -86,6 +86,9 @@ Visualization = True # True = includes visualization, False = skips visualizatio
 
 
 
+#########################
+# PREPARATION ###########
+#########################
 
 # Gerenal Python modules
 import csv
@@ -167,6 +170,9 @@ headers = {'Ts': timestampString,\
 xstring = 'Time (s)'
 aggregateLevel = (aggregateEvent,aggregateWindow,aggregateLag)
 
+#########################
+# ANALYSIS (file by file)
+#########################
 for fname in dataFiles:
 	print('\nFILENAME: << %s >>' %fname)
 
