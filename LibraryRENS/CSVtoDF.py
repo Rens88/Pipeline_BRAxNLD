@@ -6,6 +6,7 @@ and subsequently clean, transform and slice into several DataFrames
 @author: Floris Goes
 """
 import pandas as pd
+import pdb; #pdb.set_trace()
 
 """
 Load a *.csv file with position data, exported from LPM, as a pandas DataFrame
@@ -16,6 +17,10 @@ often has malicious coordinates that need to be deleted. Finally the DataFrame i
 a timeseries DataFrame and to match the index of exported event data. 
 """
 def LoadPosData(file):
+    test = pd.read_csv(file)
+    # print(test.describe())
+    pdb.set_trace()
+
     Loaded_Pos_Data = pd.read_csv(file, index_col='Timestamp',  
                          usecols=(['Timestamp', 'X', 'Y', 'Snelheid', 'Acceleration', 'Naam']), 
                          low_memory=False)

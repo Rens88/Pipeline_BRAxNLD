@@ -5,7 +5,9 @@
 
 # 02-03-2018 Rens Meerhoff
 # Updated the code to now have relative folders to load the library.
-# Working on inporating panda dataframes instead of lists of lists.
+# Working on incorporating panda dataframes instead of lists of lists.
+# - left it at 'cleanupData' where I'm splitting 'Naam'
+# on 05-03 I will continue with further incorporating pandas.
 
 # 08-02-2018 Rens Meerhoff
 # Updated code to be able to indicate the window for temporal aggregation.
@@ -52,26 +54,26 @@ folder = 'C:\\Users\\rensm\\Documents\\PostdocLeiden\\BRAxNLD repository\\'
 TO DO FLORIS: Insert folder with cleaned data by enabling DataFrame to csv output after cleaning
 """
 # Input of raw data, indicate at least timestamp, entity and Location info
-timestampString = 'enter the string in the header of the column that represents TIMESTAMP' 	# 'Video time (s)'
-PlayerIDstring = 'enter the string in the header of the column that represents PLAYERID' 	# 'jersey n.'
-TeamIDstring = 'enter the string in the header of the column that represents TEAMID' 			# Optional
-XPositionString = 'enter the string in the header of the column that represents X-POSITION'			# 'x'
-YPositionString = 'enter the string in the header of the column that represents Y-POSITION'			# 'y'
+timestampString = 'Timestamp' 						#'enter the string in the header of the column that represents TIMESTAMP' 	# 'Video time (s)'
+PlayerIDstring = 'Naam' 							#'enter the string in the header of the column that represents PLAYERID' 	# 'jersey n.'
+TeamIDstring = None 								#'enter the string in the header of the column that represents TEAMID' 			# Optional
+XPositionString = 'X' 								#'enter the string in the header of the column that represents X-POSITION'			# 'x'
+YPositionString = 'Y' 								#'enter the string in the header of the column that represents Y-POSITION'			# 'y'
 # Case-sensitive string headers of attribute columns that already exist in the data (optional). NB: String also sensitive for extra spaces.
-readAttributeCols = ['Here', 'you', 'can', 'proivde a list of strings that represent existing attributes.']
+readAttributeCols = ['Snelheid','Acceleration'] 	#['Here', 'you', 'can', 'proivde a list of strings that represent existing attributes.']
 
 # Indicate some parameters for temporal aggregation: 'Full' aggregates over the whole file, any other event needs to be specified with the same string as in the header of the CSV file.
-aggregateEvent = 'Goals' # Event that will be used to aggregate over (verified for 'Goals' and for 'Possession')
+aggregateEvent = 'Full' # Event that will be used to aggregate over (verified for 'Goals' and for 'Possession')
 aggregateWindow = 10 # in seconds #NB: still need to write warning in temporal aggregation in case you have Goals in combination with None.
 aggregateLag = 0 # in seconds
 
-conversionToMeter = 111111 # https://gis.stackexchange.com/questions/8650/measuring-accuracy-of-latitude-and-longitude/8674#8674
+conversionToMeter = 1 #111111 # https://gis.stackexchange.com/questions/8650/measuring-accuracy-of-latitude-and-longitude/8674#8674
 # To do:
 # - add option to automatically detect a specific event
 # - add option to insert events manually
 # - add possibility to pre-define aggregation method? (avg, std, etc)
 
-Visualization = True # True = includes visualization, False = skips visualization
+Visualization = False # True = includes visualization, False = skips visualization
 
 # ALSO:
 # see 'fname' in the main for loop. It is used to obtain the metadata. This is project specific and may need to be changed.
@@ -158,18 +160,6 @@ if not exists(tmpFigFolder):
 if not exists(cleanedFolder):
 	makedirs(cleanedFolder)
 
-# Load all CSV files
-# To do: embed in file by file loop. Let it search for file in cleanedFolder with the same name. If it doesnt exist, then clean.
-if len(listdir(cleanedFolder)) == 0:# no cleaned data created, so let's create it
-	if dataType == "NP":
-		# NB: cleanupData currently only adjusted for NP data. Fixes are quite specific and may not easily transfer to different datasets.
-		DirtyDataFiles = [f for f in listdir(dataFolder) if isfile(join(dataFolder, f)) if '.csv' in f]
-		cleanupData.NP(DirtyDataFiles,dataFolder,cleanedFolder,TeamAstring,TeamBstring)
-		warn('\nCleaned the data with cleanupData.py. NB: May need revision.')
-else:
-	warn('\nContinued with previously cleaned data.\nIf problems exist with data consistency, consider writing a function in cleanupData.py.')
-
-dataFiles = [f for f in listdir(cleanedFolder) if isfile(join(cleanedFolder, f)) if '.csv' in f]
 # Preparing the dictionary of the raw data
 headers = {'Ts': timestampString,\
 'PlayerID': PlayerIDstring,\
@@ -178,6 +168,22 @@ headers = {'Ts': timestampString,\
 
 xstring = 'Time (s)'
 aggregateLevel = (aggregateEvent,aggregateWindow,aggregateLag)
+
+# Load all CSV files
+# To do: embed in file by file loop. Let it search for file in cleanedFolder with the same name. If it doesnt exist, then clean.
+if len(listdir(cleanedFolder)) == 0:# no cleaned data created, so let's create it
+	DirtyDataFiles = [f for f in listdir(dataFolder) if isfile(join(dataFolder, f)) if '.csv' in f]
+	if dataType == "NP":
+		# NB: cleanupData currently dataset specific (NP or FDP). Fixes are quite specific and may not easily transfer to different datasets.
+		cleanupData.NP(DirtyDataFiles,dataFolder,cleanedFolder,TeamAstring,TeamBstring)
+		warn('\nCleaned the data with cleanupData.py. NB: May need revision.')
+	elif dataType == "FDP":
+		cleanupData.FDP(DirtyDataFiles,dataFolder,headers,readAttributeCols)
+
+else:
+	warn('\nContinued with previously cleaned data.\nIf problems exist with data consistency, consider writing a function in cleanupData.py.')
+
+dataFiles = [f for f in listdir(cleanedFolder) if isfile(join(cleanedFolder, f)) if '.csv' in f]
 
 #########################
 # ANALYSIS (file by file)
@@ -236,7 +242,7 @@ for fname in dataFiles:
 	"""
 	The 3 lines below read and clean the csv file with LPM data as a pandas DataFrame and save the result again as a csv file. 
 	"""
-	RawPos_df = CSVtoDF.LoadPosData(fname)
+	RawPos_df = CSVtoDF.LoadPosData(cleanedFolder + fname)
 	pdb.set_trace()
 	outputFilename = outputFolder + 'output_' + aggregateLevel[0] + '.csv'
 	RawPos_df.to_csv(outputFilename)
