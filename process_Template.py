@@ -38,20 +38,22 @@
 #########################
 ## CHANGE THIS all these variables until 'END USER INPUT'
 # The folder and relevant subfolders where you store the python libarary with all the custom modules.
-cmd_folder = str("C:\\Users\\rensm\\Dropbox\\PYTHON\\LibraryRENS")
+cmd_folder = str("C:\\Users\\Goes\\Documents\\BRAxNLD_Code\\Pipeline_BRAxNLD-master\\LibraryRENS")
 # cmd_folder = str("C:\\Users\\Rens\\Dropbox\\PYTHON\\LibraryRENS")
 cmd_subfolder1 = str(cmd_folder+"\\FDP") # FDP = Football Data Project
 cmd_subfolder2 = str(cmd_folder+"\\NP") # NP = Nonlinear Pedagogy
 
 # String representing the different teams
-TeamAstring = 'Provide the string that represents one team'
-TeamBstring = 'Provide the string that represents the other team'
+TeamAstring = 'AA1001'
+TeamBstring = 'AA1003'
 # This folder should contain a folder with 'Data' and will be used to export the results (including figures)
 # NB: Data in 'Data' folder will first be cleaned. If data is already clean, put it in 'Data\\Cleaned'
 folder = 'C:\\Enter\\the\\folder\\where\\you store the data, which should always end with: \\Cleaned\\'
 # folder = 'C:\\Users\\rensm\\Documents\\PostdocLeiden\\Nonlinear Pedagogy\\'
 # folder = 'C:\\Users\\Rens\\Documents\\Leiden\\NP\\data\\'
-
+"""
+TO DO FLORIS: Insert folder with cleaned data by enabling DataFrame to csv output after cleaning
+"""
 # Input of raw data, indicate at least timestamp, entity and Location info
 timestampString = 'enter the string in the header of the column that represents TIMESTAMP' 	# 'Video time (s)'
 PlayerIDstring = 'enter the string in the header of the column that represents PLAYERID' 	# 'jersey n.'
@@ -99,6 +101,7 @@ from os import listdir, path, makedirs
 from warnings import warn
 import sys
 import subprocess
+import pandas as pd
 
 ####### Adding the library ######
 if cmd_folder not in sys.path:
@@ -130,6 +133,7 @@ import importTimeseriesData
 import csv
 import cleanupData
 import importEvents
+import CSVtoDF
 
 if folder[-1:] != '\\':
 	warn('\n<folder> did not end with <\\\\>. \nOriginal input <%s>\nReplace with <%s>' %(folder,folder+'\\'))
@@ -191,7 +195,14 @@ for fname in dataFiles:
 	####### Import existing data ###########################################################
 	########################################################################################
 	# NB: I might have to update this script to deal with varying timestamps and players that are nog on the court for every timestamp
-	rawDict,timestampIssues = importTimeseriesData.rawData(fname,cleanedFolder,headers,conversionToMeter)
+	"""
+    The 3 lines below read and clean the csv file with LPM data as a pandas DataFrame and save the result again as a csv file. 
+    """
+    RawPos_df = CSVtoDF.LoadPosData(fname)
+    outputFilename = outputFolder + 'output_' + aggregateLevel[0] + '.csv'
+    RawPos_df.to_csv(outputFilename)
+    
+    rawDict,timestampIssues = importTimeseriesData.rawData(fname,cleanedFolder,headers,conversionToMeter)
 	if timestampIssues:
 		skippedData = True
 		outputFilename = outputFolder + 'output_' + aggregateLevel[0] + '.csv'
