@@ -37,20 +37,14 @@
 # USER INPUT ############
 #########################
 ## CHANGE THIS all these variables until 'END USER INPUT'
-# The folder and relevant subfolders where you store the python libarary with all the custom modules.
-cmd_folder = str("C:\\Users\\Goes\\Documents\\BRAxNLD_Code\\Pipeline_BRAxNLD-master\\LibraryRENS")
-# cmd_folder = str("C:\\Users\\Rens\\Dropbox\\PYTHON\\LibraryRENS")
-cmd_subfolder1 = str(cmd_folder+"\\FDP") # FDP = Football Data Project
-cmd_subfolder2 = str(cmd_folder+"\\NP") # NP = Nonlinear Pedagogy
 
 # String representing the different teams
 TeamAstring = 'AA1001'
 TeamBstring = 'AA1003'
 # This folder should contain a folder with 'Data' and will be used to export the results (including figures)
-# NB: Data in 'Data' folder will first be cleaned. If data is already clean, put it in 'Data\\Cleaned'
-folder = 'C:\\Enter\\the\\folder\\where\\you store the data, which should always end with: \\Cleaned\\'
-# folder = 'C:\\Users\\rensm\\Documents\\PostdocLeiden\\Nonlinear Pedagogy\\'
-# folder = 'C:\\Users\\Rens\\Documents\\Leiden\\NP\\data\\'
+# NB: Data in 'Data' folder will first be cleaned. If data is already clean, put the cleaned data in 'Data\\Cleaned'
+# TO do: better explain folder hierarchy
+folder = 'C:\\Users\\rensm\\Documents\\PostdocLeiden\\BRAxNLD repository\\'
 """
 TO DO FLORIS: Insert folder with cleaned data by enabling DataFrame to csv output after cleaning
 """
@@ -99,23 +93,27 @@ import numpy as np
 from os.path import isfile, join, isdir, exists
 from os import listdir, path, makedirs
 from warnings import warn
-import sys
+import sys, inspect
 import subprocess
 import pandas as pd
 
 ####### Adding the library ######
-if cmd_folder not in sys.path:
-    sys.path.insert(0, cmd_folder) 
-if cmd_subfolder1 not in sys.path:
-    sys.path.insert(0, cmd_subfolder1) # idea: could loop over subfolder and enter as a list
-if cmd_subfolder2 not in sys.path:
-    sys.path.insert(0, cmd_subfolder2)
+# The folder and relevant subfolders where you store the python library with all the custom modules.
+current_folder = path.realpath(path.abspath(path.split(inspect.getfile( inspect.currentframe() ))[0]))
+library_folder = current_folder + str("\\LibraryRENS")
+library_subfolder1 = library_folder + str("\\FDP") # FDP = Football Data Project
+
+if library_folder not in sys.path:
+	sys.path.insert(0, library_folder) 
+if library_subfolder1 not in sys.path:
+	sys.path.insert(0, library_subfolder1) # idea: could loop over multiple subfolders and enter as a list
+
 ## Uncomment this line to open the function in the editor (matlab's ctrl + d)
 # subprocess.call(cmd_folder + "\\callThisFunction.py", shell=True)
 #########################################
 
 # From LibraryRENS:
-import plotSnapshot
+
 import CSVexcerpt
 import CSVimportAsColumns
 import identifyDuplHeader
@@ -134,9 +132,10 @@ import csv
 import cleanupData
 import importEvents
 import CSVtoDF
+import plotSnapshot
 
 if folder[-1:] != '\\':
-	warn('\n<folder> did not end with <\\\\>. \nOriginal input <%s>\nReplace with <%s>' %(folder,folder+'\\'))
+	warn('\n<folder> did not end with <\\\\>. \nOriginal input <%s>\nReplaced with <%s>' %(folder,folder+'\\'))
 	folder = folder + '\\'
 
 dataFolder = folder + 'Data\\'
@@ -196,13 +195,13 @@ for fname in dataFiles:
 	########################################################################################
 	# NB: I might have to update this script to deal with varying timestamps and players that are nog on the court for every timestamp
 	"""
-    The 3 lines below read and clean the csv file with LPM data as a pandas DataFrame and save the result again as a csv file. 
-    """
-    RawPos_df = CSVtoDF.LoadPosData(fname)
-    outputFilename = outputFolder + 'output_' + aggregateLevel[0] + '.csv'
-    RawPos_df.to_csv(outputFilename)
-    
-    rawDict,timestampIssues = importTimeseriesData.rawData(fname,cleanedFolder,headers,conversionToMeter)
+	The 3 lines below read and clean the csv file with LPM data as a pandas DataFrame and save the result again as a csv file. 
+	"""
+	RawPos_df = CSVtoDF.LoadPosData(fname)
+	outputFilename = outputFolder + 'output_' + aggregateLevel[0] + '.csv'
+	RawPos_df.to_csv(outputFilename)
+	
+	rawDict,timestampIssues = importTimeseriesData.rawData(fname,cleanedFolder,headers,conversionToMeter)
 	if timestampIssues:
 		skippedData = True
 		outputFilename = outputFolder + 'output_' + aggregateLevel[0] + '.csv'
