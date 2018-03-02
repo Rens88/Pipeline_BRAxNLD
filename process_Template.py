@@ -1,7 +1,11 @@
 # If you want to edit something in the code and you're not sure where it is, 
-# just ask.
+# just ask. l.a.meerhoff@liacs.leidenuniv.nl
 # Also, if you want to add something to the code and you're not sure where, 
 # it's probably going to be somewhere in spatialAggregation. But you can always ask.
+
+# 02-03-2018 Rens Meerhoff
+# Updated the code to now have relative folders to load the library.
+# Working on inporating panda dataframes instead of lists of lists.
 
 # 08-02-2018 Rens Meerhoff
 # Updated code to be able to indicate the window for temporal aggregation.
@@ -37,10 +41,9 @@
 # USER INPUT ############
 #########################
 ## CHANGE THIS all these variables until 'END USER INPUT'
+# "FPD" or or "NP" --> so far, only used to call the right cleanup script. Long term goal would be to have a generic cleanup script
+dataType =  "FDP"
 
-# String representing the different teams
-TeamAstring = 'AA1001'
-TeamBstring = 'AA1003'
 # This folder should contain a folder with 'Data' and will be used to export the results (including figures)
 # NB: Data in 'Data' folder will first be cleaned. If data is already clean, put the cleaned data in 'Data\\Cleaned'
 # TO do: better explain folder hierarchy
@@ -96,6 +99,7 @@ from warnings import warn
 import sys, inspect
 import subprocess
 import pandas as pd
+import re
 
 ####### Adding the library ######
 # The folder and relevant subfolders where you store the python library with all the custom modules.
@@ -155,11 +159,13 @@ if not exists(cleanedFolder):
 	makedirs(cleanedFolder)
 
 # Load all CSV files
+# To do: embed in file by file loop. Let it search for file in cleanedFolder with the same name. If it doesnt exist, then clean.
 if len(listdir(cleanedFolder)) == 0:# no cleaned data created, so let's create it
-	# NB: cleanupData currently only adjusted for NP data. Fixes are quite specific and may not easily transfer to different datasets.
-	DirtyDataFiles = [f for f in listdir(dataFolder) if isfile(join(dataFolder, f)) if '.csv' in f]
-	cleanupData.NP(DirtyDataFiles,dataFolder,cleanedFolder,TeamAstring,TeamBstring)
-	warn('\nCleaned the data with cleanupData.py. NB: May need revision.')
+	if dataType == "NP":
+		# NB: cleanupData currently only adjusted for NP data. Fixes are quite specific and may not easily transfer to different datasets.
+		DirtyDataFiles = [f for f in listdir(dataFolder) if isfile(join(dataFolder, f)) if '.csv' in f]
+		cleanupData.NP(DirtyDataFiles,dataFolder,cleanedFolder,TeamAstring,TeamBstring)
+		warn('\nCleaned the data with cleanupData.py. NB: May need revision.')
 else:
 	warn('\nContinued with previously cleaned data.\nIf problems exist with data consistency, consider writing a function in cleanupData.py.')
 
@@ -181,14 +187,47 @@ for fname in dataFiles:
 
 	# Prepare metadata of aggregated data to be exported:
 	# NB: Filetype specific. Needs to be generalized
-	School = fname[0:4]
-	Class = fname[5:8]
-	Group = fname[9:12]
-	Test = fname[13:16]
+	if dataType == "NP":
+		School = fname[0:4]
+		Class = fname[5:8]
+		Group = fname[9:12]
+		Test = fname[13:16]
 
-	exportData = [School, Class, Group, Test]
-	exportDataString = ['School', 'Class', 'Group', 'Test']
-	exportFullExplanation = ['School experiment was held at','Class the participants were from','Identifier groups that played each other','Name of the type of trial (PRE = pre-test, POS = post-test, TRA = transfer test, RET = retention test)']
+		exportData = [School, Class, Group, Test]
+		exportDataString = ['School', 'Class', 'Group', 'Test']
+		exportFullExplanation = ['School experiment was held at','Class the participants were from','Identifier groups that played each other','Name of the type of trial (PRE = pre-test, POS = post-test, TRA = transfer test, RET = retention test)']
+	elif dataType == "FDP":
+		# Using regular expression to extract info from filename		
+		regex = r'([a-zA-Z]{1})([a-zA-Z]{1})(\d+)_([a-zA-Z]{1})([a-zA-Z]{1})(\d{1})(\d{3})_v_([a-zA-Z]{1})([a-zA-Z]{1})(\d{1})(\d{3})'
+		match = re.search(regex,fname)
+		if match:
+			grp = match.groups()
+			MatchContinent = grp[0]
+			MatchCountry = grp[1]
+			MatchID = grp[2]
+			HomeTeamContinent = grp[3]
+			HomeTeamCountry = grp[4]
+			HomeTeamAgeGroup = grp[5]
+			HomeTeamID = grp[6]
+			AwayTeamContinent = grp[7]
+			AwayTeamCountry = grp[8]
+			AwayTeamAgeGroup = grp[9]
+			AwayTeamID = grp[10]
+
+			TeamAstring = HomeTeamContinent + HomeTeamCountry + HomeTeamAgeGroup + HomeTeamID
+			TeamBstring = AwayTeamContinent + AwayTeamCountry + AwayTeamAgeGroup + AwayTeamID
+
+			# Prepare the tabular export
+			exportData = [MatchContinent,MatchCountry,MatchID,HomeTeamContinent,HomeTeamCountry, \
+			HomeTeamAgeGroup,HomeTeamID,AwayTeamContinent,AwayTeamCountry,AwayTeamAgeGroup,AwayTeamID]
+			exportDataString = ['MatchContinent','MatchCountry','MatchID','HomeTeamContinent','HomeTeamCountry', \
+			'HomeTeamAgeGroup','HomeTeamID','AwayTeamContinent','AwayTeamCountry','AwayTeamAgeGroup','AwayTeamID']
+			exportDataFullExplanation = ['The continent where the match was played.','The country where the match was played.','The unique identifier of the match.','The continent of the home team.','The country of the home team.', \
+			'The age group of the home team.','The unique identifier of the home team.','The continent of the away team.','The country of the away team.', \
+			'The age group of the home away.','The unique identifier of the away team.']
+
+		else: # If the filename cant be understood, exit the script.
+			exit('\nExit: Could not identify match characteristics based on filename <%s>' %fname)
 
 	########################################################################################
 	####### Import existing data ###########################################################
@@ -198,6 +237,7 @@ for fname in dataFiles:
 	The 3 lines below read and clean the csv file with LPM data as a pandas DataFrame and save the result again as a csv file. 
 	"""
 	RawPos_df = CSVtoDF.LoadPosData(fname)
+	pdb.set_trace()
 	outputFilename = outputFolder + 'output_' + aggregateLevel[0] + '.csv'
 	RawPos_df.to_csv(outputFilename)
 	
