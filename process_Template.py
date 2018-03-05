@@ -107,12 +107,15 @@ import re
 # The folder and relevant subfolders where you store the python library with all the custom modules.
 current_folder = path.realpath(path.abspath(path.split(inspect.getfile( inspect.currentframe() ))[0]))
 library_folder = current_folder + str("\\LibraryRENS")
-library_subfolder1 = library_folder + str("\\FDP") # FDP = Football Data Project
+library_subfolders = [library_folder + str("\\FDP")] # FDP = Football Data Project
+library_subfolders.append(library_folder + str("\\VPcontributions")) # Contributions of a Bachelor student
+library_subfolders.append(library_folder + str("\\LTcontributions")) # Contributions of a Bachelor student
 
 if library_folder not in sys.path:
 	sys.path.insert(0, library_folder) 
-if library_subfolder1 not in sys.path:
-	sys.path.insert(0, library_subfolder1) # idea: could loop over multiple subfolders and enter as a list
+for subf in library_subfolders:
+	if subf not in sys.path:
+		sys.path.insert(0, subf) # idea: could loop over multiple subfolders and enter as a list
 
 ## Uncomment this line to open the function in the editor (matlab's ctrl + d)
 # subprocess.call(cmd_folder + "\\callThisFunction.py", shell=True)
@@ -178,7 +181,8 @@ if len(listdir(cleanedFolder)) == 0:# no cleaned data created, so let's create i
 		cleanupData.NP(DirtyDataFiles,dataFolder,cleanedFolder,TeamAstring,TeamBstring)
 		warn('\nCleaned the data with cleanupData.py. NB: May need revision.')
 	elif dataType == "FDP":
-		cleanupData.FDP(DirtyDataFiles,dataFolder,headers,readAttributeCols)
+		debugOmittedRows = True # Optional export of data that was omitted in the cleaning process
+		headers = cleanupData.FDP(DirtyDataFiles,dataFolder,cleanedFolder,headers,readAttributeCols,debugOmittedRows)
 
 else:
 	warn('\nContinued with previously cleaned data.\nIf problems exist with data consistency, consider writing a function in cleanupData.py.')
@@ -233,7 +237,10 @@ for fname in dataFiles:
 			'The age group of the home away.','The unique identifier of the away team.']
 
 		else: # If the filename cant be understood, exit the script.
-			exit('\nExit: Could not identify match characteristics based on filename <%s>' %fname)
+			exportData = [fname]
+			exportDataString = 'filename'
+			exportDataFullExplanation = ['This is simply the complete filename.']
+			warn('\nWARNING: Could not identify match characteristics based on filename <%s>.\nInstead, filename itself was exported as match characteristic.' %fname)
 
 	########################################################################################
 	####### Import existing data ###########################################################

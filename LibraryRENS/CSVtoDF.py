@@ -17,9 +17,6 @@ often has malicious coordinates that need to be deleted. Finally the DataFrame i
 a timeseries DataFrame and to match the index of exported event data. 
 """
 def LoadPosData(file):
-    test = pd.read_csv(file)
-    # print(test.describe())
-    pdb.set_trace()
 
     Loaded_Pos_Data = pd.read_csv(file, index_col='Timestamp',  
                          usecols=(['Timestamp', 'X', 'Y', 'Snelheid', 'Acceleration', 'Naam']), 
@@ -29,7 +26,7 @@ def LoadPosData(file):
     Cleaned_1 = Loaded_Pos_Data[clean]
     Cleaned_2 = (Cleaned_1['X'] > -60) & (Cleaned_1['X'] < 60) & (Cleaned_1['Y'] > -40) & (Cleaned_1['Y'] < 40)
     Cleaned_Pos_Data = Cleaned_1[Cleaned_2]
-        
+    pdb.set_trace()        
     return Cleaned_Pos_Data
 
 """

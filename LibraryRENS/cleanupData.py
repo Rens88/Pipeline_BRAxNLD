@@ -7,9 +7,12 @@ import csv
 from warnings import warn
 import numpy as np
 from os.path import isfile, join, isdir, exists
-from os import listdir, startfile
+from os import listdir, path, makedirs
 import re
 import pandas as pd
+
+import VPcleanup
+import LTcleanup
 
 
 if __name__ == '__main__':
@@ -18,37 +21,66 @@ if __name__ == '__main__':
 	# Organized per database:
 
 	# Football Data Project --> .csv from inmotio "SpecialExport.csv"
-	FDP(DirtyDataFiles,dataFolder,headers,readAttributeCols)
+	FDP(DirtyDataFiles,dataFolder,cleanedFolder,headers,readAttributeCols)
+
+	splitName_and_Team(df,headers,ID)
+	omitXandY_equals0(df,x,y,ID)
+	omitRowsWithout_XandY(df,x,y)	
 
 	# Nonlinear Pedagogy
 	NP(dataFiles,folder,cleanedFolder,TeamAstring,TeamBstring)
 
 #########################################################################
-def FDP(DirtyDataFiles,dataFolder,headers,readAttributeCols):
+def FDP(DirtyDataFiles,dataFolder,cleanedFolder,headers,readAttributeCols,debugOmittedRows):
 
+	# FDP specific function where the column 'Naam' is seperated into its PlayerID and TeamID
 	ts = headers['Ts']
 	x,y = headers['Location']
 	ID = headers['PlayerID']
 	colHeaders = [ts,x,y,ID] + readAttributeCols
 
 	for fname in DirtyDataFiles:
-		# Import CSV
 		df = pd.read_csv(dataFolder+fname,usecols=(colHeaders),low_memory=False)
-		# Force all values to be a string
-		df[ID] = df[ID].apply(str)
-		# Split 'Naam' into PlayerID and TeamID
-		df = pd.DataFrame(df[ID].str.split('_',1).tolist(),columns = ['PlayerID','TeamID'])
 
-		## THIS IS WHERE YOU LEFT IT ##
-		# - merge new df with old df
-		# - omit all rows where there the 'PlayerID' = 'nan' (= the literal string 'nan')
-		# - export as Cleaned CSV
-		## THIS IS WHERE YOU LEFT IT ##
-		print(df.keys())
-		# print(df)
-		pdb.set_trace()
+		## Cleanup for BRAxNLD
+		if headers['TeamID'] == None:
+			df_WithName_and_Team,headersUpdated = splitName_and_Team(df,headers,ID )
 
-def NP(dataFiles,folder):
+			df_cleaned01,df_omitted01 = omitXandY_equals0(df_WithName_and_Team,x,y,ID)
+			df_cleaned02,df_omitted02 = omitRowsWithout_XandY(df_cleaned01,x,y)	
+
+			# Idea: by incorporting df_omittedNN in a list, you could make the script work with variable lenghts of omitted dfs.
+			df_omitted = pd.concat([df_omitted01, df_omitted02])
+
+			# Delete the original ID, but only if the string is not the same as the new Dict.Keys
+			if ID != 'PlayerID' and ID != 'TeamID':
+				del df_cleaned02[ID]
+				del df_omitted[ID]
+		## End clenaup for BRAxNLD
+
+		PrintThisToo = VPcleanup.this_is_a_function('\nThis text will be printed.\n')
+		print(PrintThisToo)
+		PrintThisToo = LTcleanup.this_is_a_function('\nThis text will be printed.\n')
+		print(PrintThisToo)
+
+		df_cleaned = df_cleaned02
+
+		newFname = fname[:-4] + '_cleaned.csv'
+		if exists(cleanedFolder + newFname):
+			warn('Overwriting file <%s> in cleanedFolder <%s>.' %(newFname,cleanedFolder))
+		
+		# Export cleaned data to CSV
+		df_cleaned.to_csv(cleanedFolder + newFname)
+
+		# Optional: Export data that has been omitted, in case you suspect that relevent rows were omitted.
+		if debugOmittedRows:
+			if not exists(dataFolder + 'Omitted\\'):
+				makedirs(dataFolder + 'Omitted\\')
+			df_omitted.to_csv(dataFolder + 'Omitted\\' + fname[:-4] + '_omitted.csv')
+
+	return headers
+
+def NP(dataFiles,folder,cleanedFolder,TeamAstring,TeamBstring):
 
 	for fname in dataFiles:
 		with open(folder+fname, 'r') as infile:
@@ -182,3 +214,46 @@ def NP(dataFiles,folder):
 						if val.isspace():
 							row[idx] = ''
 					wr.writerow(row[0:10]) # 0:9 is to omit any empty/useless headers
+
+
+
+
+def splitName_and_Team(df,headers,ID):
+	newPlayerIDstring = ['PlayerID']
+	newTeamIDstring = ['TeamID']
+
+	# Force all values to be a string
+	df[ID] = df[ID].apply(str)
+	# Split 'Naam' into PlayerID and TeamID
+	df_temp = pd.DataFrame(df[ID].str.split('_',1).tolist(),columns = [newPlayerIDstring,newTeamIDstring])
+	# Merge new columns with existing dataframe
+	df_WithName_and_Team = pd.concat([df, df_temp], axis=1, join='inner')
+	
+	# df_omitted = pd.concat([df_halfOmitted, df_otherHalfOmitted])
+
+	# # Delete the original ID, but only if the string is not the same as the new Dict.Keys
+	# if ID != 'PlayerID' and ID != 'TeamID':
+	# 	del df_cleaned[ID]
+	# 	del df_omitted[ID]
+
+	headersOut = headers.copy()
+	headersOut['PlayerID'] = newPlayerIDstring
+	headersOut['TeamID'] = newTeamIDstring
+
+	return df_WithName_and_Team,headers
+
+def omitXandY_equals0(df,x,y,ID):
+	# Omit rows where both x and y = 0 and where there is no team value
+	df_cleaned 	= df[( ((df[x] == 0) & (df[y] == 0) & (df[ID] == 'nan')) ) == False]
+	df_omitted 	= df[( ((df[x] == 0) & (df[y] == 0) & (df[ID] == 'nan')) ) == True]
+
+	return df_cleaned,df_omitted
+
+def omitRowsWithout_XandY(df,x,y):
+	# Omit rows that have no x and y value.
+	df_cleaned = df[( (df[x].notnull()) & (df[y].notnull()) ) == True ]
+	df_omitted = df[( (df[x].notnull()) & (df[y].notnull()) ) == False ]
+
+	return df_cleaned,df_omitted
+
+
