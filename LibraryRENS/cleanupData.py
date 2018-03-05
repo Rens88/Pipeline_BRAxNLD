@@ -44,7 +44,8 @@ def FDP(DirtyDataFiles,dataFolder,headers,readAttributeCols):
 		# - omit all rows where there the 'PlayerID' = 'nan' (= the literal string 'nan')
 		# - export as Cleaned CSV
 		## THIS IS WHERE YOU LEFT IT ##
-		print(df)
+		print(df.keys())
+		# print(df)
 		pdb.set_trace()
 
 def NP(dataFiles,folder):
