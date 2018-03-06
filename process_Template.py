@@ -53,14 +53,20 @@ folder = 'C:\\Users\\rensm\\Documents\\PostdocLeiden\\BRAxNLD repository\\'
 """
 TO DO FLORIS: Insert folder with cleaned data by enabling DataFrame to csv output after cleaning
 """
+
+# String representing the different teams
+TeamAstring = 'Provide the string that represents one team' # NB: not necessary for FDP (and other datasets where teamstring can be read from the filename, should be done in discetFilename.py)
+TeamBstring = 'Provide the string that represents the other team'
+
 # Input of raw data, indicate at least timestamp, entity and Location info
 timestampString = 'Timestamp' 						#'enter the string in the header of the column that represents TIMESTAMP' 	# 'Video time (s)'
 PlayerIDstring = 'Naam' 							#'enter the string in the header of the column that represents PLAYERID' 	# 'jersey n.'
 TeamIDstring = None 								#'enter the string in the header of the column that represents TEAMID' 			# Optional
 XPositionString = 'X' 								#'enter the string in the header of the column that represents X-POSITION'			# 'x'
 YPositionString = 'Y' 								#'enter the string in the header of the column that represents Y-POSITION'			# 'y'
-# Case-sensitive string headers of attribute columns that already exist in the data (optional). NB: String also sensitive for extra spaces.
+# Case-sensitive string rawHeaders of attribute columns that already exist in the data (optional). NB: String also sensitive for extra spaces.
 readAttributeCols = ['Snelheid','Acceleration'] 	#['Here', 'you', 'can', 'proivde a list of strings that represent existing attributes.']
+attrLabel = {readAttributeCols[0]: 'Speed (m/s)',readAttributeCols[1]: 'Acceleration (m/s^2)'} 
 
 # Indicate some parameters for temporal aggregation: 'Full' aggregates over the whole file, any other event needs to be specified with the same string as in the header of the CSV file.
 aggregateEvent = 'Full' # Event that will be used to aggregate over (verified for 'Goals' and for 'Possession')
@@ -76,7 +82,7 @@ conversionToMeter = 1 #111111 # https://gis.stackexchange.com/questions/8650/mea
 Visualization = False # True = includes visualization, False = skips visualization
 
 # ALSO:
-# see 'fname' in the main for loop. It is used to obtain the metadata. This is project specific and may need to be changed.
+# see 'cleanFname' in the main for loop. It is used to obtain the metadata. This is project specific and may need to be changed.
 
 #########################
 # END USER INPUT ########
@@ -122,7 +128,7 @@ for subf in library_subfolders:
 #########################################
 
 # From LibraryRENS:
-
+# To do: I'm pretty sure these functions can be loaded automatically using _init_.py
 import CSVexcerpt
 import CSVimportAsColumns
 import identifyDuplHeader
@@ -142,6 +148,8 @@ import cleanupData
 import importEvents
 import CSVtoDF
 import plotSnapshot
+import disectFilename
+import importTimeseries_aspanda
 
 if folder[-1:] != '\\':
 	warn('\n<folder> did not end with <\\\\>. \nOriginal input <%s>\nReplaced with <%s>' %(folder,folder+'\\'))
@@ -164,7 +172,7 @@ if not exists(cleanedFolder):
 	makedirs(cleanedFolder)
 
 # Preparing the dictionary of the raw data
-headers = {'Ts': timestampString,\
+rawHeaders = {'Ts': timestampString,\
 'PlayerID': PlayerIDstring,\
 'TeamID': TeamIDstring,\
 'Location': (XPositionString,YPositionString) }
@@ -172,95 +180,50 @@ headers = {'Ts': timestampString,\
 xstring = 'Time (s)'
 aggregateLevel = (aggregateEvent,aggregateWindow,aggregateLag)
 
-# Load all CSV files
-# To do: embed in file by file loop. Let it search for file in cleanedFolder with the same name. If it doesnt exist, then clean.
-if len(listdir(cleanedFolder)) == 0:# no cleaned data created, so let's create it
-	DirtyDataFiles = [f for f in listdir(dataFolder) if isfile(join(dataFolder, f)) if '.csv' in f]
-	if dataType == "NP":
-		# NB: cleanupData currently dataset specific (NP or FDP). Fixes are quite specific and may not easily transfer to different datasets.
-		cleanupData.NP(DirtyDataFiles,dataFolder,cleanedFolder,TeamAstring,TeamBstring)
-		warn('\nCleaned the data with cleanupData.py. NB: May need revision.')
-	elif dataType == "FDP":
-		debugOmittedRows = True # Optional export of data that was omitted in the cleaning process
-		headers = cleanupData.FDP(DirtyDataFiles,dataFolder,cleanedFolder,headers,readAttributeCols,debugOmittedRows)
-
-else:
-	warn('\nContinued with previously cleaned data.\nIf problems exist with data consistency, consider writing a function in cleanupData.py.')
-
-dataFiles = [f for f in listdir(cleanedFolder) if isfile(join(cleanedFolder, f)) if '.csv' in f]
-
 #########################
 # ANALYSIS (file by file)
 #########################
-for fname in dataFiles:
-	print('\nFILENAME: << %s >>' %fname)
+# Load all (not yet cleaned) files
+DirtyDataFiles = [f for f in listdir(dataFolder) if isfile(join(dataFolder, f)) if '.csv' in f]
+for dirtyFname in DirtyDataFiles:
+	print('\nFILE: << %s >>' %dirtyFname[:-4])
 
 	# Prepare metadata of aggregated data to be exported:
-	# NB: Filetype specific. Needs to be generalized
-	if dataType == "NP":
-		School = fname[0:4]
-		Class = fname[5:8]
-		Group = fname[9:12]
-		Test = fname[13:16]
+	exportData, exportDataString, exportDataFullExplanation,cleanFname,TeamAstring,TeamBstring = \
+	disectFilename.process(dirtyFname,dataType,TeamAstring,TeamBstring)
 
-		exportData = [School, Class, Group, Test]
-		exportDataString = ['School', 'Class', 'Group', 'Test']
-		exportFullExplanation = ['School experiment was held at','Class the participants were from','Identifier groups that played each other','Name of the type of trial (PRE = pre-test, POS = post-test, TRA = transfer test, RET = retention test)']
-	elif dataType == "FDP":
-		# Using regular expression to extract info from filename		
-		regex = r'([a-zA-Z]{1})([a-zA-Z]{1})(\d+)_([a-zA-Z]{1})([a-zA-Z]{1})(\d{1})(\d{3})_v_([a-zA-Z]{1})([a-zA-Z]{1})(\d{1})(\d{3})'
-		match = re.search(regex,fname)
-		if match:
-			grp = match.groups()
-			MatchContinent = grp[0]
-			MatchCountry = grp[1]
-			MatchID = grp[2]
-			HomeTeamContinent = grp[3]
-			HomeTeamCountry = grp[4]
-			HomeTeamAgeGroup = grp[5]
-			HomeTeamID = grp[6]
-			AwayTeamContinent = grp[7]
-			AwayTeamCountry = grp[8]
-			AwayTeamAgeGroup = grp[9]
-			AwayTeamID = grp[10]
-
-			TeamAstring = HomeTeamContinent + HomeTeamCountry + HomeTeamAgeGroup + HomeTeamID
-			TeamBstring = AwayTeamContinent + AwayTeamCountry + AwayTeamAgeGroup + AwayTeamID
-
-			# Prepare the tabular export
-			exportData = [MatchContinent,MatchCountry,MatchID,HomeTeamContinent,HomeTeamCountry, \
-			HomeTeamAgeGroup,HomeTeamID,AwayTeamContinent,AwayTeamCountry,AwayTeamAgeGroup,AwayTeamID]
-			exportDataString = ['MatchContinent','MatchCountry','MatchID','HomeTeamContinent','HomeTeamCountry', \
-			'HomeTeamAgeGroup','HomeTeamID','AwayTeamContinent','AwayTeamCountry','AwayTeamAgeGroup','AwayTeamID']
-			exportDataFullExplanation = ['The continent where the match was played.','The country where the match was played.','The unique identifier of the match.','The continent of the home team.','The country of the home team.', \
-			'The age group of the home team.','The unique identifier of the home team.','The continent of the away team.','The country of the away team.', \
-			'The age group of the home away.','The unique identifier of the away team.']
-
-		else: # If the filename cant be understood, exit the script.
-			exportData = [fname]
-			exportDataString = 'filename'
-			exportDataFullExplanation = ['This is simply the complete filename.']
-			warn('\nWARNING: Could not identify match characteristics based on filename <%s>.\nInstead, filename itself was exported as match characteristic.' %fname)
+	# Clean cleanFname (if necessary)
+	cleanedFolder = \
+	cleanupData.process(dirtyFname,cleanFname,dataType,dataFolder,cleanedFolder,TeamAstring,TeamBstring,rawHeaders,readAttributeCols)
 
 	########################################################################################
 	####### Import existing data ###########################################################
 	########################################################################################
 	# NB: I might have to update this script to deal with varying timestamps and players that are nog on the court for every timestamp
+	rawPanda = importTimeseries_aspanda.rawData(cleanFname,cleanedFolder)
+	attrPanda = importTimeseries_aspanda.existingAttributes(cleanFname,cleanedFolder,readAttributeCols)
+
+	###### Work in progress ##########
+	attrPanda,attrLabel = spatialAggregation.process(rawPanda,attrPanda,attrLabel,TeamAstring,TeamBstring)
+	###### Work in progress ##########
+	print(rawPanda.keys())
+	print(attrPanda.keys())
+	pdb.set_trace()
+
 	"""
 	The 3 lines below read and clean the csv file with LPM data as a pandas DataFrame and save the result again as a csv file. 
 	"""
-	RawPos_df = CSVtoDF.LoadPosData(cleanedFolder + fname)
-	pdb.set_trace()
+	RawPos_df = CSVtoDF.LoadPosData(cleanedFolder + cleanFname)
 	outputFilename = outputFolder + 'output_' + aggregateLevel[0] + '.csv'
 	RawPos_df.to_csv(outputFilename)
 	
-	rawDict,timestampIssues = importTimeseriesData.rawData(fname,cleanedFolder,headers,conversionToMeter)
+	rawDict,timestampIssues = importTimeseriesData.rawData(cleanFname,cleanedFolder,rawHeaders,conversionToMeter)
 	if timestampIssues:
 		skippedData = True
 		outputFilename = outputFolder + 'output_' + aggregateLevel[0] + '.csv'
 		exportCSV.newOrAdd(outputFilename,exportDataString,exportData,skippedData)	
 		continue
-	attributeDict,attributeLabel = importTimeseriesData.existingAttributes(fname,cleanedFolder,readAttributeCols)
+	attributeDict,attributeLabel = importTimeseriesData.existingAttributes(cleanFname,cleanedFolder,readAttributeCols)
 
 	# TO DO: Check 'CHECK THIS' in importEvents, I think it's slow and possibly not even correct
 	targetEvents = importEvents.process(rawDict,attributeDict,TeamAstring,TeamBstring)
@@ -310,4 +273,4 @@ for fname in dataFiles:
 	# - find a better way to formate labels and title
 	# - allow for plotting individual variables
 	printTheseAttributes =[('TeamCentXA','TeamCentXB'),('SpreadA','SpreadB')] # teams that need to be compared as tuple
-	plotTimeseries.PairwisePerTeam2(printTheseAttributes,aggregateLevel,targetEvents,rawDict,attributeDict,attributeLabel,tmpFigFolder,fname[:-4])
+	plotTimeseries.PairwisePerTeam2(printTheseAttributes,aggregateLevel,targetEvents,rawDict,attributeDict,attributeLabel,tmpFigFolder,cleanFname[:-4])

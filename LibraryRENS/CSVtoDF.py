@@ -24,7 +24,10 @@ def LoadPosData(file):
     Loaded_Pos_Data['Naam'] = Loaded_Pos_Data['Naam'].astype('category')
     clean = (Loaded_Pos_Data.X.notnull()) & (Loaded_Pos_Data.Y.notnull())
     Cleaned_1 = Loaded_Pos_Data[clean]
+
     Cleaned_2 = (Cleaned_1['X'] > -60) & (Cleaned_1['X'] < 60) & (Cleaned_1['Y'] > -40) & (Cleaned_1['Y'] < 40)
+
+    
     Cleaned_Pos_Data = Cleaned_1[Cleaned_2]
     pdb.set_trace()        
     return Cleaned_Pos_Data

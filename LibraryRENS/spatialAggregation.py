@@ -19,6 +19,7 @@ import dataToDict
 import dataToDict2
 import safetyWarning
 import exportCSV
+import pandas as pd
 
 if __name__ == '__main__':
 	process(rawDict,attributeDict,attributeLabel,TeamAstring,TeamBstring)
@@ -48,9 +49,16 @@ def process(rawDict,attributeDict,attributeLabel,TeamAstring,TeamBstring):
 	indsMatrix,XpositionMatrix,YpositionMatrix,teamAcols,teamBcols,uniqueTsS,uniquePlayers,teamMatrix = \
 	obtainIndices(rawDict,TeamAstring,TeamBstring) # NB: These indices could be useful for different purposes as well
 
+	# attributeDict,attributeLabel = \
+	# teamCentroid(rawDict,attributeDict,attributeLabel,TeamAstring,TeamBstring)
+
 	tmpAtDi1,tmpAtLa1,CentXA,CentYA,CentXB,CentYB = teamCentroid(indsMatrix,XpositionMatrix,YpositionMatrix,teamAcols,teamBcols,TeamAstring,TeamBstring)
-	attributeDict.update(tmpAtDi1)
+	attributeDict = pd.concat([attributeDict, tmpAtDi1], axis=1, join='inner')
+	print(attributeDict.keys())
+
+	# attributeDict.update(tmpAtDi1)
 	attributeLabel.update(tmpAtLa1)
+	print(attributeLabel)
 
 	tmpAtDi2,tmpAtLa2 = teamSpread(CentXA,CentYA,CentXB,CentYB,uniqueTsS,uniquePlayers,teamMatrix,XpositionMatrix,YpositionMatrix,teamAcols,teamBcols,indsMatrix,TeamAstring,TeamBstring)
 	attributeDict.update(tmpAtDi2)
@@ -152,8 +160,7 @@ def vNorm(rawDict):
 #####################################################################################
 
 def teamCentroid(indsMatrix,XpositionMatrix,YpositionMatrix,teamAcols,teamBcols,TeamAstring,TeamBstring):
-	## IDEA: I could add the player's distance to the centroid here
-	
+
 	# Compute the centroids
 	CentXA = np.nanmean(XpositionMatrix[:,teamAcols],axis=1)
 	CentXB = np.nanmean(XpositionMatrix[:,teamBcols],axis=1)
@@ -174,14 +181,16 @@ def teamCentroid(indsMatrix,XpositionMatrix,YpositionMatrix,teamAcols,teamBcols,
 		tmpXB[int(val)] = CentXA[idx]
 		tmpYB[int(val)] = CentYA[idx]
 	# the Data
-	tmpAtDi1 = {'TeamCentXA': tmpXA, 'TeamCentYA': tmpYA, 'TeamCentXB': tmpXB,'TeamCentYB': tmpYB}
+	attributeDict_tmp = {'TeamCentXA': tmpXA, 'TeamCentYA': tmpYA, 'TeamCentXB': tmpXB,'TeamCentYB': tmpYB}
+
 	# the Strings	
 	tmpXAString = 'X-position of %s (m)' %TeamAstring
 	tmpYAString = 'Y-position of %s (m)' %TeamAstring
 	tmpXBString = 'X-position of %s (m)' %TeamBstring
 	tmpYBString = 'Y-position of %s (m)' %TeamBstring			
-	tmpAtLa1 = {'TeamCentXA': tmpXAString, 'TeamCentYA': tmpYAString, 'TeamCentXB': tmpXBString,'TeamCentYB': tmpYBString}
-	return tmpAtDi1,tmpAtLa1,CentXA,CentYA,CentXB,CentYB # Export dictionary to CSV (after simple temporal aggregation)
+	attributeLabel_tmp = {'TeamCentXA': tmpXAString, 'TeamCentYA': tmpYAString, 'TeamCentXB': tmpXBString,'TeamCentYB': tmpYBString}
+	# return attributeDict_tmp,attributeLabel_tmp 
+	return attributeDict_tmp,attributeLabel_tmp,tmpXA,tmpYA,tmpXB,tmpYB
 
 #####################################################################################
 
@@ -410,13 +419,13 @@ def groupSurface(X,Y):
 	return Surface,sumVertices,ShapeRatio
 
 def obtainIndices(rawDict,TeamAstring,TeamBstring):
-	X = rawDict['Location']['X']
-	Y = rawDict['Location']['Y']
-	PlayerID = rawDict['Entity']['PlayerID']
-	TeamID = rawDict['Entity']['TeamID']
-	TsS = rawDict['Time']['TsS']
+	X = rawDict['X']
+	Y = rawDict['Y']
+	PlayerID = rawDict['PlayerID']
+	TeamID = rawDict['TeamID']
+	TsS = rawDict['Ts']
 	uniqueTsS,tmp = np.unique(TsS,return_counts=True)
-	uniquePlayers = np.unique(PlayerID)
+	uniquePlayers = pd.unique(PlayerID)
 
 	indsMatrix = np.ones((len(uniqueTsS),1),dtype='int')*999
 	teamMatrix = np.ones((len(uniqueTsS),len(uniquePlayers)),dtype='float64')*999
@@ -425,6 +434,7 @@ def obtainIndices(rawDict,TeamAstring,TeamBstring):
 
 	teamAcols = []
 	teamBcols = []
+	ballCols = []
 	for idx,val in enumerate(TsS):
 		row = np.where(val == uniqueTsS)[0]
 		col = np.where(PlayerID[idx] == uniquePlayers)[0]
@@ -444,7 +454,10 @@ def obtainIndices(rawDict,TeamAstring,TeamBstring):
 			# Store indices, as we're computing team values
 			indsMatrix[row] = idx
 		else:
-			warn('\nDid not recoganize Team ID string: <%s>' %TeamID[idx])	
-
+			if PlayerID[idx] == 'ball':
+				ballCols.append(int(col))
+			else:
+				warn('\nDid not recoganize Team ID string: <%s>' %TeamID[idx])	
+	
 	return indsMatrix,XpositionMatrix,YpositionMatrix,teamAcols,teamBcols,uniqueTsS,uniquePlayers,teamMatrix
 
