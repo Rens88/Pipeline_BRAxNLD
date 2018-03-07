@@ -46,13 +46,44 @@ if __name__ == '__main__':
 def process(rawDict,attributeDict,attributeLabel,TeamAstring,TeamBstring):
 	# Per Match (i.e., file)
 	# Per Team and for both teams
+
+
+	attributeDict,attributeLabel = \
+	teamCentroid_panda(rawDict,attributeDict,attributeLabel,TeamAstring,TeamBstring)
+
+	attributeDict,attributeLabel = \
+	teamSpread_asPanda(rawDict,attributeDict,attributeLabel,TeamAstring,TeamBstring)
+
+
+	# tmpAtDi2,tmpAtLa2 = teamSpread(attributeDict['TeamCentXA'],attributeDict['TeamCentYA'],attributeDict['TeamCentXB'],attributeDict['TeamCentYB'],uniqueTsS,uniquePlayers,teamMatrix,XpositionMatrix,YpositionMatrix,teamAcols,teamBcols,indsMatrix,TeamAstring,TeamBstring)
+	# attributeDict.update(tmpAtDi2)
+	# attributeLabel.update(tmpAtLa2)
+
+	pdb.set_trace()
+	########### the old way ##########
 	indsMatrix,XpositionMatrix,YpositionMatrix,teamAcols,teamBcols,uniqueTsS,uniquePlayers,teamMatrix = \
 	obtainIndices(rawDict,TeamAstring,TeamBstring) # NB: These indices could be useful for different purposes as well
 
-	# attributeDict,attributeLabel = \
-	# teamCentroid(rawDict,attributeDict,attributeLabel,TeamAstring,TeamBstring)
-
 	tmpAtDi1,tmpAtLa1,CentXA,CentYA,CentXB,CentYB = teamCentroid(indsMatrix,XpositionMatrix,YpositionMatrix,teamAcols,teamBcols,TeamAstring,TeamBstring)
+	
+	print(CentXA)
+	print(tmpAtDi1.keys())
+	for i in tmpAtDi1.keys():
+		s1 = pd.Series(tmpAtDi1, name = i)
+		attributeDict = pd.concat([attributeDict, s1], axis=1)
+	print(attributeDict.keys())
+
+	attributeDict.to_csv('C:\\Users\\rensm\\Documents\\PostdocLeiden\\BRAxNLD repository\\Data\\tmp\\test.csv')
+
+	# s1 = pd.Series(tmpAtDi1, name = tmpAtDi1.keys())
+	# result = pd.concat([rawDict, s1], axis=1)
+	# print(result.keys())
+
+	# attributeDict = pd.concat([attributeDict, tmpAtDi1], axis=1, join='inner')
+
+	# attributeDict.update(tmpAtDi1)
+	# attributeLabel.update(tmpAtLa1)
+	pdb.set_trace()
 	attributeDict = pd.concat([attributeDict, tmpAtDi1], axis=1, join='inner')
 	print(attributeDict.keys())
 
@@ -76,13 +107,190 @@ def process(rawDict,attributeDict,attributeLabel,TeamAstring,TeamBstring):
 	# Every new Run (Nonlinear pedagogy data only) has a jump in time (and position), for which velocity is set to 0.
 	tmpAtDi5 = correctVNorm(rawDict,attributeDict) # Correction only, doesn't need new label.
 	attributeDict.update(tmpAtDi5)
-
+	pdb.set_trace()
 	return attributeDict, attributeLabel
 
 ############################################################
 ############################################################
 
-def correctVNorm(rawDict,attributeDict):
+def teamCentroid_panda(rawDict,attributeDict,attributeLabel,TeamAstring,TeamBstring):
+
+	dfA = rawDict[rawDict['TeamID'] == TeamAstring]
+	dfB = rawDict[rawDict['TeamID'] == TeamBstring]
+	#pivot X and Y dataframes for Team A
+	Team_A_X = dfA.pivot(columns='PlayerID', values='X')
+	Team_A_Y = dfA.pivot(columns='PlayerID', values='Y')
+	#pivot X and Y dataframes for Team B
+	Team_B_X = dfB.pivot(columns='PlayerID', values='X')
+	Team_B_Y = dfB.pivot(columns='PlayerID', values='Y')   
+
+	#Create empty DataFrame to store results
+	newAttributes = pd.DataFrame()
+
+	#Append results as Series to empty DataFrame for team A
+	newAttributes['TeamCentXA'] = Team_A_X.mean(axis=1, skipna=True)
+	newAttributes['TeamCentYA'] = Team_A_Y.mean(axis=1, skipna=True)
+	newAttributes['LengthA'] = Team_A_X.max(axis=1, skipna=True) - Team_A_X.min(axis=1, skipna=True)
+	newAttributes['WidthA'] = Team_A_Y.max(axis=1, skipna=True) - Team_A_Y.min(axis=1, skipna=True)
+	#Append results as Series to empty DataFrame for team B
+	newAttributes['TeamCentXB'] = Team_B_X.mean(axis=1, skipna=True)
+	newAttributes['TeamCentYB'] = Team_B_Y.mean(axis=1, skipna=True)
+	newAttributes['LengthB'] = Team_B_X.max(axis=1, skipna=True) - Team_B_X.min(axis=1, skipna=True)
+	newAttributes['WidthB'] = Team_B_Y.max(axis=1, skipna=True) - Team_B_Y.min(axis=1, skipna=True)
+	#Return final dataframe for further analysis
+	attributeDict = pd.concat([attributeDict, newAttributes], axis=1)
+
+
+
+	# AllTeamA = rawDict[(rawDict['TeamID'] == TeamAstring)].index
+	# AllTeamB = rawDict[(rawDict['TeamID'] == TeamBstring)].index
+	# groupRows = rawDict[rawDict['PlayerID'] == 'groupRow'].index
+	
+	# newAttributes = pd.DataFrame(index=rawDict.index,columns = ['TeamCentXA','TeamCentYA','TeamCentXB','TeamCentYB'])
+
+	# # This could be improved by proper use of indexing
+	# for i in pd.unique(rawDict['Ts']):
+	# 	# For every unique timestep:
+	# 	# Fetch the corresponding groupRow
+	# 	currentRowInDataFrame = groupRows[rawDict['Ts'][groupRows] == i]
+
+	# 	# Compute the X and Y centroids of both teams
+	# 	curTeamA = AllTeamA[rawDict['Ts'][AllTeamA] == i]
+	# 	curTeamAX = rawDict['X'][curTeamA].mean()
+	# 	curTeamAY = rawDict['Y'][curTeamA].mean()
+		
+	# 	curTeamB = AllTeamB[rawDict['Ts'][AllTeamB] == i]
+	# 	curTeamBX = rawDict['X'][curTeamB].mean()
+	# 	curTeamBY = rawDict['Y'][curTeamB].mean()
+
+	# 	# Assign the centroids to newAttributes
+	# 	newAttributes['TeamCentXA'][currentRowInDataFrame] = curTeamAX
+	# 	newAttributes['TeamCentYA'][currentRowInDataFrame] = curTeamAY
+	# 	newAttributes['TeamCentXB'][currentRowInDataFrame] = curTeamBX
+	# 	newAttributes['TeamCentYB'][currentRowInDataFrame] = curTeamBY
+
+	# attributeDict = pd.concat([attributeDict, newAttributes], axis=1)
+	# # attributeDict.to_csv('C:\\Users\\rensm\\Documents\\PostdocLeiden\\BRAxNLD repository\\Data\\tmp\\test.csv')
+
+	# the Strings	
+	tmpXAString = 'X-position of %s (m)' %TeamAstring
+	tmpYAString = 'Y-position of %s (m)' %TeamAstring
+	tmpLengthAString = 'Distance along Y-axis %s (m)' %TeamAstring
+	tmpWidthAString = 'Distance along X-axis %s (m)' %TeamAstring
+	
+	tmpXBString = 'X-position of %s (m)' %TeamBstring
+	tmpYBString = 'Y-position of %s (m)' %TeamBstring			
+	tmpLengthBString = 'Distance along Y-axis %s (m)' %TeamBstring
+	tmpWidthBString = 'Distance along X-axis %s (m)' %TeamBstring
+	
+	attributeLabel_tmp = {'TeamCentXA': tmpXAString, 'TeamCentYA': tmpYAString, 'LengthA': tmpLengthAString,'WidthA': tmpWidthAString,\
+	'TeamCentXB': tmpXBString,'TeamCentYB': tmpYBString,'LengthB': tmpLengthBString,'WidthB': tmpWidthBString}
+	attributeLabel.update(attributeLabel_tmp)
+
+	return attributeDict,attributeLabel
+
+def teamSpread_asPanda(rawDict,attributeDict,attributeLabel,TeamAstring,TeamBstring):
+
+	dfA = rawDict[rawDict['TeamID'] == TeamAstring]
+	dfB = rawDict[rawDict['TeamID'] == TeamBstring]
+	#pivot X and Y dataframes for Team A
+	Team_A_X = dfA.pivot(columns='PlayerID', values='X')
+	Team_A_Y = dfA.pivot(columns='PlayerID', values='Y')
+	#pivot X and Y dataframes for Team B
+	Team_B_X = dfB.pivot(columns='PlayerID', values='X')
+	Team_B_Y = dfB.pivot(columns='PlayerID', values='Y')   
+	
+	Team_A_X.to_csv('C:\\Users\\rensm\\Documents\\PostdocLeiden\\BRAxNLD repository\\Data\\tmp\\test.csv')
+
+
+	pdb.set_trace()
+	newAttributes = pd.DataFrame(index=rawDict.index,columns = ['distToCent',' ',' ',' '])
+	for idx,i in enumerate(pd.unique(rawDict['PlayerID'])):
+		if i == 'ball':
+			# it's a ball
+			doNothing = []
+		elif i == 'groupRow':
+			# it's a groupRow
+			groupRow = attributeDict[rawDict['PlayerID'] == i]
+		else:
+			# It's a player
+			if all(rawDict['TeamID'][rawDict['PlayerID'] == i]):
+				dosomething = []
+	for i in pd.unique(rawDict['Ts']):
+		print('Time: %s' %i)
+		curFramesA = rawDict[(rawDict['Ts'] == i) & (rawDict['TeamID'] == TeamAstring)].index
+		print('curFramesA: %s' %curFramesA)
+		curFramesB = rawDict[(rawDict['Ts'] == i) & (rawDict['TeamID'] == TeamBstring)].index
+		print('curFramesB: %s' %curFramesB)
+		curGroupRow = rawDict[(rawDict['PlayerID'] == 'groupRow') & (rawDict['Ts'] == i)].index
+		print('curGroupRow: %s' %curGroupRow)
+		
+		AX = attributeDict['TeamCentXA']
+		AY = attributeDict['TeamCentYA']
+		BX = attributeDict['TeamCentXB']
+		BY = attributeDict['TeamCentYB']
+		print(AX[curGroupRow]- rawDict['X'][curFramesA])
+		print('XposA:%s' %rawDict['X'][curFramesA])
+
+		tmp = ( (AX[curGroupRow] - rawDict['X'][curFramesA])**2 + (AY[curGroupRow] - rawDict['Y'][curFramesA])**2 )
+		print(tmp[tmp.isnull() == False])
+		print(type(tmp))
+		newAttributes['distToCent'] = np.sqrt ( (AX[curGroupRow] - rawDict['X'][curFramesA])**2 + (AY[curGroupRow] - rawDict['Y'][curFramesA])**2 )
+		newAttributes['distToCent'] = np.sqrt( (BX - rawDict['X'][curFramesB])**2 + (BY - rawDict['Y'][curFramesB])**2 )
+		pdb.set_trace()
+	timeIndex = rawDict.set_index('Ts')
+
+
+	pd.unique(rawDict['PlayerID'])
+	# Spread
+	# (average) Distance of each player to center.
+	# Dist to centre:
+	distToTeamCent = np.ones((len(uniqueTsS),len(uniquePlayers)),dtype='float64')*-1	
+	for idx,val in enumerate(teamMatrix):
+		for i,v in enumerate(val):
+			if v == 0:
+				distToTeamCent[idx,i] = np.sqrt( (CentXA[idx] - XpositionMatrix[idx,i])**2 + (CentYA[idx] - YpositionMatrix[idx,i])**2)			
+			elif v == 1:
+				distToTeamCent[idx,i] = np.sqrt( (CentXB[idx] - XpositionMatrix[idx,i])**2 + (CentYB[idx] - YpositionMatrix[idx,i])**2)
+
+	# Aggregate to team level
+	SpreadA = np.nanmean(distToTeamCent[:,teamAcols],axis=1)
+	SpreadB = np.nanmean(distToTeamCent[:,teamBcols],axis=1)
+
+	stdSpreadA = np.nanstd(distToTeamCent[:,teamAcols],axis=1)
+	stdSpreadB = np.nanstd(distToTeamCent[:,teamBcols],axis=1)
+
+	# Other ideas:
+	# (min or avg or max)Distance to closest teammate
+
+	# Return in format attributeDict
+	dataShape = np.shape(XpositionMatrix) # Number of data entries
+
+	tmpSpreadA = np.zeros((dataShape[1]*dataShape[0],1),dtype='float64')* np.nan
+	tmpSpreadB = np.zeros((dataShape[1]*dataShape[0],1),dtype='float64')* np.nan
+	tmpStdSpreadA = np.zeros((dataShape[1]*dataShape[0],1),dtype='float64')* np.nan
+	tmpStdSpreadB = np.zeros((dataShape[1]*dataShape[0],1),dtype='float64')* np.nan
+	print(SpreadA)
+	pdb.set_trace()
+
+	for idx,val in enumerate(indsMatrix): # indsMatrix are the team cells only
+		tmpSpreadA[int(val)] = SpreadA[idx]
+		tmpSpreadB[int(val)] = SpreadB[idx]
+
+		tmpStdSpreadA[int(val)] = stdSpreadA[idx]
+		tmpStdSpreadB[int(val)] = stdSpreadB[idx]
+
+	# The data
+	tmpAtDi2 = {'SpreadA': tmpSpreadA, 'SpreadB': tmpSpreadB, 'stdSpreadA': tmpStdSpreadA,'stdSpreadB': tmpStdSpreadB}
+	# The labels
+	tmpSpreadAString = 'Average distance to center of %s (m)' %TeamAstring
+	tmpStdSpreadAString = 'Standard deviation of distance to center of %s (m)' %TeamAstring
+	tmpSpreadBString = 'Average distance to center of %s (m)' %TeamBstring
+	tmpStdSpreadBString = 'Standard deviation of distance to center of %s (m)' %TeamBstring	
+	tmpAtLa2 = {'SpreadA': tmpSpreadAString, 'SpreadB': tmpSpreadBString, 'stdSpreadA': tmpStdSpreadAString,'stdSpreadB': tmpStdSpreadBString}
+	return tmpAtDi2,tmpAtLa2
+
+#####################################################################################def correctVNorm(rawDict,attributeDict):
 	if not 'Run' in attributeDict.keys(): # only normalize if 'runs' exists
 		return {'vNorm':attributeDict['vNorm']}
 	runs = np.array([i for i,val in enumerate(attributeDict['Run']) if val  != '' ])
@@ -161,6 +369,9 @@ def vNorm(rawDict):
 
 def teamCentroid(indsMatrix,XpositionMatrix,YpositionMatrix,teamAcols,teamBcols,TeamAstring,TeamBstring):
 
+	print(np.shape(indsMatrix))
+	print(np.shape(XpositionMatrix))
+	print(np.shape(YpositionMatrix))
 	# Compute the centroids
 	CentXA = np.nanmean(XpositionMatrix[:,teamAcols],axis=1)
 	CentXB = np.nanmean(XpositionMatrix[:,teamBcols],axis=1)
@@ -180,6 +391,9 @@ def teamCentroid(indsMatrix,XpositionMatrix,YpositionMatrix,teamAcols,teamBcols,
 		tmpYA[int(val)] = CentXB[idx]
 		tmpXB[int(val)] = CentXA[idx]
 		tmpYB[int(val)] = CentYA[idx]
+	
+	print(tmpXA)
+	pdb.set_trace()
 	# the Data
 	attributeDict_tmp = {'TeamCentXA': tmpXA, 'TeamCentYA': tmpYA, 'TeamCentXB': tmpXB,'TeamCentYB': tmpYB}
 
@@ -223,6 +437,8 @@ def teamSpread(CentXA,CentYA,CentXB,CentYB,uniqueTsS,uniquePlayers,teamMatrix,Xp
 	tmpSpreadB = np.zeros((dataShape[1]*dataShape[0],1),dtype='float64')* np.nan
 	tmpStdSpreadA = np.zeros((dataShape[1]*dataShape[0],1),dtype='float64')* np.nan
 	tmpStdSpreadB = np.zeros((dataShape[1]*dataShape[0],1),dtype='float64')* np.nan
+	print(SpreadA)
+	pdb.set_trace()
 
 	for idx,val in enumerate(indsMatrix): # indsMatrix are the team cells only
 		tmpSpreadA[int(val)] = SpreadA[idx]
@@ -435,6 +651,7 @@ def obtainIndices(rawDict,TeamAstring,TeamBstring):
 	teamAcols = []
 	teamBcols = []
 	ballCols = []
+	groupCols = []
 	for idx,val in enumerate(TsS):
 		row = np.where(val == uniqueTsS)[0]
 		col = np.where(PlayerID[idx] == uniquePlayers)[0]
@@ -450,14 +667,18 @@ def obtainIndices(rawDict,TeamAstring,TeamBstring):
 			teamMatrix[row,col] = 1
 			if not col in teamBcols:
 				teamBcols.append(int(col))
-		elif TeamID[idx] == '':
+		elif TeamID[idx] == '' or PlayerID[idx] == 'groupRow':
 			# Store indices, as we're computing team values
 			indsMatrix[row] = idx
+
 		else:
 			if PlayerID[idx] == 'ball':
 				ballCols.append(int(col))
+			elif np.isnan(TeamID[idx]):
+				groupCols.append(int(col))
 			else:
 				warn('\nDid not recoganize Team ID string: <%s>' %TeamID[idx])	
 	
+	# NB: Could still export groupCols and ballCols
 	return indsMatrix,XpositionMatrix,YpositionMatrix,teamAcols,teamBcols,uniqueTsS,uniquePlayers,teamMatrix
 

@@ -1,3 +1,11 @@
+# 07-03-2018
+# After cleanupData.py, the rawData should have the labels:
+#  'Ts' --> Timestamp
+#  'X' --> X-position
+#  'Y' --> Y-position
+#  'PlayerID' --> Player identification. NB: Ball-rows should be 'ball' and Match-rows should be 'groupRow' (to indicate CentroidTeamA)
+#  'TeamID' --> Team idenfitification
+#
 # 06-03-2018 Rens Meerhoff
 # Made the function more generic.
 # Should still include funcationality that was previously embedded in:
@@ -43,6 +51,7 @@ if __name__ == '__main__':
 
 #########################################################################
 def process(dirtyFname,cleanFname,dataType,dataFolder,cleanedFolder,TeamAstring,TeamBstring,headers,readAttributeCols):
+	debugOmittedRows = False # Optional export of data that was omitted in the cleaning process
 	# Clean up data, if necessary
 	cleanFnames = [f for f in listdir(cleanedFolder) if isfile(join(cleanedFolder, f)) if '.csv' in f]
 
@@ -55,7 +64,6 @@ def process(dirtyFname,cleanFname,dataType,dataFolder,cleanedFolder,TeamAstring,
 			df_cleaned = NP(dirtyFname,cleanFname,dataFolder,cleanedFolder,TeamAstring,TeamBstring)
 		elif dataType == "FDP":
 			print('\nCleaning up file...')
-			debugOmittedRows = True # Optional export of data that was omitted in the cleaning process
 			df_cleaned = FDP(dirtyFname,cleanFname,dataFolder,cleanedFolder,headers,readAttributeCols,debugOmittedRows)
 
 		####################################################################################
@@ -81,9 +89,13 @@ def process(dirtyFname,cleanFname,dataType,dataFolder,cleanedFolder,TeamAstring,
 		T_ID = headers['TeamID']
 		df_cleaned.rename(columns={ts: "Ts", x: "X", y: "Y", PlID: "PlayerID", T_ID: "TeamID"}, inplace=True)
 		# Confirm whether Every timestamp occurs equally often, to enable indexing based on timestamp
-		tsConsistent = verifyTimestampConsistency(df_cleaned)
+		tsConsistent = verifyTimestampConsistency(df_cleaned,TeamAstring,TeamBstring)
 		if not tsConsistent:
-			warn('\nTO DO: Timestamp is not consistent: \nWrite the code to smooth out timestamp.')		
+			warn('\nTO DO: Timestamp is not consistent: \nWrite the code to smooth out timestamp.')
+
+		# Check if there is already a set of rows for team values (i.e., rows without playerID that are not 'ball')
+		df_cleaned = verifyGroupRows(df_cleaned)
+
 		# Export cleaned data to CSV
 		df_cleaned.to_csv(cleanedFolder + cleanFname)		
 
@@ -157,6 +169,7 @@ def splitName_and_Team(df,headers,ID,newPlayerIDstring,newTeamIDstring):
 def omitXandY_equals0(df,x,y,ID):
 	# Omit rows where both x and y = 0 and where there is no team value
 	XandY_equals0 = ( ((df[x] == 0) & (df[y] == 0) & (df[ID] == 'nan')) ) 
+	df[XandY_equals0 == True]
 	df_cleaned 	= df[XandY_equals0 == False]
 	df_omitted 	= df[XandY_equals0 == True]
 
@@ -263,7 +276,31 @@ def NP(fname,newfname,folder,cleanedFolder,TeamAstring,TeamBstring):
 						row[idx] = ''
 				wr.writerow(row[0:10]) # 0:9 is to omit any empty/useless headers
 
-def verifyTimestampConsistency(df):
+def verifyTimestampConsistency(df,TeamAstring,TeamBstring):
+
+	
+	uniqueTs = pd.unique(df['Ts'])
+	
+	dfA = df[df['TeamID'] == TeamAstring]
+	dfB = df[df['TeamID'] == TeamBstring]
+	#pivot X and Y dataframes for Team A
+	Team_A_Ts = dfA.pivot(columns='PlayerID', values='Ts')
+	Team_B_Ts = dfB.pivot(columns='PlayerID', values='Ts')
+
+	perPlayer_Ts = df.pivot(columns='PlayerID',values='Ts')
+	
+	perPlayer_Ts.to_csv('C:\\Users\\rensm\\Documents\\PostdocLeiden\\BRAxNLD repository\\Data\\tmp\\test.csv')
+
+	# df = df.reindex(pd.unique(ts))
+	# dfnew = df.set_index('Ts', drop=False, append=False, inplace=False, verify_integrity=True)
+	# dfnew = df.pivot('Ts','PlayerID','X')
+	tmp = df.pivot(index='PlayerID', columns='Ts', values='X').reset_index()
+	newDf.join(tmp).drop('Ts', axis=1)
+	newDf.to_csv('C:\\Users\\rensm\\Documents\\PostdocLeiden\\BRAxNLD repository\\Data\\tmp\\test.csv')
+
+	pdb.set_trace()
+
+
 
 	uniquePlayerID = pd.unique(df['PlayerID'])
 	uniqueTs = pd.unique(df['Ts'])
@@ -279,3 +316,54 @@ def verifyTimestampConsistency(df):
 			print('Player <%s>: Number of observations %ds, min %d, max %ds.' %(i,len(uTsPl),min(uTsPl),max(uTsPl)))
 
 	return tsConsistent
+
+def verifyGroupRows(df_cleaned):
+
+	# Group Rows are the rows where any feature can be stored that captures multiple players (i.e., team or attackers/midfielders/defenders)
+	# groupRows should have the 'PlayerID' value 'group'
+	
+	# First, verify whether groupRows exist by checking if there are rows with empty TeamIDs that are not ball.
+	groupRows = (df_cleaned['TeamID'].isnull()) & (df_cleaned['PlayerID'] != 'ball') 
+	if df_cleaned['Ts'][(groupRows)].empty:
+		groupRows = (df_cleaned['PlayerID'] == 'groupRow')
+
+	if df_cleaned['Ts'][(groupRows)].empty:# and not any(df_cleaned['PlayerID'] == 'groupRow'):
+		# If groupRows don't exist, then create them
+		# For every existing timestamp
+		uniqueTs = pd.unique(df_cleaned['Ts'])
+		uniqueTs = np.sort(uniqueTs)
+		# Create a string value
+		groupPlayerID = ['groupRow' for i in uniqueTs]
+		# Create groupIndex by adding to highest existing index
+		firstGroupIndex = df_cleaned.index[-1] + 1
+		groupIndex = firstGroupIndex + range(len(groupPlayerID))
+
+		# Put these in a DataFrame with the same column headers
+		df_group = pd.DataFrame({'Ts':uniqueTs,'PlayerID':groupPlayerID},index = [groupIndex])# possibly add the index ? index = []
+		
+		# Append them to the existing dataframe
+		df_cleaned = df_cleaned.append(df_group)
+
+	else:
+
+		# If they do exist,
+		# verify that 'PlayerID' = 'groupRow'
+		if any(df_cleaned['PlayerID'][groupRows] != 'groupRow'):		
+			# df_cleaned['PlayerID'][groupRows] = 'groupRow'
+			df_cleaned.loc[groupRows,('PlayerID')] = 'groupRow'
+			warn('\nWARNING: Contents of PlayerID overwritten for group rows.\nBe sure that group rows were identified correctly.\n')
+			df_cleaned.to_csv('C:\\Users\\rensm\\Documents\\PostdocLeiden\\BRAxNLD repository\\Data\\tmp\\testOverwrittenGrouprows.csv')
+
+		# and verify that there is a group row for every timestamp.
+		if len(df_cleaned['PlayerID'][groupRows]) != len(pd.unique(df_cleaned['Ts'])):
+			warn('\nWARNING: Not as many groupRows as unique timestamps.\nConsider including code to fill up missing timestamps in groupRows.\n')
+
+		# And finally, verify whether x, y, and TeamID are empty
+		if not all(df_cleaned['X'][(groupRows)].isnull()):
+			warn('\nWARNING: X values of groupRows are not empty.\nConisder cleaning. ')
+		if not all(df_cleaned['Y'][(groupRows)].isnull()):
+			warn('\nWARNING: Y values of groupRows are not empty.\nConisder cleaning. ')
+		if not all(df_cleaned['TeamID'][(groupRows)].isnull()):
+			warn('\nWARNING: TeamID values of groupRows are not empty.\nConisder cleaning. ')			
+
+	return df_cleaned

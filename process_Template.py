@@ -195,6 +195,12 @@ for dirtyFname in DirtyDataFiles:
 	# Clean cleanFname (if necessary)
 	cleanedFolder = \
 	cleanupData.process(dirtyFname,cleanFname,dataType,dataFolder,cleanedFolder,TeamAstring,TeamBstring,rawHeaders,readAttributeCols)
+	# From now onward:
+	#  'Ts' --> Timestamp
+	#  'X' --> X-position
+	#  'Y' --> Y-position
+	#  'PlayerID' --> Player identification. NB: Ball-rows should be 'ball' and Match-rows should be 'groupRow' (to indicate CentroidTeamA)
+	#  'TeamID' --> Team idenfitification
 
 	########################################################################################
 	####### Import existing data ###########################################################
