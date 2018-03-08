@@ -177,6 +177,9 @@ rawHeaders = {'Ts': timestampString,\
 'TeamID': TeamIDstring,\
 'Location': (XPositionString,YPositionString) }
 
+readAttributeCols = ['Ts'] + readAttributeCols # This makes sure that timeStamp is also imported in attribute cols, necessary for pivoting etc.
+attrLabel.update({'Ts': 'Time (s)'})
+
 xstring = 'Time (s)'
 aggregateLevel = (aggregateEvent,aggregateWindow,aggregateLag)
 

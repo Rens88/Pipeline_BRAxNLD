@@ -279,26 +279,27 @@ def NP(fname,newfname,folder,cleanedFolder,TeamAstring,TeamBstring):
 def verifyTimestampConsistency(df,TeamAstring,TeamBstring):
 
 	
-	uniqueTs = pd.unique(df['Ts'])
+	# uniqueTs = pd.unique(df['Ts'])
 	
-	dfA = df[df['TeamID'] == TeamAstring]
-	dfB = df[df['TeamID'] == TeamBstring]
-	#pivot X and Y dataframes for Team A
-	Team_A_Ts = dfA.pivot(columns='PlayerID', values='Ts')
-	Team_B_Ts = dfB.pivot(columns='PlayerID', values='Ts')
+	# dfA = df[df['TeamID'] == TeamAstring]
+	# dfB = df[df['TeamID'] == TeamBstring]
+	# #pivot X and Y dataframes for Team A
+	# Team_A_Ts = dfA.pivot(columns='PlayerID', values='Ts')
+	# Team_B_Ts = dfB.pivot(columns='PlayerID', values='Ts')
 
-	perPlayer_Ts = df.pivot(columns='PlayerID',values='Ts')
+	# perPlayer_Ts = df.pivot(columns='PlayerID',values='Ts')
 	
-	perPlayer_Ts.to_csv('C:\\Users\\rensm\\Documents\\PostdocLeiden\\BRAxNLD repository\\Data\\tmp\\test.csv')
+	# perPlayer_Ts.to_csv('C:\\Users\\rensm\\Documents\\PostdocLeiden\\BRAxNLD repository\\Data\\tmp\\test.csv')
 
-	# df = df.reindex(pd.unique(ts))
-	# dfnew = df.set_index('Ts', drop=False, append=False, inplace=False, verify_integrity=True)
-	# dfnew = df.pivot('Ts','PlayerID','X')
-	tmp = df.pivot(index='PlayerID', columns='Ts', values='X').reset_index()
-	newDf.join(tmp).drop('Ts', axis=1)
-	newDf.to_csv('C:\\Users\\rensm\\Documents\\PostdocLeiden\\BRAxNLD repository\\Data\\tmp\\test.csv')
+	# # df = df.reindex(pd.unique(ts))
+	# # dfnew = df.set_index('Ts', drop=False, append=False, inplace=False, verify_integrity=True)
+	# # dfnew = df.pivot('Ts','PlayerID','X')
+	# # tmp = df.pivot(index='PlayerID', columns='Ts', values='X')
+	# # newDf.join(tmp).drop('Ts', axis=1)
+	# df.pivot(index='Ts', columns)
+	# newDf.to_csv('C:\\Users\\rensm\\Documents\\PostdocLeiden\\BRAxNLD repository\\Data\\tmp\\test.csv')
 
-	pdb.set_trace()
+	# pdb.set_trace()
 
 
 

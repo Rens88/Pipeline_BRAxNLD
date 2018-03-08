@@ -48,12 +48,23 @@ def process(rawDict,attributeDict,attributeLabel,TeamAstring,TeamBstring):
 	# Per Team and for both teams
 
 
+	# Use this is an example for a GROUP level aggregate
 	attributeDict,attributeLabel = \
 	teamCentroid_panda(rawDict,attributeDict,attributeLabel,TeamAstring,TeamBstring)
+
+	# Use this is an example for a PLAYER level aggregate
+	attributeDict,attributeLabel = \
+	distanceToCentroid(rawDict,attributeDict,attributeLabel,TeamAstring,TeamBstring)
 
 	attributeDict,attributeLabel = \
 	teamSpread_asPanda(rawDict,attributeDict,attributeLabel,TeamAstring,TeamBstring)
 
+	attributeDict,attributeLabel = \
+	teamSurface_asPanda(rawDict,attributeDict,attributeLabel,TeamAstring,TeamBstring)
+	
+	allesBijElkaar = pd.concat([rawDict, attributeDict], axis=1) # debugging only
+	allesBijElkaar.to_csv('C:\\Users\\rensm\\Documents\\PostdocLeiden\\BRAxNLD repository\\Data\\tmp\\test.csv') # debugging only		
+	pdb.set_trace()		 # debugging only
 
 	# tmpAtDi2,tmpAtLa2 = teamSpread(attributeDict['TeamCentXA'],attributeDict['TeamCentYA'],attributeDict['TeamCentXB'],attributeDict['TeamCentYB'],uniqueTsS,uniquePlayers,teamMatrix,XpositionMatrix,YpositionMatrix,teamAcols,teamBcols,indsMatrix,TeamAstring,TeamBstring)
 	# attributeDict.update(tmpAtDi2)
@@ -114,65 +125,46 @@ def process(rawDict,attributeDict,attributeLabel,TeamAstring,TeamBstring):
 ############################################################
 
 def teamCentroid_panda(rawDict,attributeDict,attributeLabel,TeamAstring,TeamBstring):
+	###############
+	# Use this as an example to compute a GROUP level variable. Pay attention to the indexing. Let me know if you have an easier way.
+	###############
+	
+	##### THE DATA #####
+	# Prepare the indices of the groupRows. This will be used to store the computed values in the index corresponding to attributeDict.
+	ind_groupRows = attributeDict[rawDict['PlayerID'] == 'groupRow'].index
 
+	# Separate the raw values per team
 	dfA = rawDict[rawDict['TeamID'] == TeamAstring]
 	dfB = rawDict[rawDict['TeamID'] == TeamBstring]
-	#pivot X and Y dataframes for Team A
-	Team_A_X = dfA.pivot(columns='PlayerID', values='X')
-	Team_A_Y = dfA.pivot(columns='PlayerID', values='Y')
-	#pivot X and Y dataframes for Team B
-	Team_B_X = dfB.pivot(columns='PlayerID', values='X')
-	Team_B_Y = dfB.pivot(columns='PlayerID', values='Y')   
+	# Pivot X and Y dataframes for Team A
+	Team_A_X = dfA.pivot(columns='Ts', values='X')
+	Team_A_Y = dfA.pivot(columns='Ts', values='Y')
+	# Pivot X and Y dataframes for Team B
+	Team_B_X = dfB.pivot(columns='Ts', values='X')
+	Team_B_Y = dfB.pivot(columns='Ts', values='Y')   
 
-	#Create empty DataFrame to store results
-	newAttributes = pd.DataFrame()
-
-	#Append results as Series to empty DataFrame for team A
-	newAttributes['TeamCentXA'] = Team_A_X.mean(axis=1, skipna=True)
-	newAttributes['TeamCentYA'] = Team_A_Y.mean(axis=1, skipna=True)
-	newAttributes['LengthA'] = Team_A_X.max(axis=1, skipna=True) - Team_A_X.min(axis=1, skipna=True)
-	newAttributes['WidthA'] = Team_A_Y.max(axis=1, skipna=True) - Team_A_Y.min(axis=1, skipna=True)
-	#Append results as Series to empty DataFrame for team B
-	newAttributes['TeamCentXB'] = Team_B_X.mean(axis=1, skipna=True)
-	newAttributes['TeamCentYB'] = Team_B_Y.mean(axis=1, skipna=True)
-	newAttributes['LengthB'] = Team_B_X.max(axis=1, skipna=True) - Team_B_X.min(axis=1, skipna=True)
-	newAttributes['WidthB'] = Team_B_Y.max(axis=1, skipna=True) - Team_B_Y.min(axis=1, skipna=True)
-	#Return final dataframe for further analysis
-	attributeDict = pd.concat([attributeDict, newAttributes], axis=1)
-
-
-
-	# AllTeamA = rawDict[(rawDict['TeamID'] == TeamAstring)].index
-	# AllTeamB = rawDict[(rawDict['TeamID'] == TeamBstring)].index
-	# groupRows = rawDict[rawDict['PlayerID'] == 'groupRow'].index
+	# Create empty DataFrame to store results, NB: columns need to be assigend beforehand.
+	newAttributes = pd.DataFrame(index = ind_groupRows,columns = ['TeamCentXA', 'TeamCentYA', 'LengthA', 'WidthA', 'TeamCentXB', 'TeamCentYB', 'LengthB', 'WidthB'])
 	
-	# newAttributes = pd.DataFrame(index=rawDict.index,columns = ['TeamCentXA','TeamCentYA','TeamCentXB','TeamCentYB'])
-
-	# # This could be improved by proper use of indexing
-	# for i in pd.unique(rawDict['Ts']):
-	# 	# For every unique timestep:
-	# 	# Fetch the corresponding groupRow
-	# 	currentRowInDataFrame = groupRows[rawDict['Ts'][groupRows] == i]
-
-	# 	# Compute the X and Y centroids of both teams
-	# 	curTeamA = AllTeamA[rawDict['Ts'][AllTeamA] == i]
-	# 	curTeamAX = rawDict['X'][curTeamA].mean()
-	# 	curTeamAY = rawDict['Y'][curTeamA].mean()
-		
-	# 	curTeamB = AllTeamB[rawDict['Ts'][AllTeamB] == i]
-	# 	curTeamBX = rawDict['X'][curTeamB].mean()
-	# 	curTeamBY = rawDict['Y'][curTeamB].mean()
-
-	# 	# Assign the centroids to newAttributes
-	# 	newAttributes['TeamCentXA'][currentRowInDataFrame] = curTeamAX
-	# 	newAttributes['TeamCentYA'][currentRowInDataFrame] = curTeamAY
-	# 	newAttributes['TeamCentXB'][currentRowInDataFrame] = curTeamBX
-	# 	newAttributes['TeamCentYB'][currentRowInDataFrame] = curTeamBY
-
-	# attributeDict = pd.concat([attributeDict, newAttributes], axis=1)
-	# # attributeDict.to_csv('C:\\Users\\rensm\\Documents\\PostdocLeiden\\BRAxNLD repository\\Data\\tmp\\test.csv')
-
-	# the Strings	
+	# Compute the new attributes and store them with the index that corresponds to attributeDict
+	pd.options.mode.chained_assignment = None  # default='warn' # NB: The code below gives a warning because it may be uncertain whether the right ind_groupRows are called. If you know a work-around, let me know.
+	# For team A
+	newAttributes['TeamCentXA'][ind_groupRows] = Team_A_X.mean(axis=0, skipna=True)
+	newAttributes['TeamCentYA'][ind_groupRows] = Team_A_Y.mean(axis=0, skipna=True)
+	newAttributes['LengthA'][ind_groupRows] = Team_A_X.max(axis=0, skipna=True) - Team_A_X.min(axis=0, skipna=True)
+	newAttributes['WidthA'][ind_groupRows] = Team_A_Y.max(axis=0, skipna=True) - Team_A_Y.min(axis=0, skipna=True)
+	# And for team B
+	newAttributes['TeamCentXB'][ind_groupRows] = Team_B_X.mean(axis=0, skipna=True)
+	newAttributes['TeamCentYB'][ind_groupRows] = Team_B_Y.mean(axis=0, skipna=True)
+	newAttributes['LengthB'][ind_groupRows] = Team_B_X.max(axis=0, skipna=True) - Team_B_X.min(axis=0, skipna=True)
+	newAttributes['WidthB'][ind_groupRows] = Team_B_Y.max(axis=0, skipna=True) - Team_B_Y.min(axis=0, skipna=True)
+	pd.options.mode.chained_assignment = 'warn'  # default='warn'
+	
+	# Combine the pre-existing attributes with the new attributes:
+	attributeDict = pd.concat([attributeDict, newAttributes], axis=1)
+	
+	##### THE STRINGS #####
+	# Export a string label of each new attribute in the labels dictionary (useful for plotting purposes)
 	tmpXAString = 'X-position of %s (m)' %TeamAstring
 	tmpYAString = 'Y-position of %s (m)' %TeamAstring
 	tmpLengthAString = 'Distance along Y-axis %s (m)' %TeamAstring
@@ -189,108 +181,187 @@ def teamCentroid_panda(rawDict,attributeDict,attributeLabel,TeamAstring,TeamBstr
 
 	return attributeDict,attributeLabel
 
-def teamSpread_asPanda(rawDict,attributeDict,attributeLabel,TeamAstring,TeamBstring):
-
-	dfA = rawDict[rawDict['TeamID'] == TeamAstring]
-	dfB = rawDict[rawDict['TeamID'] == TeamBstring]
-	#pivot X and Y dataframes for Team A
-	Team_A_X = dfA.pivot(columns='PlayerID', values='X')
-	Team_A_Y = dfA.pivot(columns='PlayerID', values='Y')
-	#pivot X and Y dataframes for Team B
-	Team_B_X = dfB.pivot(columns='PlayerID', values='X')
-	Team_B_Y = dfB.pivot(columns='PlayerID', values='Y')   
+def distanceToCentroid(rawDict,attributeDict,attributeLabel,TeamAstring,TeamBstring):
+	###############
+	# Use this as an example to compute a PLAYER level variable. Pay attention to the indexing. Let me know if you have an easier way.
+	###############
 	
-	Team_A_X.to_csv('C:\\Users\\rensm\\Documents\\PostdocLeiden\\BRAxNLD repository\\Data\\tmp\\test.csv')
-
-
-	pdb.set_trace()
-	newAttributes = pd.DataFrame(index=rawDict.index,columns = ['distToCent',' ',' ',' '])
+	##### THE DATA #####
+	# In this case, the new attribute will be computed based on a group (i.e., team) value
+	TeamVals = attributeDict[rawDict['PlayerID'] == 'groupRow'].set_index('Ts')
+	# Create empty DataFrame to store results, NB: columns need to be assigend beforehand.
+	newAttributes = pd.DataFrame(index = attributeDict.index, columns = ['distToCent'])
+	
+	# For every player in the dataFrame
 	for idx,i in enumerate(pd.unique(rawDict['PlayerID'])):
-		if i == 'ball':
-			# it's a ball
-			doNothing = []
-		elif i == 'groupRow':
-			# it's a groupRow
-			groupRow = attributeDict[rawDict['PlayerID'] == i]
-		else:
-			# It's a player
-			if all(rawDict['TeamID'][rawDict['PlayerID'] == i]):
-				dosomething = []
-	for i in pd.unique(rawDict['Ts']):
-		print('Time: %s' %i)
-		curFramesA = rawDict[(rawDict['Ts'] == i) & (rawDict['TeamID'] == TeamAstring)].index
-		print('curFramesA: %s' %curFramesA)
-		curFramesB = rawDict[(rawDict['Ts'] == i) & (rawDict['TeamID'] == TeamBstring)].index
-		print('curFramesB: %s' %curFramesB)
-		curGroupRow = rawDict[(rawDict['PlayerID'] == 'groupRow') & (rawDict['Ts'] == i)].index
-		print('curGroupRow: %s' %curGroupRow)
+		curPlayer = rawDict[rawDict['PlayerID'] == i]
+		curPlayerDict = curPlayer.set_index('Ts')
+
+		if all(curPlayer['PlayerID'] == 'groupRow'):
+			# It's actually not a player, but a group, so skip it.
+			continue # do nothing
+		elif all(curPlayer['PlayerID'] == 'ball'):
+			# It's actually not a player, but the ball, so skip it.
+			continue # do nothing
+		elif all(curPlayer['TeamID'] == TeamAstring):
+			# Compute the distance to the centroid, NB: team specific!!
+			curPlayer_distToCent = np.sqrt((curPlayerDict['X'] - TeamVals['TeamCentXA'])**2 + (curPlayerDict['Y'] - TeamVals['TeamCentYA'])**2)
+		elif all(curPlayer['TeamID'] == TeamBstring):
+			# Compute the distance to the centroid, NB: team specific!!
+			curPlayer_distToCent = np.sqrt((curPlayerDict['X'] - TeamVals['TeamCentXB'])**2 + (curPlayerDict['Y'] - TeamVals['TeamCentYB'])**2)
+
+		# Put compute values in the right place in the dataFrame
+		newAttributes['distToCent'][curPlayer.index] = curPlayer_distToCent[curPlayerDict.index]
+
+	# Combine the pre-existing attributes with the new attributes:
+	attributeDict = pd.concat([attributeDict, newAttributes], axis=1)
+
+	##### THE STRINGS #####
+	# Export a string label of each new attribute in the labels dictionary (useful for plotting purposes)
+	tmpDistToCentString = 'Player\'s distance to its team\'s centroid (m)'
+	attributeLabel.update({'distToCent':tmpDistToCentString})
+	
+	return attributeDict,attributeLabel
+
+def teamSpread_asPanda(rawDict,attributeDict,attributeLabel,TeamAstring,TeamBstring):
+	###############
+	# another GROUP level variable
+	###############
+
+	##### THE DATA #####
+	# Prepare the indices of the groupRows. This will be used to store the computed values in the index corresponding to attributeDict.
+	ind_groupRows = attributeDict[rawDict['PlayerID'] == 'groupRow'].index
+
+	# Separate the raw values per team
+	dfA = attributeDict[rawDict['TeamID'] == TeamAstring]
+	dfB = attributeDict[rawDict['TeamID'] == TeamBstring]
+	# Pivot dataframes
+	Team_A_distToCent = dfA.pivot(columns='Ts', values='distToCent')
+	Team_B_distToCent = dfB.pivot(columns='Ts', values='distToCent')
+
+	# Create empty DataFrame to store results, NB: columns need to be assigend beforehand.
+	newAttributes = pd.DataFrame(index = ind_groupRows,columns = ['SpreadA', 'stdSpreadA', 'SpreadB', 'stdSpreadB'])
 		
-		AX = attributeDict['TeamCentXA']
-		AY = attributeDict['TeamCentYA']
-		BX = attributeDict['TeamCentXB']
-		BY = attributeDict['TeamCentYB']
-		print(AX[curGroupRow]- rawDict['X'][curFramesA])
-		print('XposA:%s' %rawDict['X'][curFramesA])
+	# Compute the new attributes
+	pd.options.mode.chained_assignment = None  # default='warn' # NB: The code below gives a warning because it may be uncertain whether the right ind_groupRows are called. If you know a work-around, let me know.
+	newAttributes['SpreadA'][ind_groupRows] = Team_A_distToCent.mean(axis=0, skipna=True)
+	newAttributes['stdSpreadA'][ind_groupRows] = Team_A_distToCent.std(axis=0, skipna=True)
+	newAttributes['SpreadB'][ind_groupRows] = Team_B_distToCent.mean(axis=0, skipna=True)
+	newAttributes['stdSpreadB'][ind_groupRows] = Team_B_distToCent.std(axis=0, skipna=True)	
+	pd.options.mode.chained_assignment = 'warn'  # default='warn'
 
-		tmp = ( (AX[curGroupRow] - rawDict['X'][curFramesA])**2 + (AY[curGroupRow] - rawDict['Y'][curFramesA])**2 )
-		print(tmp[tmp.isnull() == False])
-		print(type(tmp))
-		newAttributes['distToCent'] = np.sqrt ( (AX[curGroupRow] - rawDict['X'][curFramesA])**2 + (AY[curGroupRow] - rawDict['Y'][curFramesA])**2 )
-		newAttributes['distToCent'] = np.sqrt( (BX - rawDict['X'][curFramesB])**2 + (BY - rawDict['Y'][curFramesB])**2 )
-		pdb.set_trace()
-	timeIndex = rawDict.set_index('Ts')
+	# Combine the pre-existing attributes with the new attributes:
+	attributeDict = pd.concat([attributeDict, newAttributes], axis=1)
 
-
-	pd.unique(rawDict['PlayerID'])
-	# Spread
-	# (average) Distance of each player to center.
-	# Dist to centre:
-	distToTeamCent = np.ones((len(uniqueTsS),len(uniquePlayers)),dtype='float64')*-1	
-	for idx,val in enumerate(teamMatrix):
-		for i,v in enumerate(val):
-			if v == 0:
-				distToTeamCent[idx,i] = np.sqrt( (CentXA[idx] - XpositionMatrix[idx,i])**2 + (CentYA[idx] - YpositionMatrix[idx,i])**2)			
-			elif v == 1:
-				distToTeamCent[idx,i] = np.sqrt( (CentXB[idx] - XpositionMatrix[idx,i])**2 + (CentYB[idx] - YpositionMatrix[idx,i])**2)
-
-	# Aggregate to team level
-	SpreadA = np.nanmean(distToTeamCent[:,teamAcols],axis=1)
-	SpreadB = np.nanmean(distToTeamCent[:,teamBcols],axis=1)
-
-	stdSpreadA = np.nanstd(distToTeamCent[:,teamAcols],axis=1)
-	stdSpreadB = np.nanstd(distToTeamCent[:,teamBcols],axis=1)
-
-	# Other ideas:
-	# (min or avg or max)Distance to closest teammate
-
-	# Return in format attributeDict
-	dataShape = np.shape(XpositionMatrix) # Number of data entries
-
-	tmpSpreadA = np.zeros((dataShape[1]*dataShape[0],1),dtype='float64')* np.nan
-	tmpSpreadB = np.zeros((dataShape[1]*dataShape[0],1),dtype='float64')* np.nan
-	tmpStdSpreadA = np.zeros((dataShape[1]*dataShape[0],1),dtype='float64')* np.nan
-	tmpStdSpreadB = np.zeros((dataShape[1]*dataShape[0],1),dtype='float64')* np.nan
-	print(SpreadA)
-	pdb.set_trace()
-
-	for idx,val in enumerate(indsMatrix): # indsMatrix are the team cells only
-		tmpSpreadA[int(val)] = SpreadA[idx]
-		tmpSpreadB[int(val)] = SpreadB[idx]
-
-		tmpStdSpreadA[int(val)] = stdSpreadA[idx]
-		tmpStdSpreadB[int(val)] = stdSpreadB[idx]
-
-	# The data
-	tmpAtDi2 = {'SpreadA': tmpSpreadA, 'SpreadB': tmpSpreadB, 'stdSpreadA': tmpStdSpreadA,'stdSpreadB': tmpStdSpreadB}
-	# The labels
+	##### THE STRINGS #####
+	# Export a string label of each new attribute in the labels dictionary (useful for plotting purposes)
 	tmpSpreadAString = 'Average distance to center of %s (m)' %TeamAstring
 	tmpStdSpreadAString = 'Standard deviation of distance to center of %s (m)' %TeamAstring
 	tmpSpreadBString = 'Average distance to center of %s (m)' %TeamBstring
 	tmpStdSpreadBString = 'Standard deviation of distance to center of %s (m)' %TeamBstring	
 	tmpAtLa2 = {'SpreadA': tmpSpreadAString, 'SpreadB': tmpSpreadBString, 'stdSpreadA': tmpStdSpreadAString,'stdSpreadB': tmpStdSpreadBString}
-	return tmpAtDi2,tmpAtLa2
+	attributeLabel.update(tmpAtLa2)
 
-#####################################################################################def correctVNorm(rawDict,attributeDict):
+	return attributeDict,attributeLabel
+
+def teamSurface_asPanda(rawDict,attributeDict,attributeLabel,TeamAstring,TeamBstring):
+	###############
+	# another GROUP level variable
+	###############
+
+	##### THE DATA #####
+	# Prepare the indices of the groupRows. This will be used to store the computed values in the index corresponding to attributeDict.
+	ind_groupRows = attributeDict[rawDict['PlayerID'] == 'groupRow'].index
+
+	# Separate the raw values per team
+	dfA = rawDict[rawDict['TeamID'] == TeamAstring]
+	dfB = rawDict[rawDict['TeamID'] == TeamBstring]
+	# Pivot dataframes
+	Team_AX = dfA.pivot(columns='Ts', values='X')
+	Team_AY = dfA.pivot(columns='Ts', values='Y')	
+	Team_BX = dfB.pivot(columns='Ts', values='X')
+	Team_BY = dfB.pivot(columns='Ts', values='Y')	
+
+	# Create empty DataFrame to store results, NB: columns need to be assigend beforehand.
+	newAttributes = pd.DataFrame(index = ind_groupRows,columns = ['SurfaceA', 'sumVerticesA', 'ShapeRatioA', 'WidthA', 'LengthA', 'SurfaceB', 'sumVerticesB', 'ShapeRatioB', 'WidthB', 'LengthB'])
+		
+	# Compute the new attributes
+	# pd.options.mode.chained_assignment = None  # default='warn' # NB: The code below gives a warning because it may be uncertain whether the right ind_groupRows are called. If you know a work-around, let me know.
+	
+	# newAttributes['SpreadA'][ind_groupRows] = Team_AX.mean(axis=0, skipna=True)
+	# newAttributes['stdSpreadA'][ind_groupRows] = Team_A_distToCent.std(axis=0, skipna=True)
+	# newAttributes['SpreadB'][ind_groupRows] = Team_B_distToCent.mean(axis=0, skipna=True)
+	# newAttributes['stdSpreadB'][ind_groupRows] = Team_B_distToCent.std(axis=0, skipna=True)	
+	# pd.options.mode.chained_assignment = 'warn'  # default='warn'
+
+	# For every time point in the dataFrame
+	for idx,i in enumerate(pd.unique(rawDict['Ts'])):
+		curXPosA = Team_AX[i][Team_AX[i].isnull() == False]
+		curYPosA = Team_AY[i][Team_AY[i].isnull() == False]
+		SurfaceA,sumVerticesA,ShapeRatioA = groupSurface(curXPosA,curYPosA)
+		print(SurfaceA)
+		print(sumVerticesA)
+		print(ShapeRatioA)
+		pdb.set_trace()
+		dfs = pd.DataFrame(SurfaceA,columns = ['surface'])
+		dfs.to_csv('C:\\Users\\rensm\\Documents\\PostdocLeiden\\BRAxNLD repository\\Data\\tmp\\test.csv')
+		pdb.set_trace()
+
+		SurfaceA,sumVerticesA,ShapeRatioA = groupSurface(XpositionMatrix[idx,teamAcols],YpositionMatrix[idx,teamAcols])
+
+		SurfaceA,sumVerticesA,ShapeRatioA = groupSurface(XpositionMatrix[idx,teamAcols],YpositionMatrix[idx,teamAcols])
+		SurfaceB,sumVerticesB,ShapeRatioB = groupSurface(XpositionMatrix[idx,teamBcols],YpositionMatrix[idx,teamBcols])		
+
+		# Width ************** ASSUMPTION --> field width = X-axis, field length = Y-axis
+		WidthA = max(XpositionMatrix[idx,teamAcols])-min(XpositionMatrix[idx,teamAcols])
+		WidthB = max(XpositionMatrix[idx,teamBcols])-min(XpositionMatrix[idx,teamBcols])
+		# Length
+		LengthA = max(YpositionMatrix[idx,teamAcols])-min(YpositionMatrix[idx,teamAcols])
+		LengthB = max(YpositionMatrix[idx,teamBcols])-min(YpositionMatrix[idx,teamBcols])
+		warn('\nUnverified assumption: field width = X-axis, field length = Y-axis\n')
+
+		# Store immediately
+		tmpSurfaceA[int(val)] = SurfaceA
+		tmpsumVerticesA[int(val)] = sumVerticesA
+		tmpShapeRatioA[int(val)] = ShapeRatioA
+		tmpWidthA[int(val)] = WidthA
+		tmpLengthA[int(val)] = LengthA
+
+		tmpSurfaceB[int(val)] = SurfaceB
+		tmpsumVerticesB[int(val)] = sumVerticesB
+		tmpShapeRatioB[int(val)] = ShapeRatioB
+		tmpWidthB[int(val)] = WidthB
+		tmpLengthB[int(val)] = LengthB
+
+	# Combine the pre-existing attributes with the new attributes:
+	attributeDict = pd.concat([attributeDict, newAttributes], axis=1)
+
+	##### THE STRINGS #####
+	# Export a string label of each new attribute in the labels dictionary (useful for plotting purposes)
+	tmpSurfaceAString = 'Surface area of %s (m^2)' %TeamAstring
+	tmpSurfaceBString = 'Surface area of %s (m^2)' %TeamBstring
+	tmpsumVerticesAString = 'Circumference of surface area of %s (m)' %TeamAstring
+	tmpsumVerticesBString = 'Circumference of surface area of %s (m)' %TeamBstring
+	tmpShapeRatioAString = 'Uniformity of surface area of %s (1 = uniform, closer to 0 = elongated)' %TeamAstring
+	tmpShapeRatioBString = 'Uniformity of surface area of %s (1 = uniform, closer to 0 = elongated)' %TeamBstring
+	tmpWidthAString = 'Distance along X-axis %s (m)' %TeamAstring
+	tmpWidthBString = 'Distance along X-axis %s (m)' %TeamBstring
+	tmpLengthAString = 'Distance along Y-axis %s (m)' %TeamAstring
+	tmpLengthBString = 'Distance along Y-axis %s (m)' %TeamBstring
+
+	tmpAtLa3 = {'SurfaceA': tmpSurfaceAString, 'SurfaceB': tmpSurfaceBString, \
+	'sumVerticesA': tmpsumVerticesAString,'sumVerticesB': tmpsumVerticesBString, \
+	'ShapeRatioA': tmpShapeRatioAString,'ShapeRatioB': tmpShapeRatioBString, \
+	'WidthA': tmpWidthAString,'WidthB': tmpWidthBString, \
+	'LengthA': tmpLengthAString,'LengthB': tmpLengthBString }	
+
+	attributeLabel.update(tmpAtLa3)
+
+	return attributeDict,attributeLabel
+
+#####################################################################################
+
+def correctVNorm(rawDict,attributeDict):
 	if not 'Run' in attributeDict.keys(): # only normalize if 'runs' exists
 		return {'vNorm':attributeDict['vNorm']}
 	runs = np.array([i for i,val in enumerate(attributeDict['Run']) if val  != '' ])
@@ -568,20 +639,25 @@ def groupSurface(X,Y):
 		else:
 			return max(ribDist) / min(ribDist) 
 
+	# pre-first, change dataframes into np arrays
+	X = X.as_matrix()
+	Y = Y.as_matrix()
+
 	# first, find lowest yvalue (and highest X if equal)
 	indStartY = np.where(Y == np.min(Y))
+	
 
 	if np.size(indStartY) != 1:
 		# If multiple smallest Y, select highest X
 		indStartXY = np.where(X[indStartY] == np.max(X[indStartY]))
 		indStart = indStartY[0][indStartXY[0]][0]
 	else:
-		indStart = indStartY[0][0]	
+		indStart = indStartY[0][0]
 
 	StartX = X[indStart]
 	StartY = Y[indStart]
 
-	indNext =[-1]
+	indNext = -1
 	countIteration = 0
 
 	xremaining = X.copy()
@@ -591,7 +667,10 @@ def groupSurface(X,Y):
 
 	VerticesX = [StartX]
 	VerticesY = [StartY]
-
+	# print('VerticesX = ')
+	print('indStart = %s' %indStart)
+	print(X)
+	print(Y)
 	while indNext != indStart:
 		countIteration = countIteration + 1
 
@@ -600,6 +679,14 @@ def groupSurface(X,Y):
 		# then, compute the angles with all players towards an arbitrary point (the centroid)
 		rho,phi = cart2pol(xremaining - CurX,Y-CurY)
 
+		# Improvised correction after difficulty with finding next point.
+		# I'm guessing it's because the starting point is different than expected.
+		# First, correct phi with 1/4*pi
+		phiAccent = phi - .25*math.pi
+		# Then, check if any value below 0, which should be 2*pi higher.
+		phiAccent[phiAccent<0] = [i + 2*math.pi for i in phiAccent if i < 0]			
+		phi = phiAccent
+		
 		# select the smallest angle as the next point
 		indNextPhi = np.where(phi == np.nanmin(phi))
 
@@ -613,6 +700,7 @@ def groupSurface(X,Y):
 		NextX = X[indNext]
 		NextY = Y[indNext]
 
+
 		if countIteration > dataShape[0]: # use the number of columns as the maximum (= max number of vertices)
 			# Stopping criterium reached
 			warn('\nDid not finish drawing polygon. Maximum number of expected iterations reached..\n')
@@ -621,13 +709,28 @@ def groupSurface(X,Y):
 		if countIteration == 1: # The start is replaced only at the first time as it is used as the stopping criterium\
 			# Simpelere alternative: add != 1 to while statement
 			xremaining[indStart] = StartX
-		
-		xremaining[indNext] = np.nan
-		curInd = indNext
 
 		VerticesX.append(NextX)
 		VerticesY.append(NextY)	
+		
+		if countIteration == 5:
+			print('curInd = %s' %curInd)
+			print('indNext = %s' %indNext)
+			print('xremaining = %s' %xremaining)
+			print('phi = %s' %phi)
+			phiAccent = phi - .25*math.pi
+			phiAccent[phiAccent<0] = [i + 2*math.pi for i in phiAccent if i < 0]			
+			print('phiAccent = %s' %phiAccent)
+			pdb.set_trace()
+		# Prepare the next round
+		xremaining[indNext] = np.nan
+		curInd = indNext
 
+
+
+	print(VerticesX)
+	print(VerticesY)
+	pdb.set_trace()
 	Surface = PolyArea(VerticesX,VerticesY)
 	sumVertices = Circumference(VerticesX,VerticesY)
 	ShapeRatio = RibRatio(VerticesX,VerticesY)
