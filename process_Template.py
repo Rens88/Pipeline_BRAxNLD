@@ -43,6 +43,10 @@
 # USER INPUT ############
 #########################
 ## CHANGE THIS all these variables until 'END USER INPUT'
+# Temporary inputs (whilst updating to using pandas)
+exportPerFile = True # whether you want to export a csv for every complete file (no temporal aggregation)
+debuggingMode = False # whether yo want to continue with the remaining code to incorporate using pandas (temporal aggregation, export and visualization)
+
 # "FPD" or or "NP" --> so far, only used to call the right cleanup script. Long term goal would be to have a generic cleanup script
 dataType =  "FDP"
 
@@ -94,90 +98,45 @@ Visualization = False # True = includes visualization, False = skips visualizati
 
 
 #########################
-# PREPARATION ###########
+# INITIALIZATION ########
 #########################
 
 # Gerenal Python modules
-import csv
-import pdb; #pdb.set_trace()
-import numpy as np
-from os.path import isfile, join, isdir, exists
-from os import listdir, path, makedirs
-from warnings import warn
-import sys, inspect
-import subprocess
-import pandas as pd
-import re
-
-####### Adding the library ######
-# The folder and relevant subfolders where you store the python library with all the custom modules.
-current_folder = path.realpath(path.abspath(path.split(inspect.getfile( inspect.currentframe() ))[0]))
-library_folder = current_folder + str("\\LibraryRENS")
-library_subfolders = [library_folder + str("\\FDP")] # FDP = Football Data Project
-library_subfolders.append(library_folder + str("\\VPcontributions")) # Contributions of a Bachelor student
-library_subfolders.append(library_folder + str("\\LTcontributions")) # Contributions of a Bachelor student
-
-if library_folder not in sys.path:
-	sys.path.insert(0, library_folder) 
-for subf in library_subfolders:
-	if subf not in sys.path:
-		sys.path.insert(0, subf) # idea: could loop over multiple subfolders and enter as a list
-
-## Uncomment this line to open the function in the editor (matlab's ctrl + d)
-# subprocess.call(cmd_folder + "\\callThisFunction.py", shell=True)
-#########################################
-
-# From LibraryRENS:
 # To do: I'm pretty sure these functions can be loaded automatically using _init_.py
-import CSVexcerpt
-import CSVimportAsColumns
-import identifyDuplHeader
-import LoadOrCreateCSVexcerpt
-import individualAttributes # obsolete?
-import plotTimeseries
-import dataToDict # obsolete?
-import dataToDict2
-import safetyWarning
-import countExistingEvents # obsolete?
-import exportCSV
+# To do: convert to Python package?
+
+import initialization
+# In this module, the library is added to the system path. 
+# This allows Python to import the custom modules in our library. 
+# If you add new subfolders in the library, they need to be added in addLibary (in initialization.py) as well.
+initialization.addLibrary()
+dataFolder,tmpFigFolder,outputFolder,cleanedFolder =\
+initialization.checkFolders(folder,aggregateEvent)
+
+import pdb; #pdb.set_trace()
+from os.path import isfile, join#, isdir, exists
+from os import listdir#, path, makedirs
+from warnings import warn
+# Custom modules (from LibrarRENS)
 import spatialAggregation
 import temporalAggregation
-import importTimeseriesData
-import csv
-import cleanupData
-import importEvents
-import CSVtoDF
-import plotSnapshot
 import disectFilename
 import importTimeseries_aspanda
+import cleanupData
+import pandas as pd
+#  Unused modules: 
+# CSVexcerpt CSVimportAsColumns identifyDuplHeader LoadOrCreateCSVexcerpt individualAttributes plotTimeseries dataToDict 
+# dataToDict2 safetyWarning countExistingEvents exportCSV importTimeseriesData csv importEvents CSVtoDF plotSnapshot
 
-if folder[-1:] != '\\':
-	warn('\n<folder> did not end with <\\\\>. \nOriginal input <%s>\nReplaced with <%s>' %(folder,folder+'\\'))
-	folder = folder + '\\'
 
-dataFolder = folder + 'Data\\'
-tmpFigFolder = folder + 'Figs\\Temp\\' + aggregateEvent + '\\'
-outputFolder = folder + 'Output\\' # Folder where tabular output will be stored (aggregated spatially and temporally)
-cleanedFolder = dataFolder + 'Cleaned\\'    
-
-# Verify if folders exists
-if not exists(dataFolder):
-	warn('\nWARNING: dataFolder not found.')
-	exit()
-if not exists(outputFolder):
-	makedirs(outputFolder)
-if not exists(tmpFigFolder):
-	makedirs(tmpFigFolder)
-if not exists(cleanedFolder):
-	makedirs(cleanedFolder)
-
-# Preparing the dictionary of the raw data
+## These lines should be embedded elsewhere in the future.
+# Preparing the dictionary of the raw data (NB: With the use of Pandas, this is a bit redundant)
 rawHeaders = {'Ts': timestampString,\
 'PlayerID': PlayerIDstring,\
 'TeamID': TeamIDstring,\
 'Location': (XPositionString,YPositionString) }
 
-readAttributeCols = ['Ts'] + readAttributeCols # This makes sure that timeStamp is also imported in attribute cols, necessary for pivoting etc.
+readAttributeCols = [timestampString] + readAttributeCols # This makes sure that timeStamp is also imported in attribute cols, necessary for pivoting etc.
 attrLabel.update({'Ts': 'Time (s)'})
 
 xstring = 'Time (s)'
@@ -191,14 +150,21 @@ DirtyDataFiles = [f for f in listdir(dataFolder) if isfile(join(dataFolder, f)) 
 for dirtyFname in DirtyDataFiles:
 	print('\nFILE: << %s >>' %dirtyFname[:-4])
 
+	#########################
+	# PREPARATION ###########
+	#########################
+	# IMPORTANT: During preparation you can use 'dataType' (although it's better to try not to) which allows you
+	# to prepare the data in a way that is specific for your dataset.
+
 	# Prepare metadata of aggregated data to be exported:
 	exportData, exportDataString, exportDataFullExplanation,cleanFname,TeamAstring,TeamBstring = \
 	disectFilename.process(dirtyFname,dataType,TeamAstring,TeamBstring)
 
-	# Clean cleanFname (if necessary)
+	# Clean cleanFname (it only cleans data if there is no existing cleaned file of the current (dirty)file )
 	cleanedFolder = \
 	cleanupData.process(dirtyFname,cleanFname,dataType,dataFolder,cleanedFolder,TeamAstring,TeamBstring,rawHeaders,readAttributeCols)
-	# From now onward:
+
+	# From now onward, rawData contains:
 	#  'Ts' --> Timestamp
 	#  'X' --> X-position
 	#  'Y' --> Y-position
@@ -208,17 +174,51 @@ for dirtyFname in DirtyDataFiles:
 	########################################################################################
 	####### Import existing data ###########################################################
 	########################################################################################
-	# NB: I might have to update this script to deal with varying timestamps and players that are nog on the court for every timestamp
+	
 	rawPanda = importTimeseries_aspanda.rawData(cleanFname,cleanedFolder)
 	attrPanda = importTimeseries_aspanda.existingAttributes(cleanFname,cleanedFolder,readAttributeCols)
-
 	###### Work in progress ##########
+	# targetEventsImported = importEvents.process(rawDict,attributeDict,TeamAstring,TeamBstring)
+	###### \Work in progress #########
+
+	########################################################################################
+	####### Compute new attributes #########################################################
+	########################################################################################
+
 	attrPanda,attrLabel = spatialAggregation.process(rawPanda,attrPanda,attrLabel,TeamAstring,TeamBstring)
 	###### Work in progress ##########
-	print(rawPanda.keys())
-	print(attrPanda.keys())
-	pdb.set_trace()
+	# targetEventsComputed = importEvents.process(rawDict,attributeDict,TeamAstring,TeamBstring)
+	# exportData,exportDataString,exportFullExplanation = \
+	# temporalAggregation.process(targetEvents,aggregateLevel,rawDict,attributeDict,exportData,exportDataString,exportFullExplanation,TeamAstring,TeamBstring)
+	
+	## As a temporary work around, the raw data is here exported per file
+	if exportPerFile:
+		# debugging only
+		altogether = pd.concat([rawPanda, attrPanda], axis=1) # debugging only
+		attrPanda.to_csv(outputFolder + 'output_' + dirtyFname) # debugging only		
+		print('EXPORTED <%s>' %dirtyFname[:-4])
+		# pdb.set_trace()
+		continue
+	###### \Work in progress #########
 
+
+
+	#############################################################
+	#############################################################
+	#############################################################
+	#############################################################
+	#############################################################
+	#############################################################
+	#############################################################
+	# The code below still needs to be adjusted to using pandas #
+	#############################################################
+	#############################################################
+	#############################################################
+	#############################################################
+	#############################################################
+	#############################################################
+	if not debuggingMode:
+		continue
 	"""
 	The 3 lines below read and clean the csv file with LPM data as a pandas DataFrame and save the result again as a csv file. 
 	"""

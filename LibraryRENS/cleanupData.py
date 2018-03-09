@@ -113,6 +113,15 @@ def FDP(fname,cleanFname,dataFolder,cleanedFolder,headers,readAttributeCols,debu
 	newPlayerIDstring = 'Player'
 	newTeamIDstring = 'Team'
 
+	# Only read the headers as a check-up:
+	with open(dataFolder+fname, 'r') as f:
+		reader = csv.reader(f)
+		tmpHeaders = list(next(reader))
+
+	for i in colHeaders:
+		if not i in tmpHeaders:
+			exit('EXIT: Column header <%s> not in column headers of the file:\n%s\n\nSOLUTION: Change the user input in \'process\' \n' %(i,tmpHeaders))
+  
 	df = pd.read_csv(dataFolder+fname,usecols=(colHeaders),low_memory=False)
 	df[ts] = df[ts]*conversion_to_S # Convert from ms to s.
 
@@ -178,6 +187,7 @@ def omitXandY_equals0(df,x,y,ID):
 def omitRowsWithout_XandY(df,x,y):
 	# Omit rows that have no x and y value.
 	rowsWith_XandY = (df[x].notnull()) & (df[y].notnull())
+	pdb.set_trace()
 	df_cleaned = df[rowsWith_XandY == True ]
 	df_omitted = df[rowsWith_XandY == False ]
 

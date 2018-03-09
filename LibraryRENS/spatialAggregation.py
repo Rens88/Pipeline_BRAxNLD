@@ -47,7 +47,6 @@ def process(rawDict,attributeDict,attributeLabel,TeamAstring,TeamBstring):
 	# Per Match (i.e., file)
 	# Per Team and for both teams
 
-
 	# Use this is an example for a GROUP level aggregate
 	attributeDict,attributeLabel = \
 	teamCentroid_panda(rawDict,attributeDict,attributeLabel,TeamAstring,TeamBstring)
@@ -62,63 +61,23 @@ def process(rawDict,attributeDict,attributeLabel,TeamAstring,TeamBstring):
 	attributeDict,attributeLabel = \
 	teamSurface_asPanda(rawDict,attributeDict,attributeLabel,TeamAstring,TeamBstring)
 	
-	allesBijElkaar = pd.concat([rawDict, attributeDict], axis=1) # debugging only
-	allesBijElkaar.to_csv('C:\\Users\\rensm\\Documents\\PostdocLeiden\\BRAxNLD repository\\Data\\tmp\\test.csv') # debugging only		
-	pdb.set_trace()		 # debugging only
+	## debugging only
+	# allesBijElkaar = pd.concat([rawDict, attributeDict], axis=1) # debugging only
+	# allesBijElkaar.to_csv('C:\\Users\\rensm\\Documents\\PostdocLeiden\\BRAxNLD repository\\Data\\tmp\\test.csv') # debugging only		
+	# pdb.set_trace()		 
 
-	# tmpAtDi2,tmpAtLa2 = teamSpread(attributeDict['TeamCentXA'],attributeDict['TeamCentYA'],attributeDict['TeamCentXB'],attributeDict['TeamCentYB'],uniqueTsS,uniquePlayers,teamMatrix,XpositionMatrix,YpositionMatrix,teamAcols,teamBcols,indsMatrix,TeamAstring,TeamBstring)
-	# attributeDict.update(tmpAtDi2)
-	# attributeLabel.update(tmpAtLa2)
+	## WORK IN PROGRESS ##
+	## not yet converted to pandas
+	# tmpAtDi4,tmpAtLa4 = vNorm(rawDict)
+	# attributeDict.update(tmpAtDi4)
+	# attributeLabel.update(tmpAtLa4)
 
-	pdb.set_trace()
-	########### the old way ##########
-	indsMatrix,XpositionMatrix,YpositionMatrix,teamAcols,teamBcols,uniqueTsS,uniquePlayers,teamMatrix = \
-	obtainIndices(rawDict,TeamAstring,TeamBstring) # NB: These indices could be useful for different purposes as well
+	# # Nonlinear pedagogy only:
+	# # Every new Run (Nonlinear pedagogy data only) has a jump in time (and position), for which velocity is set to 0.
+	# tmpAtDi5 = correctVNorm(rawDict,attributeDict) # Correction only, doesn't need new label.
+	# attributeDict.update(tmpAtDi5)
+	## \WORK IN PROGRESS ##
 
-	tmpAtDi1,tmpAtLa1,CentXA,CentYA,CentXB,CentYB = teamCentroid(indsMatrix,XpositionMatrix,YpositionMatrix,teamAcols,teamBcols,TeamAstring,TeamBstring)
-	
-	print(CentXA)
-	print(tmpAtDi1.keys())
-	for i in tmpAtDi1.keys():
-		s1 = pd.Series(tmpAtDi1, name = i)
-		attributeDict = pd.concat([attributeDict, s1], axis=1)
-	print(attributeDict.keys())
-
-	attributeDict.to_csv('C:\\Users\\rensm\\Documents\\PostdocLeiden\\BRAxNLD repository\\Data\\tmp\\test.csv')
-
-	# s1 = pd.Series(tmpAtDi1, name = tmpAtDi1.keys())
-	# result = pd.concat([rawDict, s1], axis=1)
-	# print(result.keys())
-
-	# attributeDict = pd.concat([attributeDict, tmpAtDi1], axis=1, join='inner')
-
-	# attributeDict.update(tmpAtDi1)
-	# attributeLabel.update(tmpAtLa1)
-	pdb.set_trace()
-	attributeDict = pd.concat([attributeDict, tmpAtDi1], axis=1, join='inner')
-	print(attributeDict.keys())
-
-	# attributeDict.update(tmpAtDi1)
-	attributeLabel.update(tmpAtLa1)
-	print(attributeLabel)
-
-	tmpAtDi2,tmpAtLa2 = teamSpread(CentXA,CentYA,CentXB,CentYB,uniqueTsS,uniquePlayers,teamMatrix,XpositionMatrix,YpositionMatrix,teamAcols,teamBcols,indsMatrix,TeamAstring,TeamBstring)
-	attributeDict.update(tmpAtDi2)
-	attributeLabel.update(tmpAtLa2)
-
-	tmpAtDi3,tmpAtLa3 = teamSurface(indsMatrix,XpositionMatrix,YpositionMatrix,teamAcols,teamBcols,TeamAstring,TeamBstring)
-	attributeDict.update(tmpAtDi3)
-	attributeLabel.update(tmpAtLa3)
-
-	tmpAtDi4,tmpAtLa4 = vNorm(rawDict)
-	attributeDict.update(tmpAtDi4)
-	attributeLabel.update(tmpAtLa4)
-
-	# Nonlinear pedagogy only:
-	# Every new Run (Nonlinear pedagogy data only) has a jump in time (and position), for which velocity is set to 0.
-	tmpAtDi5 = correctVNorm(rawDict,attributeDict) # Correction only, doesn't need new label.
-	attributeDict.update(tmpAtDi5)
-	pdb.set_trace()
 	return attributeDict, attributeLabel
 
 ############################################################
@@ -159,6 +118,8 @@ def teamCentroid_panda(rawDict,attributeDict,attributeLabel,TeamAstring,TeamBstr
 	newAttributes['LengthB'][ind_groupRows] = Team_B_X.max(axis=0, skipna=True) - Team_B_X.min(axis=0, skipna=True)
 	newAttributes['WidthB'][ind_groupRows] = Team_B_Y.max(axis=0, skipna=True) - Team_B_Y.min(axis=0, skipna=True)
 	pd.options.mode.chained_assignment = 'warn'  # default='warn'
+
+	warn('\nUnverified assumption: field width = X-axis, field length = Y-axis\n')
 	
 	# Combine the pre-existing attributes with the new attributes:
 	attributeDict = pd.concat([attributeDict, newAttributes], axis=1)
@@ -282,59 +243,52 @@ def teamSurface_asPanda(rawDict,attributeDict,attributeLabel,TeamAstring,TeamBst
 	Team_BX = dfB.pivot(columns='Ts', values='X')
 	Team_BY = dfB.pivot(columns='Ts', values='Y')	
 
-	# Create empty DataFrame to store results, NB: columns need to be assigend beforehand.
-	newAttributes = pd.DataFrame(index = ind_groupRows,columns = ['SurfaceA', 'sumVerticesA', 'ShapeRatioA', 'WidthA', 'LengthA', 'SurfaceB', 'sumVerticesB', 'ShapeRatioB', 'WidthB', 'LengthB'])
-		
 	# Compute the new attributes
-	# pd.options.mode.chained_assignment = None  # default='warn' # NB: The code below gives a warning because it may be uncertain whether the right ind_groupRows are called. If you know a work-around, let me know.
-	
-	# newAttributes['SpreadA'][ind_groupRows] = Team_AX.mean(axis=0, skipna=True)
-	# newAttributes['stdSpreadA'][ind_groupRows] = Team_A_distToCent.std(axis=0, skipna=True)
-	# newAttributes['SpreadB'][ind_groupRows] = Team_B_distToCent.mean(axis=0, skipna=True)
-	# newAttributes['stdSpreadB'][ind_groupRows] = Team_B_distToCent.std(axis=0, skipna=True)	
-	# pd.options.mode.chained_assignment = 'warn'  # default='warn'
+	SurfaceA = []
+	SumVerticesA = []
+	ShapeRatioA = []
+	SurfaceB = []
+	SumVerticesB = []
+	ShapeRatioB = []
 
 	# For every time point in the dataFrame
 	for idx,i in enumerate(pd.unique(rawDict['Ts'])):
+				
 		curXPosA = Team_AX[i][Team_AX[i].isnull() == False]
 		curYPosA = Team_AY[i][Team_AY[i].isnull() == False]
-		SurfaceA,sumVerticesA,ShapeRatioA = groupSurface(curXPosA,curYPosA)
-		print(SurfaceA)
-		print(sumVerticesA)
-		print(ShapeRatioA)
-		pdb.set_trace()
-		dfs = pd.DataFrame(SurfaceA,columns = ['surface'])
-		dfs.to_csv('C:\\Users\\rensm\\Documents\\PostdocLeiden\\BRAxNLD repository\\Data\\tmp\\test.csv')
-		pdb.set_trace()
+		curXPosB = Team_BX[i][Team_BX[i].isnull() == False]
+		curYPosB = Team_BY[i][Team_BY[i].isnull() == False]
 
-		SurfaceA,sumVerticesA,ShapeRatioA = groupSurface(XpositionMatrix[idx,teamAcols],YpositionMatrix[idx,teamAcols])
+		# WARNING: groupSurface not equipped to deal with None and np.nan values.
+		# NB: Simply skipping it using an if-loop will be problematic with the current indexing method:
+		# using ind_groupRows assumes that there is a value for every timestep
+		curXPosA = curXPosA.as_matrix()
+		curYPosA = curYPosA.as_matrix()	
+		curSurfaceA,curSumVerticesA,curShapeRatioA = groupSurface(curXPosA,curYPosA) 
+		curXPosB = curXPosB.as_matrix()
+		curYPosB = curYPosB.as_matrix()	
+		curSurfaceB,curSumVerticesB,curShapeRatioB = groupSurface(curXPosB,curYPosB)
+		##
 
-		SurfaceA,sumVerticesA,ShapeRatioA = groupSurface(XpositionMatrix[idx,teamAcols],YpositionMatrix[idx,teamAcols])
-		SurfaceB,sumVerticesB,ShapeRatioB = groupSurface(XpositionMatrix[idx,teamBcols],YpositionMatrix[idx,teamBcols])		
+		SurfaceA.append(curSurfaceA)
+		SumVerticesA.append(curSumVerticesA)
+		ShapeRatioA.append(curShapeRatioA)
+		SurfaceB.append(curSurfaceB)
+		SumVerticesB.append(curSumVerticesB)
+		ShapeRatioB.append(curShapeRatioB)
+	
+	## NB, using an old script for groupSurface(). So awkward way to re-convert to pandas
+	dfSurfaceA = pd.DataFrame(data = SurfaceA,index = ind_groupRows,columns = ['SurfaceA'])
+	dfSumVerticesA = pd.DataFrame(data = SumVerticesA,index = ind_groupRows,columns = ['SumVerticesA'])
+	dfShapeRatioA = pd.DataFrame(data = ShapeRatioA,index = ind_groupRows,columns = ['ShapeRatioA'])
 
-		# Width ************** ASSUMPTION --> field width = X-axis, field length = Y-axis
-		WidthA = max(XpositionMatrix[idx,teamAcols])-min(XpositionMatrix[idx,teamAcols])
-		WidthB = max(XpositionMatrix[idx,teamBcols])-min(XpositionMatrix[idx,teamBcols])
-		# Length
-		LengthA = max(YpositionMatrix[idx,teamAcols])-min(YpositionMatrix[idx,teamAcols])
-		LengthB = max(YpositionMatrix[idx,teamBcols])-min(YpositionMatrix[idx,teamBcols])
-		warn('\nUnverified assumption: field width = X-axis, field length = Y-axis\n')
+	dfSurfaceB = pd.DataFrame(data = SurfaceB,index = ind_groupRows,columns = ['SurfaceB'])
+	dfSumVerticesB = pd.DataFrame(data = SumVerticesB,index = ind_groupRows,columns = ['SumVerticesB'])
+	dfShapeRatioB = pd.DataFrame(data = ShapeRatioB,index = ind_groupRows,columns = ['ShapeRatioB'])
 
-		# Store immediately
-		tmpSurfaceA[int(val)] = SurfaceA
-		tmpsumVerticesA[int(val)] = sumVerticesA
-		tmpShapeRatioA[int(val)] = ShapeRatioA
-		tmpWidthA[int(val)] = WidthA
-		tmpLengthA[int(val)] = LengthA
-
-		tmpSurfaceB[int(val)] = SurfaceB
-		tmpsumVerticesB[int(val)] = sumVerticesB
-		tmpShapeRatioB[int(val)] = ShapeRatioB
-		tmpWidthB[int(val)] = WidthB
-		tmpLengthB[int(val)] = LengthB
-
-	# Combine the pre-existing attributes with the new attributes:
-	attributeDict = pd.concat([attributeDict, newAttributes], axis=1)
+	attributeDict = pd.concat([attributeDict, \
+		dfSurfaceA, dfSumVerticesA, dfShapeRatioA, \
+		dfSurfaceB, dfSumVerticesB, dfShapeRatioB,], axis=1)
 
 	##### THE STRINGS #####
 	# Export a string label of each new attribute in the labels dictionary (useful for plotting purposes)
@@ -344,16 +298,10 @@ def teamSurface_asPanda(rawDict,attributeDict,attributeLabel,TeamAstring,TeamBst
 	tmpsumVerticesBString = 'Circumference of surface area of %s (m)' %TeamBstring
 	tmpShapeRatioAString = 'Uniformity of surface area of %s (1 = uniform, closer to 0 = elongated)' %TeamAstring
 	tmpShapeRatioBString = 'Uniformity of surface area of %s (1 = uniform, closer to 0 = elongated)' %TeamBstring
-	tmpWidthAString = 'Distance along X-axis %s (m)' %TeamAstring
-	tmpWidthBString = 'Distance along X-axis %s (m)' %TeamBstring
-	tmpLengthAString = 'Distance along Y-axis %s (m)' %TeamAstring
-	tmpLengthBString = 'Distance along Y-axis %s (m)' %TeamBstring
 
 	tmpAtLa3 = {'SurfaceA': tmpSurfaceAString, 'SurfaceB': tmpSurfaceBString, \
 	'sumVerticesA': tmpsumVerticesAString,'sumVerticesB': tmpsumVerticesBString, \
-	'ShapeRatioA': tmpShapeRatioAString,'ShapeRatioB': tmpShapeRatioBString, \
-	'WidthA': tmpWidthAString,'WidthB': tmpWidthBString, \
-	'LengthA': tmpLengthAString,'LengthB': tmpLengthBString }	
+	'ShapeRatioA': tmpShapeRatioAString,'ShapeRatioB': tmpShapeRatioBString}	
 
 	attributeLabel.update(tmpAtLa3)
 
@@ -601,7 +549,6 @@ def teamSurface(indsMatrix,XpositionMatrix,YpositionMatrix,teamAcols,teamBcols,T
 #####################################################################################
 
 def groupSurface(X,Y):
-	dataShape = np.shape(X) # Number of data entries
 
 	def cart2pol(x, y):
 		rho = np.sqrt(x**2 + y**2)
@@ -640,24 +587,31 @@ def groupSurface(X,Y):
 			return max(ribDist) / min(ribDist) 
 
 	# pre-first, change dataframes into np arrays
-	X = X.as_matrix()
-	Y = Y.as_matrix()
+	# X = X.as_matrix()
+	# Y = Y.as_matrix()	
+	# X = np.array([-10.717,	4.551,	1.023,	-5.168,	-49.105,	-8.758,	-18.722,	0.427,	0.842])
+	# Y = np.array([	-22.45,	-20.663,	10.458,	22.755,	1.325,	7.319,	-11.606,	-0.407,	0.589])
+	dataShape = np.shape(X) # Number of data entries
+
+	# print(type(X))
+	# print(np.shape(X))
+	# print(type(Y))
+	# print(np.shape(Y))
 
 	# first, find lowest yvalue (and highest X if equal)
 	indStartY = np.where(Y == np.min(Y))
-	
 
 	if np.size(indStartY) != 1:
 		# If multiple smallest Y, select highest X
 		indStartXY = np.where(X[indStartY] == np.max(X[indStartY]))
 		indStart = indStartY[0][indStartXY[0]][0]
 	else:
-		indStart = indStartY[0][0]
+		indStart = indStartY[0][0]	
 
 	StartX = X[indStart]
 	StartY = Y[indStart]
 
-	indNext = -1
+	indNext =[-1]
 	countIteration = 0
 
 	xremaining = X.copy()
@@ -667,26 +621,44 @@ def groupSurface(X,Y):
 
 	VerticesX = [StartX]
 	VerticesY = [StartY]
-	# print('VerticesX = ')
-	print('indStart = %s' %indStart)
-	print(X)
-	print(Y)
+
 	while indNext != indStart:
 		countIteration = countIteration + 1
 
 		CurX = X[curInd]
 		CurY = Y[curInd]
-		# then, compute the angles with all players towards an arbitrary point (the centroid)
-		rho,phi = cart2pol(xremaining - CurX,Y-CurY)
+		# print('CurX = %s' %CurX)
 
-		# Improvised correction after difficulty with finding next point.
-		# I'm guessing it's because the starting point is different than expected.
-		# First, correct phi with 1/4*pi
-		phiAccent = phi - .25*math.pi
-		# Then, check if any value below 0, which should be 2*pi higher.
-		phiAccent[phiAccent<0] = [i + 2*math.pi for i in phiAccent if i < 0]			
-		phi = phiAccent
-		
+		# then, compute the angles with all players towards an arbitrary point (the centroid)
+		# print('x_in = %s' %(xremaining - CurX))
+		# print('y_in = %s' %(Y-CurY))
+		rho,phi = cart2pol(xremaining - CurX,Y-CurY)
+		# rho,phi = cart2pol(CurX - xremaining,CurY-Y)
+
+		# # Predictable Rho
+		# x = np.array([0,-10,0,10,0])
+		# y = np.array([-10,0,10,0,0])
+		# rhos,phis = cart2pol(x,y)
+		# bottom = phis[0]
+		# left = phis[1]
+		# top = phis[2]
+		# right = phis[3]
+		# rho0 = phis[4]
+		# # # Improvised correction after difficulty with finding next point.
+		# # # I'm guessing it's because the starting point is different than expected.
+		# # # First, correct phi with 1/4*pi
+		# # phiAccent = phi + 1
+		# # # Then, check if any value below 0, which should be 2*pi higher.
+		# # phiAccent[phiAccent<0] = [i + 2*math.pi for i in phiAccent if i < 0]			
+		# # phi = phiAccent
+
+		# print('bottom = %s' %bottom)
+		# print('right = %s' %right)
+		# print('top = %s' %top)
+		# print('left = %s' %left)
+		# print('rho0 = %s' %rho0)
+		# pdb.set_trace()
+
 		# select the smallest angle as the next point
 		indNextPhi = np.where(phi == np.nanmin(phi))
 
@@ -699,6 +671,17 @@ def groupSurface(X,Y):
 
 		NextX = X[indNext]
 		NextY = Y[indNext]
+		# if countIteration == 5:
+		# 	print('---')
+		# 	print('phi = %s' %phi)
+		# 	print('X = %s' %X)
+		# 	print('Y = %s' %Y)
+		# 	print('---')
+		# 	print('NextPhi = %s' %phi[indNext])
+		# 	print('NextX = %s' %NextX)
+		# 	print('NextY = %s' %NextY)
+		# 	pdb.set_trace()
+
 
 
 		if countIteration > dataShape[0]: # use the number of columns as the maximum (= max number of vertices)
@@ -709,28 +692,23 @@ def groupSurface(X,Y):
 		if countIteration == 1: # The start is replaced only at the first time as it is used as the stopping criterium\
 			# Simpelere alternative: add != 1 to while statement
 			xremaining[indStart] = StartX
-
-		VerticesX.append(NextX)
-		VerticesY.append(NextY)	
 		
-		if countIteration == 5:
-			print('curInd = %s' %curInd)
-			print('indNext = %s' %indNext)
-			print('xremaining = %s' %xremaining)
-			print('phi = %s' %phi)
-			phiAccent = phi - .25*math.pi
-			phiAccent[phiAccent<0] = [i + 2*math.pi for i in phiAccent if i < 0]			
-			print('phiAccent = %s' %phiAccent)
-			pdb.set_trace()
-		# Prepare the next round
+		# Exclude all points that lie in-between the next and the current point
+		# I THINK it's only necessary to do this for the Y-axis
+		# Debugging idea: see if the same rule needs to apply on the X-axis?
+		statement = (Y > Y[indNext]) & (Y < Y[curInd])
+		# print('statement = %s' %statement)
+		xremaining[statement] = np.nan
 		xremaining[indNext] = np.nan
 		curInd = indNext
 
 
+		VerticesX.append(NextX)
+		VerticesY.append(NextY)	
 
-	print(VerticesX)
-	print(VerticesY)
-	pdb.set_trace()
+	# print(VerticesX)
+	# print(VerticesY)
+	# pdb.set_trace()
 	Surface = PolyArea(VerticesX,VerticesY)
 	sumVertices = Circumference(VerticesX,VerticesY)
 	ShapeRatio = RibRatio(VerticesX,VerticesY)
