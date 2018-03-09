@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 from os.path import isfile, join, isdir, exists
 from os import listdir, path, makedirs
 import sys, inspect
