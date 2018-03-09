@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 from os.path import isfile, join, isdir, exists
 from os import listdir, path, makedirs
 import sys, inspect
@@ -51,3 +52,4 @@ def checkFolders(folder,aggregateEvent):
 
 	return dataFolder,tmpFigFolder,outputFolder,cleanedFolder
 
+=======
