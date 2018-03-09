@@ -13,17 +13,17 @@ from warnings import warn
 
 # From my own library:
 import plotSnapshot
-import CSVexcerpt
-import CSVimportAsColumns
-import identifyDuplHeader
-import LoadOrCreateCSVexcerpt
-import individualAttributes
+# import CSVexcerpt
+# import CSVimportAsColumns
+# import identifyDuplHeader
+# import LoadOrCreateCSVexcerpt
+# import individualAttributes
 import plotTimeseries
-import dataToDict
-import dataToDict2
+# import dataToDict
+# import dataToDict2
 import safetyWarning
-import exportCSV
-import countEvents2
+# import exportCSV
+# import countEvents2
 
 if __name__ == '__main__':
 	# First try, should be removed later:

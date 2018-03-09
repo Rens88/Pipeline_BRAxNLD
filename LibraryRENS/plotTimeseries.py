@@ -12,7 +12,7 @@ from warnings import warn
 import numpy as np
 from os.path import isfile, join, isdir, exists
 from os import listdir, makedirs
-import CSVexcerpt
+# import CSVexcerpt
 import matplotlib.pyplot as plt
 from matplotlib import colors as mcolors
 

@@ -13,8 +13,8 @@ from os import listdir, makedirs
 from os.path import isfile, join, isdir 
 from warnings import warn
 
-import CSVimportAsColumns
-import identifyDuplHeader
+# import CSVimportAsColumns
+# import identifyDuplHeader
 
 if __name__ == '__main__':
 	# ############
