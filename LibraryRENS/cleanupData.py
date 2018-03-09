@@ -26,10 +26,7 @@ from os.path import isfile, join, isdir, exists
 from os import listdir, path, makedirs
 import re
 import pandas as pd
-
-import VPcleanup
-import LTcleanup
-
+import student_XX_cleanUp
 
 if __name__ == '__main__':
 
@@ -65,16 +62,6 @@ def process(dirtyFname,cleanFname,dataType,dataFolder,cleanedFolder,TeamAstring,
 		elif dataType == "FDP":
 			print('\nCleaning up file...')
 			df_cleaned = FDP(dirtyFname,cleanFname,dataFolder,cleanedFolder,headers,readAttributeCols,debugOmittedRows)
-
-		####################################################################################
-		elif dataType == "VP_LT":
-			# Here you could add more clean up functions.
-			PrintThisToo = VPcleanup.this_is_a_function('\nThis text will be printed.\n')
-			print(PrintThisToo)
-			PrintThisToo = LTcleanup.this_is_a_function('\nThis text will be printed.\n')
-			print(PrintThisToo)
-		####################################################################################
-
 		else:
 			# overwrite cleanedFolder and add a warning that no cleanup had taken place
 			cleanedFolder = dataFolder
@@ -125,24 +112,29 @@ def FDP(fname,cleanFname,dataFolder,cleanedFolder,headers,readAttributeCols,debu
 	df = pd.read_csv(dataFolder+fname,usecols=(colHeaders),low_memory=False)
 	df[ts] = df[ts]*conversion_to_S # Convert from ms to s.
 
+	
 	## Cleanup for BRAxNLD
 	if headers['TeamID'] == None:
 		df_WithName_and_Team,headers = splitName_and_Team(df,headers,ID,newPlayerIDstring,newTeamIDstring)
-		
-		df_cropped01,df_omitted01 = omitXandY_equals0(df_WithName_and_Team,x,y,ID)
-		df_cropped02,df_omitted02 = omitRowsWithout_XandY(df_cropped01,x,y)	
-		df_cropped03,df_omitted03 =	omitRowsWithExtreme_XandY(df_cropped02,x,y,expectedVals)	
-
-		# Idea: by incorporting df_omittedNN in a list, you could make the script work with variable lenghts of omitted dfs.
-		df_omitted = pd.concat([df_omitted01, df_omitted02,df_omitted03])
-
 		# Delete the original ID, but only if the string is not the same as the new Dict.Keys
 		if ID != newPlayerIDstring and ID != newTeamIDstring:
-			del df_cropped03[ID]
-			del df_omitted[ID]
-	## End clenaup for BRAxNLD
+			del df_WithName_and_Team[ID]
+			# del df_omitted[ID]		
+		ID = headers['PlayerID']
+		df = df_WithName_and_Team
+
+	df_cropped01,df_omitted01 = omitXandY_equals0(df,x,y,ID)
+	df_cropped02,df_omitted02 = omitRowsWithout_XandY(df_cropped01,x,y)	
+	df_cropped03,df_omitted03 =	omitRowsWithExtreme_XandY(df_cropped02,x,y,expectedVals)	
+
+	# Idea: by incorporting df_omittedNN in a list, you could make the script work with variable lenghts of omitted dfs.
+	df_omitted = pd.concat([df_omitted01, df_omitted02, df_omitted03])
+	## End cleanup for BRAxNLD
 
 	df_cleaned = df_cropped03.copy()
+
+	df_cleaned,df_omitted = \
+	student_XX_cleanUp.process(df_cleaned,df_omitted,headers)
 
 	if exists(cleanedFolder + cleanFname):
 		warn('\nOverwriting file <%s> \nin cleanedFolder <%s>.\n' %(cleanFname,cleanedFolder))
@@ -187,7 +179,7 @@ def omitXandY_equals0(df,x,y,ID):
 def omitRowsWithout_XandY(df,x,y):
 	# Omit rows that have no x and y value.
 	rowsWith_XandY = (df[x].notnull()) & (df[y].notnull())
-	pdb.set_trace()
+	# pdb.set_trace()
 	df_cleaned = df[rowsWith_XandY == True ]
 	df_omitted = df[rowsWith_XandY == False ]
 

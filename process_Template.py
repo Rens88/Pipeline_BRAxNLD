@@ -43,6 +43,8 @@
 # USER INPUT ############
 #########################
 ## CHANGE THIS all these variables until 'END USER INPUT'
+studentFolder = 'XXcontributions' # here, you provide the string name of the student folder that you want to include.
+
 # Temporary inputs (whilst updating to using pandas)
 exportPerFile = True # whether you want to export a csv for every complete file (no temporal aggregation)
 debuggingMode = False # whether yo want to continue with the remaining code to incorporate using pandas (temporal aggregation, export and visualization)
@@ -109,7 +111,7 @@ import initialization
 # In this module, the library is added to the system path. 
 # This allows Python to import the custom modules in our library. 
 # If you add new subfolders in the library, they need to be added in addLibary (in initialization.py) as well.
-initialization.addLibrary()
+initialization.addLibrary(studentFolder)
 dataFolder,tmpFigFolder,outputFolder,cleanedFolder =\
 initialization.checkFolders(folder,aggregateEvent)
 
@@ -163,13 +165,17 @@ for dirtyFname in DirtyDataFiles:
 	# Clean cleanFname (it only cleans data if there is no existing cleaned file of the current (dirty)file )
 	cleanedFolder = \
 	cleanupData.process(dirtyFname,cleanFname,dataType,dataFolder,cleanedFolder,TeamAstring,TeamBstring,rawHeaders,readAttributeCols)
-
+	readAttributeCols[0] = 'Ts' # Not so pretty to have this here. Embed it in code.
 	# From now onward, rawData contains:
 	#  'Ts' --> Timestamp
 	#  'X' --> X-position
 	#  'Y' --> Y-position
 	#  'PlayerID' --> Player identification. NB: Ball-rows should be 'ball' and Match-rows should be 'groupRow' (to indicate CentroidTeamA)
 	#  'TeamID' --> Team idenfitification
+
+	###### Work in progress ##########
+	# clean target events ('StringEvent', tStart, tEnd)
+	###### \Work in progress #########
 
 	########################################################################################
 	####### Import existing data ###########################################################

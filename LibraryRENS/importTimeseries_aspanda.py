@@ -12,16 +12,16 @@ from warnings import warn
 
 # From my own library:
 import plotSnapshot
-import CSVexcerpt
-import CSVimportAsColumns
-import identifyDuplHeader
-import LoadOrCreateCSVexcerpt
-import individualAttributes
-import plotTimeseries
-import dataToDict
-import dataToDict2
+# import CSVexcerpt
+# import CSVimportAsColumns
+# import identifyDuplHeader
+# import LoadOrCreateCSVexcerpt
+# import individualAttributes
+# import plotTimeseries
+# import dataToDict
+# import dataToDict2
 import safetyWarning
-import exportCSV
+# import exportCSV
 import pandas as pd
 
 if __name__ == '__main__':
@@ -31,6 +31,14 @@ if __name__ == '__main__':
 def existingAttributes(filename,folder,headers):
 
 	colHeaders = headers
+	# Only read the headers as a check-up:
+	with open(folder+filename, 'r') as f:
+		reader = csv.reader(f)
+		tmpHeaders = list(next(reader))
+
+	for i in colHeaders:
+		if not i in tmpHeaders:
+			exit('EXIT: Column header <%s> not in column headers of the file:\n%s\n\nSOLUTION: Change the user input in \'process\' \n' %(i,tmpHeaders))
 
 	# Import existing attributes
 	# NB: Indexing by timestamp (adding "index_col='Timestamp'") requires

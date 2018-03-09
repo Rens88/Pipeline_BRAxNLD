@@ -9,17 +9,10 @@ from warnings import warn
 import math
 # From my own library:
 import plotSnapshot
-import CSVexcerpt
-import CSVimportAsColumns
-import identifyDuplHeader
-import LoadOrCreateCSVexcerpt
-import individualAttributes
-import plotTimeseries
-import dataToDict
-import dataToDict2
 import safetyWarning
-import exportCSV
 import pandas as pd
+
+import student_XX_spatialAggregation
 
 if __name__ == '__main__':
 	process(rawDict,attributeDict,attributeLabel,TeamAstring,TeamBstring)
@@ -60,6 +53,9 @@ def process(rawDict,attributeDict,attributeLabel,TeamAstring,TeamBstring):
 
 	attributeDict,attributeLabel = \
 	teamSurface_asPanda(rawDict,attributeDict,attributeLabel,TeamAstring,TeamBstring)
+
+	attributeDict,attributeLabel = \
+	student_XX_spatialAggregation.process(rawDict,attributeDict,attributeLabel,TeamAstring,TeamBstring)
 	
 	## debugging only
 	# allesBijElkaar = pd.concat([rawDict, attributeDict], axis=1) # debugging only
