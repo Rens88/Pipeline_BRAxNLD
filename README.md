@@ -1,3 +1,24 @@
+09-03-2018, Rens Meerhoff
+Another big update complete. The pipeline now uses pandas as dataframes and has two dedicated sections for students to work in. The update is functional up until spatialAggregation. temporalAggregation will follow soon. If you want to test the pipeline, follow these steps:
+1) Make a local copy of the csv file that you can find in the root folder. Put it in your 'folder'.
+2) Edit the location of this folder in the 'process_Template.py' user input section.
+3) Build and run 'process_Template.py'. You will now run the code on the example CSV file. It will create a cleaned copy in the subfolder 'Cleaned' of your 'folder'. It will export a .csv file with the (not yet temporally aggregated) features that were computed.
+
+TO THE STUDENTS:
+You can easily work in this dataset by following the instructions in the files that you can find in XXcontributions, a subfolder of the library.
+Please create your own branch on GitHub to share your progress. Using GitHub's desktop app avoids version conflicts and makes uploading new files very easy.
+
+When in doubt, contact me at l.a.meerhoff@leidenuniv.liacs.nl
+
+
+
+
+
+###################################################################################################################
+###################################################################################################################
+###################################################################################################################
+
+
 09-02-2018, Rens Meerhoff
 The big update is complete, but still needs to be finalized to be adapted for the LPM data. However,
 this shouldn't require any big changes in the infrastructure (i.e., where which information is computed etc.).
