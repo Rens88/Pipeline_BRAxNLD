@@ -11,6 +11,11 @@ Please create your own branch on GitHub to share your progress. Using GitHub's d
 When in doubt, contact me at l.a.meerhoff@leidenuniv.liacs.nl
 
 
+Known issues: The pipeline fails with files that are too large. I will look into some of the cleanup code to make it more efficient. If this happens to you, the short term fix is to use "reduceFileSize.py" in the folder "Quickfixes" to reduce the filesize of the file you are working with.
+
+In the next update: There will be more functionality in terms of temporal aggregation. Also, there will be a default plotting tool that can be used to confirm whether your newly computed features have the values that you expect.
+
+
 
 
 
