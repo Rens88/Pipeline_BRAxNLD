@@ -155,7 +155,7 @@ for dirtyFname in DirtyDataFiles:
 
 	# Clean cleanFname (it only cleans data if there is no existing cleaned file of the current (dirty)file )
 	cleanedFolder,readAttributeCols,attrLabel = \
-	cleanupData.process(dirtyFname,cleanFname,dataType,dataFolder,cleanedFolder,TeamAstring,TeamBstring,rawHeaders,readAttributeCols,attrLabel)
+	cleanupData.process(dirtyFname,cleanFname,dataType,dataFolder,cleanedFolder,TeamAstring,TeamBstring,rawHeaders,readAttributeCols,attrLabel,timestampString)
 
 	# From now onward, rawData contains:
 	#  'Ts' --> Timestamp
