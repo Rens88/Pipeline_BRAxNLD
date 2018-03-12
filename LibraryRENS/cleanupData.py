@@ -47,7 +47,11 @@ if __name__ == '__main__':
 	NP(dataFiles,cleanFname,folder,cleanedFolder,TeamAstring,TeamBstring)
 
 #########################################################################
-def process(dirtyFname,cleanFname,dataType,dataFolder,cleanedFolder,TeamAstring,TeamBstring,headers,readAttributeCols):
+def process(dirtyFname,cleanFname,dataType,dataFolder,cleanedFolder,TeamAstring,TeamBstring,headers,readAttributeCols,attrLabel):
+	# Add time to the attribute columns (easy for indexing)
+	readAttributeCols = [timestampString] + readAttributeCols # This makes sure that timeStamp is also imported in attribute cols, necessary for pivoting etc.
+	attrLabel.update({'Ts': 'Time (s)'})
+
 	debugOmittedRows = False # Optional export of data that was omitted in the cleaning process
 	# Clean up data, if necessary
 	cleanFnames = [f for f in listdir(cleanedFolder) if isfile(join(cleanedFolder, f)) if '.csv' in f]
@@ -86,7 +90,10 @@ def process(dirtyFname,cleanFname,dataType,dataFolder,cleanedFolder,TeamAstring,
 		# Export cleaned data to CSV
 		df_cleaned.to_csv(cleanedFolder + cleanFname)		
 
-	return cleanedFolder
+		# Now that Time was loaded, chnage the key to its generic value
+		readAttributeCols[0] = 'Ts' # Not so pretty to have this here. Embed it in code.
+
+	return cleanedFolder, readAttributeCols, attrLabel
 
 def FDP(fname,cleanFname,dataFolder,cleanedFolder,headers,readAttributeCols,debugOmittedRows):
 
