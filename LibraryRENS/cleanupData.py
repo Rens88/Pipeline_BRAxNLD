@@ -57,8 +57,10 @@ def process(dirtyFname,cleanFname,dataType,dataFolder,cleanedFolder,TeamAstring,
 	cleanFnames = [f for f in listdir(cleanedFolder) if isfile(join(cleanedFolder, f)) if '.csv' in f]
 
 	if cleanFname in cleanFnames:
+		# Now that Time was loaded, chnage the key to its generic value
+		readAttributeCols[0] = 'Ts' # Not so pretty to have this here. Embed it in code.
 		warn('\nContinued with previously cleaned data.\nIf problems exist with data consistency, consider writing a function in cleanupData.py.\n')
-
+		return cleanedFolder, readAttributeCols, attrLabel
 	else: # create a new clean Fname
 		if dataType == "NP":
 			# NB: cleanupData currently dataset specific (NP or FDP). Fixes are quite specific and may not easily transfer to different datasets.
