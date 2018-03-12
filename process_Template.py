@@ -94,10 +94,6 @@ Visualization = False # True = includes visualization, False = skips visualizati
 #########################
 
 
-
-
-
-
 #########################
 # INITIALIZATION ########
 #########################
@@ -129,16 +125,12 @@ import pandas as pd
 # CSVexcerpt CSVimportAsColumns identifyDuplHeader LoadOrCreateCSVexcerpt individualAttributes plotTimeseries dataToDict 
 # dataToDict2 safetyWarning countExistingEvents exportCSV importTimeseriesData csv importEvents CSVtoDF plotSnapshot
 
-
 ## These lines should be embedded elsewhere in the future.
 # Preparing the dictionary of the raw data (NB: With the use of Pandas, this is a bit redundant)
 rawHeaders = {'Ts': timestampString,\
 'PlayerID': PlayerIDstring,\
 'TeamID': TeamIDstring,\
 'Location': (XPositionString,YPositionString) }
-
-readAttributeCols = [timestampString] + readAttributeCols # This makes sure that timeStamp is also imported in attribute cols, necessary for pivoting etc.
-attrLabel.update({'Ts': 'Time (s)'})
 
 xstring = 'Time (s)'
 aggregateLevel = (aggregateEvent,aggregateWindow,aggregateLag)
@@ -162,9 +154,9 @@ for dirtyFname in DirtyDataFiles:
 	disectFilename.process(dirtyFname,dataType,TeamAstring,TeamBstring)
 
 	# Clean cleanFname (it only cleans data if there is no existing cleaned file of the current (dirty)file )
-	cleanedFolder = \
-	cleanupData.process(dirtyFname,cleanFname,dataType,dataFolder,cleanedFolder,TeamAstring,TeamBstring,rawHeaders,readAttributeCols)
-	readAttributeCols[0] = 'Ts' # Not so pretty to have this here. Embed it in code.
+	cleanedFolder,readAttributeCols,attrLabel = \
+	cleanupData.process(dirtyFname,cleanFname,dataType,dataFolder,cleanedFolder,TeamAstring,TeamBstring,rawHeaders,readAttributeCols,attrLabel)
+
 	# From now onward, rawData contains:
 	#  'Ts' --> Timestamp
 	#  'X' --> X-position
@@ -174,6 +166,7 @@ for dirtyFname in DirtyDataFiles:
 
 	###### Work in progress ##########
 	# clean target events ('StringEvent', tStart, tEnd)
+	# cleanupEvents.process()
 	###### \Work in progress #########
 
 	########################################################################################
@@ -182,6 +175,7 @@ for dirtyFname in DirtyDataFiles:
 	
 	rawPanda = importTimeseries_aspanda.rawData(cleanFname,cleanedFolder)
 	attrPanda = importTimeseries_aspanda.existingAttributes(cleanFname,cleanedFolder,readAttributeCols)
+
 	###### Work in progress ##########
 	# targetEventsImported = importEvents.process(rawDict,attributeDict,TeamAstring,TeamBstring)
 	###### \Work in progress #########
@@ -191,6 +185,7 @@ for dirtyFname in DirtyDataFiles:
 	########################################################################################
 
 	attrPanda,attrLabel = spatialAggregation.process(rawPanda,attrPanda,attrLabel,TeamAstring,TeamBstring)
+
 	###### Work in progress ##########
 	# targetEventsComputed = importEvents.process(rawDict,attributeDict,TeamAstring,TeamBstring)
 	# exportData,exportDataString,exportFullExplanation = \
@@ -205,8 +200,6 @@ for dirtyFname in DirtyDataFiles:
 		# pdb.set_trace()
 		continue
 	###### \Work in progress #########
-
-
 
 	#############################################################
 	#############################################################
