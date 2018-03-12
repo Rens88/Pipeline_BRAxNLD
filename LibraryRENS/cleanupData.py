@@ -63,6 +63,7 @@ def process(dirtyFname,cleanFname,dataType,dataFolder,cleanedFolder,TeamAstring,
 		if dataType == "NP":
 			# NB: cleanupData currently dataset specific (NP or FDP). Fixes are quite specific and may not easily transfer to different datasets.
 			df_cleaned = NP(dirtyFname,cleanFname,dataFolder,cleanedFolder,TeamAstring,TeamBstring)
+			print(type(df_cleaned))
 		elif dataType == "FDP":
 			print('\nCleaning up file...')
 			df_cleaned = FDP(dirtyFname,cleanFname,dataFolder,cleanedFolder,headers,readAttributeCols,debugOmittedRows)

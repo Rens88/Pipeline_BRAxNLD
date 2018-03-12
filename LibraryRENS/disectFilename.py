@@ -75,10 +75,7 @@ def default(fname):
 
 	return exportData, exportDataString, exportDataFullExplanation,fname
 
-
 def NP(fname):
-	# To do: move this to disectFilename
-
 	# Trial parameters:
 	# School & Class
 	if 'JYSS' in fname:
@@ -97,7 +94,6 @@ def NP(fname):
 		Class = Class[0]
 	else:
 		warn('\nCould not identify School: <%s>' %fname)
-
 	
 	# Test
 	if re.search('ret',fname, re.IGNORECASE):
@@ -121,6 +117,6 @@ def NP(fname):
 
 	exportData = [School, Class, Group, Test]
 	exportDataString = ['School', 'Class', 'Group', 'Test']
-	exportFullExplanation = ['School experiment was held at','Class the participants were from','Identifier groups that played each other','Name of the type of trial (PRE = pre-test, POS = post-test, TRA = transfer test, RET = retention test)']
+	exportDataFullExplanation = ['School experiment was held at','Class the participants were from','Identifier groups that played each other','Name of the type of trial (PRE = pre-test, POS = post-test, TRA = transfer test, RET = retention test)']
 
 	return exportData, exportDataString, exportDataFullExplanation,cleanFname
