@@ -43,25 +43,22 @@
 # USER INPUT ############
 #########################
 ## CHANGE THIS all these variables until 'END USER INPUT'
-studentFolder = 'XXcontributions' # here, you provide the string name of the student folder that you want to include.
+# Here, you provide the string name of the student folder that you want to include.
+studentFolder = 'XXcontributions' 
 
 # Temporary inputs (whilst updating to using pandas)
 exportPerFile = True # whether you want to export a csv for every complete file (no temporal aggregation)
 debuggingMode = False # whether yo want to continue with the remaining code to incorporate using pandas (temporal aggregation, export and visualization)
 
-# "FPD" or or "NP" --> so far, only used to call the right cleanup script. Long term goal would be to have a generic cleanup script
-dataType =  "FDP"
+# dataType is used for dataset specific parts of the analysis (in the preparation phase only)
+dataType =  "FDP" # "FPD" or or "NP" --> so far, only used to call the right cleanup script. Long term goal would be to have a generic cleanup script
 
-# This folder should contain a folder with 'Data' and will be used to export the results (including figures)
-# NB: Data in 'Data' folder will first be cleaned. If data is already clean, put the cleaned data in 'Data\\Cleaned'
-# TO do: better explain folder hierarchy
+# This folder should contain a folder with 'Data'. The tabular output and figures will be stored in this folder as well.
 folder = 'C:\\Users\\rensm\\Documents\\PostdocLeiden\\BRAxNLD repository\\'
-"""
-TO DO FLORIS: Insert folder with cleaned data by enabling DataFrame to csv output after cleaning
-"""
 
 # String representing the different teams
-TeamAstring = 'Provide the string that represents one team' # NB: not necessary for FDP (and other datasets where teamstring can be read from the filename, should be done in discetFilename.py)
+# NB: not necessary for FDP (and other datasets where teamstring can be read from the filename, should be done in discetFilename.py)
+TeamAstring = 'Provide the string that represents one team' 
 TeamBstring = 'Provide the string that represents the other team'
 
 # Input of raw data, indicate at least timestamp, entity and Location info
@@ -70,25 +67,27 @@ PlayerIDstring = 'Naam' 							#'enter the string in the header of the column th
 TeamIDstring = None 								#'enter the string in the header of the column that represents TEAMID' 			# Optional
 XPositionString = 'X' 								#'enter the string in the header of the column that represents X-POSITION'			# 'x'
 YPositionString = 'Y' 								#'enter the string in the header of the column that represents Y-POSITION'			# 'y'
+
 # Case-sensitive string rawHeaders of attribute columns that already exist in the data (optional). NB: String also sensitive for extra spaces.
-readAttributeCols = ['Snelheid','Acceleration'] 	#['Here', 'you', 'can', 'proivde a list of strings that represent existing attributes.']
+readAttributeCols = ['Snelheid','Acceleration']
 attrLabel = {readAttributeCols[0]: 'Speed (m/s)',readAttributeCols[1]: 'Acceleration (m/s^2)'} 
 
+# If the raw data is not given in meters, provide the conversion.
+conversionToMeter = 1 #111111 # https://gis.stackexchange.com/questions/8650/measuring-accuracy-of-latitude-and-longitude/8674#8674
+
+## -- work in progress -- 
 # Indicate some parameters for temporal aggregation: 'Full' aggregates over the whole file, any other event needs to be specified with the same string as in the header of the CSV file.
 aggregateEvent = 'Full' # Event that will be used to aggregate over (verified for 'Goals' and for 'Possession')
 aggregateWindow = 10 # in seconds #NB: still need to write warning in temporal aggregation in case you have Goals in combination with None.
 aggregateLag = 0 # in seconds
 
-conversionToMeter = 1 #111111 # https://gis.stackexchange.com/questions/8650/measuring-accuracy-of-latitude-and-longitude/8674#8674
-# To do:
-# - add option to automatically detect a specific event
-# - add option to insert events manually
-# - add possibility to pre-define aggregation method? (avg, std, etc)
-
+# This (simple) visualization plots every outcome variable for the given window for the temporal aggregation
 Visualization = False # True = includes visualization, False = skips visualization
 
-# ALSO:
-# see 'cleanFname' in the main for loop. It is used to obtain the metadata. This is project specific and may need to be changed.
+# Key events (TO DO)
+# - Load existing events
+# - Include modules to compute events
+## -- \work in progress -- 
 
 #########################
 # END USER INPUT ########
