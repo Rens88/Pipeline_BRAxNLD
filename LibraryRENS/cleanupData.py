@@ -47,7 +47,7 @@ if __name__ == '__main__':
 	NP(dataFiles,cleanFname,folder,cleanedFolder,TeamAstring,TeamBstring)
 
 #########################################################################
-def process(dirtyFname,cleanFname,dataType,dataFolder,cleanedFolder,TeamAstring,TeamBstring,headers,readAttributeCols,attrLabel):
+def process(dirtyFname,cleanFname,dataType,dataFolder,cleanedFolder,TeamAstring,TeamBstring,headers,readAttributeCols,attrLabel,timestampString):
 	# Add time to the attribute columns (easy for indexing)
 	readAttributeCols = [timestampString] + readAttributeCols # This makes sure that timeStamp is also imported in attribute cols, necessary for pivoting etc.
 	attrLabel.update({'Ts': 'Time (s)'})
@@ -63,6 +63,7 @@ def process(dirtyFname,cleanFname,dataType,dataFolder,cleanedFolder,TeamAstring,
 		if dataType == "NP":
 			# NB: cleanupData currently dataset specific (NP or FDP). Fixes are quite specific and may not easily transfer to different datasets.
 			df_cleaned = NP(dirtyFname,cleanFname,dataFolder,cleanedFolder,TeamAstring,TeamBstring)
+			print(type(df_cleaned))
 		elif dataType == "FDP":
 			print('\nCleaning up file...')
 			df_cleaned = FDP(dirtyFname,cleanFname,dataFolder,cleanedFolder,headers,readAttributeCols,debugOmittedRows)
