@@ -1,3 +1,9 @@
+############################################################################################
+################################### Pay attention: #########################################
+# Comments below may not be up-to-date. See "Walkthrough - How to use the pipeline.pdf" ####
+############################################################################################
+############################################################################################
+
 09-03-2018, Rens Meerhoff
 Another big update complete. The pipeline now uses pandas as dataframes and has two dedicated sections for students to work in. The update is functional up until spatialAggregation. temporalAggregation will follow soon. If you want to test the pipeline, follow these steps:
 1) Make a local copy of the csv file that you can find in the root folder. Put it in your 'folder'.
