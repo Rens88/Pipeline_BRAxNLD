@@ -160,6 +160,10 @@ for dirtyFname in DirtyDataFiles:
 	cleanedFolder,readAttributeCols = \
 	cleanupData.process(dirtyFname,cleanFname,dataType,dataFolder,cleanedFolder,TeamAstring,TeamBstring,rawHeaders,readAttributeCols,timestampString,readEventColumns,conversionToMeter)
 
+	import time
+	t = time.time()	# do stuff
+	elapsed = time.time() - t
+	print('Time elapsed: %s' %elapsed)
 	pdb.set_trace()
 
 	# From now onward, rawData contains:

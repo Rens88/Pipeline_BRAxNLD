@@ -83,6 +83,7 @@ def process(dirtyFname,cleanFname,dataType,dataFolder,cleanedFolder,TeamAstring,
 			warn('\nTO DO: Timestamp is not consistent: \nWrite the code to smooth out timestamp.')
 
 		# Check if there is already a set of rows for team values (i.e., rows without playerID that are not 'ball')
+		# df_cleaned.to_csv('C:\\Users\\rensm\\Documents\\PostdocLeiden\\NP repository\\Output\\test.csv')
 		df_cleaned = verifyGroupRows(df_cleaned)
 		
 		df_cleaned,df_omitted = \
@@ -211,13 +212,16 @@ def NP(fname,newfname,folder,cleanedFolder,headers,readAttributeCols,debugOmitte
 		if not [True for j in tmpHeaders if re.search(i,j)]:
 			exit('EXIT: Column header <%s> not in column headers of the file:\n%s\n\nSOLUTION: Change the user input in \'process\' \n' %(i,tmpHeaders))
 
-	df = pd.read_csv(folder+fname,usecols=(colHeaders),low_memory=False)
+	df = pd.read_csv(folder+fname,usecols=(colHeaders),low_memory=False,skip_blank_lines  = True,skipinitialspace  = True)
 
 	# Convert timestamp to seconds
 	df = convertHHMMSS_to_s(df,ts)
 
 	# teamstring consistency (in team ID)
 	df = checkTeamString_withoutSpaces_ignoringCase(df,Team,TeamAstring,TeamBstring)
+	
+	# Check the group rows that contain information.
+	df = checkGroupRows_withInformation(df,readEventColumns,TeamAstring,TeamBstring)
 
 	# Omit rows without value
 	df_cleaned,df_omitted = omitRowsWithoutValues(df,colHeaders)
@@ -253,11 +257,11 @@ def omitXandY_equals0(df,x,y,ID):
 def omitRowsWithout_XandY(df,x,y):
 	# Omit rows that have no x and y value.
 	rowsWith_XandY = (df[x].notnull()) & (df[y].notnull())
-	# pdb.set_trace()
+
 	df_cleaned = df[rowsWith_XandY == True ]
 	df_omitted = df[rowsWith_XandY == False ]
 
-	warn('\nWARNING: Omitted rows without X and Y. These could have been goupRows.')
+	warn('\nWARNING: Omitted rows without X and Y. These could have been goupRows.\nConsider using <skip_blank_lines  = True> in pd.read_csv.' )
 
 	return df_cleaned, df_omitted
 
@@ -325,13 +329,26 @@ def verifyGroupRows(df_cleaned):
 	
 	# First, verify whether groupRows exist by checking if there are rows with empty TeamIDs that are not ball.
 	# df_cleaned['PlayerID'] = str(df_cleaned['PlayerID'])
+		
+	# df_cleaned.to_csv('C:\\Users\\rensm\\Documents\\PostdocLeiden\\NP repository\\Output\\test.csv')
+
+	# Grouprows - at this stage - are characterized by:
+	# 1) a 'TeamID' that isnull()
 	groupRows = (df_cleaned['TeamID'].isnull())# & (str(df_cleaned['PlayerID']) != 'ball') 
 
-	if df_cleaned['Ts'][(groupRows)].empty:
-		groupRows = (df_cleaned['PlayerID'] == 'groupRow')
-	else:
-		groupRows = (df_cleaned['TeamID'].isnull()) & (df_cleaned['PlayerID'] != 'ball')
+	# 2) a 'PlayerID' that is not a 'ball'	
+	if df_cleaned['PlayerID'].dtype != float:
+		# groupRows = (df_cleaned['TeamID'].isnull()) & (str(df_cleaned['PlayerID']) != 'ball') 		
+		groupRows = (groupRows) & (df_cleaned['PlayerID'] != 'ball')
+	# print(df_cleaned['Ts'][(groupRows)].empty)
+	# pdb.set_trace()
+	# if not df_cleaned['Ts'][(groupRows)].empty:
+	# 	groupRows = (df_cleaned['PlayerID'] == 'groupRow')
+	# else:
+	# 	groupRows = (df_cleaned['TeamID'].isnull()) & (df_cleaned['PlayerID'] != 'ball')
+	# pdb.set_trace()
 
+	# When there are no group rows, they need to be created for every unique timestamp.
 	if df_cleaned['Ts'][(groupRows)].empty:# and not any(df_cleaned['PlayerID'] == 'groupRow'):
 		# If groupRows don't exist, then create them
 		# For every existing timestamp
@@ -349,9 +366,8 @@ def verifyGroupRows(df_cleaned):
 		# Append them to the existing dataframe
 		df_cleaned = df_cleaned.append(df_group)
 
-	else:
-
-		# If they do exist,
+	else: # If group rows do exist,
+		
 		# verify that 'PlayerID' = 'groupRow'
 		if df_cleaned['PlayerID'].dtype == float: # Input was not a string, so no groupRows indicated.
 			df_cleaned.loc[groupRows,('PlayerID')] = 'groupRow'
@@ -414,21 +430,37 @@ def convertHHMMSS_to_s(df,ts):
 
 def checkTeamString_withoutSpaces_ignoringCase(df,Team,TeamAstring,TeamBstring):
 
-	newdf = pd.DataFrame(data = [],index = df.index, columns = [Team],dtype = 'str')
+	df.loc[df[Team].isnull(),(Team)] = np.nan
+	teama01 = (df[Team].str.lower() == 'team a')
+	teama02 = (df[Team].str.lower() == 'teama')
 
-	for idx,tmpString in enumerate(df[Team]):
+	df.loc[teama01,(Team)] = TeamAstring
+	df.loc[teama02,(Team)] = TeamAstring
+
+	teama01 = (df[Team].str.lower() == 'team b')
+	teama02 = (df[Team].str.lower() == 'teamb')
+
+	df.loc[teama01,(Team)] = TeamBstring
+	df.loc[teama02,(Team)] = TeamBstring
+
+	# # This works as well, but the code above is 50% faster. I'm just keeping this in case the code above fails.
+	# newdf = pd.DataFrame(data = [],index = df.index, columns = [Team],dtype = 'str')
+	# for idx,tmpString in enumerate(df[Team]):
 		
-		if pd.isnull(tmpString):
-			newdf[Team][idx] = np.nan
-		elif re.search('team a',tmpString, re.IGNORECASE) or re.search('teama',tmpString, re.IGNORECASE):
-			newdf[Team][idx] = str(TeamAstring)
-		elif re.search('team b',tmpString, re.IGNORECASE) or re.search('teamb',tmpString, re.IGNORECASE):
-			newdf[Team][idx] = str(TeamBstring)
-		else:
-			print(tmpString)
-			pdb.set_trace()
+	# 	if pd.isnull(tmpString):
+	# 		newdf[Team][idx] = np.nan
 
-	df[Team] = newdf[Team]
+	# 	elif re.search('team a',tmpString, re.IGNORECASE) or re.search('teama',tmpString, re.IGNORECASE):
+	# 		newdf[Team][idx] = str(TeamAstring)
+
+	# 	elif re.search('team b',tmpString, re.IGNORECASE) or re.search('teamb',tmpString, re.IGNORECASE):
+	# 		newdf[Team][idx] = str(TeamBstring)
+
+	# 	else:
+	# 		print(tmpString)
+	# 		pdb.set_trace()
+
+	# df[Team] = newdf[Team]
 
 	return df
 
@@ -470,12 +502,56 @@ def convertToMeters(df_cleaned,conversionToMeter):
 ####
 ### put in cleanup events??
 ###
-def checkGroupRows_withInformation(that):
+def checkGroupRows_withInformation(df,readEventColumns,TeamAstring,TeamBstring):
+
+	# identify groupRows
+	# groupRows = df['Team'] == 'groupRows'
+	groupRows = (df_cleaned['TeamID'].isnull())# & (str(df_cleaned['PlayerID']) != 'ball') 
+	if df_cleaned['PlayerID'].dtype != float:
+		# groupRows = (df_cleaned['TeamID'].isnull()) & (str(df_cleaned['PlayerID']) != 'ball') 		
+		groupRows = (groupRows) & (df_cleaned['PlayerID'] != 'ball')
+
 	# - Identify Run and Goal (swap wrong headers)
 
 	# Identify teamstring in possession
 
 	
+	# When the group rows are emtpy, there's nothing to check
+	if df_cleaned['Ts'][(groupRows)].empty:
+		return df
+
+
+	################ THIS IS WHERE YOU LEFT IT ################
+	################ THIS IS WHERE YOU LEFT IT ################
+	################ THIS IS WHERE YOU LEFT IT ################
+	################ THIS IS WHERE YOU LEFT IT ################
+	################ THIS IS WHERE YOU LEFT IT ################
+	################ THIS IS WHERE YOU LEFT IT ################
+	for i in readEventColumns:
+
+		if 'Run' in i: # specific for columns that are Runs
+			doSomthing = []
+			df[i][groupRows].strip().index != ''
+			# Take the index of the rows where after stripping the string is ''
+
+		elif 'Goal' in i:
+			doSomthing = []
+		
+		elif 'Possession' in i:
+			doSomthing = []
+
+		elif 'Pass' in i:
+			doSomthing = []
+
+		else:
+			warn('\nWARNING: Did not recognize event column <%s>.\nConsider writing clean-up protocol in cleanupData.py.' %i)
+	################ THIS IS WHERE YOU LEFT IT ################
+	################ THIS IS WHERE YOU LEFT IT ################
+	################ THIS IS WHERE YOU LEFT IT ################
+	################ THIS IS WHERE YOU LEFT IT ################
+	################ THIS IS WHERE YOU LEFT IT ################
+	################ THIS IS WHERE YOU LEFT IT ################
+
 	if any(s != '' for s in row[6:10]): # if it's a team row WITH information.
 		###### if '' != row[6] and ' ' != row[6]: # Run
 		if row[6] != '': # Run						

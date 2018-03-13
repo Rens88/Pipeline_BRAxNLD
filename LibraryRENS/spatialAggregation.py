@@ -87,7 +87,6 @@ def teamCentroid_panda(rawDict,attributeDict,attributeLabel,TeamAstring,TeamBstr
 	##### THE DATA #####
 	# Prepare the indices of the groupRows. This will be used to store the computed values in the index corresponding to attributeDict.
 	ind_groupRows = attributeDict[rawDict['PlayerID'] == 'groupRow'].index
-
 	# Separate the raw values per team
 	dfA = rawDict[rawDict['TeamID'] == TeamAstring]
 	dfB = rawDict[rawDict['TeamID'] == TeamBstring]

@@ -1,3 +1,7 @@
+# THESE FIRST THREE LINES OF CODE ARE ONLY NECESSARY TO TEST WHETHER THE TEMPLATE STILL WORKS ON FDP DATA.
+import os
+if os.path.isfile('C:\\Users\\rensm\\Documents\\PostdocLeiden\\BRAxNLD repository\\Data\\Cleaned\\CROPPED_AA114105_AA1001_v_AA1012_vPP_SpecialExport_cleaned.csv'):
+	os.remove('C:\\Users\\rensm\\Documents\\PostdocLeiden\\BRAxNLD repository\\Data\\Cleaned\\CROPPED_AA114105_AA1001_v_AA1012_vPP_SpecialExport_cleaned.csv')
 # If you want to edit something in the code and you're not sure where it is, 
 # just ask. l.a.meerhoff@liacs.leidenuniv.nl
 # Also, if you want to add something to the code and you're not sure where, 
