@@ -507,5 +507,4 @@ def checkGroupRows_withInformation(that):
 	# if val.isspace():
 	# 	row[idx] = ''
 	## Strip rows from useless spaces
-	# row = [s.strip() for s in row]		
-
+	# row = [s.strip() for s in row]
