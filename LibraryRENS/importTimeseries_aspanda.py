@@ -28,9 +28,13 @@ if __name__ == '__main__':
 	rawData(filename,folder)
 	existingAttributes(filename,folder,rawHeaders)
 
-def existingAttributes(filename,folder,headers):
+def existingAttributes(filename,folder,headers,attrLabel):
 
-	colHeaders = headers
+	# Add time to the attribute columns (easy for indexing)
+	colHeaders = ['Ts'] + headers # This makes sure that timeStamp is also imported in attribute cols, necessary for pivoting etc.
+	attrLabel.update({'Ts': 'Time (s)'})
+
+	# colHeaders = headers
 	# Only read the headers as a check-up:
 	with open(folder+filename, 'r') as f:
 		reader = csv.reader(f)
@@ -47,7 +51,7 @@ def existingAttributes(filename,folder,headers):
 	Loaded_Attr_Data = pd.read_csv(folder + filename, 
 		usecols=(colHeaders),low_memory=True)
 
-	return Loaded_Attr_Data
+	return Loaded_Attr_Data,attrLabel
 
 def rawData(filename,folder):
 

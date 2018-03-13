@@ -30,18 +30,19 @@ if __name__ == '__main__':
 	omitXandY_equals0(df,x,y,ID)
 
 ## Here, you specifiy what each function does
-def process(df,df_omitted,headers):
-	# Get the relevant keys from headers.
-	ts = headers['Ts']
-	x,y = headers['Location']
-	ID = headers['PlayerID']
+def process(df,df_omitted,TeamAstring,TeamBstring,headers,readAttributeCols,readEventColumns):
+	# NB: Keys are standardized
+	# - Timestamp (in seconds) = 'Ts'
+	# - Locations (in meters) are 'X' and 'Y'
+	# - Player identity is 'PlayerID'
+	# - Team identity is 'TeamID'
 
 	# This is an example of the type of thing you may want to clean.
 	# It omits any row that has no X or Y value.
 	# NB: If you exported team attributes through inmotio, the X and Y values might be empty.
 	# In that case, you don't want to run them.
 	df_cropped01,df_omitted01 = \
-	omitXandY_equals0(df,x,y,ID)
+	omitXandY_equals0(df)
 
 	df_omitted = pd.concat([df_omitted, df_omitted01]) # Only relevant when cleaning up in multiple steps.
 	# Use the cropped df (df_cropped01) to feed into the next function.
@@ -50,9 +51,9 @@ def process(df,df_omitted,headers):
 
 	return df_croppedLAST,df_omitted
 
-def omitXandY_equals0(df,x,y,ID):
+def omitXandY_equals0(df):
 	# Omit rows where both x and y = 0 and where there is no team value
-	XandY_equals0 = ( ((df[x] == 0) & (df[y] == 0) & (df[ID] == 'nan')) ) 
+	XandY_equals0 = ( ((df['X'] == 0) & (df['Y'] == 0) & (df['PlayerID'] == 'nan')) ) 
 	df[XandY_equals0 == True]
 	df_cleaned 	= df[XandY_equals0 == False]
 	df_omitted 	= df[XandY_equals0 == True]

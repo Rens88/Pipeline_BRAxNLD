@@ -12,6 +12,7 @@ from os.path import isfile, join, isdir, exists
 from os import listdir, path, makedirs
 import re
 import pandas as pd
+import student_XX_dissectFilename
 
 if __name__ == '__main__':
 	
@@ -28,7 +29,9 @@ def process(fname,dataType,TeamAstring,TeamBstring):
 	elif dataType == "FDP":
 		exportData, exportDataString, exportDataFullExplanation,cleanFname,TeamAstring,TeamBstring = FDP(fname)
 	else:
-		exportData, exportDataString, exportDataFullExplanation,cleanFname = default(fname)
+		exportData, exportDataString, exportDataFullExplanation,cleanFname = \
+		student_XX_dissectFilename.process(fname,dataType,TeamAstring,TeamBstring)
+		# exportData, exportDataString, exportDataFullExplanation,cleanFname = default(fname)
 
 	return exportData, exportDataString, exportDataFullExplanation,cleanFname,TeamAstring,TeamBstring
 

@@ -43,6 +43,9 @@
 # USER INPUT ############
 #########################
 ## CHANGE THIS all these variables until 'END USER INPUT'
+# This folder should contain a folder with 'Data'. The tabular output and figures will be stored in this folder as well.
+folder = 'C:\\Users\\rensm\\Documents\\PostdocLeiden\\BRAxNLD repository\\'
+
 # Here, you provide the string name of the student folder that you want to include.
 studentFolder = 'XXcontributions' 
 
@@ -52,9 +55,6 @@ debuggingMode = False # whether yo want to continue with the remaining code to i
 
 # dataType is used for dataset specific parts of the analysis (in the preparation phase only)
 dataType =  "FDP" # "FPD" or or "NP" --> so far, only used to call the right cleanup script. Long term goal would be to have a generic cleanup script
-
-# This folder should contain a folder with 'Data'. The tabular output and figures will be stored in this folder as well.
-folder = 'C:\\Users\\rensm\\Documents\\PostdocLeiden\\BRAxNLD repository\\'
 
 # String representing the different teams
 # NB: not necessary for FDP (and other datasets where teamstring can be read from the filename, should be done in discetFilename.py)
@@ -71,6 +71,9 @@ YPositionString = 'Y' 								#'enter the string in the header of the column tha
 # Case-sensitive string rawHeaders of attribute columns that already exist in the data (optional). NB: String also sensitive for extra spaces.
 readAttributeCols = ['Snelheid','Acceleration']
 attrLabel = {readAttributeCols[0]: 'Speed (m/s)',readAttributeCols[1]: 'Acceleration (m/s^2)'} 
+
+# When event columns exist in the raw data, they can be read to export an event file
+readEventColumns = []
 
 # If the raw data is not given in meters, provide the conversion.
 conversionToMeter = 1 #111111 # https://gis.stackexchange.com/questions/8650/measuring-accuracy-of-latitude-and-longitude/8674#8674
@@ -117,7 +120,7 @@ from warnings import warn
 # Custom modules (from LibrarRENS)
 import spatialAggregation
 import temporalAggregation
-import disectFilename
+import dissectFilename
 import importTimeseries_aspanda
 import cleanupData
 import pandas as pd
@@ -151,11 +154,13 @@ for dirtyFname in DirtyDataFiles:
 
 	# Prepare metadata of aggregated data to be exported:
 	exportData, exportDataString, exportDataFullExplanation,cleanFname,TeamAstring,TeamBstring = \
-	disectFilename.process(dirtyFname,dataType,TeamAstring,TeamBstring)
+	dissectFilename.process(dirtyFname,dataType,TeamAstring,TeamBstring)
 
 	# Clean cleanFname (it only cleans data if there is no existing cleaned file of the current (dirty)file )
-	cleanedFolder,readAttributeCols,attrLabel = \
-	cleanupData.process(dirtyFname,cleanFname,dataType,dataFolder,cleanedFolder,TeamAstring,TeamBstring,rawHeaders,readAttributeCols,attrLabel,timestampString)
+	# cleanedFolder,readAttributeCols,attrLabel = \
+	# cleanupData.process(dirtyFname,cleanFname,dataType,dataFolder,cleanedFolder,TeamAstring,TeamBstring,rawHeaders,readAttributeCols,attrLabel,timestampString)
+	cleanedFolder,readAttributeCols = \
+	cleanupData.process(dirtyFname,cleanFname,dataType,dataFolder,cleanedFolder,TeamAstring,TeamBstring,rawHeaders,readAttributeCols,timestampString,readEventColumns,conversionToMeter)
 
 	# From now onward, rawData contains:
 	#  'Ts' --> Timestamp
@@ -174,7 +179,7 @@ for dirtyFname in DirtyDataFiles:
 	########################################################################################
 	
 	rawPanda = importTimeseries_aspanda.rawData(cleanFname,cleanedFolder)
-	attrPanda = importTimeseries_aspanda.existingAttributes(cleanFname,cleanedFolder,readAttributeCols)
+	attrPanda,attrLabel = importTimeseries_aspanda.existingAttributes(cleanFname,cleanedFolder,readAttributeCols,attrLabel)
 
 	###### Work in progress ##########
 	# targetEventsImported = importEvents.process(rawDict,attributeDict,TeamAstring,TeamBstring)
@@ -197,6 +202,7 @@ for dirtyFname in DirtyDataFiles:
 		altogether = pd.concat([rawPanda, attrPanda], axis=1) # debugging only
 		attrPanda.to_csv(outputFolder + 'output_' + dirtyFname) # debugging only		
 		print('EXPORTED <%s>' %dirtyFname[:-4])
+		print('in <%s>' %outputFolder)
 		# pdb.set_trace()
 		continue
 	###### \Work in progress #########
