@@ -200,7 +200,7 @@ for dirtyFname in DirtyDataFiles:
 	if exportPerFile:
 		# debugging only
 		altogether = pd.concat([rawPanda, attrPanda], axis=1) # debugging only
-		attrPanda.to_csv(outputFolder + 'output_' + dirtyFname) # debugging only		
+		altogether.to_csv(outputFolder + 'output_' + dirtyFname) # debugging only		
 		print('EXPORTED <%s>' %dirtyFname[:-4])
 		print('in <%s>' %outputFolder)
 		# pdb.set_trace()
