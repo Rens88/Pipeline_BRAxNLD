@@ -167,46 +167,8 @@ def NP(fname,newfname,folder,cleanedFolder,headers,readAttributeCols,debugOmitte
 		reader = csv.reader(f)
 		tmpHeaders = list(next(reader))
 
-	# Known exceptions:
-	timeException = [True for j in tmpHeaders if re.search('Video timing',j,re.IGNORECASE)]
-	if timeException:
-		headers['Ts'] = 'Video timing'
-
-	possessionException01 = [True for j in tmpHeaders if re.search('Possession / Turnover',j,re.IGNORECASE)]
-	if possessionException01:
-		curIdx = [idx for idx,i in enumerate(readEventColumns) if 'Possession' in i]
-		readEventColumns[curIdx[0]] = 'Possession / Turnover'
-
-	possessionException02 = [True for j in tmpHeaders if re.search('Possession/ Turnover',j,re.IGNORECASE)]
-	if possessionException02:
-		curIdx = [idx for idx,i in enumerate(readEventColumns) if 'Possession' in i]
-		readEventColumns[curIdx[0]] = 'Possession/ Turnover'
-	
-	for j in tmpHeaders:
-		if j[-1] == ' ':
-			if headers['Ts'] in j:
-				headers['Ts'] = headers['Ts'] + ' '
-			elif headers['Location'][0] in j:
-				headers['Location'][0] = headers['Location'][0] + ' '
-			elif headers['Location'][1] in j:
-				headers['Location'][1] = headers['Location'][1] + ' '
-			elif headers['PlayerID'] in j:
-				headers['PlayerID'] = headers['PlayerID'] + ' '
-			elif headers['TeamID'] in j:
-				headers['TeamID'] = headers['TeamID'] + ' '
-			else:
-				idxAttr = [idx for idx,i in enumerate(readAttributeCols) if i in j]
-				idxEvent = [idx for idx,i in enumerate(readEventColumns) if i in j]
-				if len(idxAttr) != 0:
-					readAttributeCols[idxAttr[0]] = readAttributeCols[idxAttr[0]] + ' '
-				elif len(idxEvent) != 0:
-					readEventColumns[idxEvent[0]] = readEventColumns[idxEvent[0]] + ' '
-
-	ts = headers['Ts']
-	x,y = headers['Location']
-	ID = headers['PlayerID']
-	Team = headers['TeamID']
-	colHeaders = [ts,x,y,ID,Team] + readAttributeCols + readEventColumns
+	colHeaders,posIdx = \
+	checkKnownExceptions_colHeaders(tmpHeaders,headers,readAttributeCols,readEventColumns)
 
 	for i in colHeaders:
 		if not [True for j in tmpHeaders if re.search(i,j)]:
@@ -214,17 +176,19 @@ def NP(fname,newfname,folder,cleanedFolder,headers,readAttributeCols,debugOmitte
 
 	df = pd.read_csv(folder+fname,usecols=(colHeaders),low_memory=False,skip_blank_lines  = True,skipinitialspace  = True)
 
+	df,readEventColumns = removeSpacesColheaders(df,readEventColumns,posIdx)	
+
 	# Convert timestamp to seconds
-	df = convertHHMMSS_to_s(df,ts)
+	df = convertHHMMSS_to_s(df,headers['Ts'])
 
 	# teamstring consistency (in team ID)
-	df = checkTeamString_withoutSpaces_ignoringCase(df,Team,TeamAstring,TeamBstring)
+	df = checkTeamString_withoutSpaces_ignoringCase(df,headers['TeamID'],TeamAstring,TeamBstring)
 	
 	# Check the group rows that contain information.
-	df = checkGroupRows_withInformation(df,readEventColumns,TeamAstring,TeamBstring)
+	df = checkGroupRows_withInformation(df,headers,readEventColumns,TeamAstring,TeamBstring)
 
 	# Omit rows without value
-	df_cleaned,df_omitted = omitRowsWithoutValues(df,colHeaders)
+	df_cleaned,df_omitted = omitRowsWithoutValues(df)
 
 	# Idea: by incorporting df_omittedNN in a list, you could make the script work with variable lenghts of omitted dfs.
 	# df_omitted = pd.concat([df_omitted01, df_omitted02, df_omitted03])
@@ -464,13 +428,13 @@ def checkTeamString_withoutSpaces_ignoringCase(df,Team,TeamAstring,TeamBstring):
 
 	return df
 
-def omitRowsWithoutValues(df,colHeaders):
+def omitRowsWithoutValues(df):
 	# Omit rows that have no x and y value.
 	# test = [df[i].notnull() for i in colHeaders]
 	emptyRows = pd.DataFrame(data = [],index = df.index, columns = ['emptyRows'],dtype = 'bool')
  
 	for idx in df.index:
-		test = [pd.notnull(df[i][idx]) for i in colHeaders]
+		test = [pd.notnull(df[i][idx]) for i in df.keys()]
 		if any(test):
 			# Row not empty
 			emptyRows['emptyRows'] = False
@@ -499,85 +463,144 @@ def convertToMeters(df_cleaned,conversionToMeter):
 	df_cleaned['Y'] = df_cleaned['Y'] * conversionToMeter
 
 	return df_cleaned
-####
-### put in cleanup events??
-###
-def checkGroupRows_withInformation(df,readEventColumns,TeamAstring,TeamBstring):
+
+def checkKnownExceptions_colHeaders(tmpHeaders,headers,readAttributeCols,readEventColumns):
+	# Known exceptions:
+	timeException = [True for j in tmpHeaders if re.search('Video timing',j,re.IGNORECASE)]
+	if timeException:
+		headers['Ts'] = 'Video timing'
+
+	posIdx = [idx for idx,i in enumerate(readEventColumns) if 'Possession' in i]
+
+	possessionException01 = [True for j in tmpHeaders if re.search('Possession / Turnover',j,re.IGNORECASE)]
+	if possessionException01 and not posIdx == []:
+		readEventColumns[posIdx[0]] = 'Possession / Turnover'
+
+	possessionException02 = [True for j in tmpHeaders if re.search('Possession/ Turnover',j,re.IGNORECASE)]
+	if possessionException02 and not posIdx == []:
+		readEventColumns[posIdx[0]] = 'Possession/ Turnover'
+	
+	for j in tmpHeaders:
+		if j[-1] == ' ':
+			if headers['Ts'] in j:
+				headers['Ts'] = headers['Ts'] + ' '
+			elif headers['Location'][0] in j:
+				headers['Location'][0] = headers['Location'][0] + ' '
+			elif headers['Location'][1] in j:
+				headers['Location'][1] = headers['Location'][1] + ' '
+			elif headers['PlayerID'] in j:
+				headers['PlayerID'] = headers['PlayerID'] + ' '
+			elif headers['TeamID'] in j:
+				headers['TeamID'] = headers['TeamID'] + ' '
+			else:
+				idxAttr = [idx for idx,i in enumerate(readAttributeCols) if i in j]
+				idxEvent = [idx for idx,i in enumerate(readEventColumns) if i in j]
+				if len(idxAttr) != 0:
+					readAttributeCols[idxAttr[0]] = readAttributeCols[idxAttr[0]] + ' '
+				elif len(idxEvent) != 0:
+					readEventColumns[idxEvent[0]] = readEventColumns[idxEvent[0]] + ' '
+
+	ts = headers['Ts']
+	x,y = headers['Location']
+	ID = headers['PlayerID']
+	Team = headers['TeamID']
+	colHeaders = [ts,x,y,ID,Team] + readAttributeCols + readEventColumns
+
+	return colHeaders,posIdx
+
+def removeSpacesColheaders(df,readEventColumns,posIdx):
+
+	if posIdx != []:
+		# Could do the same for any other column headers that are inconsistent
+		df.rename(columns={readEventColumns[posIdx[0]]: "Possession"}, inplace=True)
+		readEventColumns[posIdx[0]] = 'Possession'
+
+	runIdx = [idx for idx,i in enumerate(readEventColumns) if 'Run' in i]
+	if runIdx != []:
+		# Could do the same for any other column headers that are inconsistent
+		df.rename(columns={readEventColumns[runIdx[0]]: "Run"}, inplace=True)
+		readEventColumns[runIdx[0]] = 'Run'
+
+	goalIdx = [idx for idx,i in enumerate(readEventColumns) if 'Goal' in i]
+	if goalIdx != []:
+		# Could do the same for any other column headers that are inconsistent
+		df.rename(columns={readEventColumns[goalIdx[0]]: "Goal"}, inplace=True)
+		readEventColumns[goalIdx[0]] = 'Goal'
+
+	passIdx = [idx for idx,i in enumerate(readEventColumns) if 'Pass' in i]
+	if passIdx != []:
+		# Could do the same for any other column headers that are inconsistent
+		df.rename(columns={readEventColumns[passIdx[0]]: "Pass"}, inplace=True)
+		readEventColumns[passIdx[0]] = 'Pass'
+
+	return df,readEventColumns
+
+def checkGroupRows_withInformation(df,headers,readEventColumns,TeamAstring,TeamBstring):
 
 	# identify groupRows
-	# groupRows = df['Team'] == 'groupRows'
-	groupRows = (df_cleaned['TeamID'].isnull())# & (str(df_cleaned['PlayerID']) != 'ball') 
-	if df_cleaned['PlayerID'].dtype != float:
+	groupRows = (df[headers['TeamID']].isnull())
+	if df[headers['PlayerID']].dtype != float:
 		# groupRows = (df_cleaned['TeamID'].isnull()) & (str(df_cleaned['PlayerID']) != 'ball') 		
-		groupRows = (groupRows) & (df_cleaned['PlayerID'] != 'ball')
+		groupRows = (groupRows) & (df['PlayerID'] != 'ball')
 
-	# - Identify Run and Goal (swap wrong headers)
+	# Identify Run and Goal (swap wrong headers)
 
 	# Identify teamstring in possession
 
-	
 	# When the group rows are emtpy, there's nothing to check
-	if df_cleaned['Ts'][(groupRows)].empty:
+	if df[headers['Ts']][(groupRows)].empty:
 		return df
 
+	idx_groupRows = [idx for idx,i in enumerate(groupRows) if i == True]
 
-	################ THIS IS WHERE YOU LEFT IT ################
-	################ THIS IS WHERE YOU LEFT IT ################
-	################ THIS IS WHERE YOU LEFT IT ################
-	################ THIS IS WHERE YOU LEFT IT ################
-	################ THIS IS WHERE YOU LEFT IT ################
-	################ THIS IS WHERE YOU LEFT IT ################
 	for i in readEventColumns:
-
-		if 'Run' in i: # specific for columns that are Runs
-			doSomthing = []
-			df[i][groupRows].strip().index != ''
-			# Take the index of the rows where after stripping the string is ''
-
-		elif 'Goal' in i:
-			doSomthing = []
 		
-		elif 'Possession' in i:
-			doSomthing = []
+		# I know this can be written better. But it works. so....
+		eventWithInfo = df[i].notnull()
+		idx_eventWithInfo = [idx for idx,i in enumerate(eventWithInfo) if i == True]
+		tmp = [i for i in idx_eventWithInfo if not i in idx_groupRows ]
 
-		elif 'Pass' in i:
-			doSomthing = []
+		if tmp != []: # just a safety measure
+			warn('\nWARNING: a none groupRow contains <%s> information:\n<%s>'%(i,tmp))
 
+		if 'Run' == i: # specific for columns that are Runs
+			# df[i][groupRows].to_csv('C:\\Users\\rensm\\Documents\\PostdocLeiden\\NP repository\\Output\\test.csv')			runWithInfo = df[i].notnull()
+			# I know this can be written better. But it works. so....
+			for j in idx_eventWithInfo:
+				curCell = df[i][j]	
+				if not ('nd' in curCell or 'un' in curCell):
+					warn('\nWARNING: Didnt recognize run: <%s>' %curCell)
+
+		elif 'Goal' == i:
+			for j in idx_eventWithInfo:
+				curCell = df[i][j]	
+				if not ('oal' in curCell):
+					warn('\nWARNING: Didnt recognize goal: <%s>' %curCell)
+
+				if not (TeamAstring[1:] in curCell or TeamBstring[1:] in curCell):
+					warn('\nWARNING: could not identify team: <%s>' %curCell)
+
+		elif 'Possession' == i:
+			for j in idx_eventWithInfo:
+				curCell = df[i][j]	
+
+				if not (TeamAstring[1:] in curCell or TeamBstring[1:] in curCell):
+					if 'Start A possession' in curCell:
+						# A known issue. Replace the content.
+						df[i][j] = 'Start %s possession' %TeamAstring
+
+					else:
+						warn('\nWARNING: could not identify team: <%s>' %curCell)
+
+		elif 'Pass' == i:
+			for j in idx_eventWithInfo:
+				curCell = df[i][j]	
+				if not (TeamAstring[1:] in curCell or TeamBstring[1:] in curCell):
+					warn('\nWARNING: could not identify team: <%s>' %curCell)
 		else:
 			warn('\nWARNING: Did not recognize event column <%s>.\nConsider writing clean-up protocol in cleanupData.py.' %i)
-	################ THIS IS WHERE YOU LEFT IT ################
-	################ THIS IS WHERE YOU LEFT IT ################
-	################ THIS IS WHERE YOU LEFT IT ################
-	################ THIS IS WHERE YOU LEFT IT ################
-	################ THIS IS WHERE YOU LEFT IT ################
-	################ THIS IS WHERE YOU LEFT IT ################
 
-	if any(s != '' for s in row[6:10]): # if it's a team row WITH information.
-		###### if '' != row[6] and ' ' != row[6]: # Run
-		if row[6] != '': # Run						
-			if not ('nd' in row[6] or 'un' in row[6]):
-				warn('\nDidnt recognize run: <%s>' %row[6])
-		###### if '' != row[7] and ' ' != row[7] and '  ' != row[7]: # Goal
-		if row[7] != '': # Goal
-			if not 'oal' in row[7]:
-				warn('\ncould not recognize goal: <%s>' %row[7])
-				print(fname)
-				pdb.set_trace()
-			
-		for i in [7, 8, 9]: # Goal, Possession / Turnover, Pass
-			###### if row[i]'' != row[i] and ' ' != row[i] and '  ' != row[i]: # Goal
-			if row[i] != '': # Goal
-				if not (TeamAstring[1:] in row[i] or TeamBstring[1:] in row[i]):
-					if 'Start A possession' in row[i]:
-						row[i] = 'Start %s possession' %TeamAstring
-					else:
-						warn('\ncould not identify team: <%s>' %row[i])
-						print(fname)
-						print(row)
-
-						pdb.set_trace()
-
-
+	return df
 	## Other clean-up ideas for NP data
 	## Replace nearly empty cells
 	# if val.isspace():
