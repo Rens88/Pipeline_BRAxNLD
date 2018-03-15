@@ -111,7 +111,7 @@ def teamCentroid_panda(rawDict,attributeDict,attributeLabel,TeamAstring,TeamBstr
 	newAttributes['WidthB'][ind_groupRows] = Team_B_Y.max(axis=0, skipna=True) - Team_B_Y.min(axis=0, skipna=True)
 	pd.options.mode.chained_assignment = 'warn'  # default='warn'
 
-	warn('\nUnverified assumption: field width = X-axis, field length = Y-axis\n')
+	# warn('\nUnverified assumption: field width = X-axis, field length = Y-axis\n')
 	
 	# Combine the pre-existing attributes with the new attributes:
 	attributeDict = pd.concat([attributeDict, newAttributes], axis=1)

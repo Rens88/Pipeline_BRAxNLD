@@ -6,7 +6,7 @@ from os import listdir, path, makedirs, sep
 import sys, inspect
 import pdb; #pdb.set_trace()
 from warnings import warn
-
+import time
 
 if __name__ == '__main__':
 	addLibrary()
@@ -54,6 +54,9 @@ def checkFolders(folder,aggregateEvent):
 	if not exists(cleanedFolder):
 		makedirs(cleanedFolder)
 
-	return dataFolder,tmpFigFolder,outputFolder,cleanedFolder
+	timeString = time.strftime("%Hh%Mm_%d_%B_%Y")
+	outputFilename = outputFolder + 'output_' + aggregateEvent + '_' + timeString +  '.csv'
+
+	return dataFolder,tmpFigFolder,outputFolder,cleanedFolder,outputFilename
 
 # >>>>>>> d6c15d944b1168972454264b6f2fc40ddffffa10

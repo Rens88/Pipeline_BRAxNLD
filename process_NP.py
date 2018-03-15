@@ -110,7 +110,7 @@ import initialization
 # This allows Python to import the custom modules in our library. 
 # If you add new subfolders in the library, they need to be added in addLibary (in initialization.py) as well.
 initialization.addLibrary(studentFolder)
-dataFolder,tmpFigFolder,outputFolder,cleanedFolder =\
+dataFolder,tmpFigFolder,outputFolder,cleanedFolder,aggregatedOutputFilename =\
 initialization.checkFolders(folder,aggregateEvent)
 
 import pdb; #pdb.set_trace()
@@ -148,7 +148,7 @@ aggregateLevel = (aggregateEvent,aggregateWindow,aggregateLag)
 DirtyDataFiles = [f for f in listdir(dataFolder) if isfile(join(dataFolder, f)) if '.csv' in f]
 t = ([],1,len(DirtyDataFiles))#(time started,nth file,total number of files)
 
-for dirtyFname in DirtyDataFiles[-2:]:
+for dirtyFname in DirtyDataFiles:
 	print(	'\nFILE: << %s >>' %dirtyFname[:-4])
 	t = estimateRemainingTime.printProgress(t)
 	# if t[1] == 2:
@@ -171,12 +171,13 @@ for dirtyFname in DirtyDataFiles[-2:]:
 	cleanedFolder,fatalTimeStampIssue = \
 	cleanupData.process(dirtyFname,cleanFname,dataType,dataFolder,cleanedFolder,TeamAstring,TeamBstring,rawHeaders,readAttributeCols,timestampString,readEventColumns,conversionToMeter)
 	elapsed = time.time() - tCleanup
-	print('Time cleanup elapsed: %s' %elapsed)
+	elapsed = str(round(elapsed, 2))
+	print('Time cleanup elapsed: %ss' %elapsed)
 
 	if fatalTimeStampIssue:
 		skippedData = True
-		outputFilename = outputFolder + 'output_' + aggregateLevel[0] + '.csv'
-		exportCSV.newOrAdd(outputFilename,exportDataString,exportData,skippedData)	
+		# outputFilename = outputFolder + 'output_' + aggregateLevel[0] + '.csv'
+		exportCSV.newOrAdd(aggregatedOutputFilename,exportDataString,exportData,skippedData)	
 		continue
 	# From now onward, rawData contains:
 	#  'Ts' --> Timestamp
@@ -205,7 +206,8 @@ for dirtyFname in DirtyDataFiles[-2:]:
 	targetEventsImported = importEvents.process(eventsPanda,TeamAstring,TeamBstring)
 	###### \Work in progress #########
 	elapsed = time.time() - tImport
-	print('Time Import elapsed: %s' %elapsed)
+	elapsed = str(round(elapsed, 2))
+	print('Time Import elapsed: %ss' %elapsed)
 	########################################################################################
 	####### Compute new attributes #########################################################
 	########################################################################################
@@ -213,7 +215,8 @@ for dirtyFname in DirtyDataFiles[-2:]:
 	tSpatAgg = time.time()
 	attrPanda,attrLabel = spatialAggregation.process(rawPanda,attrPanda,attrLabel,TeamAstring,TeamBstring)
 	elapsed = time.time() - tSpatAgg
-	print('Time SpatAgg elapsed: %s' %elapsed)
+	elapsed = str(round(elapsed, 2))
+	print('Time SpatAgg elapsed: %ss' %elapsed)
 	###### Work in progress ##########
 	# targetEventsComputed = importEvents.process(rawDict,attributeDict,TeamAstring,TeamBstring)
 	## Temporal aggregation
@@ -222,13 +225,16 @@ for dirtyFname in DirtyDataFiles[-2:]:
 	exportData,exportDataString,exportFullExplanation = \
 	temporalAggregation.process(targetEventsImported,aggregateLevel,rawPanda,attrPanda,exportData,exportDataString,exportDataFullExplanation,TeamAstring,TeamBstring)
 	elapsed = time.time() - tTempAgg
-	print('Time TempAgg elapsed: %s' %elapsed)
+	elapsed = str(round(elapsed, 2))
+
+	print('Time TempAgg elapsed: %ss' %elapsed)
 
 	skippedData = False
-	outputFilename = outputFolder + 'output_' + aggregateLevel[0] + '.csv'
-	exportCSV.newOrAdd(outputFilename,exportDataString,exportData,skippedData)	
-	outputFilename = outputFolder + 'outputDescription_' + aggregateLevel[0] + '.txt'
-	exportCSV.varDescription(outputFilename,exportDataString,exportFullExplanation)
+	# outputFilename = outputFolder + 'output_' + aggregateLevel[0] + '.csv'
+	exportCSV.newOrAdd(aggregatedOutputFilename,exportDataString,exportData,skippedData)	
+	# outputFilename = outputFolder + 'outputDescription_' + aggregateLevel[0] + '.txt'
+	exportCSV.varDescription(aggregatedOutputFilename,exportDataString,exportFullExplanation)
+
 	continue
 	pdb.set_trace()	
 	## As a temporary work around, the raw data is here exported per file
