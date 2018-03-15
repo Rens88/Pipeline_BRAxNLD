@@ -20,7 +20,7 @@ def printProgress(t):
 		remainingTimeInHHMMSS = 'Unknown'
 	else:
 
-		percentageProgress = (nthFile-1) / totalFiles * 100
+		percentageProgress = (nthFile) / totalFiles * 100
 		elapsedTime = time.time() - timeStarted		
 		estTimeRemaining_inSeconds = elapsedTime / percentageProgress * 100
 		remainingTimeInHHMMSS = time.strftime('%H:%M:%S', time.gmtime(estTimeRemaining_inSeconds))
@@ -29,5 +29,5 @@ def printProgress(t):
 	elapsedTime = str(round(elapsedTime, 2))
 	print('%s out of %s files (%s%%) analyzed in %ss.\nEstimated time remaining: %s\n-------------------------------\n' %(nthFile,totalFiles,percentageProgress,elapsedTime,remainingTimeInHHMMSS))
 	
-	t = (timeStarted,nthFile + 1,totalFiles)
+	t = (timeStarted,nthFile + 2,totalFiles)
 	return t
