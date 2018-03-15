@@ -22,7 +22,7 @@ def printProgress(t):
 
 		percentageProgress = (nthFile) / totalFiles * 100
 		elapsedTime = time.time() - timeStarted		
-		estTimeRemaining_inSeconds = elapsedTime / percentageProgress * 100
+		estTimeRemaining_inSeconds = (elapsedTime / percentageProgress * 100) - elapsedTime
 		remainingTimeInHHMMSS = time.strftime('%H:%M:%S', time.gmtime(estTimeRemaining_inSeconds))
 
 	percentageProgress  = str(round(percentageProgress, 2))	

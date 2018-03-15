@@ -116,7 +116,7 @@ import initialization
 # This allows Python to import the custom modules in our library. 
 # If you add new subfolders in the library, they need to be added in addLibary (in initialization.py) as well.
 initialization.addLibrary(studentFolder)
-dataFolder,tmpFigFolder,outputFolder,cleanedFolder =\
+dataFolder,tmpFigFolder,outputFolder,cleanedFolder,aggregatedOutputFilename =\
 initialization.checkFolders(folder,aggregateEvent)
 
 import pdb; #pdb.set_trace()
@@ -154,7 +154,7 @@ aggregateLevel = (aggregateEvent,aggregateWindow,aggregateLag)
 DirtyDataFiles = [f for f in listdir(dataFolder) if isfile(join(dataFolder, f)) if '.csv' in f]
 t = ([],1,len(DirtyDataFiles))#(time started,nth file,total number of files)
 
-for dirtyFname in DirtyDataFiles[-2:]:
+for dirtyFname in DirtyDataFiles:
 	print(	'\nFILE: << %s >>' %dirtyFname[:-4])
 	t = estimateRemainingTime.printProgress(t)
 	#########################
@@ -174,8 +174,8 @@ for dirtyFname in DirtyDataFiles[-2:]:
 
 	if fatalTimeStampIssue:
 		skippedData = True
-		outputFilename = outputFolder + 'output_' + aggregateLevel[0] + '.csv'
-		exportCSV.newOrAdd(outputFilename,exportDataString,exportData,skippedData)	
+		# outputFilename = outputFolder + 'output_' + aggregateLevel[0] + '.csv'
+		exportCSV.newOrAdd(aggregatedOutputFilename,exportDataString,exportData,skippedData)	
 		continue
 	# From now onward, rawData contains:
 	#  'Ts' --> Timestamp
@@ -222,10 +222,10 @@ for dirtyFname in DirtyDataFiles[-2:]:
 	# This can be written more efficiently.
 	# Idea: recognize when trial already exists in data and overwrite.
 	skippedData = False
-	outputFilename = outputFolder + 'output_' + aggregateLevel[0] + '.csv'
-	exportCSV.newOrAdd(outputFilename,exportDataString,exportData,skippedData)	
-	outputFilename = outputFolder + 'outputDescription_' + aggregateLevel[0] + '.txt'
-	exportCSV.varDescription(outputFilename,exportDataString,exportFullExplanation)
+	# outputFilename = outputFolder + 'output_' + aggregateLevel[0] + '.csv'
+	exportCSV.newOrAdd(aggregatedOutputFilename,exportDataString,exportData,skippedData)	
+	# outputFilename = outputFolder + 'outputDescription_' + aggregateLevel[0] + '.txt'
+	exportCSV.varDescription(aggregatedOutputFilename,exportDataString,exportFullExplanation)
 
 	## As a temporary work around, the raw data is here exported per file
 	if exportPerFile:
