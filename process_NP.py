@@ -110,7 +110,7 @@ import initialization
 # This allows Python to import the custom modules in our library. 
 # If you add new subfolders in the library, they need to be added in addLibary (in initialization.py) as well.
 initialization.addLibrary(studentFolder)
-dataFolder,tmpFigFolder,outputFolder,cleanedFolder,aggregatedOutputFilename =\
+dataFolder,tmpFigFolder,outputFolder,cleanedFolder,aggregatedOutputFilename,outputDescriptionFilename =\
 initialization.checkFolders(folder,aggregateEvent)
 
 import pdb; #pdb.set_trace()
@@ -148,7 +148,7 @@ aggregateLevel = (aggregateEvent,aggregateWindow,aggregateLag)
 DirtyDataFiles = [f for f in listdir(dataFolder) if isfile(join(dataFolder, f)) if '.csv' in f]
 t = ([],1,len(DirtyDataFiles))#(time started,nth file,total number of files)
 
-for dirtyFname in DirtyDataFiles[44:]:
+for dirtyFname in DirtyDataFiles:
 	print(	'\nFILE: << %s >>' %dirtyFname[:-4])
 	t = estimateRemainingTime.printProgress(t)
 	# if t[1] == 2:
@@ -233,7 +233,7 @@ for dirtyFname in DirtyDataFiles[44:]:
 	# outputFilename = outputFolder + 'output_' + aggregateLevel[0] + '.csv'
 	exportCSV.newOrAdd(aggregatedOutputFilename,exportDataString,exportData,skippedData)	
 	# outputFilename = outputFolder + 'outputDescription_' + aggregateLevel[0] + '.txt'
-	exportCSV.varDescription(aggregatedOutputFilename,exportDataString,exportFullExplanation)
+	exportCSV.varDescription(outputDescriptionFilename,exportDataString,exportFullExplanation)
 
 	continue
 	pdb.set_trace()	
