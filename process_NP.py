@@ -148,11 +148,11 @@ aggregateLevel = (aggregateEvent,aggregateWindow,aggregateLag)
 DirtyDataFiles = [f for f in listdir(dataFolder) if isfile(join(dataFolder, f)) if '.csv' in f]
 t = ([],1,len(DirtyDataFiles))#(time started,nth file,total number of files)
 
-for dirtyFname in DirtyDataFiles[43:]:
+for dirtyFname in DirtyDataFiles[44:]:
 	print(	'\nFILE: << %s >>' %dirtyFname[:-4])
 	t = estimateRemainingTime.printProgress(t)
 	# if t[1] == 2:
-	pdb.set_trace()
+	# pdb.set_trace()
 	#########################
 	# PREPARATION ###########
 	#########################

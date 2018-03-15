@@ -363,18 +363,19 @@ def verifyGroupRows(df_cleaned):
 	
 	# Grouprows - at this stage - are characterized by:
 	# 1) a 'TeamID' that isnull()
-	groupRows = (df_cleaned['TeamID'].isnull())# & (str(df_cleaned['PlayerID']) != 'ball') 
+	groupRows = (df_cleaned['TeamID'].isnull()) & (df_cleaned['Ts'].notnull()) 
 
 	# 2) a 'PlayerID' that is not a 'ball'	
 	if df_cleaned['PlayerID'].dtype != float:
 		groupRows = (groupRows) & (df_cleaned['PlayerID'] != 'ball')
 	
+	uniqueTs = pd.unique(df_cleaned['Ts'])
+	uniqueTs = np.sort(uniqueTs)	
+	
 	# When there are no group rows, they need to be created for every unique timestamp.
 	if df_cleaned['Ts'][(groupRows)].empty:# and not any(df_cleaned['PlayerID'] == 'groupRow'):
 		# If groupRows don't exist, then create them
 		# For every existing timestamp
-		uniqueTs = pd.unique(df_cleaned['Ts'])
-		uniqueTs = np.sort(uniqueTs)
 		# Create a string value
 		groupPlayerID = ['groupRow' for i in uniqueTs]
 		# Create groupIndex by adding to highest existing index
@@ -398,17 +399,41 @@ def verifyGroupRows(df_cleaned):
 			warn('\nWARNING: Contents of PlayerID overwritten for group rows.\nBe sure that group rows were identified correctly.\n')
 			df_cleaned.loc[groupRows,('PlayerID')] = 'groupRow'
 
-		# and verify that there is a group row for every timestamp.
-		if len(df_cleaned['PlayerID'][groupRows]) != len(pd.unique(df_cleaned['Ts'])):
-			warn('\nWARNING: Not as many groupRows as unique timestamps.\nConsider including code to fill up missing timestamps in groupRows.\n')
-
-		# And finally, verify whether x, y, and TeamID are empty
+		# Verify whether x, y, and TeamID are empty
 		if not all(df_cleaned['X'][(groupRows)].isnull()):
 			warn('\nWARNING: X values of groupRows are not empty.\nConisder cleaning. ')
 		if not all(df_cleaned['Y'][(groupRows)].isnull()):
 			warn('\nWARNING: Y values of groupRows are not empty.\nConisder cleaning. ')
 		if not all(df_cleaned['TeamID'][(groupRows)].isnull()):
 			warn('\nWARNING: TeamID values of groupRows are not empty.\nConisder cleaning. ')			
+
+		# and finally, verify that there is a group row for every timestamp.
+		if len(df_cleaned['PlayerID'][groupRows]) != len(uniqueTs):
+			warn('\nWARNING: Not as many groupRows as unique timestamps.\nSolved it by appending the missing timestamps as groupRows to the end of the file.\nThis may result in a non-ordered dataset!! (if groupRows wer not originally a the end of the file)\nCould consider re-ordering dataFrame after inserting these missing timestamps.\n')
+
+			# Definitely not the fastest way. But it works.
+			# Check which Ts values are missing for the groupRows
+			missingGroupTs = []
+			for i in uniqueTs:
+				ismissingGroupTs = True
+				for j in df_cleaned['Ts'][groupRows]:
+					if i == j:
+						ismissingGroupTs = False
+				if ismissingGroupTs:
+					missingGroupTs.append(i)
+
+			# Add missing group rows as empty rows
+			# Create a string value
+			groupPlayerID = ['groupRow' for i in missingGroupTs]
+			# Create groupIndex by adding to highest existing index
+			firstGroupIndex = df_cleaned.index[-1] + 1
+			groupIndex = firstGroupIndex + range(len(groupPlayerID))
+
+			# Put these in a DataFrame with the same column headers
+			df_group = pd.DataFrame({'Ts':missingGroupTs,'PlayerID':groupPlayerID},index = [groupIndex])# possibly add the index ? index = []
+			
+			# Append them to the existing dataframe
+			df_cleaned = df_cleaned.append(df_group)
 
 	return df_cleaned
 
