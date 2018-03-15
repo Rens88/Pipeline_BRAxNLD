@@ -1,5 +1,5 @@
 # 08-02-2018 Rens Meerhoff
-# Script can be generically used to import information from attributeDict. If the data is not organized similarly, it will simply export empty targetEvents. In the future, we can include LMP-based import of these kinds of data (or perhaps standardize the format earlier in the pipeline).
+# Script can be generically used to import information from eventsPanda. If the data is not organized similarly, it will simply export empty targetEvents. In the future, we can include LMP-based import of these kinds of data (or perhaps standardize the format earlier in the pipeline).
 # Now, the script returns a dictionary of 'targetEvents' with the following format:
 # targetEvents['Goals'] = (instant (s) a goal was scored, team that scored)
 # targetEvents['Possession'] = (instant possession started (s), instant possession ended (s), team that had possession)
@@ -18,65 +18,67 @@
 import pdb; #pdb.set_trace()
 from warnings import warn
 import numpy as np
-from os.path import isfile, join, isdir
-from os import listdir
-import CSVexcerpt
-import exportCSV
+import pandas as pd
+# from os.path import isfile, join, isdir
+# from os import listdir
+# import CSVexcerpt
+# import exportCSV
 
 import safetyWarning
 
 if __name__ == '__main__':
-	process(rawDict,attributeDict,TeamAstring,TeamBstring)
+	process(eventsPanda,TeamAstring,TeamBstring)
 
-	goals(rawDict,attributeDict,TeamAstring,TeamBstring,targetEvents)
-	possession(rawDict,attributeDict,TeamAstring,TeamBstring,targetEvents)	
-	passes(rawDict,attributeDict,TeamAstring,TeamBstring,possessionCharacteristics,targetEvents)
-	full(rawDict,targetEvents)
+	goals(eventsPanda,TeamAstring,TeamBstring,targetEvents)
+	possession(eventsPanda,TeamAstring,TeamBstring,targetEvents)	
+	passes(eventsPanda,TeamAstring,TeamBstring,possessionCharacteristics,targetEvents)
+	full(targetEvents)
 
-def process(rawDict,attributeDict,TeamAstring,TeamBstring):
+def process(eventsPanda,TeamAstring,TeamBstring):
 	targetEvents = {}
 	########################################################################################
 	####### Import existing events ######################################################
 	########################################################################################
 
 	## goals
-	targetEvents = goals(rawDict,attributeDict,TeamAstring,TeamBstring,targetEvents)
+	targetEvents = goals(eventsPanda,TeamAstring,TeamBstring,targetEvents)
 	## possession / turnovers
-	targetEvents = possession(rawDict,attributeDict,TeamAstring,TeamBstring,targetEvents)
+	targetEvents = possession(eventsPanda,TeamAstring,TeamBstring,targetEvents)
 	## Pass
 	# NB: If available, possession should be computed before passes to incorporate number of consecutive passes
 	# Could implement a safer procedure by starting with an empty dictionary and then adding the eventspecific dictionary after it's done the module (exporting an empty dictionary if info not available), then, the possession dictionary HAS to exist before going through
-	targetEvents = passes(rawDict,attributeDict,TeamAstring,TeamBstring,targetEvents)
-	targetEvents = full(rawDict,targetEvents)
+	targetEvents = passes(eventsPanda,TeamAstring,TeamBstring,targetEvents)
+	targetEvents = full(eventsPanda,targetEvents)
 	return targetEvents
 
-def full(rawDict,targetEvents):
+def full(eventsPanda,targetEvents):
 	targetEvents = {**targetEvents,'Full':[]}
-	TsS = rawDict['Time']['TsS']
+	TsS = eventsPanda['Ts']
 	targetEvents['Full'] = (float(min(TsS)),float(max(TsS)))
 	return targetEvents
 
-def goals(rawDict,attributeDict,TeamAstring,TeamBstring,targetEvents):
+def goals(eventsPanda,TeamAstring,TeamBstring,targetEvents):
 	targetEvents = {**targetEvents,'Goals':[]}
 
-	if not 'Goal' in attributeDict.keys():
+	if not 'Goal' in eventsPanda.keys():
 		# No Goal information, so return immediately
 		return targetEvents
 
 	count = 0
-	goals = [i for i in attributeDict['Goal'] if i  != '' ]
+	goals = [i for i in eventsPanda['Goal'] if i  != '' ]
 
 	goalsOut = np.ones((len(goals),2),dtype='int')*-1
 
-	for idx,i in enumerate(attributeDict['Goal']):
-		if not i == '':
-			goalsOut[count,1] = rawDict['Time']['TsS'][idx]
+	for idx,i in enumerate(eventsPanda['Goal']):
+		if not i == '' and pd.notnull(i):
+			goalsOut[count,1] = eventsPanda['Ts'][idx]
+
 			if TeamAstring in i:
 				goalsOut[count,0] = 0
-				targetEvents['Goals'].append((float(rawDict['Time']['TsS'][idx]),TeamAstring))
+				targetEvents['Goals'].append((float(eventsPanda['Ts'][idx]),TeamAstring))
 			elif TeamBstring in i:
 				goalsOut[count,0] = 1
-				targetEvents['Goals'].append((float(rawDict['Time']['TsS'][idx]),TeamBstring))
+				targetEvents['Goals'].append((float(eventsPanda['Ts'][idx]),TeamBstring))
 			else:
 				warn('\n\nCould not recognize team:\n<<%s>>' %i)
 			count = count + 1
@@ -86,19 +88,19 @@ def goals(rawDict,attributeDict,TeamAstring,TeamBstring,targetEvents):
 #################################################################
 #################################################################
 
-def possession(rawDict,attributeDict,TeamAstring,TeamBstring,targetEvents):
+def possession(eventsPanda,TeamAstring,TeamBstring,targetEvents):
 	targetEvents = {**targetEvents,'Possession':[],'Turnovers':[]} 
 
-	if not 'Possession/Turnover' in attributeDict.keys():
+	if not 'Possession/Turnover' in eventsPanda.keys():
 		# No Possession/Turnover information, so return immediately
 		return targetEvents
 
-	possessionEvent = [(i,val) for i,val in enumerate(attributeDict['Possession/Turnover']) if val  != '' ]
+	possessionEvent = [(i,val) for i,val in enumerate(eventsPanda['Possession/Turnover']) if val  != '' and pd.notnull(val)]
 	dt = []
 
 	for idx,i in enumerate(possessionEvent):
 		curFrame = i[0] # frame
-		curTime = rawDict['Time']['TsS'][i[0]]
+		curTime = eventsPanda['Ts'][i[0]]
 		curStatus = i[1]
 		# Determine per event who has possession from that frame onward
 
@@ -107,7 +109,7 @@ def possession(rawDict,attributeDict,TeamAstring,TeamBstring,targetEvents):
 		else:
 			# CHECK THIS could be incorrect. When in doubt, double check:
 			# As there is no record at the end saying that possession ended, I just assumed that the last frame was the end of teh current possession
-			endPossession = None#[iq for iq,iv in enumerate(rawDict['Entity']['TeamID']) if iv == '' and rawDict['Time']['TsS'][iq] == max(rawDict['Time']['TsS'])]
+			endPossession = None#[iq for iq,iv in enumerate(eventsPanda['Entity']['TeamID']) if iv == '' and eventsPanda['Ts'][iq] == max(eventsPanda['Ts'])]
 
 
 		if 'Start' in curStatus:
@@ -128,7 +130,7 @@ def possession(rawDict,attributeDict,TeamAstring,TeamBstring,targetEvents):
 			currentPossession = None
 
 		elif 'Turnover' in curStatus:		
-			dt.append(float(rawDict['Time']['TsS'][curFrame+1]-rawDict['Time']['TsS'][curFrame])) # a cheecky way to read frame rate from data
+			dt.append(float(eventsPanda['Ts'][curFrame+1]-eventsPanda['Ts'][curFrame])) # a cheecky way to read frame rate from data
 			if currentPossession == TeamAstring:
 				currentPossession = TeamBstring
 				targetEvents['Turnovers'].append((curTime,TeamAstring))
@@ -155,11 +157,11 @@ def possession(rawDict,attributeDict,TeamAstring,TeamBstring,targetEvents):
 		if curFrame == None:
 			in1 = None
 		else:
-			in1 = float(rawDict['Time']['TsS'][curFrame])
+			in1 = float(eventsPanda['Ts'][curFrame])
 		if endPossession == None:
 			in2 = None
 		else:
-			in2 = float(rawDict['Time']['TsS'][endPossession])
+			in2 = float(eventsPanda['Ts'][endPossession])
 		targetEvents['Possession'].append((in1,in2,currentPossession))								
 
 	if dt == []:
@@ -179,22 +181,22 @@ def possession(rawDict,attributeDict,TeamAstring,TeamBstring,targetEvents):
 #################################################################
 #################################################################
 
-def passes(rawDict,attributeDict,TeamAstring,TeamBstring,targetEvents):
+def passes(eventsPanda,TeamAstring,TeamBstring,targetEvents):
 	targetEvents = {**targetEvents,'Passes':[]}
 
-	if not 'Pass' in attributeDict.keys():
+	if not 'Pass' in eventsPanda.keys():
 		# No Pass information, so return immediately
 		return targetEvents
 
 	count = 0
-	passes = [i for i in attributeDict['Pass'] if i  != '' ]
+	passes = [i for i in eventsPanda['Pass'] if i  != '' ]
 
-	for idx,i in enumerate(attributeDict['Pass']):
-		if not i == '':
+	for idx,i in enumerate(eventsPanda['Pass']):
+		if not i == '' and pd.notnull(i):
 			if TeamAstring in i:
-				targetEvents['Passes'].append((float(rawDict['Time']['TsS'][idx]),TeamAstring,None))				
+				targetEvents['Passes'].append((float(eventsPanda['Ts'][idx]),TeamAstring,None))				
 			elif TeamBstring in i:
-				targetEvents['Passes'].append((float(rawDict['Time']['TsS'][idx]),TeamBstring,None))								
+				targetEvents['Passes'].append((float(eventsPanda['Ts'][idx]),TeamBstring,None))								
 			else:
 				warn('\n\nCould not recognize team:\n<<%s>>' %i)
 			if 'oal' in i:

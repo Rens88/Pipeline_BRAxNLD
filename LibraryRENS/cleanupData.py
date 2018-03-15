@@ -27,6 +27,7 @@ from os import listdir, path, makedirs
 import re
 import pandas as pd
 import student_XX_cleanUp
+import time
 
 if __name__ == '__main__':
 
@@ -50,17 +51,28 @@ if __name__ == '__main__':
 def process(dirtyFname,cleanFname,dataType,dataFolder,cleanedFolder,TeamAstring,TeamBstring,headers,readAttributeCols,timestampString,readEventColumns,conversionToMeter):
 
 	debugOmittedRows = False # Optional export of data that was omitted in the cleaning process
+	fatalTimeStampIssue = False
 	# Clean up data, if necessary
 	cleanFnames = [f for f in listdir(cleanedFolder) if isfile(join(cleanedFolder, f)) if '.csv' in f]
 
 	if cleanFname in cleanFnames:
-		warn('\nContinued with previously cleaned data.\nIf problems exist with data consistency, consider writing a function in cleanupData.py.\n')
-		return cleanedFolder, readAttributeCols#, attrLabel
+		with open(cleanedFolder+cleanFname, 'r') as f:
+			reader = csv.reader(f)
+			tmpHeaders = list(next(reader))
+
+		if 'fatalTimeStampIssue' in tmpHeaders:
+			fatalTimeStampIssue = True
+			warn('\nFATAL WARNING: In a previous clean-up, there was a problem with timestamp:\nSome timestamps occurred more often than there were unique <PlayerID>s')
+		else:
+			warn('\nContinued with previously cleaned data.\nIf problems exist with data consistency, consider writing a function in cleanupData.py.\n')
+
+		return cleanedFolder,fatalTimeStampIssue#, readAttributeCols#, attrLabel
 	else: # create a new clean Fname
 		print('\nCleaning up file...')
 		if dataType == "NP":
 			# NB: cleanupData currently dataset specific (NP or FDP). Fixes are quite specific and may not easily transfer to different datasets.
-			df_cleaned,df_omitted,headers,readAttributeCols,readEventColumns = \
+			# df_cleaned,df_omitted,headers,readAttributeCols,readEventColumns = \
+			df_cleaned,df_omitted = \
 			NP(dirtyFname,cleanFname,dataFolder,cleanedFolder,headers,readAttributeCols,debugOmittedRows,readEventColumns,TeamAstring,TeamBstring)
 		elif dataType == "FDP":
 			df_cleaned,df_omitted = FDP(dirtyFname,cleanFname,dataFolder,cleanedFolder,headers,readAttributeCols,debugOmittedRows,readEventColumns)
@@ -77,14 +89,17 @@ def process(dirtyFname,cleanFname,dataType,dataFolder,cleanedFolder,TeamAstring,
 		# Convert to meters
 		df_cleaned = convertToMeters(df_cleaned,conversionToMeter)
 
+		# Check if there is already a set of rows for team values (i.e., rows without playerID that are not 'ball')
+		# df_cleaned.to_csv('C:\\Users\\rensm\\Documents\\PostdocLeiden\\NP repository\\Output\\test.csv')
+		df_cleaned = verifyGroupRows(df_cleaned)
+
 		# Confirm whether Every timestamp occurs equally often, to enable indexing based on timestamp
 		tsConsistent = verifyTimestampConsistency(df_cleaned,TeamAstring,TeamBstring)
 		if not tsConsistent:
 			warn('\nTO DO: Timestamp is not consistent: \nWrite the code to smooth out timestamp.')
-
-		# Check if there is already a set of rows for team values (i.e., rows without playerID that are not 'ball')
-		# df_cleaned.to_csv('C:\\Users\\rensm\\Documents\\PostdocLeiden\\NP repository\\Output\\test.csv')
-		df_cleaned = verifyGroupRows(df_cleaned)
+		
+		# The first fatal error. Skip file and continue.
+		fatalTimeStampIssue = checkForFatalTimestampIssue(df_cleaned)
 		
 		df_cleaned,df_omitted = \
 		student_XX_cleanUp.process(df_cleaned,df_omitted,TeamAstring,TeamBstring,headers,readAttributeCols,readEventColumns)
@@ -93,8 +108,12 @@ def process(dirtyFname,cleanFname,dataType,dataFolder,cleanedFolder,TeamAstring,
 			warn('\nOverwriting file <%s> \nin cleanedFolder <%s>.\n' %(cleanFname,cleanedFolder))
 
 		# Export cleaned data to CSV
-		df_cleaned.to_csv(cleanedFolder + cleanFname)		
-		
+		if fatalTimeStampIssue:
+			df_Fatal = pd.DataFrame([],columns=['fatalTimeStampIssue'])
+			df_Fatal.to_csv(cleanedFolder + cleanFname)
+		else:
+			df_cleaned.to_csv(cleanedFolder + cleanFname)
+	
 		# Optional: Export data that has been omitted, in case you suspect that relevent rows were omitted.
 		if debugOmittedRows:
 			omittedFolder = dataFolder + 'Omitted\\'
@@ -112,7 +131,7 @@ def process(dirtyFname,cleanFname,dataType,dataFolder,cleanedFolder,TeamAstring,
 		# attrLabel.update({'Ts': 'Time (s)'})
 		# readAttributeCols[0] = 'Ts'
 
-	return cleanedFolder, readAttributeCols#, attrLabel
+	return cleanedFolder,fatalTimeStampIssue#, readAttributeCols#, attrLabel
 
 def FDP(fname,cleanFname,dataFolder,cleanedFolder,headers,readAttributeCols,debugOmittedRows,readEventColumns):
 
@@ -161,22 +180,38 @@ def FDP(fname,cleanFname,dataFolder,cleanedFolder,headers,readAttributeCols,debu
 	return df_cleaned, df_omitted
 
 def NP(fname,newfname,folder,cleanedFolder,headers,readAttributeCols,debugOmittedRows,readEventColumns,TeamAstring,TeamBstring):
-
+	print(headers)
 	# Only read the headers as a check-up:
 	with open(folder+fname, 'r') as f:
 		reader = csv.reader(f)
 		tmpHeaders = list(next(reader))
+	# 	wr = csv.writer(f)
+		
+	# 	newTmpHeaders = tmpHeaders.copy()
+	# 	for idx,i in enumerate(tmpHeaders):
+	# 		if 'GPS' in i:
+	# 			newTmpHeaders[idx] = 'OMG I CHANGED GPS'
+	# 	reader[0]
+	# 	wr.writerow(reader)
+	# pdb.set_trace()
 
-	colHeaders,posIdx = \
+	colHeaders,posIdx,readAttributeCols_tmp,readEventColumns_tmp = \
 	checkKnownExceptions_colHeaders(tmpHeaders,headers,readAttributeCols,readEventColumns)
 
 	for i in colHeaders:
-		if not [True for j in tmpHeaders if re.search(i,j)]:
-			exit('EXIT: Column header <%s> not in column headers of the file:\n%s\n\nSOLUTION: Change the user input in \'process\' \n' %(i,tmpHeaders))
-
+		# if not [True for j in tmpHeaders if re.search(i,j)]:
+		if not [True for j in tmpHeaders if i == j]:			
+			print('WARNING (potentially fatal): Column header \n<%s>' %i)
+			warn('\nnot in column headers of the file:\n%s\n\n' %tmpHeaders)
 	df = pd.read_csv(folder+fname,usecols=(colHeaders),low_memory=False,skip_blank_lines  = True,skipinitialspace  = True)
 
-	df,readEventColumns = removeSpacesColheaders(df,readEventColumns,posIdx)	
+	df = removeSpacesColheaders(df,readEventColumns,readEventColumns_tmp,posIdx)	
+	
+	# Omit rows without value
+	# df_cleaned,df_omitted = omitRowsWithoutValues(df)
+
+	# df_cleaned = 
+	df.dropna(axis=0, how='all',inplace = True)
 
 	# Convert timestamp to seconds
 	df = convertHHMMSS_to_s(df,headers['Ts'])
@@ -187,13 +222,13 @@ def NP(fname,newfname,folder,cleanedFolder,headers,readAttributeCols,debugOmitte
 	# Check the group rows that contain information.
 	df = checkGroupRows_withInformation(df,headers,readEventColumns,TeamAstring,TeamBstring)
 
-	# Omit rows without value
-	df_cleaned,df_omitted = omitRowsWithoutValues(df)
 
+	df_cleaned = df
+	df_omitted = pd.DataFrame([],columns = [df.keys()])
 	# Idea: by incorporting df_omittedNN in a list, you could make the script work with variable lenghts of omitted dfs.
 	# df_omitted = pd.concat([df_omitted01, df_omitted02, df_omitted03])
 
-	return df_cleaned,df_omitted,headers,readAttributeCols,readEventColumns
+	return df_cleaned,df_omitted#,headers,readAttributeCols,readEventColumns
 
 def splitName_and_Team(df,headers,ID,newPlayerIDstring,newTeamIDstring):
 
@@ -273,7 +308,7 @@ def verifyTimestampConsistency(df,TeamAstring,TeamBstring):
 	uniquePlayerID = pd.unique(df['PlayerID'])
 	uniqueTs = pd.unique(df['Ts'])
 
-	if len(uniqueTs)*len(uniquePlayerID) == len(df['Ts']):
+	if len(uniqueTs)*len(uniquePlayerID) == len(df['Ts']): # not very accurate, but should be good enough
 		tsConsistent = True
 	else:
 		tsConsistent = False
@@ -281,10 +316,36 @@ def verifyTimestampConsistency(df,TeamAstring,TeamBstring):
 		for i in uniquePlayerID:
 			# Take the unique timestamps per player
 			uTsPl = pd.unique(df['Ts'][df['PlayerID'] == i])
+			print(i)
 			print('Player <%s>: Number of observations %ds, min %d, max %ds.' %(i,len(uTsPl),min(uTsPl),max(uTsPl)))
 			# print('\nConsider interpolation to make sure timestamps match up.\n')
 	
 	return tsConsistent
+	
+def checkForFatalTimestampIssue(rawDict):
+	# A security measure to pick up any inconsistencies in timestamp
+	# Could potentially be expanded with some automatic corrections
+	fatalTimeStampIssue = False
+	PlayerID = rawDict['PlayerID']
+	TsS = rawDict['Ts']
+	# Ts = rawDict['Ts']
+	uniqueTsS,tmp = np.unique(TsS,return_counts=True)
+	uniquePlayers = pd.unique(PlayerID)
+
+	if any(tmp != np.median(tmp)) or len(uniqueTsS) != len(PlayerID) / len(uniquePlayers):
+		# Problem with timestamp. Not every timestamp occurs equally often and/or there isn't the expected number of unique timestamps
+		# singleoccurrence = [uniqueTsS[idx] for idx,val in enumerate(tmp) if val == 1]
+		# for i in singleoccurrence:
+		# 	TsS[np.where(TsS == i)] = i
+		warn('\nFATAL WARNING: Problem with timestamp. Not every timestamp occurs equally often.')
+		indices = np.where(tmp != np.median(tmp))
+		for i in np.nditer(indices):
+			i2 = np.where(uniqueTsS[i]==TsS)
+			# print('i2 = %s' %np.nditer(i2)[0])
+			print('Timestamp <%s> occurred <%s> times.' %(uniqueTsS[i],tmp[i]))
+		fatalTimeStampIssue = True
+
+	return fatalTimeStampIssue
 
 def verifyGroupRows(df_cleaned):
 
@@ -363,6 +424,7 @@ def convertHHMMSS_to_s(df,ts):
 	regex = r'(\d+):(\d{2}):(\d{2})\.(\d+)'
 	regex_alternative = r'(\d+):(\d{2})\.(\d+)'
 	for idx,tmpString in enumerate(df[ts]):
+
 		match = re.search(regex,tmpString)
 		if match:
 			grp = match.groups()
@@ -428,19 +490,29 @@ def checkTeamString_withoutSpaces_ignoringCase(df,Team,TeamAstring,TeamBstring):
 
 	return df
 
-def omitRowsWithoutValues(df):
-	# Omit rows that have no x and y value.
-	# test = [df[i].notnull() for i in colHeaders]
-	emptyRows = pd.DataFrame(data = [],index = df.index, columns = ['emptyRows'],dtype = 'bool')
- 
-	for idx in df.index:
-		test = [pd.notnull(df[i][idx]) for i in df.keys()]
-		if any(test):
-			# Row not empty
-			emptyRows['emptyRows'] = False
-		else:
-			# Empty row
-			emptyRows['emptyRows'] = True
+## Ancient function. Use instead: "df.dropna(axis=0, how='all',inplace = True)"
+# def omitRowsWithoutValues(df):
+# 	# Omit rows that have no x and y value.
+# 	# test = [df[i].notnull() for i in colHeaders]
+# 	emptyRows = pd.DataFrame(data = [],index = df.index, columns = ['emptyRows'],dtype = 'bool')
+# 	t = time.time()	# do stuff
+
+# 	for idx in df.index:
+# 		test = [pd.notnull(df[i][idx]) for i in df.keys()]
+# 		if any(test):
+# 			# Row not empty
+# 			emptyRows['emptyRows'] = False
+# 		else:
+# 			# Empty row
+# 			emptyRows['emptyRows'] = True
+# 			print(emptyRows)
+# 			pdb.set_trace()
+# 		if 	time.time() - t > 5:
+# 		# it's been longer than 5s. Let's apply a stricter rule
+# 			doSomething = []
+# 			print('I did something')
+# 			pdb.set_trace()
+
 
 	df_cleaned = df[emptyRows['emptyRows'] == False ]
 	df_omitted = df[emptyRows['emptyRows'] == True  ]
@@ -465,75 +537,88 @@ def convertToMeters(df_cleaned,conversionToMeter):
 	return df_cleaned
 
 def checkKnownExceptions_colHeaders(tmpHeaders,headers,readAttributeCols,readEventColumns):
+
+	readEventColumns_tmp = readEventColumns.copy()
+	readAttributeCols_tmp = readAttributeCols.copy()
+	headersCopy = headers.copy()
 	# Known exceptions:
 	timeException = [True for j in tmpHeaders if re.search('Video timing',j,re.IGNORECASE)]
 	if timeException:
-		headers['Ts'] = 'Video timing'
+		headersCopy['Ts'] = 'Video timing'
 
 	posIdx = [idx for idx,i in enumerate(readEventColumns) if 'Possession' in i]
 
 	possessionException01 = [True for j in tmpHeaders if re.search('Possession / Turnover',j,re.IGNORECASE)]
 	if possessionException01 and not posIdx == []:
-		readEventColumns[posIdx[0]] = 'Possession / Turnover'
+		readEventColumns_tmp[posIdx[0]] = 'Possession / Turnover'
 
 	possessionException02 = [True for j in tmpHeaders if re.search('Possession/ Turnover',j,re.IGNORECASE)]
 	if possessionException02 and not posIdx == []:
-		readEventColumns[posIdx[0]] = 'Possession/ Turnover'
+		readEventColumns_tmp[posIdx[0]] = 'Possession/ Turnover'
 	
 	for j in tmpHeaders:
+		if j == '': # small correction for empty column headers
+			continue
 		if j[-1] == ' ':
-			if headers['Ts'] in j:
-				headers['Ts'] = headers['Ts'] + ' '
-			elif headers['Location'][0] in j:
-				headers['Location'][0] = headers['Location'][0] + ' '
-			elif headers['Location'][1] in j:
-				headers['Location'][1] = headers['Location'][1] + ' '
-			elif headers['PlayerID'] in j:
-				headers['PlayerID'] = headers['PlayerID'] + ' '
-			elif headers['TeamID'] in j:
-				headers['TeamID'] = headers['TeamID'] + ' '
+			if j[-2] == ' ':
+				replaceSpace = '  '
+			else:
+				replaceSPace = ' '
+			if headersCopy['Ts'] in j:
+				headersCopy['Ts'] = j#headers['Ts'] + replaceSPace
+			elif headersCopy['Location'][0] in j:
+				headersCopy['Location'][0] = j#headers['Location'][0] + replaceSPace
+			elif headersCopy['Location'][1] in j:
+				headersCopy['Location'][1] = j#headers['Location'][1] + replaceSPace
+			elif headersCopy['PlayerID'] in j:
+				headersCopy['PlayerID'] = j#headers['PlayerID'] + replaceSPace
+			elif headersCopy['TeamID'] in j:
+				headersCopy['TeamID'] = j#headers['TeamID'] + replaceSPace
 			else:
 				idxAttr = [idx for idx,i in enumerate(readAttributeCols) if i in j]
 				idxEvent = [idx for idx,i in enumerate(readEventColumns) if i in j]
 				if len(idxAttr) != 0:
-					readAttributeCols[idxAttr[0]] = readAttributeCols[idxAttr[0]] + ' '
+					readAttributeCols_tmp[idxAttr[0]] = j#readAttributeCols[idxAttr[0]] + replaceSPace
 				elif len(idxEvent) != 0:
-					readEventColumns[idxEvent[0]] = readEventColumns[idxEvent[0]] + ' '
+					readEventColumns_tmp[idxEvent[0]] = j#readEventColumns_tmp[idxEvent[0]] + replaceSPace
 
-	ts = headers['Ts']
-	x,y = headers['Location']
-	ID = headers['PlayerID']
-	Team = headers['TeamID']
-	colHeaders = [ts,x,y,ID,Team] + readAttributeCols + readEventColumns
+	ts = headersCopy['Ts']
+	x,y = headersCopy['Location']
+	ID = headersCopy['PlayerID']
+	Team = headersCopy['TeamID']
+	colHeaders = [ts,x,y,ID,Team] + readAttributeCols_tmp + readEventColumns_tmp
 
-	return colHeaders,posIdx
+	return colHeaders,posIdx,readAttributeCols_tmp,readEventColumns_tmp
 
-def removeSpacesColheaders(df,readEventColumns,posIdx):
+def removeSpacesColheaders(df,readEventColumns,readEventColumns_tmp,posIdx):
 
 	if posIdx != []:
 		# Could do the same for any other column headers that are inconsistent
-		df.rename(columns={readEventColumns[posIdx[0]]: "Possession"}, inplace=True)
-		readEventColumns[posIdx[0]] = 'Possession'
+		df.rename(columns={readEventColumns_tmp[posIdx[0]]: readEventColumns[posIdx[0]]}, inplace=True)
+		# readEventColumns[posIdx[0]] = 'Possession'
 
 	runIdx = [idx for idx,i in enumerate(readEventColumns) if 'Run' in i]
 	if runIdx != []:
 		# Could do the same for any other column headers that are inconsistent
-		df.rename(columns={readEventColumns[runIdx[0]]: "Run"}, inplace=True)
-		readEventColumns[runIdx[0]] = 'Run'
+		df.rename(columns={readEventColumns_tmp[runIdx[0]]: readEventColumns[runIdx[0]]}, inplace=True)
+		# df.rename(columns={readEventColumns[runIdx[0]]: "Run"}, inplace=True)
+		# readEventColumns[runIdx[0]] = 'Run'
 
 	goalIdx = [idx for idx,i in enumerate(readEventColumns) if 'Goal' in i]
 	if goalIdx != []:
 		# Could do the same for any other column headers that are inconsistent
-		df.rename(columns={readEventColumns[goalIdx[0]]: "Goal"}, inplace=True)
-		readEventColumns[goalIdx[0]] = 'Goal'
+		df.rename(columns={readEventColumns_tmp[goalIdx[0]]: readEventColumns[goalIdx[0]]}, inplace=True)
+		# df.rename(columns={readEventColumns[goalIdx[0]]: "Goal"}, inplace=True)
+		# readEventColumns[goalIdx[0]] = 'Goal'
 
 	passIdx = [idx for idx,i in enumerate(readEventColumns) if 'Pass' in i]
 	if passIdx != []:
 		# Could do the same for any other column headers that are inconsistent
-		df.rename(columns={readEventColumns[passIdx[0]]: "Pass"}, inplace=True)
-		readEventColumns[passIdx[0]] = 'Pass'
+		df.rename(columns={readEventColumns_tmp[passIdx[0]]: readEventColumns[passIdx[0]]}, inplace=True)
+		# df.rename(columns={readEventColumns[passIdx[0]]: "Pass"}, inplace=True)
+		# readEventColumns[passIdx[0]] = 'Pass'
 
-	return df,readEventColumns
+	return df#,readEventColumns
 
 def checkGroupRows_withInformation(df,headers,readEventColumns,TeamAstring,TeamBstring):
 
@@ -580,7 +665,7 @@ def checkGroupRows_withInformation(df,headers,readEventColumns,TeamAstring,TeamB
 				if not (TeamAstring[1:] in curCell or TeamBstring[1:] in curCell):
 					warn('\nWARNING: could not identify team: <%s>' %curCell)
 
-		elif 'Possession' == i:
+		elif 'Possession' in i:
 			for j in idx_eventWithInfo:
 				curCell = df[i][j]	
 

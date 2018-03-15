@@ -30,8 +30,7 @@ if __name__ == '__main__':
 	teamSurface(indsMatrix,XpositionMatrix,YpositionMatrix,teamAcols,teamBcols,TeamAstring,TeamBstring)
 	groupSurface(X,Y)
 
-	obtainIndices(rawDict,TeamAstring,TeamBstring)	
-
+	obtainIndices(rawDict,TeamAstring,TeamBstring)
 
 	#####################################################################################
 	#####################################################################################
@@ -54,6 +53,11 @@ def process(rawDict,attributeDict,attributeLabel,TeamAstring,TeamBstring):
 	attributeDict,attributeLabel = \
 	teamSurface_asPanda(rawDict,attributeDict,attributeLabel,TeamAstring,TeamBstring)
 
+	# Computing vNorm, technically requires some form of temporalAggregation. 
+	# This is permitted ONLY if the compute variable returns a value for every timeframe.
+	attributeDict,attributeLabel = \
+	vNorm(rawDict,attributeDict,attributeLabel,TeamAstring,TeamBstring)
+
 	attributeDict,attributeLabel = \
 	student_XX_spatialAggregation.process(rawDict,attributeDict,attributeLabel,TeamAstring,TeamBstring)
 	
@@ -61,19 +65,7 @@ def process(rawDict,attributeDict,attributeLabel,TeamAstring,TeamBstring):
 	# allesBijElkaar = pd.concat([rawDict, attributeDict], axis=1) # debugging only
 	# allesBijElkaar.to_csv('C:\\Users\\rensm\\Documents\\PostdocLeiden\\BRAxNLD repository\\Data\\tmp\\test.csv') # debugging only		
 	# pdb.set_trace()		 
-
-	## WORK IN PROGRESS ##
-	## not yet converted to pandas
-	# tmpAtDi4,tmpAtLa4 = vNorm(rawDict)
-	# attributeDict.update(tmpAtDi4)
-	# attributeLabel.update(tmpAtLa4)
-
-	# # Nonlinear pedagogy only:
-	# # Every new Run (Nonlinear pedagogy data only) has a jump in time (and position), for which velocity is set to 0.
-	# tmpAtDi5 = correctVNorm(rawDict,attributeDict) # Correction only, doesn't need new label.
-	# attributeDict.update(tmpAtDi5)
-	## \WORK IN PROGRESS ##
-
+	
 	return attributeDict, attributeLabel
 
 ############################################################
@@ -304,81 +296,76 @@ def teamSurface_asPanda(rawDict,attributeDict,attributeLabel,TeamAstring,TeamBst
 
 #####################################################################################
 
-def correctVNorm(rawDict,attributeDict):
-	if not 'Run' in attributeDict.keys(): # only normalize if 'runs' exists
-		return {'vNorm':attributeDict['vNorm']}
-	runs = np.array([i for i,val in enumerate(attributeDict['Run']) if val  != '' ])
+def vNorm(rawDict,attributeDict,attributeLabel,TeamAstring,TeamBstring):
 
-	if runs.size == 0:
-		warn('\n!!!!\nExisting attributes seem to be missing.\nCouldnt find runs to normalize velocity.\nVelocity not normalized.')
-		return {'vNorm':attributeDict['vNorm']}
-	runTimes = rawDict['Time']['TsS'][runs]
-	# output = attributeDict['vNorm']
-	output = {'vNorm':attributeDict['vNorm']}
+	##### THE DATA #####
+	# In this case, the new attribute will be computed based on a group (i.e., team) value
+	TeamVals = attributeDict[rawDict['PlayerID'] == 'groupRow'].set_index('Ts')
+	# Create empty DataFrame to store results, NB: columns need to be assigend beforehand.
+	newAttributes = pd.DataFrame(index = attributeDict.index, columns = ['vNorm','distFrame'])
+	
+	# For every player in the dataFrame
+	for idx,i in enumerate(pd.unique(rawDict['PlayerID'])):
+		curPlayer = rawDict[rawDict['PlayerID'] == i]
+		curPlayerDict = curPlayer.set_index('Ts')
 
-	for val in runTimes: # for every run time, make vNorm 0
-		for i,val2 in enumerate(rawDict['Time']['TsS']):
-			if val2 == val:
-				output['vNorm'][i] = 0
-
-	return output
-
-def vNorm(rawDict):
-	PlayerID = rawDict['Entity']['PlayerID']
-	TsS = rawDict['Time']['TsS']	
-
-	X = rawDict['Location']['X']
-	Y = rawDict['Location']['Y']
-
-	curPlayer = []
-	dX = []
-	dY = []
-	dTarray = []#np.array([])
-	firstFramePlayers = []
-	for idx, val in enumerate(PlayerID):
-		if val == '':
-			# Team level idx
-			dX.append(np.nan) # TO DO: ?? replace these with the team averages ??
-			dY.append(np.nan)
-			dTarray.append(np.nan)
-		elif val == curPlayer:
-			# Still the same player
-			# --> Continue
-			if firstFramePlayers[-1] == idx-1: # This should mean that it's the second frame of this player
-				dTarray[idx-1] = TsS[idx] - TsS[idx-1]
-			dX.append(X[idx] - X[idx-1])
-			dY.append(Y[idx] - Y[idx-1])
-			dTarray.append(TsS[idx] - TsS[idx-1])		
-			
-			if not (TsS[idx] - dTarray[-1]) == prevTime:
-				warn('\nPANIC, time not consecutive\n')
-				break
-			prevTime = TsS[idx]
+		if all(curPlayer['PlayerID'] == 'groupRow'):
+			# It's actually not a player, but a group, so skip it.
+			continue # do nothing
+		elif all(curPlayer['PlayerID'] == 'ball'):
+			# It's actually not a player, but the ball, so skip it.
+			continue # do nothing
 		else:
-			# FirstFrame of next player
-			# --> reset
-			firstFramePlayers.append(idx) # not necessary for computing speed, but possibly useful later
-			curPlayer = val
-			dX.append(0)
-			dY.append(0)
-			dTarray.append(0)# first just make it zero, in case only one frame is available
-			prevTime = TsS[idx]
+			# Compute vNorm and distFrame for this player.
+			vT = np.gradient(curPlayerDict.index)
+			presumedFrameRate = np.median(vT)
 
-	# Covered distance on x- and y- axis
-	dX = np.array(dX)
-	dY = np.array(dY)
+			vX = np.gradient(curPlayerDict['X'],curPlayerDict.index)
+			vY = np.gradient(curPlayerDict['Y'],curPlayerDict.index)
+			vNorm = np.sqrt(vX**2 + vY**2)
+			distFrame = vNorm * vT
 
-	dTarray = np.array(dTarray)
+			# A correction of vNorm for jumps in time that deviate from the expected measurement frequency.
+			# Weakness: expected frequency (presumedFramerate) is based on the median of all frame rates. It only works if the majority of the timstamps are without jumps.
+			if any(vT > 1.2*presumedFrameRate):
+				# There seem to be 'jumps' in time.
+				# NB: 1.2 is quite a strict cut-off. But the timeseries data can be expected to have a regular measurement frequency, so this strict cut-off should work.
+				jumpsInTime = vT > 1.2*presumedFrameRate
+				vNorm[jumpsInTime] = 0
+				distFrame[jumpsInTime] = 0
+				warn('\nWARNING: vNorm and distFrame were set to 0 around apparent jumps in time.\nIf vNorm is behaving oddly, check these parameter settings.')
 
-	distFrame = np.sqrt(dX**2 + dY**2) # distance covered per frame
-	vNorm = distFrame / dTarray[0][0] #*100000
-	# IDEA: Could add distSummed
+				## I used to correct it using attributeDict, which should still work, but the above code is more generic.
+				# def correctVNorm(rawDict,attributeDict):
+				# 	if not 'Run' in attributeDict.keys(): # only normalize if 'runs' exists
+				# 		return {'vNorm':attributeDict['vNorm']}
+				# 	runs = np.array([i for i,val in enumerate(attributeDict['Run']) if val  != '' ])
+				# 	if runs.size == 0:
+				# 		warn('\n!!!!\nExisting attributes seem to be missing.\nCouldnt find runs to normalize velocity.\nVelocity not normalized.')
+				# 		return {'vNorm':attributeDict['vNorm']}
+				# 	runTimes = rawDict['Ts'][runs]
+				# 	# output = attributeDict['vNorm']
+				# 	output = {'vNorm':attributeDict['vNorm']}
+				# 	for val in runTimes: # for every run time, make vNorm 0
+				# 		for i,val2 in enumerate(rawDict['Ts']):
+				# 			if val2 == val:
+				# 				output['vNorm'][i] = 0
+				# 	return output
 
-	output = {'vNorm':vNorm,'distFrame':distFrame}
-	labels = {'vNorm':'Speed (m/s)','distFrame':'Distance covered (m)'}
-	return output,labels
+			newAttributes['vNorm'][curPlayer.index] = vNorm
+			newAttributes['distFrame'][curPlayer.index] = distFrame
 
-	#####################################################################################
+	# Combine the pre-existing attributes with the new attributes:
+	attributeDict = pd.concat([attributeDict, newAttributes], axis=1)
+
+	##### THE STRINGS #####
+	# Export a string label of each new attribute in the labels dictionary (useful for plotting purposes)
+	attributeLabel_tmp = {'vNorm':'Speed (m/s)','distFrame':'Distance covered per frame (m)'}
+	attributeLabel.update(attributeLabel_tmp)
+
+	return attributeDict,attributeLabel
+
+#####################################################################################
 #####################################################################################
 
 def teamCentroid(indsMatrix,XpositionMatrix,YpositionMatrix,teamAcols,teamBcols,TeamAstring,TeamBstring):

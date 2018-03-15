@@ -31,8 +31,9 @@ if __name__ == '__main__':
 def existingAttributes(filename,folder,headers,attrLabel):
 
 	# Add time to the attribute columns (easy for indexing)
-	colHeaders = ['Ts'] + headers # This makes sure that timeStamp is also imported in attribute cols, necessary for pivoting etc.
-	attrLabel.update({'Ts': 'Time (s)'})
+	if 'Ts' not in headers:
+		colHeaders = ['Ts'] + headers # This makes sure that timeStamp is also imported in attribute cols, necessary for pivoting etc.
+		attrLabel.update({'Ts': 'Time (s)'})
 
 	# colHeaders = headers
 	# Only read the headers as a check-up:
