@@ -1,3 +1,7 @@
+# THESE FIRST FOUR LINES OF CODE ARE ONLY NECESSARY TO TEST WHETHER THE TEMPLATE STILL WORKS ON FDP DATA.
+import os
+if os.path.isfile('C:\\Users\\rensm\\Documents\\PostdocLeiden\\BRAxNLD repository\\Data\\Cleaned\\CROPPED_AA114105_AA1001_v_AA1012_vPP_SpecialExport_cleaned.csv'):
+	os.remove('C:\\Users\\rensm\\Documents\\PostdocLeiden\\BRAxNLD repository\\Data\\Cleaned\\CROPPED_AA114105_AA1001_v_AA1012_vPP_SpecialExport_cleaned.csv')
 # If you want to edit something in the code and you're not sure where it is, 
 # just ask. l.a.meerhoff@liacs.leidenuniv.nl
 # Also, if you want to add something to the code and you're not sure where, 
@@ -43,6 +47,9 @@
 # USER INPUT ############
 #########################
 ## CHANGE THIS all these variables until 'END USER INPUT'
+# This folder should contain a folder with 'Data'. The tabular output and figures will be stored in this folder as well.
+folder = 'C:\\Users\\rensm\\Documents\\PostdocLeiden\\BRAxNLD repository\\'
+
 # Here, you provide the string name of the student folder that you want to include.
 studentFolder = 'XXcontributions' 
 
@@ -51,34 +58,33 @@ exportPerFile = True # whether you want to export a csv for every complete file 
 debuggingMode = False # whether yo want to continue with the remaining code to incorporate using pandas (temporal aggregation, export and visualization)
 
 # dataType is used for dataset specific parts of the analysis (in the preparation phase only)
-dataType =  "NP" # "FPD" or or "NP" --> so far, only used to call the right cleanup script. Long term goal would be to have a generic cleanup script
-
-# This folder should contain a folder with 'Data'. The tabular output and figures will be stored in this folder as well.
-folder = 'C:\\Users\\rensm\\Documents\\PostdocLeiden\\NP repository\\'
+dataType =  "FDP" # "FPD" or or "NP" --> so far, only used to call the right cleanup script. Long term goal would be to have a generic cleanup script
 
 # String representing the different teams
 # NB: not necessary for FDP (and other datasets where teamstring can be read from the filename, should be done in discetFilename.py)
-TeamAstring = 'Team A'
-TeamBstring = 'Team B'
+TeamAstring = 'Provide the string that represents one team' 
+TeamBstring = 'Provide the string that represents the other team'
 
 # Input of raw data, indicate at least timestamp, entity and Location info
-timestampString = 'Video time (s)'					#'enter the string in the header of the column that represents TIMESTAMP' 	# 'Video time (s)'
-PlayerIDstring = 'jersey n.'						#'enter the string in the header of the column that represents PLAYERID' 	# 'jersey n.'
-TeamIDstring = 'Team' 								#'enter the string in the header of the column that represents TEAMID' 			# Optional
-XPositionString = 'x' 								#'enter the string in the header of the column that represents X-POSITION'			# 'x'
-YPositionString = 'y' 								#'enter the string in the header of the column that represents Y-POSITION'			# 'y'
+timestampString = 'Timestamp' 						#'enter the string in the header of the column that represents TIMESTAMP' 	# 'Video time (s)'
+PlayerIDstring = 'Naam' 							#'enter the string in the header of the column that represents PLAYERID' 	# 'jersey n.'
+TeamIDstring = None 								#'enter the string in the header of the column that represents TEAMID' 			# Optional
+XPositionString = 'X' 								#'enter the string in the header of the column that represents X-POSITION'			# 'x'
+YPositionString = 'Y' 								#'enter the string in the header of the column that represents Y-POSITION'			# 'y'
 
 # Case-sensitive string rawHeaders of attribute columns that already exist in the data (optional). NB: String also sensitive for extra spaces.
-readAttributeCols = []
-attrLabel = {} 
+readAttributeCols = ['Snelheid','Acceleration']
+attrLabel = {readAttributeCols[0]: 'Speed (m/s)',readAttributeCols[1]: 'Acceleration (m/s^2)'} 
 
 # When event columns exist in the raw data, they can be read to export an event file
-readEventColumns = ['Run', 'Goal', 'Possession/Turnover', 'Pass']
+readEventColumns = []
 
 # If the raw data is not given in meters, provide the conversion.
-conversionToMeter = 111111 # https://gis.stackexchange.com/questions/8650/measuring-accuracy-of-latitude-and-longitude/8674#8674
+conversionToMeter = 1 #111111 # https://gis.stackexchange.com/questions/8650/measuring-accuracy-of-latitude-and-longitude/8674#8674
 
-## -- work in progress -- 
+## -- work in progress --  ##
+## For inomtio data, the only aggregateEvent that works is 'Full'
+## Other levels of temporal aggregation to be added soon.
 # Indicate some parameters for temporal aggregation: 'Full' aggregates over the whole file, any other event needs to be specified with the same string as in the header of the CSV file.
 aggregateEvent = 'Full' # Event that will be used to aggregate over (verified for 'Goals' and for 'Possession')
 aggregateWindow = 10 # in seconds #NB: still need to write warning in temporal aggregation in case you have Goals in combination with None.
@@ -151,16 +157,11 @@ t = ([],1,len(DirtyDataFiles))#(time started,nth file,total number of files)
 for dirtyFname in DirtyDataFiles[-2:]:
 	print(	'\nFILE: << %s >>' %dirtyFname[:-4])
 	t = estimateRemainingTime.printProgress(t)
-	# if t[1] == 2:
-	# 	pdb.set_trace()
 	#########################
 	# PREPARATION ###########
 	#########################
 	# IMPORTANT: During preparation you can use 'dataType' (although it's better to try not to) which allows you
 	# to prepare the data in a way that is specific for your dataset.
-	
-	import time
-	tCleanup = time.time()	# do stuff
 	
 	# Prepare metadata of aggregated data to be exported:
 	exportData, exportDataString, exportDataFullExplanation,cleanFname,TeamAstring,TeamBstring = \
@@ -170,8 +171,6 @@ for dirtyFname in DirtyDataFiles[-2:]:
 	# cleanedFolder,readAttributeCols = \
 	cleanedFolder,fatalTimeStampIssue = \
 	cleanupData.process(dirtyFname,cleanFname,dataType,dataFolder,cleanedFolder,TeamAstring,TeamBstring,rawHeaders,readAttributeCols,timestampString,readEventColumns,conversionToMeter)
-	elapsed = time.time() - tCleanup
-	print('Time cleanup elapsed: %s' %elapsed)
 
 	if fatalTimeStampIssue:
 		skippedData = True
@@ -193,44 +192,41 @@ for dirtyFname in DirtyDataFiles[-2:]:
 	########################################################################################
 	####### Import existing data ###########################################################
 	########################################################################################
-	
-	tImport = time.time()
-	
+
 	rawPanda = importTimeseries_aspanda.rawData(cleanFname,cleanedFolder)
 	attrPanda,attrLabel = importTimeseries_aspanda.existingAttributes(cleanFname,cleanedFolder,readAttributeCols,attrLabel)
 	eventsPanda,eventsLabel = importTimeseries_aspanda.existingAttributes(cleanFname,cleanedFolder,readEventColumns,attrLabel)	
 
 	###### Work in progress ##########
 	# Currently code is not very generic. It should work for NP though..
+	# The events are based on event columns that have the same structure as the timeseries data.
 	targetEventsImported = importEvents.process(eventsPanda,TeamAstring,TeamBstring)
 	###### \Work in progress #########
-	elapsed = time.time() - tImport
-	print('Time Import elapsed: %s' %elapsed)
+
 	########################################################################################
 	####### Compute new attributes #########################################################
 	########################################################################################
 
-	tSpatAgg = time.time()
+	## Spatial aggregation
 	attrPanda,attrLabel = spatialAggregation.process(rawPanda,attrPanda,attrLabel,TeamAstring,TeamBstring)
-	elapsed = time.time() - tSpatAgg
-	print('Time SpatAgg elapsed: %s' %elapsed)
+
 	###### Work in progress ##########
-	# targetEventsComputed = importEvents.process(rawDict,attributeDict,TeamAstring,TeamBstring)
 	## Temporal aggregation
-	tTempAgg = time.time()
-	
 	exportData,exportDataString,exportFullExplanation = \
 	temporalAggregation.process(targetEventsImported,aggregateLevel,rawPanda,attrPanda,exportData,exportDataString,exportDataFullExplanation,TeamAstring,TeamBstring)
-	elapsed = time.time() - tTempAgg
-	print('Time TempAgg elapsed: %s' %elapsed)
 
+	########################################################################################
+	####### EXPORT to CSV #########################################################
+	########################################################################################
+
+	# This can be written more efficiently.
+	# Idea: recognize when trial already exists in data and overwrite.
 	skippedData = False
 	outputFilename = outputFolder + 'output_' + aggregateLevel[0] + '.csv'
 	exportCSV.newOrAdd(outputFilename,exportDataString,exportData,skippedData)	
 	outputFilename = outputFolder + 'outputDescription_' + aggregateLevel[0] + '.txt'
 	exportCSV.varDescription(outputFilename,exportDataString,exportFullExplanation)
-	continue
-	pdb.set_trace()	
+
 	## As a temporary work around, the raw data is here exported per file
 	if exportPerFile:
 		# debugging only
@@ -238,14 +234,13 @@ for dirtyFname in DirtyDataFiles[-2:]:
 		altogether.to_csv(outputFolder + 'output_' + dirtyFname) # debugging only		
 		print('EXPORTED <%s>' %dirtyFname[:-4])
 		print('in <%s>' %outputFolder)
-		pdb.set_trace()
-		continue
+	continue
 	###### \Work in progress #########
-	import time
-	t = time.time()	# do stuff
-	elapsed = time.time() - t
-	print('Time elapsed: %s' %elapsed)
-	pdb.set_trace()
+	# import time
+	# t = time.time()	# do stuff
+	# elapsed = time.time() - t
+	# print('Time elapsed: %s' %elapsed)
+	# pdb.set_trace()
 
 	#############################################################
 	#############################################################

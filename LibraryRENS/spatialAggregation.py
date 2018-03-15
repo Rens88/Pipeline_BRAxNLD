@@ -4,7 +4,7 @@ import csv
 import pdb; #pdb.set_trace()
 import numpy as np
 from os.path import isfile, join, isdir
-from os import listdir, path, startfile
+from os import listdir, path
 from warnings import warn
 import math
 # From my own library:

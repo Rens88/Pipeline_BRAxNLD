@@ -2,9 +2,10 @@
 # Function that initializes the pipeline.
 
 from os.path import isfile, join, isdir, exists
-from os import listdir, path, makedirs
+from os import listdir, path, makedirs, sep
 import sys, inspect
 import pdb; #pdb.set_trace()
+from warnings import warn
 
 
 if __name__ == '__main__':
@@ -16,10 +17,10 @@ def addLibrary(studentFolder):
 	####### Adding the library ######
 	# The folder and relevant subfolders where you store the python library with all the custom modules.
 	current_folder = path.realpath(path.abspath(path.split(inspect.getfile( inspect.currentframe() ))[0]))
-	library_folder = current_folder + str("\\LibraryRENS")
-	library_subfolders = [library_folder + str("\\FDP")] # FDP = Football Data Project
-	library_subfolders.append(library_folder + str("\\" + studentFolder)) # Contributions of a Bachelor student
-	# library_subfolders.append(library_folder + str("\\LTcontributions")) # Contributions of a Bachelor student
+	library_folder = current_folder + str(sep + "LibraryRENS")
+	library_subfolders = [library_folder + str(sep + "FDP")] # FDP = Football Data Project
+	library_subfolders.append(library_folder + str(sep + "" + studentFolder)) # Contributions of a Bachelor student
+	# library_subfolders.append(library_folder + str(sep + "LTcontributions")) # Contributions of a Bachelor student
 
 	if library_folder not in sys.path:
 		sys.path.insert(0, library_folder) 
@@ -33,14 +34,14 @@ def addLibrary(studentFolder):
 
 
 def checkFolders(folder,aggregateEvent):
-	if folder[-1:] != '\\':
-		warn('\n<folder> did not end with <\\\\>. \nOriginal input <%s>\nReplaced with <%s>' %(folder,folder+'\\'))
-		folder = folder + '\\'
+	if folder[-1:] != sep:
+		warn('\n<folder> did not end with <%s>. \nOriginal input <%s>\nReplaced with <%s>' %(sep,folder,folder+sep))
+		folder = folder + sep
 
-	dataFolder = folder + 'Data\\'
-	tmpFigFolder = folder + 'Figs\\Temp\\' + aggregateEvent + '\\'
-	outputFolder = folder + 'Output\\' # Folder where tabular output will be stored (aggregated spatially and temporally)
-	cleanedFolder = dataFolder + 'Cleaned\\'    
+	dataFolder = folder + 'Data' + sep
+	tmpFigFolder = folder + 'Figs' + sep + 'Temp' + sep + aggregateEvent + sep
+	outputFolder = folder + 'Output' + sep# Folder where tabular output will be stored (aggregated spatially and temporally)
+	cleanedFolder = dataFolder + 'Cleaned' + sep    
 
 	# Verify if folders exists
 	if not exists(dataFolder):
