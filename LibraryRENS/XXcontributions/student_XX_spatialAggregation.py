@@ -83,7 +83,8 @@ def teamCentroid_panda(rawDict,attributeDict,attributeLabel,TeamAstring,TeamBstr
 	##### THE DATA #####
 	# Prepare the indices of the groupRows. This will be used to store the computed values in the index corresponding to attributeDict.
 	ind_groupRows = attributeDict[rawDict['PlayerID'] == 'groupRow'].index
-
+	ind_groupRowsA = ind_groupRows
+	ind_groupRowsB = ind_groupRows
 	# Separate the raw values per team
 	dfA = rawDict[rawDict['TeamID'] == TeamAstring]
 	dfB = rawDict[rawDict['TeamID'] == TeamBstring]
@@ -94,27 +95,52 @@ def teamCentroid_panda(rawDict,attributeDict,attributeLabel,TeamAstring,TeamBstr
 	Team_B_X = dfB.pivot(columns='Ts', values='X')
 	Team_B_Y = dfB.pivot(columns='Ts', values='Y')   
 
+	# The warnings below were included to debug problems with different lengths per team and/or group row
+	if len(ind_groupRows) != Team_A_X.shape[1]:
+		warn('\nWARNING: (potentially fatal) The number of groupRows does not correspond to the number of entries identified for <%s>.\nMOST LIKELY CAUSE: There are less ''groupRows'' than there are unique timeStamps\nAlternative reasons: This is either due to incorrect identification of groupRows (and subsequent allocation of the string <groupRow> in its TeamID).\nOr, this could be due to issues with identifying <%s>.\nUPDATE: Should now be cleaned in cleanupData.py in verifyGroupRows().\n' %(TeamAstring,TeamAstring))
+	if len(ind_groupRows) != Team_B_X.shape[1]:
+		warn('\nWARNING: (potentially fatal) The number of groupRows does not correspond to the number of entries identified for <%s>.\nMOST LIKELY CAUSE: There are less ''groupRows'' than there are unique timeStamps\nAlternative reasons: This is either due to incorrect identification of groupRows (and subsequent allocation of the string <groupRow> in its TeamID).\nOr, this could be due to issues with identifying <%s>.\nUPDATE: Should now be cleaned in cleanupData.py in verifyGroupRows().\n' %(TeamBstring,TeamBstring))
+	if Team_A_X.shape[1] != Team_B_X.shape[1]:
+		warn('\nWARNING: (potentially fatal) \n\
+	The number of rows (i.e., unique timestamps) identified for <%s> (n = %s frames) != <%s> (n = %s frames).\n\
+	In other words. For some period of time, only players from one team were registered.\n\
+	HERE I solved it by making the computation for each team separately.\n\
+	Alternatively, we could: \n\
+		1) clean up the data to include missing timestamps (or exclude timestamps that only occur for one team)\n\
+		2) Write the analysis to only compute the spatial aggregate when there is data from both teams.\n\
+	NB: As long as the difference in n is small (e.g., less than a second), the impact is minimal.\n\
+#######################################################################################################'\
+ %(TeamAstring,Team_A_X.shape[1],TeamBstring,Team_B_X.shape[1]))
+
+		# Index of the groupRows for every unique timestamp that exists for each team separately
+		uniqueTs_TeamA_Rows = rawDict['Ts'][rawDict['TeamID'] == TeamAstring].unique()
+		ind_groupRowsA = [i for i in ind_groupRows if np.isin(rawDict['Ts'][i],uniqueTs_TeamA_Rows)]
+		
+		uniqueTs_TeamB_Rows = rawDict['Ts'][rawDict['TeamID'] == TeamBstring].unique()
+		ind_groupRowsB = [i for i in ind_groupRows if np.isin(rawDict['Ts'][i],uniqueTs_TeamB_Rows)]
+
 	# Create empty DataFrame to store results, NB: columns need to be assigend beforehand.
-	newAttributes = pd.DataFrame(index = ind_groupRows,columns = ['TeamCentXA', 'TeamCentYA', 'LengthA', 'WidthA', 'TeamCentXB', 'TeamCentYB', 'LengthB', 'WidthB'])
-	
+	# newAttributes = pd.DataFrame(index = ind_groupRows,columns = ['TeamCentXA', 'TeamCentYA', 'LengthA', 'WidthA', 'TeamCentXB', 'TeamCentYB', 'LengthB', 'WidthB'])
+	newAttributesA = pd.DataFrame(index = ind_groupRowsA,columns = ['TeamCentXA', 'TeamCentYA', 'LengthA', 'WidthA'])	
+	newAttributesB = pd.DataFrame(index = ind_groupRowsB,columns = ['TeamCentXB', 'TeamCentYB', 'LengthB', 'WidthB'])
+
 	# Compute the new attributes and store them with the index that corresponds to attributeDict
 	pd.options.mode.chained_assignment = None  # default='warn' # NB: The code below gives a warning because it may be uncertain whether the right ind_groupRows are called. If you know a work-around, let me know.
+		
 	# For team A
-	newAttributes['TeamCentXA'][ind_groupRows] = Team_A_X.mean(axis=0, skipna=True)
-	newAttributes['TeamCentYA'][ind_groupRows] = Team_A_Y.mean(axis=0, skipna=True)
-	newAttributes['LengthA'][ind_groupRows] = Team_A_X.max(axis=0, skipna=True) - Team_A_X.min(axis=0, skipna=True)
-	newAttributes['WidthA'][ind_groupRows] = Team_A_Y.max(axis=0, skipna=True) - Team_A_Y.min(axis=0, skipna=True)
+	newAttributesA['TeamCentXA'][ind_groupRowsA] = Team_A_X.mean(axis=0, skipna=True)
+	newAttributesA['TeamCentYA'][ind_groupRowsA] = Team_A_Y.mean(axis=0, skipna=True)
+	newAttributesA['LengthA'][ind_groupRowsA] = Team_A_X.max(axis=0, skipna=True) - Team_A_X.min(axis=0, skipna=True)
+	newAttributesA['WidthA'][ind_groupRowsA] = Team_A_Y.max(axis=0, skipna=True) - Team_A_Y.min(axis=0, skipna=True)
 	# And for team B
-	newAttributes['TeamCentXB'][ind_groupRows] = Team_B_X.mean(axis=0, skipna=True)
-	newAttributes['TeamCentYB'][ind_groupRows] = Team_B_Y.mean(axis=0, skipna=True)
-	newAttributes['LengthB'][ind_groupRows] = Team_B_X.max(axis=0, skipna=True) - Team_B_X.min(axis=0, skipna=True)
-	newAttributes['WidthB'][ind_groupRows] = Team_B_Y.max(axis=0, skipna=True) - Team_B_Y.min(axis=0, skipna=True)
+	newAttributesB['TeamCentXB'][ind_groupRowsB] = Team_B_X.mean(axis=0, skipna=True)
+	newAttributesB['TeamCentYB'][ind_groupRowsB] = Team_B_Y.mean(axis=0, skipna=True)
+	newAttributesB['LengthB'][ind_groupRowsB] = Team_B_X.max(axis=0, skipna=True) - Team_B_X.min(axis=0, skipna=True)
+	newAttributesB['WidthB'][ind_groupRowsB] = Team_B_Y.max(axis=0, skipna=True) - Team_B_Y.min(axis=0, skipna=True)
 	pd.options.mode.chained_assignment = 'warn'  # default='warn'
 
-	warn('\nUnverified assumption: field width = X-axis, field length = Y-axis\n')
-	
 	# Combine the pre-existing attributes with the new attributes:
-	attributeDict = pd.concat([attributeDict, newAttributes], axis=1)
+	attributeDict = pd.concat([attributeDict, newAttributesA, newAttributesB], axis=1)
 	
 	##### THE STRINGS #####
 	# Export a string label of each new attribute in the labels dictionary (useful for plotting purposes)
@@ -132,7 +158,8 @@ def teamCentroid_panda(rawDict,attributeDict,attributeLabel,TeamAstring,TeamBstr
 	'TeamCentXB': tmpXBString,'TeamCentYB': tmpYBString,'LengthB': tmpLengthBString,'WidthB': tmpWidthBString}
 	attributeLabel.update(attributeLabel_tmp)
 
-	return attributeDict,attributeLabel	
+	return attributeDict,attributeLabel
+
 
 ############################################################################
 

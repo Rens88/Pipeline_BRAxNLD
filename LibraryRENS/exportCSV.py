@@ -4,10 +4,10 @@
 import pdb; #pdb.set_trace()
 import csv
 from warnings import warn
-import numpy as np
+# import numpy as np
 from os.path import isfile, join, isdir
 from os import listdir, startfile
-import CSVexcerpt
+# import CSVexcerpt
 
 
 if __name__ == '__main__':

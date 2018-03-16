@@ -23,7 +23,7 @@ import plotTimeseries
 # import dataToDict2
 import safetyWarning
 # import exportCSV
-# import countEvents2
+import countEvents2
 
 if __name__ == '__main__':
 	# First try, should be removed later:
@@ -72,9 +72,9 @@ def process(targetEvents,aggregateLevel,rawDict,attributeDict,exportData,exportD
 		if tEnd == None or tStart == None: # Check if both end and start are allocated
 			warn('\nEvent %d skipped because tStart = <<%s>> and tEnd = <<%s>>.\n' %(idx,tStart,tEnd))
 			continue
-		TsS = rawDict['Time']['TsS']
+		TsS = rawDict['Ts']
 		rowswithinrange = [idx2 for idx2,i in enumerate(TsS) if i >= tStart and i <= tEnd]
-		tmp = [rawDict['Entity']['TeamID'][i] for i in rowswithinrange]
+		tmp = [rawDict['TeamID'][i] for i in rowswithinrange]
 		rowswithinrangePlayers = [rowswithinrange[idx] for idx,val in enumerate(tmp) if val != '']
 		rowswithinrangeTeam = [rowswithinrange[idx] for idx,val in enumerate(tmp) if val == '']		
 		if round(tStart,2) <= round(tEnd,2):
@@ -124,8 +124,8 @@ def specific(rowswithinrange,aggregateString,rawData,attributeDict,exportData,ex
 	# Per event
 	# Per Team and for both teams (for vNorm, the team aggregate -techinically spatial aggregation - still has to be made)
 	vel = [val for idx,val in enumerate(attributeDict['vNorm'][rowswithinrange])]
-	velA = [val for idx,val in enumerate(attributeDict['vNorm'][rowswithinrange]) if rawData['Entity']['TeamID'][rowswithinrange[idx]] == TeamAstring]
-	velB = [val for idx,val in enumerate(attributeDict['vNorm'][rowswithinrange]) if rawData['Entity']['TeamID'][rowswithinrange[idx]] == TeamBstring]
+	velA = [val for idx,val in enumerate(attributeDict['vNorm'][rowswithinrange]) if rawData['TeamID'][rowswithinrange[idx]] == TeamAstring]
+	velB = [val for idx,val in enumerate(attributeDict['vNorm'][rowswithinrange]) if rawData['TeamID'][rowswithinrange[idx]] == TeamBstring]
 
 	# pritn(vel)
 	# print(velA)
@@ -281,36 +281,35 @@ def specific(rowswithinrange,aggregateString,rawData,attributeDict,exportData,ex
 
 	exportDataString.append('avgSurfaceA')
 	exportData.append(np.nanmean(attributeDict['SurfaceA'][rowswithinrange]))
-	exportFullExplanation.append('The average surface area (in unknown units) of %s per %s.' %(TeamAstring,aggregateString))
+	exportFullExplanation.append('The average surface area (in m^2) of %s per %s.' %(TeamAstring,aggregateString))
 
 	exportDataString.append('avgSurfaceB')
 	exportData.append(np.nanmean(attributeDict['SurfaceB'][rowswithinrange]))
-	exportFullExplanation.append('The average surface area (in unknown units) of %s per %s.' %(TeamBstring,aggregateString))
+	exportFullExplanation.append('The average surface area (in m^2) of %s per %s.' %(TeamBstring,aggregateString))
 
 	exportDataString.append('stdSurfaceA')
 	exportData.append(np.nanstd(attributeDict['SurfaceA'][rowswithinrange]))
-	exportFullExplanation.append('The standard deviation of the surface area (in unknown units) of %s per %s.' %(TeamAstring,aggregateString))
+	exportFullExplanation.append('The standard deviation of the surface area (in m^2) of %s per %s.' %(TeamAstring,aggregateString))
 
 	exportDataString.append('stdSurfaceB')
 	exportData.append(np.nanstd(attributeDict['SurfaceB'][rowswithinrange]))
-	exportFullExplanation.append('The standard deviation of the surface area (in unknown units) of %s per %s.' %(TeamBstring,aggregateString))
-
+	exportFullExplanation.append('The standard deviation of the surface area (in m^2) of %s per %s.' %(TeamBstring,aggregateString))
 
 	exportDataString.append('avgsumVerticesA')
-	exportData.append(np.nanmean(attributeDict['sumVerticesA'][rowswithinrange]))
-	exportFullExplanation.append('The average circumference (in unknown units) of %s per %s.' %(TeamAstring,aggregateString))
+	exportData.append(np.nanmean(attributeDict['SumVerticesA'][rowswithinrange]))
+	exportFullExplanation.append('The average circumference (in m) of %s per %s.' %(TeamAstring,aggregateString))
 
 	exportDataString.append('avgsumVerticesB')
-	exportData.append(np.nanmean(attributeDict['sumVerticesB'][rowswithinrange]))
-	exportFullExplanation.append('The average circumference (in unknown units) of %s per %s.' %(TeamBstring,aggregateString))
+	exportData.append(np.nanmean(attributeDict['SumVerticesB'][rowswithinrange]))
+	exportFullExplanation.append('The average circumference (in m) of %s per %s.' %(TeamBstring,aggregateString))
 
 	exportDataString.append('stdsumVerticesA')
-	exportData.append(np.nanstd(attributeDict['sumVerticesA'][rowswithinrange]))
-	exportFullExplanation.append('The standard deviation of the circumference (in unknown units) of %s per %s.' %(TeamAstring,aggregateString))
+	exportData.append(np.nanstd(attributeDict['SumVerticesA'][rowswithinrange]))
+	exportFullExplanation.append('The standard deviation of the circumference (in m) of %s per %s.' %(TeamAstring,aggregateString))
 
 	exportDataString.append('stdsumVerticesB')
-	exportData.append(np.nanstd(attributeDict['sumVerticesB'][rowswithinrange]))
-	exportFullExplanation.append('The standard deviation of the circumference (in unknown units) of %s per %s.' %(TeamBstring,aggregateString))
+	exportData.append(np.nanstd(attributeDict['SumVerticesB'][rowswithinrange]))
+	exportFullExplanation.append('The standard deviation of the circumference (in m) of %s per %s.' %(TeamBstring,aggregateString))
 
 
 	exportDataString.append('avgShapeRatioA')
@@ -338,8 +337,8 @@ def simple(rawData,attributeDict,exportData,exportDataString,exportFullExplanati
 	# Per Match
 	# Per Team and for both teams (for vNorm, the team aggregate -techinically spatial aggregation - still has to be made)
 	vel = [val for idx,val in enumerate(attributeDict['vNorm'])]
-	velA = [val for idx,val in enumerate(attributeDict['vNorm']) if rawData['Entity']['TeamID'][idx] == TeamAstring]
-	velB = [val for idx,val in enumerate(attributeDict['vNorm']) if rawData['Entity']['TeamID'][idx] == TeamBstring]
+	velA = [val for idx,val in enumerate(attributeDict['vNorm']) if rawData['TeamID'][idx] == TeamAstring]
+	velB = [val for idx,val in enumerate(attributeDict['vNorm']) if rawData['TeamID'][idx] == TeamBstring]
 	
 	# Average
 	avgSpeed = np.nanmean(vel)
@@ -488,36 +487,36 @@ def simple(rawData,attributeDict,exportData,exportDataString,exportFullExplanati
 
 	exportDataString.append('avgSurfaceA')
 	exportData.append(np.nanmean(attributeDict['SurfaceA']))
-	exportFullExplanation.append('The average surface area (in unknown units) of %s per match.' %TeamAstring)
+	exportFullExplanation.append('The average surface area (in m^2) of %s per match.' %TeamAstring)
 
 	exportDataString.append('avgSurfaceB')
 	exportData.append(np.nanmean(attributeDict['SurfaceB']))
-	exportFullExplanation.append('The average surface area (in unknown units) of %s per match.' %TeamBstring)
+	exportFullExplanation.append('The average surface area (in m^2) of %s per match.' %TeamBstring)
 
 	exportDataString.append('stdSurfaceA')
 	exportData.append(np.nanstd(attributeDict['SurfaceA']))
-	exportFullExplanation.append('The standard deviation of the surface area (in unknown units) of %s per match.' %TeamAstring)
+	exportFullExplanation.append('The standard deviation of the surface area (in m^2) of %s per match.' %TeamAstring)
 
 	exportDataString.append('stdSurfaceB')
 	exportData.append(np.nanstd(attributeDict['SurfaceB']))
-	exportFullExplanation.append('The standard deviation of the surface area (in unknown units) of %s per match.' %TeamBstring)
+	exportFullExplanation.append('The standard deviation of the surface area (in m^2) of %s per match.' %TeamBstring)
 
 
 	exportDataString.append('avgsumVerticesA')
 	exportData.append(np.nanmean(attributeDict['sumVerticesA']))
-	exportFullExplanation.append('The average circumference (in unknown units) of %s per match.' %TeamAstring)
+	exportFullExplanation.append('The average circumference (in m) of %s per match.' %TeamAstring)
 
 	exportDataString.append('avgsumVerticesB')
 	exportData.append(np.nanmean(attributeDict['sumVerticesB']))
-	exportFullExplanation.append('The average circumference (in unknown units) of %s per match.' %TeamBstring)
+	exportFullExplanation.append('The average circumference (in m) of %s per match.' %TeamBstring)
 
 	exportDataString.append('stdsumVerticesA')
 	exportData.append(np.nanstd(attributeDict['sumVerticesA']))
-	exportFullExplanation.append('The standard deviation of the circumference (in unknown units) of %s per match.' %TeamAstring)
+	exportFullExplanation.append('The standard deviation of the circumference (in m) of %s per match.' %TeamAstring)
 
 	exportDataString.append('stdsumVerticesB')
 	exportData.append(np.nanstd(attributeDict['sumVerticesB']))
-	exportFullExplanation.append('The standard deviation of the circumference (in unknown units) of %s per match.' %TeamBstring)
+	exportFullExplanation.append('The standard deviation of the circumference (in m) of %s per match.' %TeamBstring)
 
 
 	exportDataString.append('avgShapeRatioA')

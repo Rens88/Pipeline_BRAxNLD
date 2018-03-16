@@ -31,8 +31,9 @@ if __name__ == '__main__':
 def existingAttributes(filename,folder,headers,attrLabel):
 
 	# Add time to the attribute columns (easy for indexing)
-	colHeaders = ['Ts'] + headers # This makes sure that timeStamp is also imported in attribute cols, necessary for pivoting etc.
-	attrLabel.update({'Ts': 'Time (s)'})
+	if 'Ts' not in headers:
+		colHeaders = ['Ts'] + headers # This makes sure that timeStamp is also imported in attribute cols, necessary for pivoting etc.
+		attrLabel.update({'Ts': 'Time (s)'})
 
 	# colHeaders = headers
 	# Only read the headers as a check-up:
@@ -68,6 +69,7 @@ def rawData(filename,folder):
 	# being certain that the timestamps are exactly the same for each person.
 	# This could be done, but should be included in the cleanup.
 	Loaded_Pos_Data = pd.read_csv(folder + filename, 
-		usecols=(colHeaders),low_memory=False)
+		usecols=(colHeaders),low_memory=True,
+		dtype = {'Ts': float,'X': float, 'Y': float, 'PlayerID': str,'TeamID': str})
 	
 	return Loaded_Pos_Data
