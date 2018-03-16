@@ -150,6 +150,7 @@ t = ([],1,len(DirtyDataFiles))#(time started,nth file,total number of files)
 
 for dirtyFname in DirtyDataFiles:
 	print(	'\nFILE: << %s >>' %dirtyFname[:-4])
+
 	t = estimateRemainingTime.printProgress(t)
 	# if t[1] == 2:
 	# pdb.set_trace()
@@ -209,7 +210,7 @@ for dirtyFname in DirtyDataFiles:
 	elapsed = str(round(elapsed, 2))
 	print('Time Import elapsed: %ss' %elapsed)
 	########################################################################################
-	####### Compute new attributes #########################################################
+	####### Compute ne['PlayerID']w attributes #########################################################
 	########################################################################################
 
 	tSpatAgg = time.time()
@@ -236,7 +237,6 @@ for dirtyFname in DirtyDataFiles:
 	exportCSV.varDescription(outputDescriptionFilename,exportDataString,exportFullExplanation)
 
 	continue
-	pdb.set_trace()	
 	## As a temporary work around, the raw data is here exported per file
 	if exportPerFile:
 		# debugging only

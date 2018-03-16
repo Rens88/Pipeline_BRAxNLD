@@ -79,6 +79,8 @@ def teamCentroid_panda(rawDict,attributeDict,attributeLabel,TeamAstring,TeamBstr
 	##### THE DATA #####
 	# Prepare the indices of the groupRows. This will be used to store the computed values in the index corresponding to attributeDict.
 	ind_groupRows = attributeDict[rawDict['PlayerID'] == 'groupRow'].index
+	ind_groupRowsA = ind_groupRows
+	ind_groupRowsB = ind_groupRows
 	# Separate the raw values per team
 	dfA = rawDict[rawDict['TeamID'] == TeamAstring]
 	dfB = rawDict[rawDict['TeamID'] == TeamBstring]
@@ -89,33 +91,73 @@ def teamCentroid_panda(rawDict,attributeDict,attributeLabel,TeamAstring,TeamBstr
 	Team_B_X = dfB.pivot(columns='Ts', values='X')
 	Team_B_Y = dfB.pivot(columns='Ts', values='Y')   
 
-	# Create empty DataFrame to store results, NB: columns need to be assigend beforehand.
-	newAttributes = pd.DataFrame(index = ind_groupRows,columns = ['TeamCentXA', 'TeamCentYA', 'LengthA', 'WidthA', 'TeamCentXB', 'TeamCentYB', 'LengthB', 'WidthB'])
-	
-	# Compute the new attributes and store them with the index that corresponds to attributeDict
-	pd.options.mode.chained_assignment = None  # default='warn' # NB: The code below gives a warning because it may be uncertain whether the right ind_groupRows are called. If you know a work-around, let me know.
-		
+	# The warnings below were included to debug problems with different lengths per team and/or group row
 	if len(ind_groupRows) != Team_A_X.shape[1]:
 		warn('\nWARNING: (potentially fatal) The number of groupRows does not correspond to the number of entries identified for <%s>.\nMOST LIKELY CAUSE: There are less ''groupRows'' than there are unique timeStamps\nAlternative reasons: This is either due to incorrect identification of groupRows (and subsequent allocation of the string <groupRow> in its TeamID).\nOr, this could be due to issues with identifying <%s>.\nUPDATE: Should now be cleaned in cleanupData.py in verifyGroupRows().\n' %(TeamAstring,TeamAstring))
 	if len(ind_groupRows) != Team_B_X.shape[1]:
 		warn('\nWARNING: (potentially fatal) The number of groupRows does not correspond to the number of entries identified for <%s>.\nMOST LIKELY CAUSE: There are less ''groupRows'' than there are unique timeStamps\nAlternative reasons: This is either due to incorrect identification of groupRows (and subsequent allocation of the string <groupRow> in its TeamID).\nOr, this could be due to issues with identifying <%s>.\nUPDATE: Should now be cleaned in cleanupData.py in verifyGroupRows().\n' %(TeamBstring,TeamBstring))
-	
+	if Team_A_X.shape[1] != Team_B_X.shape[1]:
+		warn('\nWARNING: (potentially fatal) \n\
+	The number of rows (i.e., unique timestamps) identified for <%s> (n = %s frames) != <%s> (n = %s frames).\n\
+	In other words. For some period of time, only players from one team were registered.\n\
+	HERE I solved it by making the computation for each team separately.\n\
+	Alternatively, we could: \n\
+		1) clean up the data to include missing timestamps (or exclude timestamps that only occur for one team)\n\
+		2) Write the analysis to only compute the spatial aggregate when there is data from both teams.\n\
+	NB: As long as the difference in n is small (e.g., less than a second), the impact is minimal.\n\
+#######################################################################################################'\
+ %(TeamAstring,Team_A_X.shape[1],TeamBstring,Team_B_X.shape[1]))
+
+		# Index of the groupRows for every unique timestamp that exists for each team separately
+		uniqueTs_TeamA_Rows = rawDict['Ts'][rawDict['TeamID'] == TeamAstring].unique()
+		ind_groupRowsA = [i for i in ind_groupRows if np.isin(rawDict['Ts'][i],uniqueTs_TeamA_Rows)]
+		
+		uniqueTs_TeamB_Rows = rawDict['Ts'][rawDict['TeamID'] == TeamBstring].unique()
+		ind_groupRowsB = [i for i in ind_groupRows if np.isin(rawDict['Ts'][i],uniqueTs_TeamB_Rows)]
+
+
+		# print(len(ind_groupRowsA))
+		# pdb.set_trace()
+
+		# ind_groupRows_to_be_removed = [i for i in ind_groupRows if not np.isin(rawDict['Ts'][i],uniqueTs_TeamA_Rows)]
+
+
+		# ind_groupRowsA = ind_groupRows[ind_groupRows != ind_groupRows_to_be_removed]
+		# print(len(ind_groupRowsA))
+		# print(ind_groupRows_to_be_removed)
+		# pdb.set_trace()
+
+		# uniqueTs_GroupRows = df_cleaned['Ts'][df_cleaned['PlayerID'] == 'groupRow'].unique()
+		# uniqueTs_TeamA_Rows = df_cleaned['Ts'][df_cleaned['TeamID'] == TeamAstring].unique()
+
+		# Ts_to_be_removed = [i for i in uniqueTs_GroupRows if not np.isin(i,uniqueTs_nonGroupRows)]
+
+		# ind_groupRows = attributeDict[rawDict['PlayerID'] == 'groupRow'].index
+
+	# Create empty DataFrame to store results, NB: columns need to be assigend beforehand.
+	# newAttributes = pd.DataFrame(index = ind_groupRows,columns = ['TeamCentXA', 'TeamCentYA', 'LengthA', 'WidthA', 'TeamCentXB', 'TeamCentYB', 'LengthB', 'WidthB'])
+	newAttributesA = pd.DataFrame(index = ind_groupRowsA,columns = ['TeamCentXA', 'TeamCentYA', 'LengthA', 'WidthA'])	
+	newAttributesB = pd.DataFrame(index = ind_groupRowsB,columns = ['TeamCentXB', 'TeamCentYB', 'LengthB', 'WidthB'])
+
+	# Compute the new attributes and store them with the index that corresponds to attributeDict
+	pd.options.mode.chained_assignment = None  # default='warn' # NB: The code below gives a warning because it may be uncertain whether the right ind_groupRows are called. If you know a work-around, let me know.
+		
 	# For team A
-	newAttributes['TeamCentXA'][ind_groupRows] = Team_A_X.mean(axis=0, skipna=True)
-	newAttributes['TeamCentYA'][ind_groupRows] = Team_A_Y.mean(axis=0, skipna=True)
-	newAttributes['LengthA'][ind_groupRows] = Team_A_X.max(axis=0, skipna=True) - Team_A_X.min(axis=0, skipna=True)
-	newAttributes['WidthA'][ind_groupRows] = Team_A_Y.max(axis=0, skipna=True) - Team_A_Y.min(axis=0, skipna=True)
+	newAttributesA['TeamCentXA'][ind_groupRowsA] = Team_A_X.mean(axis=0, skipna=True)
+	newAttributesA['TeamCentYA'][ind_groupRowsA] = Team_A_Y.mean(axis=0, skipna=True)
+	newAttributesA['LengthA'][ind_groupRowsA] = Team_A_X.max(axis=0, skipna=True) - Team_A_X.min(axis=0, skipna=True)
+	newAttributesA['WidthA'][ind_groupRowsA] = Team_A_Y.max(axis=0, skipna=True) - Team_A_Y.min(axis=0, skipna=True)
 	# And for team B
-	newAttributes['TeamCentXB'][ind_groupRows] = Team_B_X.mean(axis=0, skipna=True)
-	newAttributes['TeamCentYB'][ind_groupRows] = Team_B_Y.mean(axis=0, skipna=True)
-	newAttributes['LengthB'][ind_groupRows] = Team_B_X.max(axis=0, skipna=True) - Team_B_X.min(axis=0, skipna=True)
-	newAttributes['WidthB'][ind_groupRows] = Team_B_Y.max(axis=0, skipna=True) - Team_B_Y.min(axis=0, skipna=True)
+	newAttributesB['TeamCentXB'][ind_groupRowsB] = Team_B_X.mean(axis=0, skipna=True)
+	newAttributesB['TeamCentYB'][ind_groupRowsB] = Team_B_Y.mean(axis=0, skipna=True)
+	newAttributesB['LengthB'][ind_groupRowsB] = Team_B_X.max(axis=0, skipna=True) - Team_B_X.min(axis=0, skipna=True)
+	newAttributesB['WidthB'][ind_groupRowsB] = Team_B_Y.max(axis=0, skipna=True) - Team_B_Y.min(axis=0, skipna=True)
 	pd.options.mode.chained_assignment = 'warn'  # default='warn'
 
 	warn('\nUnverified assumption: field width = X-axis, field length = Y-axis\n')
-	
+
 	# Combine the pre-existing attributes with the new attributes:
-	attributeDict = pd.concat([attributeDict, newAttributes], axis=1)
+	attributeDict = pd.concat([attributeDict, newAttributesA, newAttributesB], axis=1)
 	
 	##### THE STRINGS #####
 	# Export a string label of each new attribute in the labels dictionary (useful for plotting purposes)
@@ -185,6 +227,8 @@ def teamSpread_asPanda(rawDict,attributeDict,attributeLabel,TeamAstring,TeamBstr
 	##### THE DATA #####
 	# Prepare the indices of the groupRows. This will be used to store the computed values in the index corresponding to attributeDict.
 	ind_groupRows = attributeDict[rawDict['PlayerID'] == 'groupRow'].index
+	ind_groupRowsA = ind_groupRows
+	ind_groupRowsB = ind_groupRows
 
 	# Separate the raw values per team
 	dfA = attributeDict[rawDict['TeamID'] == TeamAstring]
@@ -192,20 +236,30 @@ def teamSpread_asPanda(rawDict,attributeDict,attributeLabel,TeamAstring,TeamBstr
 	# Pivot dataframes
 	Team_A_distToCent = dfA.pivot(columns='Ts', values='distToCent')
 	Team_B_distToCent = dfB.pivot(columns='Ts', values='distToCent')
+	
+	if Team_A_distToCent.shape[1] != Team_B_distToCent.shape[1]:
+		warn('\nWARNING: Corrected groupRows per team. \nSee teamCentroid_panda() for more information.')
+		# Index of the groupRows for every unique timestamp that exists for each team separately
+		uniqueTs_TeamA_Rows = rawDict['Ts'][rawDict['TeamID'] == TeamAstring].unique()
+		ind_groupRowsA = [i for i in ind_groupRows if np.isin(rawDict['Ts'][i],uniqueTs_TeamA_Rows)]
+		
+		uniqueTs_TeamB_Rows = rawDict['Ts'][rawDict['TeamID'] == TeamBstring].unique()
+		ind_groupRowsB = [i for i in ind_groupRows if np.isin(rawDict['Ts'][i],uniqueTs_TeamB_Rows)]
 
 	# Create empty DataFrame to store results, NB: columns need to be assigend beforehand.
-	newAttributes = pd.DataFrame(index = ind_groupRows,columns = ['SpreadA', 'stdSpreadA', 'SpreadB', 'stdSpreadB'])
+	newAttributesA = pd.DataFrame(index = ind_groupRowsA,columns = ['SpreadA', 'stdSpreadA'])
+	newAttributesB = pd.DataFrame(index = ind_groupRowsB,columns = ['SpreadB', 'stdSpreadB'])
 		
 	# Compute the new attributes
 	pd.options.mode.chained_assignment = None  # default='warn' # NB: The code below gives a warning because it may be uncertain whether the right ind_groupRows are called. If you know a work-around, let me know.
-	newAttributes['SpreadA'][ind_groupRows] = Team_A_distToCent.mean(axis=0, skipna=True)
-	newAttributes['stdSpreadA'][ind_groupRows] = Team_A_distToCent.std(axis=0, skipna=True)
-	newAttributes['SpreadB'][ind_groupRows] = Team_B_distToCent.mean(axis=0, skipna=True)
-	newAttributes['stdSpreadB'][ind_groupRows] = Team_B_distToCent.std(axis=0, skipna=True)	
+	newAttributesA['SpreadA'][ind_groupRowsA] = Team_A_distToCent.mean(axis=0, skipna=True)
+	newAttributesA['stdSpreadA'][ind_groupRowsA] = Team_A_distToCent.std(axis=0, skipna=True)
+	newAttributesB['SpreadB'][ind_groupRowsB] = Team_B_distToCent.mean(axis=0, skipna=True)
+	newAttributesB['stdSpreadB'][ind_groupRowsB] = Team_B_distToCent.std(axis=0, skipna=True)	
 	pd.options.mode.chained_assignment = 'warn'  # default='warn'
 
 	# Combine the pre-existing attributes with the new attributes:
-	attributeDict = pd.concat([attributeDict, newAttributes], axis=1)
+	attributeDict = pd.concat([attributeDict, newAttributesA, newAttributesB], axis=1)
 
 	##### THE STRINGS #####
 	# Export a string label of each new attribute in the labels dictionary (useful for plotting purposes)
@@ -226,6 +280,8 @@ def teamSurface_asPanda(rawDict,attributeDict,attributeLabel,TeamAstring,TeamBst
 	##### THE DATA #####
 	# Prepare the indices of the groupRows. This will be used to store the computed values in the index corresponding to attributeDict.
 	ind_groupRows = attributeDict[rawDict['PlayerID'] == 'groupRow'].index
+	ind_groupRowsA = ind_groupRows
+	ind_groupRowsB = ind_groupRows
 
 	# Separate the raw values per team
 	dfA = rawDict[rawDict['TeamID'] == TeamAstring]
@@ -235,6 +291,16 @@ def teamSurface_asPanda(rawDict,attributeDict,attributeLabel,TeamAstring,TeamBst
 	Team_AY = dfA.pivot(columns='Ts', values='Y')	
 	Team_BX = dfB.pivot(columns='Ts', values='X')
 	Team_BY = dfB.pivot(columns='Ts', values='Y')	
+
+	if Team_AX.shape[1] != Team_BX.shape[1]:
+		warn('\nWARNING: Corrected groupRows per team. \nSee teamCentroid_panda() for more information.')
+		# NB: I've adopted a slightly different solution compared to teamCentroid_panda() because of the structure of this function.
+		# Index of the groupRows for every unique timestamp that exists for each team separately
+	uniqueTs_TeamA_Rows = rawDict['Ts'][rawDict['TeamID'] == TeamAstring].unique()
+		# ind_groupRowsA = [i for i in ind_groupRows if np.isin(rawDict['Ts'][i],uniqueTs_TeamA_Rows)]
+		
+	uniqueTs_TeamB_Rows = rawDict['Ts'][rawDict['TeamID'] == TeamBstring].unique()
+		# ind_groupRowsB = [i for i in ind_groupRows if np.isin(rawDict['Ts'][i],uniqueTs_TeamB_Rows)]
 
 	# Compute the new attributes
 	SurfaceA = []
@@ -246,38 +312,55 @@ def teamSurface_asPanda(rawDict,attributeDict,attributeLabel,TeamAstring,TeamBst
 
 	# For every time point in the dataFrame
 	for idx,i in enumerate(pd.unique(rawDict['Ts'])):
-				
-		curXPosA = Team_AX[i][Team_AX[i].isnull() == False]
-		curYPosA = Team_AY[i][Team_AY[i].isnull() == False]
-		curXPosB = Team_BX[i][Team_BX[i].isnull() == False]
-		curYPosB = Team_BY[i][Team_BY[i].isnull() == False]
+		skipA = False
+		skipB = False
+		if np.isin(i,uniqueTs_TeamA_Rows):
+			curXPosA = Team_AX[i][Team_AX[i].isnull() == False]
+			curYPosA = Team_AY[i][Team_AY[i].isnull() == False]
+		else:
+			SurfaceA.append(np.nan)
+			SumVerticesA.append(np.nan)
+			ShapeRatioA.append(np.nan)
+			skipA = True
+
+		if np.isin(i,uniqueTs_TeamB_Rows):
+			curXPosB = Team_BX[i][Team_BX[i].isnull() == False]
+			curYPosB = Team_BY[i][Team_BY[i].isnull() == False]
+		else:
+			SurfaceB.append(np.nan)
+			SumVerticesB.append(np.nan)
+			ShapeRatioB.append(np.nan)
+			skipB = True
 
 		# WARNING: groupSurface not equipped to deal with None and np.nan values.
+		# UPDATE: See stopping condition above (using skipA and skipB). It works when simple adding a nan to the array, rather than having it run through the functions.
 		# NB: Simply skipping it using an if-loop will be problematic with the current indexing method:
 		# using ind_groupRows assumes that there is a value for every timestep
-		curXPosA = curXPosA.as_matrix()
-		curYPosA = curYPosA.as_matrix()	
-		curSurfaceA,curSumVerticesA,curShapeRatioA = groupSurface(curXPosA,curYPosA) 
-		curXPosB = curXPosB.as_matrix()
-		curYPosB = curYPosB.as_matrix()	
-		curSurfaceB,curSumVerticesB,curShapeRatioB = groupSurface(curXPosB,curYPosB)
-		##
+		if not skipA:
+			curXPosA = curXPosA.as_matrix()
+			curYPosA = curYPosA.as_matrix()	
+			curSurfaceA,curSumVerticesA,curShapeRatioA = groupSurface(curXPosA,curYPosA) 
+			SurfaceA.append(curSurfaceA)
+			SumVerticesA.append(curSumVerticesA)
+			ShapeRatioA.append(curShapeRatioA)
 
-		SurfaceA.append(curSurfaceA)
-		SumVerticesA.append(curSumVerticesA)
-		ShapeRatioA.append(curShapeRatioA)
-		SurfaceB.append(curSurfaceB)
-		SumVerticesB.append(curSumVerticesB)
-		ShapeRatioB.append(curShapeRatioB)
+		if not skipB:
+			curXPosB = curXPosB.as_matrix()
+			curYPosB = curYPosB.as_matrix()	
+			curSurfaceB,curSumVerticesB,curShapeRatioB = groupSurface(curXPosB,curYPosB)
+
+			SurfaceB.append(curSurfaceB)
+			SumVerticesB.append(curSumVerticesB)
+			ShapeRatioB.append(curShapeRatioB)
 	
 	## NB, using an old script for groupSurface(). So awkward way to re-convert to pandas
-	dfSurfaceA = pd.DataFrame(data = SurfaceA,index = ind_groupRows,columns = ['SurfaceA'])
-	dfSumVerticesA = pd.DataFrame(data = SumVerticesA,index = ind_groupRows,columns = ['SumVerticesA'])
-	dfShapeRatioA = pd.DataFrame(data = ShapeRatioA,index = ind_groupRows,columns = ['ShapeRatioA'])
+	dfSurfaceA = pd.DataFrame(data = SurfaceA,index = ind_groupRowsA,columns = ['SurfaceA'])
+	dfSumVerticesA = pd.DataFrame(data = SumVerticesA,index = ind_groupRowsA,columns = ['SumVerticesA'])
+	dfShapeRatioA = pd.DataFrame(data = ShapeRatioA,index = ind_groupRowsA,columns = ['ShapeRatioA'])
 
-	dfSurfaceB = pd.DataFrame(data = SurfaceB,index = ind_groupRows,columns = ['SurfaceB'])
-	dfSumVerticesB = pd.DataFrame(data = SumVerticesB,index = ind_groupRows,columns = ['SumVerticesB'])
-	dfShapeRatioB = pd.DataFrame(data = ShapeRatioB,index = ind_groupRows,columns = ['ShapeRatioB'])
+	dfSurfaceB = pd.DataFrame(data = SurfaceB,index = ind_groupRowsB,columns = ['SurfaceB'])
+	dfSumVerticesB = pd.DataFrame(data = SumVerticesB,index = ind_groupRowsB,columns = ['SumVerticesB'])
+	dfShapeRatioB = pd.DataFrame(data = ShapeRatioB,index = ind_groupRowsB,columns = ['ShapeRatioB'])
 
 	attributeDict = pd.concat([attributeDict, \
 		dfSurfaceA, dfSumVerticesA, dfShapeRatioA, \
@@ -537,6 +620,10 @@ def teamSurface(indsMatrix,XpositionMatrix,YpositionMatrix,teamAcols,teamBcols,T
 #####################################################################################
 
 def groupSurface(X,Y):
+	if len(X) < 3:
+		# Can't compute a surface with only 1 or 2 players
+		warn('\nWARNING: Less then two players detected for a single timestamp. No surface measures computed.')
+		return np.nan,np.nan,np.nan
 
 	def cart2pol(x, y):
 		rho = np.sqrt(x**2 + y**2)

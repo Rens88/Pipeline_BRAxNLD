@@ -56,7 +56,7 @@ def checkFolders(folder,aggregateEvent):
 
 	timeString = time.strftime("%Hh%Mm_%d_%B_%Y")
 	outputFilename = outputFolder + 'output_' + aggregateEvent + '_' + timeString +  '.csv'
-	outputDescriptionFilename = outputFolder + 'output_Description_' + aggregateEvent + '_' + timeString +  '.txt'
+	outputDescriptionFilename = outputFolder + 'output_Description_' + aggregateEvent + '.txt'
 	return dataFolder,tmpFigFolder,outputFolder,cleanedFolder,outputFilename,outputDescriptionFilename
 
 # >>>>>>> d6c15d944b1168972454264b6f2fc40ddffffa10

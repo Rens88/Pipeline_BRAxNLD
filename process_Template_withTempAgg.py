@@ -1,7 +1,8 @@
-# THESE FIRST FOUR LINES OF CODE ARE ONLY NECESSARY TO TEST WHETHER THE TEMPLATE STILL WORKS ON FDP DATA.
-import os
-if os.path.isfile('C:\\Users\\rensm\\Documents\\PostdocLeiden\\BRAxNLD repository\\Data\\Cleaned\\CROPPED_AA114105_AA1001_v_AA1012_vPP_SpecialExport_cleaned.csv'):
-	os.remove('C:\\Users\\rensm\\Documents\\PostdocLeiden\\BRAxNLD repository\\Data\\Cleaned\\CROPPED_AA114105_AA1001_v_AA1012_vPP_SpecialExport_cleaned.csv')
+# # THESE FIRST FOUR LINES OF CODE ARE ONLY NECESSARY TO TEST WHETHER THE TEMPLATE STILL WORKS ON FDP DATA.
+# import os
+# if os.path.isfile('C:\\Users\\rensm\\Documents\\PostdocLeiden\\BRAxNLD repository\\Data\\Cleaned\\CROPPED_AA114105_AA1001_v_AA1012_vPP_SpecialExport_cleaned.csv'):
+# 	os.remove('C:\\Users\\rensm\\Documents\\PostdocLeiden\\BRAxNLD repository\\Data\\Cleaned\\CROPPED_AA114105_AA1001_v_AA1012_vPP_SpecialExport_cleaned.csv')
+
 # If you want to edit something in the code and you're not sure where it is, 
 # just ask. l.a.meerhoff@liacs.leidenuniv.nl
 # Also, if you want to add something to the code and you're not sure where, 
@@ -116,7 +117,7 @@ import initialization
 # This allows Python to import the custom modules in our library. 
 # If you add new subfolders in the library, they need to be added in addLibary (in initialization.py) as well.
 initialization.addLibrary(studentFolder)
-dataFolder,tmpFigFolder,outputFolder,cleanedFolder,aggregatedOutputFilename =\
+dataFolder,tmpFigFolder,outputFolder,cleanedFolder,aggregatedOutputFilename,outputDescriptionFilename =\
 initialization.checkFolders(folder,aggregateEvent)
 
 import pdb; #pdb.set_trace()
@@ -168,13 +169,11 @@ for dirtyFname in DirtyDataFiles:
 	dissectFilename.process(dirtyFname,dataType,TeamAstring,TeamBstring)
 
 	# Clean cleanFname (it only cleans data if there is no existing cleaned file of the current (dirty)file )
-	# cleanedFolder,readAttributeCols = \
 	cleanedFolder,fatalTimeStampIssue = \
 	cleanupData.process(dirtyFname,cleanFname,dataType,dataFolder,cleanedFolder,TeamAstring,TeamBstring,rawHeaders,readAttributeCols,timestampString,readEventColumns,conversionToMeter)
 
 	if fatalTimeStampIssue:
 		skippedData = True
-		# outputFilename = outputFolder + 'output_' + aggregateLevel[0] + '.csv'
 		exportCSV.newOrAdd(aggregatedOutputFilename,exportDataString,exportData,skippedData)	
 		continue
 	# From now onward, rawData contains:
@@ -222,10 +221,8 @@ for dirtyFname in DirtyDataFiles:
 	# This can be written more efficiently.
 	# Idea: recognize when trial already exists in data and overwrite.
 	skippedData = False
-	# outputFilename = outputFolder + 'output_' + aggregateLevel[0] + '.csv'
 	exportCSV.newOrAdd(aggregatedOutputFilename,exportDataString,exportData,skippedData)	
-	# outputFilename = outputFolder + 'outputDescription_' + aggregateLevel[0] + '.txt'
-	exportCSV.varDescription(aggregatedOutputFilename,exportDataString,exportFullExplanation)
+	exportCSV.varDescription(outputDescriptionFilename,exportDataString,exportFullExplanation)
 
 	## As a temporary work around, the raw data is here exported per file
 	if exportPerFile:

@@ -391,21 +391,21 @@ def verifyGroupRows(df_cleaned):
 	else: # If group rows do exist,
 		
 		# verify that 'PlayerID' = 'groupRow'
-		if df_cleaned['PlayerID'].dtype == float: # Input was not a string, so no groupRows indicated.
-			df_cleaned.loc[groupRows,('PlayerID')] = 'groupRow'
+		if df_cleaned['PlayerID'].dtype == float or any(df_cleaned['PlayerID'][groupRows] != 'groupRow'): # Input was not a string, so no groupRows indicated.
+		# 	df_cleaned.loc[groupRows,('PlayerID')] = 'groupRow'
 
-		elif any(df_cleaned['PlayerID'][groupRows] != 'groupRow'):		
+		# elif any(df_cleaned['PlayerID'][groupRows] != 'groupRow'):		
 			# df_cleaned['PlayerID'][groupRows] = 'groupRow'
 			warn('\nWARNING: Contents of PlayerID overwritten for group rows.\nBe sure that group rows were identified correctly.\n')
 			df_cleaned.loc[groupRows,('PlayerID')] = 'groupRow'
 
 		# Verify whether x, y, and TeamID are empty
 		if not all(df_cleaned['X'][(groupRows)].isnull()):
-			warn('\nWARNING: X values of groupRows are not empty.\nConisder cleaning. ')
+			warn('\nWARNING: X values of groupRows are not empty.\Consider cleaning. ')
 		if not all(df_cleaned['Y'][(groupRows)].isnull()):
-			warn('\nWARNING: Y values of groupRows are not empty.\nConisder cleaning. ')
+			warn('\nWARNING: Y values of groupRows are not empty.\Consider cleaning. ')
 		if not all(df_cleaned['TeamID'][(groupRows)].isnull()):
-			warn('\nWARNING: TeamID values of groupRows are not empty.\nConisder cleaning. ')			
+			warn('\nWARNING: TeamID values of groupRows are not empty.\Consider cleaning. ')			
 
 		# and finally, verify that there is a group row for every timestamp.
 		if len(df_cleaned['PlayerID'][groupRows]) != len(uniqueTs):
@@ -416,12 +416,14 @@ def verifyGroupRows(df_cleaned):
 			missingGroupTs = []
 			for i in uniqueTs:
 				ismissingGroupTs = True
+				if i == '':
+					ismissingGroupTs = False
+					continue
 				for j in df_cleaned['Ts'][groupRows]:
 					if i == j:
 						ismissingGroupTs = False
 				if ismissingGroupTs:
 					missingGroupTs.append(i)
-
 			# Add missing group rows as empty rows
 			# Create a string value
 			groupPlayerID = ['groupRow' for i in missingGroupTs]
@@ -434,6 +436,72 @@ def verifyGroupRows(df_cleaned):
 			
 			# Append them to the existing dataframe
 			df_cleaned = df_cleaned.append(df_group)
+
+			newGroupRows = df_cleaned['PlayerID'] == 'groupRow'
+			groupRows = newGroupRows
+
+		# ##########################
+		# #### Work in progress ####
+		# ##########################
+		# ### I haven't finished this last clean up procedure. 
+		# ### The foundations are there (including an elaborate way of locating the problematic cells).
+
+		# # And finally finally, check that every groupRow timestamp occurs in a Player Row.
+		# uniqueTs_GroupRows = df_cleaned['Ts'][df_cleaned['PlayerID'] == 'groupRow'].unique()
+		# uniqueTs_nonGroupRows = df_cleaned['Ts'][df_cleaned['PlayerID'] != 'groupRow'].unique()
+		# Ts_to_be_removed = [i for i in uniqueTs_GroupRows if not np.isin(i,uniqueTs_nonGroupRows)]
+
+		# # An elaborate way to pinpoint the problem: (alternatively, could just check if Ts_to_be_removed is empty..)
+		# orderedPerPlayer_perTs = df_cleaned.groupby('PlayerID')['Ts']
+		# orderedPerPlayer_perTs_nunique = orderedPerPlayer_perTs.nunique()
+		# uniquePlayers = pd.unique(df_cleaned['PlayerID'])
+		# verification = np.array([])
+		# for i in uniquePlayers:
+		# 	if i == 'groupRow':
+		# 		# Skip the number of unique timestamps in the groupRow
+		# 		continue
+
+		# 	idx = np.where(i == orderedPerPlayer_perTs_nunique.keys())
+		# 	# Could consider adding excluding 'ball' here as well..
+		# 	if orderedPerPlayer_perTs_nunique[idx[0][0]] > orderedPerPlayer_perTs_nunique['groupRow']:
+		# 		# Not good.. the number of unique timeframes can't be more than the number of groupRows.
+		# 		# In fact, this should have been corrected above: "and finally, verify that there is a group row for every timestamp."
+		# 		verification = np.append(verification,1)
+		# 	elif orderedPerPlayer_perTs_nunique[idx[0][0]] < orderedPerPlayer_perTs_nunique['groupRow']:
+		# 		# This can happen. It's checked under checkForFatalTimestampIssue()
+		# 		# BUT: If ALL players have less timestamps than the groupRow, then it is problematic.
+		# 		verification = np.append(verification,2)
+
+		# 	elif orderedPerPlayer_perTs_nunique[idx[0][0]] == orderedPerPlayer_perTs_nunique['groupRow']:
+		# 		# As long as at least one player has this, then there is no problem.
+		# 		verification = np.append(verification,3)
+		# 	else:
+		# 		# Should not be possible
+		# 		warn('\nWARNING: This should not be possible. The number of unique timestamps for groupRows and non-groupRows was incomparable.\nThis may have consequences for cleaning up the data to have the right number of groupRows.\n')
+		
+		# if not any(verification == 3):
+		# 	# Indeed, some of the groupRow timestamps did not occur in the non-groupRows (including 'ball')
+		# 	# I can think of two ways to solve this:
+			
+		# 	# 1) Delete the groupRows that have a timestamp that does not occur for any player.
+		# 	# + = easy. - = it may delete groupRows with information.
+
+		# 	# 2) Add the missing timestamp to the non-groupRows.
+		# 	# + = don't risk deleting groupRows with information. - = not sure what the impact is on analyses using these groupRows
+
+		# 	# I'll first work out solution 1 (with an if statement to check whether removed groupRow is empty)
+		# 	# If problems persist, solution 2 can be worked out as well.
+
+		# 	# Omit groupRows that have a timestamp that does not occur for any non-groupRow:
+		# 	# Already did this above:
+		# 	## uniqueTs_GroupRows = df_cleaned['Ts'][df_cleaned['PlayerID'] == 'groupRow'].unique()
+		# 	## uniqueTs_nonGroupRows = df_cleaned['Ts'][df_cleaned['PlayerID'] != 'groupRow'].unique()
+		# 	## Ts_to_be_removed = [i for i in uniqueTs_GroupRows if not np.isin(i,uniqueTs_nonGroupRows)]
+		# 	doSomething = [] # option 1 or 2 as described above.
+
+		# ##########################
+		# #### \Work in progress ###
+		# ##########################	
 
 	return df_cleaned
 
