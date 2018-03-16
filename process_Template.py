@@ -1,7 +1,8 @@
-# THESE FIRST THREE LINES OF CODE ARE ONLY NECESSARY TO TEST WHETHER THE TEMPLATE STILL WORKS ON FDP DATA.
-import os
-if os.path.isfile('C:\\Users\\rensm\\Documents\\PostdocLeiden\\BRAxNLD repository\\Data\\Cleaned\\CROPPED_AA114105_AA1001_v_AA1012_vPP_SpecialExport_cleaned.csv'):
-	os.remove('C:\\Users\\rensm\\Documents\\PostdocLeiden\\BRAxNLD repository\\Data\\Cleaned\\CROPPED_AA114105_AA1001_v_AA1012_vPP_SpecialExport_cleaned.csv')
+# # THESE FIRST FOUR LINES OF CODE ARE ONLY NECESSARY TO TEST WHETHER THE TEMPLATE STILL WORKS ON FDP DATA.
+# import os
+# if os.path.isfile('C:\\Users\\rensm\\Documents\\PostdocLeiden\\BRAxNLD repository\\Data\\Cleaned\\CROPPED_AA114105_AA1001_v_AA1012_vPP_SpecialExport_cleaned.csv'):
+# 	os.remove('C:\\Users\\rensm\\Documents\\PostdocLeiden\\BRAxNLD repository\\Data\\Cleaned\\CROPPED_AA114105_AA1001_v_AA1012_vPP_SpecialExport_cleaned.csv')
+
 # If you want to edit something in the code and you're not sure where it is, 
 # just ask. l.a.meerhoff@liacs.leidenuniv.nl
 # Also, if you want to add something to the code and you're not sure where, 
@@ -82,7 +83,9 @@ readEventColumns = []
 # If the raw data is not given in meters, provide the conversion.
 conversionToMeter = 1 #111111 # https://gis.stackexchange.com/questions/8650/measuring-accuracy-of-latitude-and-longitude/8674#8674
 
-## -- work in progress -- 
+## -- work in progress --  ##
+## For inomtio data, the only aggregateEvent that works is 'Full'
+## Other levels of temporal aggregation to be added soon.
 # Indicate some parameters for temporal aggregation: 'Full' aggregates over the whole file, any other event needs to be specified with the same string as in the header of the CSV file.
 aggregateEvent = 'Full' # Event that will be used to aggregate over (verified for 'Goals' and for 'Possession')
 aggregateWindow = 10 # in seconds #NB: still need to write warning in temporal aggregation in case you have Goals in combination with None.
@@ -114,7 +117,7 @@ import initialization
 # This allows Python to import the custom modules in our library. 
 # If you add new subfolders in the library, they need to be added in addLibary (in initialization.py) as well.
 initialization.addLibrary(studentFolder)
-dataFolder,tmpFigFolder,outputFolder,cleanedFolder =\
+dataFolder,tmpFigFolder,outputFolder,cleanedFolder,aggregatedOutputFilename,outputDescriptionFilename =\
 initialization.checkFolders(folder,aggregateEvent)
 
 import pdb; #pdb.set_trace()
@@ -124,10 +127,13 @@ from warnings import warn
 # Custom modules (from LibrarRENS)
 import spatialAggregation
 import temporalAggregation
+import importEvents
 import dissectFilename
 import importTimeseries_aspanda
 import cleanupData
 import pandas as pd
+import exportCSV
+import estimateRemainingTime
 #  Unused modules: 
 # CSVexcerpt CSVimportAsColumns identifyDuplHeader LoadOrCreateCSVexcerpt individualAttributes plotTimeseries dataToDict 
 # dataToDict2 safetyWarning countExistingEvents exportCSV importTimeseriesData csv importEvents CSVtoDF plotSnapshot
@@ -147,25 +153,29 @@ aggregateLevel = (aggregateEvent,aggregateWindow,aggregateLag)
 #########################
 # Load all (not yet cleaned) files
 DirtyDataFiles = [f for f in listdir(dataFolder) if isfile(join(dataFolder, f)) if '.csv' in f]
-for dirtyFname in DirtyDataFiles:
-	print('\nFILE: << %s >>' %dirtyFname[:-4])
+t = ([],1,len(DirtyDataFiles))#(time started,nth file,total number of files)
 
+for dirtyFname in DirtyDataFiles:
+	print(	'\nFILE: << %s >>' %dirtyFname[:-4])
+	t = estimateRemainingTime.printProgress(t)
 	#########################
 	# PREPARATION ###########
 	#########################
 	# IMPORTANT: During preparation you can use 'dataType' (although it's better to try not to) which allows you
 	# to prepare the data in a way that is specific for your dataset.
-
+	
 	# Prepare metadata of aggregated data to be exported:
 	exportData, exportDataString, exportDataFullExplanation,cleanFname,TeamAstring,TeamBstring = \
 	dissectFilename.process(dirtyFname,dataType,TeamAstring,TeamBstring)
 
 	# Clean cleanFname (it only cleans data if there is no existing cleaned file of the current (dirty)file )
-	# cleanedFolder,readAttributeCols,attrLabel = \
-	# cleanupData.process(dirtyFname,cleanFname,dataType,dataFolder,cleanedFolder,TeamAstring,TeamBstring,rawHeaders,readAttributeCols,attrLabel,timestampString)
-	cleanedFolder,readAttributeCols = \
+	cleanedFolder,fatalTimeStampIssue = \
 	cleanupData.process(dirtyFname,cleanFname,dataType,dataFolder,cleanedFolder,TeamAstring,TeamBstring,rawHeaders,readAttributeCols,timestampString,readEventColumns,conversionToMeter)
 
+	if fatalTimeStampIssue:
+		skippedData = True
+		exportCSV.newOrAdd(aggregatedOutputFilename,exportDataString,exportData,skippedData)	
+		continue
 	# From now onward, rawData contains:
 	#  'Ts' --> Timestamp
 	#  'X' --> X-position
@@ -181,25 +191,39 @@ for dirtyFname in DirtyDataFiles:
 	########################################################################################
 	####### Import existing data ###########################################################
 	########################################################################################
-	
+
 	rawPanda = importTimeseries_aspanda.rawData(cleanFname,cleanedFolder)
 	attrPanda,attrLabel = importTimeseries_aspanda.existingAttributes(cleanFname,cleanedFolder,readAttributeCols,attrLabel)
+	eventsPanda,eventsLabel = importTimeseries_aspanda.existingAttributes(cleanFname,cleanedFolder,readEventColumns,attrLabel)	
 
 	###### Work in progress ##########
-	# targetEventsImported = importEvents.process(rawDict,attributeDict,TeamAstring,TeamBstring)
+	# Currently code is not very generic. It should work for NP though..
+	# The events are based on event columns that have the same structure as the timeseries data.
+	targetEventsImported = importEvents.process(eventsPanda,TeamAstring,TeamBstring)
 	###### \Work in progress #########
 
 	########################################################################################
 	####### Compute new attributes #########################################################
 	########################################################################################
 
+	## Spatial aggregation
 	attrPanda,attrLabel = spatialAggregation.process(rawPanda,attrPanda,attrLabel,TeamAstring,TeamBstring)
 
 	###### Work in progress ##########
-	# targetEventsComputed = importEvents.process(rawDict,attributeDict,TeamAstring,TeamBstring)
-	# exportData,exportDataString,exportFullExplanation = \
-	# temporalAggregation.process(targetEvents,aggregateLevel,rawDict,attributeDict,exportData,exportDataString,exportFullExplanation,TeamAstring,TeamBstring)
-	
+	## Temporal aggregation
+	exportData,exportDataString,exportFullExplanation = \
+	temporalAggregation.process(targetEventsImported,aggregateLevel,rawPanda,attrPanda,exportData,exportDataString,exportDataFullExplanation,TeamAstring,TeamBstring)
+
+	########################################################################################
+	####### EXPORT to CSV #########################################################
+	########################################################################################
+
+	# This can be written more efficiently.
+	# Idea: recognize when trial already exists in data and overwrite.
+	skippedData = False
+	exportCSV.newOrAdd(aggregatedOutputFilename,exportDataString,exportData,skippedData)	
+	exportCSV.varDescription(outputDescriptionFilename,exportDataString,exportFullExplanation)
+
 	## As a temporary work around, the raw data is here exported per file
 	if exportPerFile:
 		# debugging only
@@ -207,9 +231,13 @@ for dirtyFname in DirtyDataFiles:
 		altogether.to_csv(outputFolder + 'output_' + dirtyFname) # debugging only		
 		print('EXPORTED <%s>' %dirtyFname[:-4])
 		print('in <%s>' %outputFolder)
-		# pdb.set_trace()
-		continue
+	continue
 	###### \Work in progress #########
+	# import time
+	# t = time.time()	# do stuff
+	# elapsed = time.time() - t
+	# print('Time elapsed: %s' %elapsed)
+	# pdb.set_trace()
 
 	#############################################################
 	#############################################################
