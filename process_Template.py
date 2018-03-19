@@ -1,3 +1,8 @@
+# # # THESE FIRST FOUR LINES OF CODE ARE ONLY NECESSARY TO TEST WHETHER THE TEMPLATE STILL WORKS ON FDP DATA.
+# import os
+# if os.path.isfile('C:\\Users\\rensm\\Documents\\PostdocLeiden\\BRAxNLD repository\\Data\\Cleaned\\CROPPED_XX123456_XX0001_v_XX0002_vPP_SpecialExport_cleaned.csv'):
+# 	os.remove('C:\\Users\\rensm\\Documents\\PostdocLeiden\\BRAxNLD repository\\Data\\Cleaned\\CROPPED_XX123456_XX0001_v_XX0002_vPP_SpecialExport_cleaned.csv')
+
 # If you want to edit something in the code and you're not sure where it is, 
 # just ask. l.a.meerhoff@liacs.leidenuniv.nl
 # Also, if you want to add something to the code and you're not sure where, 
@@ -158,7 +163,7 @@ for dirtyFname in DirtyDataFiles:
 	#########################
 	# IMPORTANT: During preparation you can use 'dataType' (although it's better to try not to) which allows you
 	# to prepare the data in a way that is specific for your dataset.
-	
+
 	# Prepare metadata of aggregated data to be exported:
 	exportData, exportDataString, exportDataFullExplanation,cleanFname,TeamAstring,TeamBstring = \
 	dissectFilename.process(dirtyFname,dataType,TeamAstring,TeamBstring)
