@@ -85,6 +85,13 @@ def NP(fname):
 		School = 'JYSS'
 		if '1E' in fname:
 			Class = fname[fname.find('1E'):fname.find('1E')+3]
+			if Class in ['1E3', '1E4']:
+				Exp = 'NP'
+			elif Class in ['1E1', '1E2']:
+				Exp = 'LP'
+			else:
+				warn('\nCould not identify experimental gruop: <%s>' %fname)				
+
 		else:
 			warn('\nCould not identify class: <%s>' %fname)
 	elif 'St Pat' in fname:
@@ -95,6 +102,13 @@ def NP(fname):
 		if Class == [] or len(Class) > 1:
 			warn('\nCould not identify class: <%s>' %fname)				
 		Class = Class[0]
+		if Class in ['X1A', 'X13']:
+			Exp = 'NP'
+		elif Class in ['X1E', 'X12']:
+			Exp = 'LP'
+		else:
+			warn('\nCould not identify experimental gruop: <%s>' %fname)
+
 	else:
 		warn('\nCould not identify School: <%s>' %fname)
 	
@@ -116,7 +130,7 @@ def NP(fname):
 	else:
 		warn('\nCould not identify group: <%s>' %fname)
 
-	cleanFname = School + '_' + Class + '_' + Group + '_' + Test + '.csv'
+	cleanFname = School + '_' + Class + '_' + Group + '_' + Test + '_' + Exp + '.csv'
 
 	exportData = [School, Class, Group, Test]
 	exportDataString = ['School', 'Class', 'Group', 'Test']

@@ -75,7 +75,7 @@ def process(dirtyFname,cleanFname,dataType,dataFolder,cleanedFolder,TeamAstring,
 			df_cleaned,df_omitted = \
 			NP(dirtyFname,cleanFname,dataFolder,cleanedFolder,headers,readAttributeCols,debugOmittedRows,readEventColumns,TeamAstring,TeamBstring)
 		elif dataType == "FDP":
-			df_cleaned,df_omitted = FDP(dirtyFname,cleanFname,dataFolder,cleanedFolder,headers,readAttributeCols,debugOmittedRows,readEventColumns,TeamAstring,TeamBstring)
+			df_cleaned,df_omitted,fatalTeamIDissue = FDP(dirtyFname,cleanFname,dataFolder,cleanedFolder,headers,readAttributeCols,debugOmittedRows,readEventColumns,TeamAstring,TeamBstring)
 		else:
 			# overwrite cleanedFolder and add a warning that no cleanup had taken place
 			cleanedFolder = dataFolder
@@ -108,11 +108,17 @@ def process(dirtyFname,cleanFname,dataType,dataFolder,cleanedFolder,TeamAstring,
 			warn('\nOverwriting file <%s> \nin cleanedFolder <%s>.\n' %(cleanFname,cleanedFolder))
 
 		# Export cleaned data to CSV
-		if fatalTimeStampIssue:
+		if fatalTeamIDissue:
+			df_Fatal = pd.DataFrame([],columns=['fatalTeamIDissue'])
+			df_Fatal.to_csv(cleanedFolder + cleanFname)
+			fatalIssue = True
+		elif fatalTimeStampIssue:
 			df_Fatal = pd.DataFrame([],columns=['fatalTimeStampIssue'])
 			df_Fatal.to_csv(cleanedFolder + cleanFname)
+			fatalIssue = True
 		else:
 			df_cleaned.to_csv(cleanedFolder + cleanFname)
+			fatalIssue = False
 	
 		# Optional: Export data that has been omitted, in case you suspect that relevent rows were omitted.
 		if debugOmittedRows:
@@ -131,7 +137,7 @@ def process(dirtyFname,cleanFname,dataType,dataFolder,cleanedFolder,TeamAstring,
 		# attrLabel.update({'Ts': 'Time (s)'})
 		# readAttributeCols[0] = 'Ts'
 
-	return cleanedFolder,fatalTimeStampIssue#, readAttributeCols#, attrLabel
+	return cleanedFolder,fatalIssue#, readAttributeCols#, attrLabel
 
 def FDP(fname,cleanFname,dataFolder,cleanedFolder,headers,readAttributeCols,debugOmittedRows,readEventColumns,TeamAstring,TeamBstring):
 
@@ -159,7 +165,7 @@ def FDP(fname,cleanFname,dataFolder,cleanedFolder,headers,readAttributeCols,debu
 	
 	## Cleanup for BRAxNLD
 	if headers['TeamID'] == None:
-		df,headers = splitName_and_Team(df,headers,ID,newPlayerIDstring,newTeamIDstring,TeamAstring,TeamBstring)
+		df,headers,fatalTeamIDissue = splitName_and_Team(df,headers,ID,newPlayerIDstring,newTeamIDstring,TeamAstring,TeamBstring)
 		# Delete the original ID, but only if the string is not the same as the new Dict.Keys
 		if ID != newPlayerIDstring and ID != newTeamIDstring:
 			del df[ID]
@@ -176,7 +182,7 @@ def FDP(fname,cleanFname,dataFolder,cleanedFolder,headers,readAttributeCols,debu
 
 	df_cleaned = df_cropped03
 
-	return df_cleaned, df_omitted
+	return df_cleaned, df_omitted,fatalTeamIDissue
 
 def NP(fname,newfname,folder,cleanedFolder,headers,readAttributeCols,debugOmittedRows,readEventColumns,TeamAstring,TeamBstring):
 
@@ -228,19 +234,25 @@ def splitName_and_Team(df,headers,ID,newPlayerIDstring,newTeamIDstring,TeamAstri
 	df[ID] = df[ID].apply(str)
 	# Split 'Naam' into PlayerID and TeamID
 	df_temp = pd.DataFrame(df[ID].str.split('_',1).tolist(),columns = [newPlayerIDstring,newTeamIDstring])
-
 	# Necessary addition, as some players of different teams had the same 'PlayerID'	
 	TeamA_rows = df_temp[newTeamIDstring] == TeamAstring
 	df_temp[newPlayerIDstring][TeamA_rows] = df_temp[newPlayerIDstring][TeamA_rows] + "A"
 	TeamB_rows = df_temp[newTeamIDstring] == TeamBstring
 	df_temp[newPlayerIDstring][TeamB_rows] = df_temp[newPlayerIDstring][TeamB_rows] + "B"
-
+	
+	fatalTeamIDissue = False
+	if sum(TeamA_rows) == 0:
+		warn('\nFATAL WARNING: Could not find any <%s> values in the data.\nCheck whether the identification of the team''s ID string worked correctly.\n' %TeamAstring)
+		fatalTeamIDissue = True
+	if sum(TeamB_rows) == 0:
+		warn('\nFATAL WARNING: Could not find any <%s> values in the data.\nCheck whether the identification of the team''s ID string worked correctly.\n' %TeamBstring)		
+		fatalTeamIDissue = True
 	df = pd.concat([df, df_temp], axis=1, join='inner')
 	
 	headers['PlayerID'] = newPlayerIDstring
 	headers['TeamID'] = newTeamIDstring
 
-	return df,headers
+	return df,headers,fatalTeamIDissue
 
 def omitXandY_equals0(df,x,y,ID):
 	# Omit rows where both x and y = 0 and where there is no team value
@@ -326,7 +338,7 @@ def checkForFatalTimestampIssue(rawDict):
 	PlayerID = rawDict['PlayerID']
 	TsS = rawDict['Ts']
 
-	uniqueTsS,tmp = np.unique(TsS,return_counts=True)
+	uniqueTsS,freqUniqueTs = np.unique(TsS,return_counts=True)
 	uniquePlayers = pd.unique(PlayerID)
 
 	# if any(tmp != np.median(tmp)) or len(uniqueTsS) != len(PlayerID) / len(uniquePlayers):
@@ -339,19 +351,22 @@ def checkForFatalTimestampIssue(rawDict):
 	# 		print('Timestamp <%s> occurred <%s> times.' %(uniqueTsS[i],tmp[i]))
 	# 	fatalTimeStampIssue = True
 	
-	if any(tmp != np.median(tmp)) or len(uniqueTsS) != len(PlayerID) / len(uniquePlayers):
+	if any(freqUniqueTs != np.median(freqUniqueTs)) or len(uniqueTsS) != len(PlayerID) / len(uniquePlayers):
 		warn('\nWARNING: Potential problem with timestamp. Not every timestamp occurred equally often.')
 
-	if max(tmp) > len(uniquePlayers):
+	if max(freqUniqueTs) > len(uniquePlayers):
 		# Problem with timestamp. Not every timestamp occurs equally often and/or there isn't the expected number of unique timestamps
 		warn('\nFATAL WARNING: Some timestamps occurred more often than unique players exist:')
 		print('Duplicate timestamps?')
 
-		indices = np.where(tmp != np.median(tmp))
-		for i in np.nditer(indices):
+		indices = np.where(freqUniqueTs != np.median(freqUniqueTs))
+		for idx,i in enumerate(np.nditer(indices)):
 			i2 = np.where(uniqueTsS[i]==TsS)
 			# print('i2 = %s' %np.nditer(i2)[0])
-			print('Timestamp <%s> occurred <%s> times.' %(uniqueTsS[i],tmp[i]))
+			print('Timestamp <%s> occurred <%s> times.' %(uniqueTsS[i],freqUniqueTs[i]))
+			if idx == 10:
+				print('(...)\nFirst %s timestamps printed only.\n' %idx)
+				break
 		fatalTimeStampIssue = True
 
 	return fatalTimeStampIssue
