@@ -99,6 +99,10 @@ Visualization = False # True = includes visualization, False = skips visualizati
 # - Include modules to compute events
 ## -- \work in progress -- 
 
+# Parts of the pipeline can be skipped
+skipCleanup = True # Only works if cleaned file exists
+skipSpatAgg = True # Only works if spat agg export exists
+
 #########################
 # END USER INPUT ########
 #########################
@@ -117,7 +121,7 @@ import initialization
 # This allows Python to import the custom modules in our library. 
 # If you add new subfolders in the library, they need to be added in addLibary (in initialization.py) as well.
 initialization.addLibrary(studentFolder)
-dataFolder,tmpFigFolder,outputFolder,cleanedFolder,aggregatedOutputFilename,outputDescriptionFilename =\
+dataFolder,tmpFigFolder,outputFolder,cleanedFolder,spatAggFolder,aggregatedOutputFilename,outputDescriptionFilename =\
 initialization.checkFolders(folder,aggregateEvent)
 
 import pdb; #pdb.set_trace()
@@ -170,7 +174,7 @@ for dirtyFname in DirtyDataFiles:
 
 	# Clean cleanFname (it only cleans data if there is no existing cleaned file of the current (dirty)file )
 	cleanedFolder,fatalTimeStampIssue = \
-	cleanupData.process(dirtyFname,cleanFname,dataType,dataFolder,cleanedFolder,TeamAstring,TeamBstring,rawHeaders,readAttributeCols,timestampString,readEventColumns,conversionToMeter)
+	cleanupData.process(dirtyFname,cleanFname,dataType,dataFolder,cleanedFolder,TeamAstring,TeamBstring,rawHeaders,readAttributeCols,timestampString,readEventColumns,conversionToMeter,skipCleanup)
 
 	if fatalTimeStampIssue:
 		skippedData = True

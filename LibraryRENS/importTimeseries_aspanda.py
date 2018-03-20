@@ -28,7 +28,15 @@ if __name__ == '__main__':
 	rawData(filename,folder)
 	existingAttributes(filename,folder,rawHeaders)
 
-def existingAttributes(filename,folder,headers,attrLabel):
+def existingAttributes(filename,folder,spatAggFname,spatAggFolder,skipSpatAgg,headers,attrLabel):
+
+	importAll = False
+	if folder == spatAggFolder:
+		if skipSpatAgg:			
+			importAll = True
+		filename = spatAggFname
+		folder = spatAggFolder
+		
 
 	# Add time to the attribute columns (easy for indexing)
 	if 'Ts' not in headers:
@@ -40,6 +48,9 @@ def existingAttributes(filename,folder,headers,attrLabel):
 	with open(folder+filename, 'r') as f:
 		reader = csv.reader(f)
 		tmpHeaders = list(next(reader))
+
+	if importAll:
+		colHeaders = tmpHeaders[1:] # Skip the index column which is empty
 
 	for i in colHeaders:
 		if not i in tmpHeaders:
@@ -54,7 +65,14 @@ def existingAttributes(filename,folder,headers,attrLabel):
 
 	return Loaded_Attr_Data,attrLabel
 
-def rawData(filename,folder):
+def rawData(filename,folder,spatAggFname,spatAggFolder,skipSpatAgg):
+	
+	if folder == spatAggFolder:
+		if not skipSpatAgg:
+			warn('\nEXIT WARNING')
+			exit('\nEXIT: Spatial aggregation should not have been skipped. Check process.\n')
+		filename = spatAggFname
+		folder = spatAggFolder
 
 	ts = 'Ts'
 	x,y = ('X','Y')

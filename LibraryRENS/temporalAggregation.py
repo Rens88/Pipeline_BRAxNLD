@@ -34,9 +34,14 @@ if __name__ == '__main__':
 	specific(rowswithinrange,aggregateString,rawDict,attributeDict,exportData,exportDataString,exportFullExplanation,TeamAstring,TeamBstring)	
 
 def process(targetEvents,aggregateLevel,rawDict,attributeDict,exportData,exportDataString,exportFullExplanation,TeamAstring,TeamBstring):
-	if len(targetEvents[aggregateLevel[0]]) == 0:
+	if aggregateLevel[0] == 'None':
+		warn('\nWARNING: No temporal aggregate level indicated. \nNo temporally aggregated data exported.\nChange aggregateEvent = <%s> in USER INPUT.\n' %aggregateLevel[0])
+		return exportData,exportDataString,exportFullExplanation
+
+	elif len(targetEvents[aggregateLevel[0]]) == 0:
 		warn('\nWARNING: No targetevents detected. \nCouldnt aggregate temporally. \nNo Data exported.\n')
 		return exportData,exportDataString,exportFullExplanation
+
 	exportMatrix = []
 	exportDataString.append('temporalAggregate')
 	exportFullExplanation.append('Level of temporal aggregation, based on <<%s>> event and counted chronologically' %aggregateLevel[0])
