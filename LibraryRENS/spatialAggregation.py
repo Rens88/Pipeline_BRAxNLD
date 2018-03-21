@@ -11,7 +11,7 @@ import math
 import plotSnapshot
 import safetyWarning
 import pandas as pd
-
+import time
 import student_XX_spatialAggregation
 
 if __name__ == '__main__':
@@ -35,7 +35,8 @@ if __name__ == '__main__':
 	#####################################################################################
 	#####################################################################################
 
-def process(rawDict,attributeDict,attributeLabel,TeamAstring,TeamBstring,skipSpatAgg):
+def process(rawDict,attributeDict,attributeLabel,TeamAstring,TeamBstring,skipSpatAgg,debuggingMode):
+	tSpatAgg = time.time()
 	# Per Match (i.e., file)
 	# Per Team and for both teams
 
@@ -65,6 +66,10 @@ def process(rawDict,attributeDict,attributeLabel,TeamAstring,TeamBstring,skipSpa
 	# allesBijElkaar = pd.concat([rawDict, attributeDict], axis=1) # debugging only
 	# allesBijElkaar.to_csv('C:\\Users\\rensm\\Documents\\PostdocLeiden\\BRAxNLD repository\\Data\\tmp\\test.csv') # debugging only		
 	# pdb.set_trace()		 
+	
+	if debuggingMode:
+		elapsed = str(round(time.time() - tSpatAgg, 2))
+		print('Time elapsed during spatialAggregation: %ss' %elapsed)
 	
 	return attributeDict, attributeLabel
 

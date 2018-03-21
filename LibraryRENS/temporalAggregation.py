@@ -10,7 +10,7 @@ import numpy as np
 from os.path import isfile, join, isdir
 from os import listdir, path
 from warnings import warn
-
+import time
 # From my own library:
 import plotSnapshot
 # import CSVexcerpt
@@ -33,7 +33,8 @@ if __name__ == '__main__':
 	# Aggregates a range of pre-defined features over a specific window:
 	specific(rowswithinrange,aggregateString,rawDict,attributeDict,exportData,exportDataString,exportFullExplanation,TeamAstring,TeamBstring)	
 
-def process(targetEvents,aggregateLevel,rawDict,attributeDict,exportData,exportDataString,exportFullExplanation,TeamAstring,TeamBstring):
+def process(targetEvents,aggregateLevel,rawDict,attributeDict,exportData,exportDataString,exportFullExplanation,TeamAstring,TeamBstring,debuggingMode):
+	tTempAgg = time.time()
 	if aggregateLevel[0] == 'None':
 		warn('\nWARNING: No temporal aggregate level indicated. \nNo temporally aggregated data exported.\nChange aggregateEvent = <%s> in USER INPUT.\n' %aggregateLevel[0])
 		return exportData,exportDataString,exportFullExplanation
@@ -122,7 +123,9 @@ def process(targetEvents,aggregateLevel,rawDict,attributeDict,exportData,exportD
 
 		if specialCase:
 			break
-
+	if debuggingMode:
+		elapsed = str(round(time.time() - tTempAgg, 2))
+		print('Time elapsed during temporalAggregation: %ss' %elapsed)
 	return exportMatrix,overallString,overallExplanation
 
 def specific(rowswithinrange,aggregateString,rawData,attributeDict,exportData,exportDataString,exportFullExplanation,TeamAstring,TeamBstring):
@@ -132,6 +135,10 @@ def specific(rowswithinrange,aggregateString,rawData,attributeDict,exportData,ex
 	velA = [val for idx,val in enumerate(attributeDict['vNorm'][rowswithinrange]) if rawData['TeamID'][rowswithinrange[idx]] == TeamAstring]
 	velB = [val for idx,val in enumerate(attributeDict['vNorm'][rowswithinrange]) if rawData['TeamID'][rowswithinrange[idx]] == TeamBstring]
 
+	if velA == []:
+		warn('\nWARNING: No values found for <%s>\nCould be a result of an incomplete dataset.\nConsider cleaning the data again and/or running the spatial aggregation again.\n(Or you could delete the spatially aggregated file.)\n' %TeamAstring)
+	if velB == []:
+		warn('\nWARNING: No values found for <%s>\nCould be a result of an incomplete dataset.\nConsider cleaning the data again and/or running the spatial aggregation again.\n(Or you could delete the spatially aggregated file.)\n' %TeamBstring)
 	# pritn(vel)
 	# print(velA)
 	# print(velB)

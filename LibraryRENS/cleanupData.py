@@ -48,7 +48,8 @@ if __name__ == '__main__':
 	NP(dataFiles,cleanFname,folder,cleanedFolder,TeamAstring,TeamBstring)
 
 #########################################################################
-def process(dirtyFname,cleanFname,dataType,dataFolder,cleanedFolder,spatAggFname,spatAggFolder,TeamAstring,TeamBstring,headers,readAttributeCols,timestampString,readEventColumns,conversionToMeter,skipCleanup,skipSpatAgg):
+def process(dirtyFname,cleanFname,dataType,dataFolder,cleanedFolder,spatAggFname,spatAggFolder,TeamAstring,TeamBstring,headers,readAttributeCols,timestampString,readEventColumns,conversionToMeter,skipCleanup,skipSpatAgg,debuggingMode):
+	tCleanup = time.time()	# do stuff
 
 	debugOmittedRows = False # Optional export of data that was omitted in the cleaning process
 	fatalTimeStampIssue = False
@@ -64,6 +65,9 @@ def process(dirtyFname,cleanFname,dataType,dataFolder,cleanedFolder,spatAggFname
 		fatalIssue = False
 		loadFolder = spatAggFolder
 		loadFname = spatAggFname
+		if debuggingMode:
+			elapsed = str(round(time.time() - tCleanup, 2))
+			print('Time elapsed during cleanupData: %ss' %elapsed)
 		return loadFolder,loadFname,fatalIssue,skipSpatAgg
 
 	skipSpatAgg = False # over-rule skipSpatAgg as the corresponding spatAgg output file could not be found
@@ -79,6 +83,10 @@ def process(dirtyFname,cleanFname,dataType,dataFolder,cleanedFolder,spatAggFname
 			warn('\nContinued with previously cleaned data.\nIf problems exist with data consistency, consider writing a function in cleanupData.py.\n')
 		loadFolder = cleanedFolder
 		loadFname = cleanFname
+		
+		if debuggingMode:
+			elapsed = str(round(time.time() - tCleanup, 2))
+			print('Time elapsed during cleanupData: %ss' %elapsed)
 		return loadFolder,loadFname,fatalIssue,skipSpatAgg#, readAttributeCols#, attrLabel
 	else: # create a new clean Fname
 		print('\nCleaning up file...')
@@ -95,6 +103,9 @@ def process(dirtyFname,cleanFname,dataType,dataFolder,cleanedFolder,spatAggFname
 			loadFname = dirtyFname
 			warn('\nWARNING: No clean-up function available for file <%s>.\nContinued without cleaning the data.' %dirtyFname)
 
+			if debuggingMode:
+				elapsed = str(round(time.time() - tCleanup, 2))
+				print('Time elapsed during cleanupData: %ss' %elapsed)
 			return loadFolder,loadFname,fatalIssue,skipSpatAgg
 
 		## Genereic clean up function (for all datasets)
@@ -153,7 +164,11 @@ def process(dirtyFname,cleanFname,dataType,dataFolder,cleanedFolder,spatAggFname
 		# readAttributeCols[0] = 'Ts'
 		loadFolder = cleanedFolder
 		loadFname = cleanFname
-		
+
+	if debuggingMode:
+		elapsed = str(round(time.time() - tCleanup, 2))
+		print('Time elapsed during cleanupData: %ss' %elapsed)
+
 	return loadFolder,loadFname,fatalIssue,skipSpatAgg#, readAttributeCols#, attrLabel
 
 def FDP(fname,cleanFname,dataFolder,cleanedFolder,headers,readAttributeCols,debugOmittedRows,readEventColumns,TeamAstring,TeamBstring):

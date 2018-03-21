@@ -47,8 +47,7 @@
 studentFolder = 'XXcontributions' 
 
 # Temporary inputs (whilst updating to using pandas)
-exportSpatialAggregates = True # whether you want to export a csv for every complete file (no temporal aggregation)
-debuggingMode = False # whether yo want to continue with the remaining code to incorporate using pandas (temporal aggregation, export and visualization)
+debuggingMode = True # whether yo want to print the times that each script took
 
 # dataType is used for dataset specific parts of the analysis (in the preparation phase only)
 dataType =  "NP" # "FPD" or or "NP" --> so far, only used to call the right cleanup script. Long term goal would be to have a generic cleanup script
@@ -80,12 +79,12 @@ conversionToMeter = 111111 # https://gis.stackexchange.com/questions/8650/measur
 
 ## -- work in progress -- 
 # Indicate some parameters for temporal aggregation: 'Full' aggregates over the whole file, any other event needs to be specified with the same string as in the header of the CSV file.
-aggregateEvent = 'Full' # Event that will be used to aggregate over ('full' denotes aggregating over the whole file. 'None' denotes skipping the temporal aggregation)
+aggregateEvent = 'None' # Event that will be used to aggregate over ('full' denotes aggregating over the whole file. 'None' denotes skipping the temporal aggregation)
 aggregateWindow = 10 # in seconds #NB: still need to write warning in temporal aggregation in case you have Goals in combination with None.
 aggregateLag = 0 # in seconds
 
 # This (simple) visualization plots every outcome variable for the given window for the temporal aggregation
-Visualization = False # True = includes visualization, False = skips visualization
+Visualization = True # True = includes visualization, False = skips visualization
 
 # Key events (TO DO)
 # - Load existing events
@@ -131,6 +130,7 @@ import cleanupData
 import pandas as pd
 import exportCSV
 import estimateRemainingTime
+import plotTimeseries
 #  Unused modules: 
 # CSVexcerpt CSVimportAsColumns identifyDuplHeader LoadOrCreateCSVexcerpt individualAttributes plotTimeseries dataToDict 
 # dataToDict2 safetyWarning countExistingEvents exportCSV importTimeseriesData csv importEvents CSVtoDF plotSnapshot
@@ -150,7 +150,7 @@ aggregateLevel = (aggregateEvent,aggregateWindow,aggregateLag)
 #########################
 # Load all (not yet cleaned) files
 DirtyDataFiles = [f for f in listdir(dataFolder) if isfile(join(dataFolder, f)) if '.csv' in f]
-t = ([],1,len(DirtyDataFiles))#(time started,nth file,total number of files)
+t = ([],0,len(DirtyDataFiles))#(time started,nth file,total number of files)
 
 for dirtyFname in DirtyDataFiles:
 	print(	'\nFILE: << %s >>' %dirtyFname[:-4])
@@ -161,20 +161,14 @@ for dirtyFname in DirtyDataFiles:
 	#########################
 	# IMPORTANT: During preparation you can use 'dataType' (although it's better to try not to) which allows you
 	# to prepare the data in a way that is specific for your dataset.
-	
-	import time
-	tCleanup = time.time()	# do stuff
-	
+		
 	# Prepare metadata of aggregated data to be exported:
 	exportData, exportDataString, exportDataFullExplanation,cleanFname,spatAggFname,TeamAstring,TeamBstring = \
 	dissectFilename.process(dirtyFname,dataType,TeamAstring,TeamBstring)
 
 	# Clean cleanFname (it only cleans data if there is no existing cleaned file of the current (dirty)file )
 	loadFolder,loadFname,fatalTimeStampIssue,skipSpatAgg_curFile = \
-	cleanupData.process(dirtyFname,cleanFname,dataType,dataFolder,cleanedFolder,spatAggFname,spatAggFolder,TeamAstring,TeamBstring,rawHeaders,readAttributeCols,timestampString,readEventColumns,conversionToMeter,skipCleanup,skipSpatAgg)
-	elapsed = time.time() - tCleanup
-	elapsed = str(round(elapsed, 2))
-	print('Time cleanup elapsed: %ss' %elapsed)
+	cleanupData.process(dirtyFname,cleanFname,dataType,dataFolder,cleanedFolder,spatAggFname,spatAggFolder,TeamAstring,TeamBstring,rawHeaders,readAttributeCols,timestampString,readEventColumns,conversionToMeter,skipCleanup,skipSpatAgg,debuggingMode)
 
 	if fatalTimeStampIssue:
 		skippedData = True
@@ -196,7 +190,6 @@ for dirtyFname in DirtyDataFiles:
 	####### Import existing data ###########################################################
 	########################################################################################
 	
-	tImport = time.time()
 	rawPanda = importTimeseries_aspanda.rawData(loadFname,loadFolder)
 	attrPanda,attrLabel = importTimeseries_aspanda.existingAttributes(loadFname,loadFolder,skipSpatAgg_curFile,readAttributeCols,attrLabel,outputFolder)
 	eventsPanda,eventsLabel = importTimeseries_aspanda.existingAttributes(loadFname,loadFolder,False,readEventColumns,attrLabel,outputFolder)
@@ -205,123 +198,43 @@ for dirtyFname in DirtyDataFiles:
 	# Currently code is not very generic. It should work for NP though..
 	targetEventsImported = importEvents.process(eventsPanda,TeamAstring,TeamBstring)
 	###### \Work in progress #########
-	elapsed = time.time() - tImport
-	elapsed = str(round(elapsed, 2))
-	print('Time Import elapsed: %ss' %elapsed)
+
 	########################################################################################
 	####### Compute new attributes #########################################################
 	########################################################################################
 
-	tSpatAgg = time.time()
-	attrPanda,attrLabel = spatialAggregation.process(rawPanda,attrPanda,attrLabel,TeamAstring,TeamBstring,skipSpatAgg_curFile)
-	elapsed = time.time() - tSpatAgg
-	elapsed = str(round(elapsed, 2))
-	print('Time SpatAgg elapsed: %ss' %elapsed)
+	attrPanda,attrLabel = spatialAggregation.process(rawPanda,attrPanda,attrLabel,TeamAstring,TeamBstring,skipSpatAgg_curFile,debuggingMode)
+
 	###### Work in progress ##########
+	# computeEvents.process()
+	###### \Work in progress #########
 
 	## Temporal aggregation
-	tTempAgg = time.time()
-	
 	exportData,exportDataString,exportFullExplanation = \
-	temporalAggregation.process(targetEventsImported,aggregateLevel,rawPanda,attrPanda,exportData,exportDataString,exportDataFullExplanation,TeamAstring,TeamBstring)
-	elapsed = time.time() - tTempAgg
-	elapsed = str(round(elapsed, 2))
+	temporalAggregation.process(targetEventsImported,aggregateLevel,rawPanda,attrPanda,exportData,exportDataString,exportDataFullExplanation,TeamAstring,TeamBstring,debuggingMode)
 
-	print('Time TempAgg elapsed: %ss' %elapsed)
+	########################################################################################
+	####### EXPORT to CSV ##################################################################
+	########################################################################################
 	
-
+	# Temporally aggregated data
 	skippedData = False
 	exportCSV.newOrAdd(aggregatedOutputFilename,exportDataString,exportData,skippedData)	
 	exportCSV.varDescription(outputDescriptionFilename,exportDataString,exportFullExplanation)
 
-	## As a temporary work around, the raw data is here exported per file
-	if exportSpatialAggregates:
-		# debugging only
-		spatAgg = pd.concat([rawPanda, eventsPanda, attrPanda], axis=1) # debugging only
-		spatAgg.to_csv(spatAggFolder + spatAggFname) # debugging only		
-		print('EXPORTED <%s>' %spatAggFname)
-		print('in <%s>' %spatAggFolder)
+	# Spatially aggregated data
+	spatAgg = pd.concat([rawPanda, eventsPanda, attrPanda], axis=1) # debugging only
+	spatAgg.to_csv(spatAggFolder + spatAggFname) # debugging only		
+	print('EXPORTED <%s>' %spatAggFname)
+	print('in <%s>' %spatAggFolder)
 
-		# Need to save the attribute labels for when skipping spatAgg
-		attrLabel_asPanda = pd.DataFrame.from_dict([attrLabel],orient='columns')
-		attrLabel_asPanda.to_csv(outputFolder + 'attributeLabel.csv') 
-
-		continue
-	pdb.set_trace()
-	###### \Work in progress #########
-	import time
-	t = time.time()	# do stuff
-	elapsed = time.time() - t
-	print('Time elapsed: %s' %elapsed)
-	pdb.set_trace()
-
-	#############################################################
-	#############################################################
-	#############################################################
-	#############################################################
-	#############################################################
-	#############################################################
-	#############################################################
-	# The code below still needs to be adjusted to using pandas #
-	#############################################################
-	#############################################################
-	#############################################################
-	#############################################################
-	#############################################################
-	#############################################################
-	if not debuggingMode:
-		continue
-	"""
-	The 3 lines below read and clean the csv file with LPM data as a pandas DataFrame and save the result again as a csv file. 
-	"""
-	RawPos_df = CSVtoDF.LoadPosData(cleanedFolder + cleanFname)
-	outputFilename = outputFolder + 'output_' + aggregateLevel[0] + '.csv'
-	RawPos_df.to_csv(outputFilename)
-	
-	rawDict,timestampIssues = importTimeseriesData.rawData(cleanFname,cleanedFolder,rawHeaders,conversionToMeter)
-	if timestampIssues:
-		skippedData = True
-		outputFilename = outputFolder + 'output_' + aggregateLevel[0] + '.csv'
-		exportCSV.newOrAdd(outputFilename,exportDataString,exportData,skippedData)	
-		continue
-	attributeDict,attributeLabel = importTimeseriesData.existingAttributes(cleanFname,cleanedFolder,readAttributeCols)
-
-	# TO DO: Check 'CHECK THIS' in importEvents, I think it's slow and possibly not even correct
-	targetEvents = importEvents.process(rawDict,attributeDict,TeamAstring,TeamBstring)
-	# TO DO: Write checklist to make sure data includes: (use safetyWarning.py)
-	# - TsS
-	# - PlayerIDs and TeamIDs (specifically in the format of being empty or not)
-	# - verify terminology ragetEvents corresponds to terminology aggregateEvent (and thus aggregateLevel)
-
-	########################################################################################
-	####### Compute new attributes #########################################################
-	########################################################################################
-	# Spatial aggregation, both at individual and team-level
-	attributeDict,attributeLabel = spatialAggregation.process(rawDict,attributeDict,attributeLabel,TeamAstring,TeamBstring)
-	# Idea: Could write a script to automatically detect targetEVents?
-
-	###########################################
-	# Temporal aggregation, where aggregated data is stored in exportData (to export to CSV later)
-	# TO DO: seperate aggregation method
-	# Idea: Here you can build the ijk-algorithm
-	# TO DO: I'm not yet exporting the averages of team centroid (perhaps not informative)
-	exportData,exportDataString,exportFullExplanation = \
-	temporalAggregation.process(targetEvents,aggregateLevel,rawDict,attributeDict,exportData,exportDataString,exportFullExplanation,TeamAstring,TeamBstring)
-	
-	########################################################################################
-	####### EXPORT to CSV #########################################################
-	########################################################################################
-	## TO DO: include a better way to skip data when necessary
-	skippedData = False
-	outputFilename = outputFolder + 'output_' + aggregateLevel[0] + '.csv'
-	exportCSV.newOrAdd(outputFilename,exportDataString,exportData,skippedData)	
-	outputFilename = outputFolder + 'outputDescription_' + aggregateLevel[0] + '.txt'
-	exportCSV.varDescription(outputFilename,exportDataString,exportFullExplanation)
-	# TO DO
-	# - Solve skipped data issue --> so far: put skipped data as 'None' and replace with 'NaN' before exporting to CSV.
-	# - Check some obvious errors with identifying events (and exporting characteristics, e.g., negative duration)
-	# - clean up template
-	# - generalize export to have filename outside of for loop and write new filename unless specified to overwrite
+	## EDIT: Instead of exporting the attributes labels, 
+	## it's easier to create the attribute lables, 
+	## EVEN if spatAgg is being skipped.
+	# # Need to save the attribute labels for when skipping spatAgg
+	# if t[1] == 1: # only after the first file
+	# 	attrLabel_asPanda = pd.DataFrame.from_dict([attrLabel],orient='columns')
+	# 	attrLabel_asPanda.to_csv(outputFolder + 'attributeLabel.csv') 
 
 	if not Visualization: # stop early if visualization is FALSE
 		continue
@@ -334,4 +247,16 @@ for dirtyFname in DirtyDataFiles:
 	# - find a better way to formate labels and title
 	# - allow for plotting individual variables
 	printTheseAttributes =[('TeamCentXA','TeamCentXB'),('SpreadA','SpreadB')] # teams that need to be compared as tuple
-	plotTimeseries.PairwisePerTeam2(printTheseAttributes,aggregateLevel,targetEvents,rawDict,attributeDict,attributeLabel,tmpFigFolder,cleanFname[:-4])
+	plotTimeseries.PairwisePerTeam2(printTheseAttributes,aggregateLevel,targetEventsImported,rawPanda,attrPanda,attrLabel,tmpFigFolder,cleanFname[:-4])
+
+	pdb.set_trace()
+	###########################
+	###########################
+	# Plot individual attributes
+	inds = individualAttributes.PlayerInds(rawDict,firstFrameTimeseries,windowTimeseries)
+	XtoPlot = rawDict['Time']['TsS']
+	# Plot Speed
+	ystring = 'Speed (m/s)'
+	stringToPlot = 'vNorm' ##### Change this to plot any other (existing) individual attribute
+	stringOut = '_' + stringToPlot + '_' + fname[9:17]
+	plotTimeseries.PerPlayer(tmin,tmax,inds,XtoPlot,attributeDict[stringToPlot],xstring,ystring,tmpFigFolder,stringOut)

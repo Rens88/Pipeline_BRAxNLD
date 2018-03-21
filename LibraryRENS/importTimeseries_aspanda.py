@@ -44,10 +44,18 @@ def existingAttributes(filename,folder,skipSpatAgg,headers,attrLabel,outputFolde
 	if skipSpatAgg:			
 		# Import all headers
 		colHeaders = tmpHeaders[1:] # Skip the index column which is empty
-		if isfile(join(outputFolder, 'attributeLabel.csv')):
-			print('loaded attributeLabel')
-			tmp = pd.read_csv(outputFolder + 'attributeLabel.csv')
-			attrLabel = pd.DataFrame.to_dict(tmp)
+		## EDIT: Instead of exporting the attributes labels, 
+		## it's easier to create the attribute lables, 
+		## EVEN if spatAgg is being skipped.
+		#
+		# if isfile(join(outputFolder, 'attributeLabel.csv')):
+		# 	print('loaded attributeLabel')
+		# 	pdb.set_trace()
+
+		# 	tmp = pd.read_csv(outputFolder + 'attributeLabel.csv')
+		# 	attrLabel = pd.DataFrame.to_dict(tmp)
+		# else:
+		# 	warn('\nWARNING: Could not find <attributeLabel.csv> in <%s>. Consider running a file with skipSpatAgg = False to export the attribute lables to a csv.' %outputFolder)
 
 	for i in colHeaders:
 		if not i in tmpHeaders:
