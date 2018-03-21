@@ -28,16 +28,8 @@ if __name__ == '__main__':
 	rawData(filename,folder)
 	existingAttributes(filename,folder,rawHeaders)
 
-def existingAttributes(filename,folder,spatAggFname,spatAggFolder,skipSpatAgg,headers,attrLabel):
-
-	importAll = False
-	if folder == spatAggFolder:
-		if skipSpatAgg:			
-			importAll = True
-		filename = spatAggFname
-		folder = spatAggFolder
+def existingAttributes(filename,folder,skipSpatAgg,headers,attrLabel,outputFolder):
 		
-
 	# Add time to the attribute columns (easy for indexing)
 	if 'Ts' not in headers:
 		colHeaders = ['Ts'] + headers # This makes sure that timeStamp is also imported in attribute cols, necessary for pivoting etc.
@@ -49,8 +41,13 @@ def existingAttributes(filename,folder,spatAggFname,spatAggFolder,skipSpatAgg,he
 		reader = csv.reader(f)
 		tmpHeaders = list(next(reader))
 
-	if importAll:
+	if skipSpatAgg:			
+		# Import all headers
 		colHeaders = tmpHeaders[1:] # Skip the index column which is empty
+		if isfile(join(outputFolder, 'attributeLabel.csv')):
+			print('loaded attributeLabel')
+			tmp = pd.read_csv(outputFolder + 'attributeLabel.csv')
+			attrLabel = pd.DataFrame.to_dict(tmp)
 
 	for i in colHeaders:
 		if not i in tmpHeaders:
@@ -65,15 +62,8 @@ def existingAttributes(filename,folder,spatAggFname,spatAggFolder,skipSpatAgg,he
 
 	return Loaded_Attr_Data,attrLabel
 
-def rawData(filename,folder,spatAggFname,spatAggFolder,skipSpatAgg):
+def rawData(filename,folder):
 	
-	if folder == spatAggFolder:
-		if not skipSpatAgg:
-			warn('\nEXIT WARNING')
-			exit('\nEXIT: Spatial aggregation should not have been skipped. Check process.\n')
-		filename = spatAggFname
-		folder = spatAggFolder
-
 	ts = 'Ts'
 	x,y = ('X','Y')
 	ID = 'PlayerID'

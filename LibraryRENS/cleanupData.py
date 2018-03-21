@@ -59,9 +59,12 @@ def process(dirtyFname,cleanFname,dataType,dataFolder,cleanedFolder,spatAggFname
 	cleanFnames = [f for f in listdir(cleanedFolder) if isfile(join(cleanedFolder, f)) if '.csv' in f]
 	spatAggFnames = [f for f in listdir(spatAggFolder) if isfile(join(spatAggFolder, f)) if '.csv' in f]
 	if spatAggFname in spatAggFnames and skipSpatAgg == True:
-		# Spat agg files don't exist if there was a fatal error
 		warn('\nContinued with previously cleaned and spatially aggregated data.\nIf you want to add new spatial aggregates, change <skipSpatAgg> into <False>.\n')
-		return spatAggFolder,False,skipSpatAgg
+		# Spat agg files don't exist if there was a fatal error, so:
+		fatalIssue = False
+		loadFolder = spatAggFolder
+		loadFname = spatAggFname
+		return loadFolder,loadFname,fatalIssue,skipSpatAgg
 
 	skipSpatAgg = False # over-rule skipSpatAgg as the corresponding spatAgg output file could not be found
 	if cleanFname in cleanFnames and skipCleanup:
@@ -74,8 +77,9 @@ def process(dirtyFname,cleanFname,dataType,dataFolder,cleanedFolder,spatAggFname
 			warn('\nFATAL WARNING: In a previous clean-up, there was a problem with timestamp:\nSome timestamps occurred more often than there were unique <PlayerID>s')
 		else:
 			warn('\nContinued with previously cleaned data.\nIf problems exist with data consistency, consider writing a function in cleanupData.py.\n')
-
-		return cleanedFolder,fatalIssue,skipSpatAgg#, readAttributeCols#, attrLabel
+		loadFolder = cleanedFolder
+		loadFname = cleanFname
+		return loadFolder,loadFname,fatalIssue,skipSpatAgg#, readAttributeCols#, attrLabel
 	else: # create a new clean Fname
 		print('\nCleaning up file...')
 		if dataType == "NP":
@@ -87,8 +91,11 @@ def process(dirtyFname,cleanFname,dataType,dataFolder,cleanedFolder,spatAggFname
 			df_cleaned,df_omitted,fatalTeamIDissue = FDP(dirtyFname,cleanFname,dataFolder,cleanedFolder,headers,readAttributeCols,debugOmittedRows,readEventColumns,TeamAstring,TeamBstring)
 		else:
 			# overwrite cleanedFolder and add a warning that no cleanup had taken place
-			cleanedFolder = dataFolder
-			exit('\exit: No clean-up function available for file <%s>.\nContinued without cleaning the data.' %dirtyFname)
+			loadFolder = dataFolder
+			loadFname = dirtyFname
+			warn('\nWARNING: No clean-up function available for file <%s>.\nContinued without cleaning the data.' %dirtyFname)
+
+			return loadFolder,loadFname,fatalIssue,skipSpatAgg
 
 		## Genereic clean up function (for all datasets)
 		# First: Rename columns to be standardized.
@@ -144,8 +151,10 @@ def process(dirtyFname,cleanFname,dataType,dataFolder,cleanedFolder,spatAggFname
 		# readAttributeCols = [timestampString] + readAttributeCols # This makes sure that timeStamp is also imported in attribute cols, necessary for pivoting etc.
 		# attrLabel.update({'Ts': 'Time (s)'})
 		# readAttributeCols[0] = 'Ts'
-
-	return cleanedFolder,fatalIssue,skipSpatAgg#, readAttributeCols#, attrLabel
+		loadFolder = cleanedFolder
+		loadFname = cleanFname
+		
+	return loadFolder,loadFname,fatalIssue,skipSpatAgg#, readAttributeCols#, attrLabel
 
 def FDP(fname,cleanFname,dataFolder,cleanedFolder,headers,readAttributeCols,debugOmittedRows,readEventColumns,TeamAstring,TeamBstring):
 

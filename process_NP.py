@@ -94,7 +94,7 @@ Visualization = False # True = includes visualization, False = skips visualizati
 
 # Parts of the pipeline can be skipped
 skipCleanup = True # Only works if cleaned file exists
-skipSpatAgg_INPUT = True # Only works if spat agg export exists
+skipSpatAgg = True # Only works if spat agg export exists
 
 #########################
 # END USER INPUT ########
@@ -152,12 +152,10 @@ aggregateLevel = (aggregateEvent,aggregateWindow,aggregateLag)
 DirtyDataFiles = [f for f in listdir(dataFolder) if isfile(join(dataFolder, f)) if '.csv' in f]
 t = ([],1,len(DirtyDataFiles))#(time started,nth file,total number of files)
 
-for dirtyFname in DirtyDataFiles[5:]:
+for dirtyFname in DirtyDataFiles:
 	print(	'\nFILE: << %s >>' %dirtyFname[:-4])
-	skipSpatAgg = skipSpatAgg_INPUT
 	t = estimateRemainingTime.printProgress(t)
-	# if t[1] == 2:
-	# pdb.set_trace()
+
 	#########################
 	# PREPARATION ###########
 	#########################
@@ -172,8 +170,7 @@ for dirtyFname in DirtyDataFiles[5:]:
 	dissectFilename.process(dirtyFname,dataType,TeamAstring,TeamBstring)
 
 	# Clean cleanFname (it only cleans data if there is no existing cleaned file of the current (dirty)file )
-	# cleanedFolder,readAttributeCols = \
-	cleanedFolder,fatalTimeStampIssue,skipSpatAgg = \
+	loadFolder,loadFname,fatalTimeStampIssue,skipSpatAgg_curFile = \
 	cleanupData.process(dirtyFname,cleanFname,dataType,dataFolder,cleanedFolder,spatAggFname,spatAggFolder,TeamAstring,TeamBstring,rawHeaders,readAttributeCols,timestampString,readEventColumns,conversionToMeter,skipCleanup,skipSpatAgg)
 	elapsed = time.time() - tCleanup
 	elapsed = str(round(elapsed, 2))
@@ -200,11 +197,9 @@ for dirtyFname in DirtyDataFiles[5:]:
 	########################################################################################
 	
 	tImport = time.time()
-
-	# Spat agg cannot be skipped
-	rawPanda = importTimeseries_aspanda.rawData(cleanFname,cleanedFolder,spatAggFname,spatAggFolder,skipSpatAgg)
-	attrPanda,attrLabel = importTimeseries_aspanda.existingAttributes(cleanFname,cleanedFolder,spatAggFname,spatAggFolder,skipSpatAgg,readAttributeCols,attrLabel)
-	eventsPanda,eventsLabel = importTimeseries_aspanda.existingAttributes(cleanFname,cleanedFolder,spatAggFname,spatAggFolder,False,readEventColumns,attrLabel)	
+	rawPanda = importTimeseries_aspanda.rawData(loadFname,loadFolder)
+	attrPanda,attrLabel = importTimeseries_aspanda.existingAttributes(loadFname,loadFolder,skipSpatAgg_curFile,readAttributeCols,attrLabel,outputFolder)
+	eventsPanda,eventsLabel = importTimeseries_aspanda.existingAttributes(loadFname,loadFolder,False,readEventColumns,attrLabel,outputFolder)
 
 	###### Work in progress ##########
 	# Currently code is not very generic. It should work for NP though..
@@ -218,7 +213,7 @@ for dirtyFname in DirtyDataFiles[5:]:
 	########################################################################################
 
 	tSpatAgg = time.time()
-	attrPanda,attrLabel = spatialAggregation.process(rawPanda,attrPanda,attrLabel,TeamAstring,TeamBstring,skipSpatAgg)
+	attrPanda,attrLabel = spatialAggregation.process(rawPanda,attrPanda,attrLabel,TeamAstring,TeamBstring,skipSpatAgg_curFile)
 	elapsed = time.time() - tSpatAgg
 	elapsed = str(round(elapsed, 2))
 	print('Time SpatAgg elapsed: %ss' %elapsed)
@@ -233,6 +228,7 @@ for dirtyFname in DirtyDataFiles[5:]:
 	elapsed = str(round(elapsed, 2))
 
 	print('Time TempAgg elapsed: %ss' %elapsed)
+	
 
 	skippedData = False
 	exportCSV.newOrAdd(aggregatedOutputFilename,exportDataString,exportData,skippedData)	
@@ -245,6 +241,11 @@ for dirtyFname in DirtyDataFiles[5:]:
 		spatAgg.to_csv(spatAggFolder + spatAggFname) # debugging only		
 		print('EXPORTED <%s>' %spatAggFname)
 		print('in <%s>' %spatAggFolder)
+
+		# Need to save the attribute labels for when skipping spatAgg
+		attrLabel_asPanda = pd.DataFrame.from_dict([attrLabel],orient='columns')
+		attrLabel_asPanda.to_csv(outputFolder + 'attributeLabel.csv') 
+
 		continue
 	pdb.set_trace()
 	###### \Work in progress #########
