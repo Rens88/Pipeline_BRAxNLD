@@ -12,7 +12,7 @@ import plotSnapshot
 import safetyWarning
 import pandas as pd
 
-import student_XX_spatialAggregation
+import student_LT_spatialAggregation
 
 if __name__ == '__main__':
 	process(rawDict,attributeDict,attributeLabel,TeamAstring,TeamBstring)
@@ -59,7 +59,7 @@ def process(rawDict,attributeDict,attributeLabel,TeamAstring,TeamBstring):
 	vNorm(rawDict,attributeDict,attributeLabel,TeamAstring,TeamBstring)
 
 	attributeDict,attributeLabel = \
-	student_XX_spatialAggregation.process(rawDict,attributeDict,attributeLabel,TeamAstring,TeamBstring)
+	student_LT_spatialAggregation.process(rawDict,attributeDict,attributeLabel,TeamAstring,TeamBstring)
 	
 	## debugging only
 	# allesBijElkaar = pd.concat([rawDict, attributeDict], axis=1) # debugging only

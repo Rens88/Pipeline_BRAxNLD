@@ -65,12 +65,56 @@ def process(rawDict,attributeDict,attributeLabel,TeamAstring,TeamBstring):
 	attributeDict_EXAMPLE,attributeLabel_EXAMPLE = \
 	distanceToCentroid(rawDict,attributeDict,attributeLabel,TeamAstring,TeamBstring)
 
+	attributeDict,attributeLabel = \
+	control(rawDict,attributeDict,attributeLabel,TeamAstring,TeamBstring)
+
 	# NB: Centroid and distance to centroid are stored in example variables that are not exported
 	# when 'process' is finished, because these features are already embedded in the main pipeline.
 	# Make sure that the name of the output variables that you create corresponds to the variables
 	# that this function returns (i.e., 'attributeDict' and 'attributeLabel').
 
 	return attributeDict,attributeLabel
+
+def control(rawDict,attributeDict,attributeLabel,TeamAstring,TeamBstring):
+	Ball = attributeDict[rawDict['PlayerID'] == 'ball'].set_index('Ts')
+	newAttributes = pd.DataFrame(index = attributeDict.index, columns = ['avgRelSpeedPlayerBall','control'])
+
+	##LT: how to determine this constant? 
+	constant = 1
+	
+	for idx,i in enumerate(pd.unique(rawDict['PlayerID'])):
+		curPlayer = rawDict[rawDict['PlayerID'] == i]
+		curPlayerDict = curPlayer.set_index('Ts')
+		curPlayerAtt = attributeDict[rawDict['PlayerID'] == i]
+		curPlayerDictAtt = curPlayerAtt.set_index('Ts')
+
+		##LT: if player is in ball possesion? 
+		if all(curPlayer['PlayerID'] != 'groupRow') and all(curPlayer['PlayerID'] != 'ball'):
+			#average relative speed of player and ball. Always value between 0 and 1
+			curPlayer_speedDiffBall = abs((curPlayerDictAtt['Snelheid'] - Ball['Snelheid'])/Ball['Snelheid'])
+			control = 1 - constant * curPlayer_speedDiffBall**2
+			#print(control)
+		else:
+			continue
+
+		# Put compute values in the right place in the dataFrame
+		newAttributes['avgRelSpeedPlayerBall'][curPlayer.index] = curPlayer_speedDiffBall[curPlayerDict.index]
+		newAttributes['control'][curPlayer.index] = control[curPlayerDict.index]
+
+	# Combine the pre-existing attributes with the new attributes:
+	attributeDict = pd.concat([attributeDict, newAttributes], axis=1)
+
+	##### THE STRINGS #####
+	# Export a string label of each new attribute in the labels dictionary (useful for plotting purposes)
+	tmpAvgRelSpeedPlayerBall = 'Average relative speed of player and ball.'
+	tmpControl = 'Control of the player with ball'
+
+	attributeLabel_tmp = {'avgRelSpeedPlayerBall': tmpAvgRelSpeedPlayerBall, 'control': tmpControl}
+	attributeLabel.update(attributeLabel_tmp)
+	
+	return attributeDict,attributeLabel
+
+
 ## Of course, you can also create new modules (seperate files), to avoid having a very long file.
 ## If you do, don't forget to import the module at the top of this file using <import newModule>.
 
@@ -204,4 +248,3 @@ def distanceToCentroid(rawDict,attributeDict,attributeLabel,TeamAstring,TeamBstr
 	attributeLabel.update({'distToCent':tmpDistToCentString})
 	
 	return attributeDict,attributeLabel
-

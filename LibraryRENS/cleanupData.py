@@ -26,7 +26,7 @@ from os.path import isfile, join, isdir, exists
 from os import listdir, path, makedirs
 import re
 import pandas as pd
-import student_XX_cleanUp
+import student_LT_cleanUp
 import time
 
 if __name__ == '__main__':
@@ -102,7 +102,7 @@ def process(dirtyFname,cleanFname,dataType,dataFolder,cleanedFolder,TeamAstring,
 		fatalTimeStampIssue = checkForFatalTimestampIssue(df_cleaned)
 		
 		df_cleaned,df_omitted = \
-		student_XX_cleanUp.process(df_cleaned,df_omitted,TeamAstring,TeamBstring,headers,readAttributeCols,readEventColumns)
+		student_LT_cleanUp.process(df_cleaned,df_omitted,TeamAstring,TeamBstring,headers,readAttributeCols,readEventColumns)
 
 		if exists(cleanedFolder + cleanFname):
 			warn('\nOverwriting file <%s> \nin cleanedFolder <%s>.\n' %(cleanFname,cleanedFolder))

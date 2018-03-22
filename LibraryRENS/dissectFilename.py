@@ -12,7 +12,7 @@ from os.path import isfile, join, isdir, exists
 from os import listdir, path, makedirs
 import re
 import pandas as pd
-import student_XX_dissectFilename
+import student_LT_dissectFilename
 
 if __name__ == '__main__':
 	
@@ -28,9 +28,13 @@ def process(fname,dataType,TeamAstring,TeamBstring):
 		exportData, exportDataString, exportDataFullExplanation,cleanFname = NP(fname)
 	elif dataType == "FDP":
 		exportData, exportDataString, exportDataFullExplanation,cleanFname,TeamAstring,TeamBstring = FDP(fname)
+	elif dataType == "KNVB":
+		exportData, exportDataString, exportDataFullExplanation,cleanFname = \
+		student_LT_dissectFilename.process(fname,dataType,TeamAstring,TeamBstring)
+		# exportData, exportDataString, exportDataFullExplanation,cleanFname = default(fname)
 	else:
 		exportData, exportDataString, exportDataFullExplanation,cleanFname = \
-		student_XX_dissectFilename.process(fname,dataType,TeamAstring,TeamBstring)
+		student_LT_dissectFilename.process(fname,dataType,TeamAstring,TeamBstring)
 		# exportData, exportDataString, exportDataFullExplanation,cleanFname = default(fname)
 
 	return exportData, exportDataString, exportDataFullExplanation,cleanFname,TeamAstring,TeamBstring
