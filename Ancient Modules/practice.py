@@ -1,10 +1,14 @@
-import csv
+import numpy as np
+import matplotlib.pyplot as plt
+import matplotlib.cm as cm
 
-folder = 'C:\\Users\\rensm\\Documents\\PostdocLeiden\\NP repository\\Output\\'
-filename = 'attributeLabel.csv'
 
-with open(folder+filename, 'r') as f:
-	reader = csv.reader(f)
-	tmpHeaders = list(next(reader))
+a = np.array([[ 1, 2, 3, 4, 5, 6, 7, 8 ],
+              [ 9, 8, 7, 6, 5, 4, 3, 2 ]])
 
-print(tmpHeaders)
+categories = np.array([0, 0, 0, 0, 1, 2, 0, 0])
+
+colormap = np.array(['r', 'g', 'b'])
+print(colormap[categories])
+plt.scatter(a[0], a[1], s=50, c=colormap[categories])
+plt.show()

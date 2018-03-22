@@ -79,12 +79,12 @@ conversionToMeter = 111111 # https://gis.stackexchange.com/questions/8650/measur
 
 ## -- work in progress -- 
 # Indicate some parameters for temporal aggregation: 'Full' aggregates over the whole file, any other event needs to be specified with the same string as in the header of the CSV file.
-aggregateEvent = 'None' # Event that will be used to aggregate over ('full' denotes aggregating over the whole file. 'None' denotes skipping the temporal aggregation)
+aggregateEvent = 'Goals' # Event that will be used to aggregate over ('full' denotes aggregating over the whole file. 'None' denotes skipping the temporal aggregation)
 aggregateWindow = 10 # in seconds #NB: still need to write warning in temporal aggregation in case you have Goals in combination with None.
 aggregateLag = 0 # in seconds
 
 # This (simple) visualization plots every outcome variable for the given window for the temporal aggregation
-Visualization = True # True = includes visualization, False = skips visualization
+Visualization = False # True = includes visualization, False = skips visualization
 
 # Key events (TO DO)
 # - Load existing events
@@ -225,8 +225,6 @@ for dirtyFname in DirtyDataFiles:
 	# Spatially aggregated data
 	spatAgg = pd.concat([rawPanda, eventsPanda, attrPanda], axis=1) # debugging only
 	spatAgg.to_csv(spatAggFolder + spatAggFname) # debugging only		
-	print('EXPORTED <%s>' %spatAggFname)
-	print('in <%s>' %spatAggFolder)
 
 	## EDIT: Instead of exporting the attributes labels, 
 	## it's easier to create the attribute lables, 
@@ -241,22 +239,7 @@ for dirtyFname in DirtyDataFiles:
 	########################################################################################
 	####### Visualization  #################################################################
 	########################################################################################
-	# To do:
-	# - make the plots pretty
-	# - add a legend
-	# - find a better way to formate labels and title
-	# - allow for plotting individual variables
-	printTheseAttributes =[('TeamCentXA','TeamCentXB'),('SpreadA','SpreadB')] # teams that need to be compared as tuple
-	plotTimeseries.PairwisePerTeam2(printTheseAttributes,aggregateLevel,targetEventsImported,rawPanda,attrPanda,attrLabel,tmpFigFolder,cleanFname[:-4])
 
-	pdb.set_trace()
-	###########################
-	###########################
-	# Plot individual attributes
-	inds = individualAttributes.PlayerInds(rawDict,firstFrameTimeseries,windowTimeseries)
-	XtoPlot = rawDict['Time']['TsS']
-	# Plot Speed
-	ystring = 'Speed (m/s)'
-	stringToPlot = 'vNorm' ##### Change this to plot any other (existing) individual attribute
-	stringOut = '_' + stringToPlot + '_' + fname[9:17]
-	plotTimeseries.PerPlayer(tmin,tmax,inds,XtoPlot,attributeDict[stringToPlot],xstring,ystring,tmpFigFolder,stringOut)
+	# printTheseAttributes = [('LengthA','LengthB'),('WidthA','WidthB'),('SurfaceA','SurfaceB'),('SpreadA','SpreadB')] # teams that need to be compared as tuple
+	printTheseAttributes = ['vNorm',('LengthA','LengthB'),('SurfaceA','SurfaceB'),('SpreadA','SpreadB'),('WidthA','WidthB')]
+	plotTimeseries.process(printTheseAttributes,aggregateLevel,targetEventsImported,rawPanda,attrPanda,attrLabel,tmpFigFolder,cleanFname[:-4],TeamAstring,TeamBstring,debuggingMode)

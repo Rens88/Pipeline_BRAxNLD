@@ -293,8 +293,8 @@ def teamSurface_asPanda(rawDict,attributeDict,attributeLabel,TeamAstring,TeamBst
 
 	##### THE STRINGS #####
 	# Export a string label of each new attribute in the labels dictionary (useful for plotting purposes)
-	tmpSurfaceAString = 'Surface area of %s (m^2)' %TeamAstring
-	tmpSurfaceBString = 'Surface area of %s (m^2)' %TeamBstring
+	tmpSurfaceAString = 'Surface area of %s ($m^2$)' %TeamAstring
+	tmpSurfaceBString = 'Surface area of %s ($m^2$)' %TeamBstring
 	tmpsumVerticesAString = 'Circumference of surface area of %s (m)' %TeamAstring
 	tmpsumVerticesBString = 'Circumference of surface area of %s (m)' %TeamBstring
 	tmpShapeRatioAString = 'Uniformity of surface area of %s (1 = uniform, closer to 0 = elongated)' %TeamAstring
