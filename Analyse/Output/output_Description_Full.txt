@@ -1,0 +1,90 @@
+MatchContinent:			 The continent where the match was played.
+MatchCountry:			 The country where the match was played.
+MatchID:			 The unique identifier of the match.
+HomeTeamContinent:		 The continent of the home team.
+HomeTeamCountry:		 The country of the home team.
+HomeTeamAgeGroup:		 The age group of the home team.
+HomeTeamID:			 The unique identifier of the home team.
+AwayTeamContinent:		 The continent of the away team.
+AwayTeamCountry:		 The country of the away team.
+AwayTeamAgeGroup:		 The age group of the home away.
+AwayTeamID:			 The unique identifier of the away team.
+temporalAggregate:		 Level of temporal aggregation, based on <<Full>> event and counted chronologically
+goalCount:			 Number of goals per Full.
+goalCountA:			 Number of goals by XX0001 per Full.
+goalCountB:			 Number of goals by XX0002 per Full.
+goalsDelta:			 Absolute difference between number of goals scored by XX0001 and XX0002, per Full.
+turnoverCount:			 Number of turnovers per Full.
+turnoverCountA:			 Number of turnovers by XX0001 per Full.
+turnoverCountB:			 Number of turnovers by XX0002 per Full.
+turnoverDelta:			 Absolute difference between number of turnovers by XX0001 and XX0002, per Full.
+possessionCount:		 Number of full possessions per Full. NB: <full> refers to from the start until the end of a possession.
+possessionCountA:		 Number full possession XX0001 had per Full. NB: <full> refers to from the start until the end of a possession.
+possessionCountB:		 Number full possession XX0002 had per Full. NB: <full> refers to from the start until the end of a possession.
+possessionCountDelta:		 Absolute difference between number of full possessions by XX0001 and XX0002, per Full. NB: <full> refers to from the start until the end of a possession.
+possessionCountNone:		 Number of times no team had possession per Full.
+possessionDurationSum:		 Total duration (s) of full possessions by XX0001 and XX0002, per Full. NB: <full> refers to from the start until the end of a possession.
+possessionDurationSumA:		 Total duration (s) of full possessions per Full by XX0001. NB: <full> refers to from the start until the end of a possession.
+possessionDurationSumB:		 Total duration (s) of full possessions per Full by XX0002. NB: <full> refers to from the start until the end of a possession.
+possessionDurationSumNone:	 Total duration (s) of no possession per Full. NB: <full> refers to from the start until the end of a possession.
+possessionDurationAvg:		 Average duration of a full possession per Full by XX0001 and XX0002. NB: <full> refers to from the start until the end of a possession.
+possessionDurationAvgA:		 Average duration of a full possession per Full by XX0001. NB: <full> refers to from the start until the end of a possession.
+possessionDurationAvgB:		 Average duration of a full possession per Full by XX0002. NB: <full> refers to from the start until the end of a possession.
+possessionDurationAvgNone:	 Average duration (s) of no possession per Full.
+possessionDurationStd:		 Standard deviation of the duration of a full possession per Full by XX0001 and XX0002. NB: <full> refers to from the start until the end of a possession.
+possessionDurationStdA:		 Standard deviation of the duration of a full possession per Full by XX0001. NB: <full> refers to from the start until the end of a possession.
+possessionDurationStdB:		 Standard deviation of the duration of a full possession per Full by XX0002. NB: <full> refers to from the start until the end of a possession.
+possessionDurationStdNone:	 Standard deviation of the duration (s) of no possession per Full.
+passCount:			 Number of passes per Full.
+passCountA:			 Number of passes by XX0001 per Full.
+passCountB:			 Number of passes by XX0002 per Full.
+passDelta:			 Absolute difference between number of passes by XX0001 and XX0002.
+maxConsecutivePasses:		 Maximum number of consecutive passes per Full.
+maxConsecutivePassesA:		 Maximum number of consecutive passes (during a possession) by XX0001 per Full.
+maxConsecutivePassesB:		 Maximum number of consecutive passes (during a possession) by XX0002 per Full.
+avgConsecutivePasses:		 Average number of consecutive passes (during a possession) per Full.
+avgConsecutivePassesA:		 Average number of consecutive passes (during a possession) by XX0001 per Full.
+avgConsecutivePassesB:		 Average number of consecutive passes (during a possession) by XX0002 per Full.
+stdConsecutivePasses:		 Standard deviation of number of consecutive passes (during a possession) per Full.
+stdConsecutivePassesA:		 Standard deviation of number of consecutive passes (during a possession) by XX0001 per Full.
+stdConsecutivePassesB:		 Standard deviation of number of consecutive passes (during a possession) by XX0002 per Full.
+avgSpeed:			 Average speed (in m/s) of all players per Full.
+avgSpeedA:			 Average speed (in m/s) of all players from XX0001 per Full.
+avgSpeedB:			 Average speed (in m/s) of all players from XX0002 per Full.
+stdSpeed:			 Standard deviation speed (in m/s) of all players per Full.
+stdSpeedA:			 Standard deviation speed (in m/s) of all players from XX0001 per Full.
+stdSpeedB:			 Standard deviation speed (in m/s) of all players from XX0002 per Full.
+minSpeed:			 Minimum speed (in m/s) of all players per Full.
+minSpeedA:			 Minimum speed (in m/s) of all players from XX0001 per Full.
+minSpeedB:			 Minimum speed (in m/s) of all players from XX0002 per Full.
+maxSpeed:			 Maximum speed (in m/s) of all players per Full.
+maxSpeedA:			 Maximum speed (in m/s) of all players from XX0001 per Full.
+maxSpeedB:			 Maximum speed (in m/s) of all players from XX0002 per Full.
+avgSpreadA:			 The average spread (= averge player distance to team centroid) of XX0001 per Full.
+avgSpreadB:			 The average spread (= averge player distance to team centroid) of XX0002 per Full.
+stdSpreadA:			 The standard deviation of the spread (= averge player distance to team centroid) of XX0001 per Full.
+stdSpreadB:			 The standard deviation of the spread (= averge player distance to team centroid) of XX0002 per Full.
+avg_stdSpreadA:			 The average uniformity around center (= std player distance to team centroid) of XX0001 per Full.
+avg_stdSpreadB:			 The average uniformity around center (= std player distance to team centroid) of XX0002 per Full.
+std_stdSpreadA:			 The standard deviation of the uniformity around center (= std player distance to team centroid) of XX0001 per Full.
+std_stdSpreadB:			 The standard deviation of the uniformity around center (= std player distance to team centroid) of XX0002 per Full.
+avgWidthA:			 The average width (= widest X distance between players) of XX0001 per Full.
+avgWidthB:			 The average width (= widest X distance between players) of XX0002 per Full.
+stdWidthA:			 The standard deviation of the width (= widest X distance between players) of XX0001 per Full.
+stdWidthB:			 The standard deviation of the width (= widest X distance between players) of XX0002 per Full.
+avgLengthA:			 The average length (= widest Y distance between players) of XX0001 per Full.
+avgLengthB:			 The average length (= widest Y distance between players) of XX0002 per Full.
+stdLengthA:			 The standard deviation of the length (= widest Y distance between players) of XX0001 per Full.
+stdLengthB:			 The standard deviation of the length (= widest Y distance between players) of XX0002 per Full.
+avgSurfaceA:			 The average surface area (in m^2) of XX0001 per Full.
+avgSurfaceB:			 The average surface area (in m^2) of XX0002 per Full.
+stdSurfaceA:			 The standard deviation of the surface area (in m^2) of XX0001 per Full.
+stdSurfaceB:			 The standard deviation of the surface area (in m^2) of XX0002 per Full.
+avgsumVerticesA:		 The average circumference (in m) of XX0001 per Full.
+avgsumVerticesB:		 The average circumference (in m) of XX0002 per Full.
+stdsumVerticesA:		 The standard deviation of the circumference (in m) of XX0001 per Full.
+stdsumVerticesB:		 The standard deviation of the circumference (in m) of XX0002 per Full.
+avgShapeRatioA:			 The average shape ratio (longest rib / shortest rib) (values < 1 should not be possible) (the closer to 1, the more uniformly spread out) of XX0001 per Full (NB: this is a measure of spread and should correlate with stdSpreadA).
+avgShapeRatioB:			 The average shape ratio (longest rib / shortest rib) (values < 1 should not be possible) (the closer to 1, the more uniformly spread out) of XX0002 per Full (NB: this is a measure of spread and should correlate with stdSpreadA).
+stdShapeRatioA:			 The standard deviation of the shape ratio (longest rib / shortest rib) (values < 1 should not be possible) (the closer to 1, the more uniformly spread out) of XX0001 per Full (NB: this is a measure of spread and should correlate with stdSpreadA).
+stdShapeRatioB:			 The standard deviation of the shape ratio (longest rib / shortest rib) (values < 1 should not be possible) (the closer to 1, the more uniformly spread out) of XX0002 per Full (NB: this is a measure of spread and should correlate with stdSpreadA).
