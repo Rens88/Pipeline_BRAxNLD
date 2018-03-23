@@ -5,6 +5,22 @@
 ############################################################################################
 ############################################################################################
 
+23-03-2018, Rens Meerhoff
+Another big update! Hopefully it doesn't interfere too much with your current progress. If 
+it does, I created a clone of the previousmaster (master_PRE23032018), just in case.
+The current update has some (basic) plotting functionality and it allows you to skip certain
+parts of the analysis (convenient with large files). I still haven't tested the pipeline on
+a large file (which may cause memory issues due to inefficient coding). This is high on the
+priority list for next week.
+
+NB: You can now compute events (another student module added as well). For demonstration
+purposes I added a 'random events' function (also used for plotting). But here you can 
+create any data-driven events as well (e.g., when the ball reaches the final third, when
+the team is spread over or under a certain threshold, etc.).
+
+############################################################################################
+############################################################################################
+
 09-03-2018, Rens Meerhoff
 Another big update complete. The pipeline now uses pandas as dataframes and has two dedicated sections for students to work in. The update is functional up until spatialAggregation. temporalAggregation will follow soon. If you want to test the pipeline, follow these steps:
 1) Make a local copy of the csv file that you can find in the root folder. Put it in your 'folder'.
