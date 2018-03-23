@@ -1,7 +1,24 @@
 ############################################################################################
 ################################### Pay attention: #########################################
 # Comments below may not be up-to-date. See "Walkthrough - How to use the pipeline.pdf" ####
-################ NB: Code made with Python 3.5.4. ########################################## ############################################################################################
+################ NB: Code made with Python 3.5.4. ##########################################
+############################################################################################
+############################################################################################
+
+23-03-2018, Rens Meerhoff
+Another big update! Hopefully it doesn't interfere too much with your current progress. If 
+it does, I created a clone of the previousmaster (master_PRE23032018), just in case.
+The current update has some (basic) plotting functionality and it allows you to skip certain
+parts of the analysis (convenient with large files). I still haven't tested the pipeline on
+a large file (which may cause memory issues due to inefficient coding). This is high on the
+priority list for next week.
+
+NB: You can now compute events (another student module added as well). For demonstration
+purposes I added a 'random events' function (also used for plotting). But here you can 
+create any data-driven events as well (e.g., when the ball reaches the final third, when
+the team is spread over or under a certain threshold, etc.).
+
+############################################################################################
 ############################################################################################
 
 09-03-2018, Rens Meerhoff

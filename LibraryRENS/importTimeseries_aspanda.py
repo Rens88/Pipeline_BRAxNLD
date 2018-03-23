@@ -28,8 +28,8 @@ if __name__ == '__main__':
 	rawData(filename,folder)
 	existingAttributes(filename,folder,rawHeaders)
 
-def existingAttributes(filename,folder,headers,attrLabel):
-
+def existingAttributes(filename,folder,skipSpatAgg,headers,attrLabel,outputFolder):
+		
 	# Add time to the attribute columns (easy for indexing)
 	if 'Ts' not in headers:
 		colHeaders = ['Ts'] + headers # This makes sure that timeStamp is also imported in attribute cols, necessary for pivoting etc.
@@ -40,6 +40,22 @@ def existingAttributes(filename,folder,headers,attrLabel):
 	with open(folder+filename, 'r') as f:
 		reader = csv.reader(f)
 		tmpHeaders = list(next(reader))
+
+	if skipSpatAgg:			
+		# Import all headers
+		colHeaders = tmpHeaders[1:] # Skip the index column which is empty
+		## EDIT: Instead of exporting the attributes labels, 
+		## it's easier to create the attribute lables, 
+		## EVEN if spatAgg is being skipped.
+		#
+		# if isfile(join(outputFolder, 'attributeLabel.csv')):
+		# 	print('loaded attributeLabel')
+		# 	pdb.set_trace()
+
+		# 	tmp = pd.read_csv(outputFolder + 'attributeLabel.csv')
+		# 	attrLabel = pd.DataFrame.to_dict(tmp)
+		# else:
+		# 	warn('\nWARNING: Could not find <attributeLabel.csv> in <%s>. Consider running a file with skipSpatAgg = False to export the attribute lables to a csv.' %outputFolder)
 
 	for i in colHeaders:
 		if not i in tmpHeaders:
@@ -55,7 +71,7 @@ def existingAttributes(filename,folder,headers,attrLabel):
 	return Loaded_Attr_Data,attrLabel
 
 def rawData(filename,folder):
-
+	
 	ts = 'Ts'
 	x,y = ('X','Y')
 	ID = 'PlayerID'

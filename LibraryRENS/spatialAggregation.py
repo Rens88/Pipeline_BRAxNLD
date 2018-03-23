@@ -11,7 +11,7 @@ import math
 import plotSnapshot
 import safetyWarning
 import pandas as pd
-
+import time
 import student_XX_spatialAggregation
 
 if __name__ == '__main__':
@@ -35,47 +35,71 @@ if __name__ == '__main__':
 	#####################################################################################
 	#####################################################################################
 
-def process(rawDict,attributeDict,attributeLabel,TeamAstring,TeamBstring):
+def process(rawDict,attributeDict,attributeLabel,TeamAstring,TeamBstring,skipSpatAgg,debuggingMode):
+	tSpatAgg = time.time()
 	# Per Match (i.e., file)
 	# Per Team and for both teams
 
 	# Use this is an example for a GROUP level aggregate
 	attributeDict,attributeLabel = \
-	teamCentroid_panda(rawDict,attributeDict,attributeLabel,TeamAstring,TeamBstring)
+	teamCentroid_panda(rawDict,attributeDict,attributeLabel,TeamAstring,TeamBstring,skipSpatAgg)
 
 	# Use this is an example for a PLAYER level aggregate
 	attributeDict,attributeLabel = \
-	distanceToCentroid(rawDict,attributeDict,attributeLabel,TeamAstring,TeamBstring)
+	distanceToCentroid(rawDict,attributeDict,attributeLabel,TeamAstring,TeamBstring,skipSpatAgg)
 
 	attributeDict,attributeLabel = \
-	teamSpread_asPanda(rawDict,attributeDict,attributeLabel,TeamAstring,TeamBstring)
+	teamSpread_asPanda(rawDict,attributeDict,attributeLabel,TeamAstring,TeamBstring,skipSpatAgg)
 
 	attributeDict,attributeLabel = \
-	teamSurface_asPanda(rawDict,attributeDict,attributeLabel,TeamAstring,TeamBstring)
+	teamSurface_asPanda(rawDict,attributeDict,attributeLabel,TeamAstring,TeamBstring,skipSpatAgg)
 
 	# Computing vNorm, technically requires some form of temporalAggregation. 
 	# This is permitted ONLY if the compute variable returns a value for every timeframe.
 	attributeDict,attributeLabel = \
-	vNorm(rawDict,attributeDict,attributeLabel,TeamAstring,TeamBstring)
+	vNorm(rawDict,attributeDict,attributeLabel,TeamAstring,TeamBstring,skipSpatAgg)
 
 	attributeDict,attributeLabel = \
-	student_XX_spatialAggregation.process(rawDict,attributeDict,attributeLabel,TeamAstring,TeamBstring)
+	student_XX_spatialAggregation.process(rawDict,attributeDict,attributeLabel,TeamAstring,TeamBstring,skipSpatAgg)
 	
 	## debugging only
 	# allesBijElkaar = pd.concat([rawDict, attributeDict], axis=1) # debugging only
 	# allesBijElkaar.to_csv('C:\\Users\\rensm\\Documents\\PostdocLeiden\\BRAxNLD repository\\Data\\tmp\\test.csv') # debugging only		
 	# pdb.set_trace()		 
 	
+	if debuggingMode:
+		elapsed = str(round(time.time() - tSpatAgg, 2))
+		print('Time elapsed during spatialAggregation: %ss' %elapsed)
+	
 	return attributeDict, attributeLabel
 
 ############################################################
 ############################################################
 
-def teamCentroid_panda(rawDict,attributeDict,attributeLabel,TeamAstring,TeamBstring):
+def teamCentroid_panda(rawDict,attributeDict,attributeLabel,TeamAstring,TeamBstring,skipSpatAgg):
 	###############
 	# Use this as an example to compute a GROUP level variable. Pay attention to the indexing. Let me know if you have an easier way.
 	###############
 	
+	##### THE STRINGS #####
+	# Export a string label of each new attribute in the labels dictionary (useful for plotting purposes)
+	tmpXAString = 'X-position of %s (m)' %TeamAstring
+	tmpYAString = 'Y-position of %s (m)' %TeamAstring
+	tmpLengthAString = 'Distance along Y-axis %s (m)' %TeamAstring
+	tmpWidthAString = 'Distance along X-axis %s (m)' %TeamAstring
+	
+	tmpXBString = 'X-position of %s (m)' %TeamBstring
+	tmpYBString = 'Y-position of %s (m)' %TeamBstring			
+	tmpLengthBString = 'Distance along Y-axis %s (m)' %TeamBstring
+	tmpWidthBString = 'Distance along X-axis %s (m)' %TeamBstring
+	
+	attributeLabel_tmp = {'TeamCentXA': tmpXAString, 'TeamCentYA': tmpYAString, 'LengthA': tmpLengthAString,'WidthA': tmpWidthAString,\
+	'TeamCentXB': tmpXBString,'TeamCentYB': tmpYBString,'LengthB': tmpLengthBString,'WidthB': tmpWidthBString}
+	attributeLabel.update(attributeLabel_tmp)	
+
+	if skipSpatAgg: # Return eary if spatial aggregation is being skipped
+		return attributeDict,attributeLabel
+
 	##### THE DATA #####
 	# Prepare the indices of the groupRows. This will be used to store the computed values in the index corresponding to attributeDict.
 	ind_groupRows = attributeDict[rawDict['PlayerID'] == 'groupRow'].index
@@ -159,29 +183,21 @@ def teamCentroid_panda(rawDict,attributeDict,attributeLabel,TeamAstring,TeamBstr
 	# Combine the pre-existing attributes with the new attributes:
 	attributeDict = pd.concat([attributeDict, newAttributesA, newAttributesB], axis=1)
 	
-	##### THE STRINGS #####
-	# Export a string label of each new attribute in the labels dictionary (useful for plotting purposes)
-	tmpXAString = 'X-position of %s (m)' %TeamAstring
-	tmpYAString = 'Y-position of %s (m)' %TeamAstring
-	tmpLengthAString = 'Distance along Y-axis %s (m)' %TeamAstring
-	tmpWidthAString = 'Distance along X-axis %s (m)' %TeamAstring
-	
-	tmpXBString = 'X-position of %s (m)' %TeamBstring
-	tmpYBString = 'Y-position of %s (m)' %TeamBstring			
-	tmpLengthBString = 'Distance along Y-axis %s (m)' %TeamBstring
-	tmpWidthBString = 'Distance along X-axis %s (m)' %TeamBstring
-	
-	attributeLabel_tmp = {'TeamCentXA': tmpXAString, 'TeamCentYA': tmpYAString, 'LengthA': tmpLengthAString,'WidthA': tmpWidthAString,\
-	'TeamCentXB': tmpXBString,'TeamCentYB': tmpYBString,'LengthB': tmpLengthBString,'WidthB': tmpWidthBString}
-	attributeLabel.update(attributeLabel_tmp)
-
 	return attributeDict,attributeLabel
 
-def distanceToCentroid(rawDict,attributeDict,attributeLabel,TeamAstring,TeamBstring):
+def distanceToCentroid(rawDict,attributeDict,attributeLabel,TeamAstring,TeamBstring,skipSpatAgg):
 	###############
 	# Use this as an example to compute a PLAYER level variable. Pay attention to the indexing. Let me know if you have an easier way.
 	###############
-	
+
+	##### THE STRINGS #####
+	# Export a string label of each new attribute in the labels dictionary (useful for plotting purposes)
+	tmpDistToCentString = 'Player\'s distance to its team\'s centroid (m)'
+	attributeLabel.update({'distToCent':tmpDistToCentString})
+		
+	if skipSpatAgg: # Return eary if spatial aggregation is being skipped
+		return attributeDict,attributeLabel
+
 	##### THE DATA #####
 	# In this case, the new attribute will be computed based on a group (i.e., team) value
 	TeamVals = attributeDict[rawDict['PlayerID'] == 'groupRow'].set_index('Ts')
@@ -212,17 +228,24 @@ def distanceToCentroid(rawDict,attributeDict,attributeLabel,TeamAstring,TeamBstr
 	# Combine the pre-existing attributes with the new attributes:
 	attributeDict = pd.concat([attributeDict, newAttributes], axis=1)
 
-	##### THE STRINGS #####
-	# Export a string label of each new attribute in the labels dictionary (useful for plotting purposes)
-	tmpDistToCentString = 'Player\'s distance to its team\'s centroid (m)'
-	attributeLabel.update({'distToCent':tmpDistToCentString})
-	
 	return attributeDict,attributeLabel
 
-def teamSpread_asPanda(rawDict,attributeDict,attributeLabel,TeamAstring,TeamBstring):
+def teamSpread_asPanda(rawDict,attributeDict,attributeLabel,TeamAstring,TeamBstring,skipSpatAgg):
 	###############
 	# another GROUP level variable
 	###############
+
+	##### THE STRINGS #####
+	# Export a string label of each new attribute in the labels dictionary (useful for plotting purposes)
+	tmpSpreadAString = 'Average distance to center of %s (m)' %TeamAstring
+	tmpStdSpreadAString = 'Standard deviation of distance to center of %s (m)' %TeamAstring
+	tmpSpreadBString = 'Average distance to center of %s (m)' %TeamBstring
+	tmpStdSpreadBString = 'Standard deviation of distance to center of %s (m)' %TeamBstring	
+	tmpAtLa2 = {'SpreadA': tmpSpreadAString, 'SpreadB': tmpSpreadBString, 'stdSpreadA': tmpStdSpreadAString,'stdSpreadB': tmpStdSpreadBString}
+	attributeLabel.update(tmpAtLa2)
+
+	if skipSpatAgg: # Return eary if spatial aggregation is being skipped
+		return attributeDict,attributeLabel
 
 	##### THE DATA #####
 	# Prepare the indices of the groupRows. This will be used to store the computed values in the index corresponding to attributeDict.
@@ -261,21 +284,30 @@ def teamSpread_asPanda(rawDict,attributeDict,attributeLabel,TeamAstring,TeamBstr
 	# Combine the pre-existing attributes with the new attributes:
 	attributeDict = pd.concat([attributeDict, newAttributesA, newAttributesB], axis=1)
 
-	##### THE STRINGS #####
-	# Export a string label of each new attribute in the labels dictionary (useful for plotting purposes)
-	tmpSpreadAString = 'Average distance to center of %s (m)' %TeamAstring
-	tmpStdSpreadAString = 'Standard deviation of distance to center of %s (m)' %TeamAstring
-	tmpSpreadBString = 'Average distance to center of %s (m)' %TeamBstring
-	tmpStdSpreadBString = 'Standard deviation of distance to center of %s (m)' %TeamBstring	
-	tmpAtLa2 = {'SpreadA': tmpSpreadAString, 'SpreadB': tmpSpreadBString, 'stdSpreadA': tmpStdSpreadAString,'stdSpreadB': tmpStdSpreadBString}
-	attributeLabel.update(tmpAtLa2)
-
 	return attributeDict,attributeLabel
 
-def teamSurface_asPanda(rawDict,attributeDict,attributeLabel,TeamAstring,TeamBstring):
+def teamSurface_asPanda(rawDict,attributeDict,attributeLabel,TeamAstring,TeamBstring,skipSpatAgg):
 	###############
 	# another GROUP level variable
 	###############
+
+	##### THE STRINGS #####
+	# Export a string label of each new attribute in the labels dictionary (useful for plotting purposes)
+	tmpSurfaceAString = 'Surface area of %s ($m^2$)' %TeamAstring
+	tmpSurfaceBString = 'Surface area of %s ($m^2$)' %TeamBstring
+	tmpsumVerticesAString = 'Circumference of surface area of %s (m)' %TeamAstring
+	tmpsumVerticesBString = 'Circumference of surface area of %s (m)' %TeamBstring
+	tmpShapeRatioAString = 'Uniformity of surface area of %s (1 = uniform, closer to 0 = elongated)' %TeamAstring
+	tmpShapeRatioBString = 'Uniformity of surface area of %s (1 = uniform, closer to 0 = elongated)' %TeamBstring
+
+	tmpAtLa3 = {'SurfaceA': tmpSurfaceAString, 'SurfaceB': tmpSurfaceBString, \
+	'sumVerticesA': tmpsumVerticesAString,'sumVerticesB': tmpsumVerticesBString, \
+	'ShapeRatioA': tmpShapeRatioAString,'ShapeRatioB': tmpShapeRatioBString}	
+
+	attributeLabel.update(tmpAtLa3)
+
+	if skipSpatAgg: # Return eary if spatial aggregation is being skipped
+		return attributeDict,attributeLabel
 
 	##### THE DATA #####
 	# Prepare the indices of the groupRows. This will be used to store the computed values in the index corresponding to attributeDict.
@@ -366,26 +398,19 @@ def teamSurface_asPanda(rawDict,attributeDict,attributeLabel,TeamAstring,TeamBst
 		dfSurfaceA, dfSumVerticesA, dfShapeRatioA, \
 		dfSurfaceB, dfSumVerticesB, dfShapeRatioB,], axis=1)
 
-	##### THE STRINGS #####
-	# Export a string label of each new attribute in the labels dictionary (useful for plotting purposes)
-	tmpSurfaceAString = 'Surface area of %s (m^2)' %TeamAstring
-	tmpSurfaceBString = 'Surface area of %s (m^2)' %TeamBstring
-	tmpsumVerticesAString = 'Circumference of surface area of %s (m)' %TeamAstring
-	tmpsumVerticesBString = 'Circumference of surface area of %s (m)' %TeamBstring
-	tmpShapeRatioAString = 'Uniformity of surface area of %s (1 = uniform, closer to 0 = elongated)' %TeamAstring
-	tmpShapeRatioBString = 'Uniformity of surface area of %s (1 = uniform, closer to 0 = elongated)' %TeamBstring
-
-	tmpAtLa3 = {'SurfaceA': tmpSurfaceAString, 'SurfaceB': tmpSurfaceBString, \
-	'sumVerticesA': tmpsumVerticesAString,'sumVerticesB': tmpsumVerticesBString, \
-	'ShapeRatioA': tmpShapeRatioAString,'ShapeRatioB': tmpShapeRatioBString}	
-
-	attributeLabel.update(tmpAtLa3)
-
 	return attributeDict,attributeLabel
 
 #####################################################################################
 
-def vNorm(rawDict,attributeDict,attributeLabel,TeamAstring,TeamBstring):
+def vNorm(rawDict,attributeDict,attributeLabel,TeamAstring,TeamBstring,skipSpatAgg):
+
+	##### THE STRINGS #####
+	# Export a string label of each new attribute in the labels dictionary (useful for plotting purposes)
+	attributeLabel_tmp = {'vNorm':'Speed (m/s)','distFrame':'Distance covered per frame (m)'}
+	attributeLabel.update(attributeLabel_tmp)
+
+	if skipSpatAgg: # Return eary if spatial aggregation is being skipped
+		return attributeDict,attributeLabel
 
 	##### THE DATA #####
 	# In this case, the new attribute will be computed based on a group (i.e., team) value
@@ -447,177 +472,172 @@ def vNorm(rawDict,attributeDict,attributeLabel,TeamAstring,TeamBstring):
 	# Combine the pre-existing attributes with the new attributes:
 	attributeDict = pd.concat([attributeDict, newAttributes], axis=1)
 
-	##### THE STRINGS #####
-	# Export a string label of each new attribute in the labels dictionary (useful for plotting purposes)
-	attributeLabel_tmp = {'vNorm':'Speed (m/s)','distFrame':'Distance covered per frame (m)'}
-	attributeLabel.update(attributeLabel_tmp)
-
 	return attributeDict,attributeLabel
 
 #####################################################################################
 #####################################################################################
 
-def teamCentroid(indsMatrix,XpositionMatrix,YpositionMatrix,teamAcols,teamBcols,TeamAstring,TeamBstring):
+# def teamCentroid(indsMatrix,XpositionMatrix,YpositionMatrix,teamAcols,teamBcols,TeamAstring,TeamBstring):
 
-	print(np.shape(indsMatrix))
-	print(np.shape(XpositionMatrix))
-	print(np.shape(YpositionMatrix))
-	# Compute the centroids
-	CentXA = np.nanmean(XpositionMatrix[:,teamAcols],axis=1)
-	CentXB = np.nanmean(XpositionMatrix[:,teamBcols],axis=1)
-	CentYA = np.nanmean(YpositionMatrix[:,teamAcols],axis=1)
-	CentYB = np.nanmean(YpositionMatrix[:,teamBcols],axis=1)
+# 	print(np.shape(indsMatrix))
+# 	print(np.shape(XpositionMatrix))
+# 	print(np.shape(YpositionMatrix))
+# 	# Compute the centroids
+# 	CentXA = np.nanmean(XpositionMatrix[:,teamAcols],axis=1)
+# 	CentXB = np.nanmean(XpositionMatrix[:,teamBcols],axis=1)
+# 	CentYA = np.nanmean(YpositionMatrix[:,teamAcols],axis=1)
+# 	CentYB = np.nanmean(YpositionMatrix[:,teamBcols],axis=1)
 
-	# Return in format attributeDict
-	dataShape = np.shape(XpositionMatrix) # Number of data entries
+# 	# Return in format attributeDict
+# 	dataShape = np.shape(XpositionMatrix) # Number of data entries
 
-	tmpXA = np.zeros((dataShape[1]*dataShape[0],1),dtype='float64')* np.nan
-	tmpYA = np.zeros((dataShape[1]*dataShape[0],1),dtype='float64')* np.nan
-	tmpXB = np.zeros((dataShape[1]*dataShape[0],1),dtype='float64')* np.nan
-	tmpYB = np.zeros((dataShape[1]*dataShape[0],1),dtype='float64')* np.nan
+# 	tmpXA = np.zeros((dataShape[1]*dataShape[0],1),dtype='float64')* np.nan
+# 	tmpYA = np.zeros((dataShape[1]*dataShape[0],1),dtype='float64')* np.nan
+# 	tmpXB = np.zeros((dataShape[1]*dataShape[0],1),dtype='float64')* np.nan
+# 	tmpYB = np.zeros((dataShape[1]*dataShape[0],1),dtype='float64')* np.nan
 
-	for idx,val in enumerate(indsMatrix): # indsMatrix are the team cells only
-		tmpXA[int(val)] = CentXA[idx]
-		tmpYA[int(val)] = CentXB[idx]
-		tmpXB[int(val)] = CentXA[idx]
-		tmpYB[int(val)] = CentYA[idx]
+# 	for idx,val in enumerate(indsMatrix): # indsMatrix are the team cells only
+# 		tmpXA[int(val)] = CentXA[idx]
+# 		tmpYA[int(val)] = CentXB[idx]
+# 		tmpXB[int(val)] = CentXA[idx]
+# 		tmpYB[int(val)] = CentYA[idx]
 	
-	print(tmpXA)
-	pdb.set_trace()
-	# the Data
-	attributeDict_tmp = {'TeamCentXA': tmpXA, 'TeamCentYA': tmpYA, 'TeamCentXB': tmpXB,'TeamCentYB': tmpYB}
+# 	print(tmpXA)
+# 	pdb.set_trace()
+# 	# the Data
+# 	attributeDict_tmp = {'TeamCentXA': tmpXA, 'TeamCentYA': tmpYA, 'TeamCentXB': tmpXB,'TeamCentYB': tmpYB}
 
-	# the Strings	
-	tmpXAString = 'X-position of %s (m)' %TeamAstring
-	tmpYAString = 'Y-position of %s (m)' %TeamAstring
-	tmpXBString = 'X-position of %s (m)' %TeamBstring
-	tmpYBString = 'Y-position of %s (m)' %TeamBstring			
-	attributeLabel_tmp = {'TeamCentXA': tmpXAString, 'TeamCentYA': tmpYAString, 'TeamCentXB': tmpXBString,'TeamCentYB': tmpYBString}
-	# return attributeDict_tmp,attributeLabel_tmp 
-	return attributeDict_tmp,attributeLabel_tmp,tmpXA,tmpYA,tmpXB,tmpYB
+# 	# the Strings	
+# 	tmpXAString = 'X-position of %s (m)' %TeamAstring
+# 	tmpYAString = 'Y-position of %s (m)' %TeamAstring
+# 	tmpXBString = 'X-position of %s (m)' %TeamBstring
+# 	tmpYBString = 'Y-position of %s (m)' %TeamBstring			
+# 	attributeLabel_tmp = {'TeamCentXA': tmpXAString, 'TeamCentYA': tmpYAString, 'TeamCentXB': tmpXBString,'TeamCentYB': tmpYBString}
+# 	# return attributeDict_tmp,attributeLabel_tmp 
+# 	return attributeDict_tmp,attributeLabel_tmp,tmpXA,tmpYA,tmpXB,tmpYB
 
-#####################################################################################
+# #####################################################################################
 
-def teamSpread(CentXA,CentYA,CentXB,CentYB,uniqueTsS,uniquePlayers,teamMatrix,XpositionMatrix,YpositionMatrix,teamAcols,teamBcols,indsMatrix,TeamAstring,TeamBstring):
-	# Spread
-	# (average) Distance of each player to center.
-	# Dist to centre:
-	distToTeamCent = np.ones((len(uniqueTsS),len(uniquePlayers)),dtype='float64')*-1	
-	for idx,val in enumerate(teamMatrix):
-		for i,v in enumerate(val):
-			if v == 0:
-				distToTeamCent[idx,i] = np.sqrt( (CentXA[idx] - XpositionMatrix[idx,i])**2 + (CentYA[idx] - YpositionMatrix[idx,i])**2)			
-			elif v == 1:
-				distToTeamCent[idx,i] = np.sqrt( (CentXB[idx] - XpositionMatrix[idx,i])**2 + (CentYB[idx] - YpositionMatrix[idx,i])**2)
+# def teamSpread(CentXA,CentYA,CentXB,CentYB,uniqueTsS,uniquePlayers,teamMatrix,XpositionMatrix,YpositionMatrix,teamAcols,teamBcols,indsMatrix,TeamAstring,TeamBstring):
+# 	# Spread
+# 	# (average) Distance of each player to center.
+# 	# Dist to centre:
+# 	distToTeamCent = np.ones((len(uniqueTsS),len(uniquePlayers)),dtype='float64')*-1	
+# 	for idx,val in enumerate(teamMatrix):
+# 		for i,v in enumerate(val):
+# 			if v == 0:
+# 				distToTeamCent[idx,i] = np.sqrt( (CentXA[idx] - XpositionMatrix[idx,i])**2 + (CentYA[idx] - YpositionMatrix[idx,i])**2)			
+# 			elif v == 1:
+# 				distToTeamCent[idx,i] = np.sqrt( (CentXB[idx] - XpositionMatrix[idx,i])**2 + (CentYB[idx] - YpositionMatrix[idx,i])**2)
 
-	# Aggregate to team level
-	SpreadA = np.nanmean(distToTeamCent[:,teamAcols],axis=1)
-	SpreadB = np.nanmean(distToTeamCent[:,teamBcols],axis=1)
+# 	# Aggregate to team level
+# 	SpreadA = np.nanmean(distToTeamCent[:,teamAcols],axis=1)
+# 	SpreadB = np.nanmean(distToTeamCent[:,teamBcols],axis=1)
 
-	stdSpreadA = np.nanstd(distToTeamCent[:,teamAcols],axis=1)
-	stdSpreadB = np.nanstd(distToTeamCent[:,teamBcols],axis=1)
+# 	stdSpreadA = np.nanstd(distToTeamCent[:,teamAcols],axis=1)
+# 	stdSpreadB = np.nanstd(distToTeamCent[:,teamBcols],axis=1)
 
-	# Other ideas:
-	# (min or avg or max)Distance to closest teammate
+# 	# Other ideas:
+# 	# (min or avg or max)Distance to closest teammate
 
-	# Return in format attributeDict
-	dataShape = np.shape(XpositionMatrix) # Number of data entries
+# 	# Return in format attributeDict
+# 	dataShape = np.shape(XpositionMatrix) # Number of data entries
 
-	tmpSpreadA = np.zeros((dataShape[1]*dataShape[0],1),dtype='float64')* np.nan
-	tmpSpreadB = np.zeros((dataShape[1]*dataShape[0],1),dtype='float64')* np.nan
-	tmpStdSpreadA = np.zeros((dataShape[1]*dataShape[0],1),dtype='float64')* np.nan
-	tmpStdSpreadB = np.zeros((dataShape[1]*dataShape[0],1),dtype='float64')* np.nan
-	print(SpreadA)
-	pdb.set_trace()
+# 	tmpSpreadA = np.zeros((dataShape[1]*dataShape[0],1),dtype='float64')* np.nan
+# 	tmpSpreadB = np.zeros((dataShape[1]*dataShape[0],1),dtype='float64')* np.nan
+# 	tmpStdSpreadA = np.zeros((dataShape[1]*dataShape[0],1),dtype='float64')* np.nan
+# 	tmpStdSpreadB = np.zeros((dataShape[1]*dataShape[0],1),dtype='float64')* np.nan
+# 	print(SpreadA)
+# 	pdb.set_trace()
 
-	for idx,val in enumerate(indsMatrix): # indsMatrix are the team cells only
-		tmpSpreadA[int(val)] = SpreadA[idx]
-		tmpSpreadB[int(val)] = SpreadB[idx]
+# 	for idx,val in enumerate(indsMatrix): # indsMatrix are the team cells only
+# 		tmpSpreadA[int(val)] = SpreadA[idx]
+# 		tmpSpreadB[int(val)] = SpreadB[idx]
 
-		tmpStdSpreadA[int(val)] = stdSpreadA[idx]
-		tmpStdSpreadB[int(val)] = stdSpreadB[idx]
+# 		tmpStdSpreadA[int(val)] = stdSpreadA[idx]
+# 		tmpStdSpreadB[int(val)] = stdSpreadB[idx]
 
-	# The data
-	tmpAtDi2 = {'SpreadA': tmpSpreadA, 'SpreadB': tmpSpreadB, 'stdSpreadA': tmpStdSpreadA,'stdSpreadB': tmpStdSpreadB}
-	# The labels
-	tmpSpreadAString = 'Average distance to center of %s (m)' %TeamAstring
-	tmpStdSpreadAString = 'Standard deviation of distance to center of %s (m)' %TeamAstring
-	tmpSpreadBString = 'Average distance to center of %s (m)' %TeamBstring
-	tmpStdSpreadBString = 'Standard deviation of distance to center of %s (m)' %TeamBstring	
-	tmpAtLa2 = {'SpreadA': tmpSpreadAString, 'SpreadB': tmpSpreadBString, 'stdSpreadA': tmpStdSpreadAString,'stdSpreadB': tmpStdSpreadBString}
-	return tmpAtDi2,tmpAtLa2
+# 	# The data
+# 	tmpAtDi2 = {'SpreadA': tmpSpreadA, 'SpreadB': tmpSpreadB, 'stdSpreadA': tmpStdSpreadA,'stdSpreadB': tmpStdSpreadB}
+# 	# The labels
+# 	tmpSpreadAString = 'Average distance to center of %s (m)' %TeamAstring
+# 	tmpStdSpreadAString = 'Standard deviation of distance to center of %s (m)' %TeamAstring
+# 	tmpSpreadBString = 'Average distance to center of %s (m)' %TeamBstring
+# 	tmpStdSpreadBString = 'Standard deviation of distance to center of %s (m)' %TeamBstring	
+# 	tmpAtLa2 = {'SpreadA': tmpSpreadAString, 'SpreadB': tmpSpreadBString, 'stdSpreadA': tmpStdSpreadAString,'stdSpreadB': tmpStdSpreadBString}
+# 	return tmpAtDi2,tmpAtLa2
 
-#####################################################################################
+# #####################################################################################
 
-def teamSurface(indsMatrix,XpositionMatrix,YpositionMatrix,teamAcols,teamBcols,TeamAstring,TeamBstring):
+# def teamSurface(indsMatrix,XpositionMatrix,YpositionMatrix,teamAcols,teamBcols,TeamAstring,TeamBstring):
 
-	# Return in format attributeDict
-	dataShape = np.shape(XpositionMatrix) # Number of data entries
+# 	# Return in format attributeDict
+# 	dataShape = np.shape(XpositionMatrix) # Number of data entries
 
-	tmpSurfaceA = np.zeros((dataShape[1]*dataShape[0],1),dtype='float64')* np.nan
-	tmpsumVerticesA = np.zeros((dataShape[1]*dataShape[0],1),dtype='float64')* np.nan
-	tmpShapeRatioA = np.zeros((dataShape[1]*dataShape[0],1),dtype='float64')* np.nan
-	tmpWidthA = np.zeros((dataShape[1]*dataShape[0],1),dtype='float64')* np.nan
-	tmpLengthA = np.zeros((dataShape[1]*dataShape[0],1),dtype='float64')* np.nan
+# 	tmpSurfaceA = np.zeros((dataShape[1]*dataShape[0],1),dtype='float64')* np.nan
+# 	tmpsumVerticesA = np.zeros((dataShape[1]*dataShape[0],1),dtype='float64')* np.nan
+# 	tmpShapeRatioA = np.zeros((dataShape[1]*dataShape[0],1),dtype='float64')* np.nan
+# 	tmpWidthA = np.zeros((dataShape[1]*dataShape[0],1),dtype='float64')* np.nan
+# 	tmpLengthA = np.zeros((dataShape[1]*dataShape[0],1),dtype='float64')* np.nan
 
-	tmpSurfaceB = np.zeros((dataShape[1]*dataShape[0],1),dtype='float64')* np.nan
-	tmpsumVerticesB = np.zeros((dataShape[1]*dataShape[0],1),dtype='float64')* np.nan
-	tmpShapeRatioB = np.zeros((dataShape[1]*dataShape[0],1),dtype='float64')* np.nan
-	tmpWidthB = np.zeros((dataShape[1]*dataShape[0],1),dtype='float64')* np.nan
-	tmpLengthB = np.zeros((dataShape[1]*dataShape[0],1),dtype='float64')* np.nan
+# 	tmpSurfaceB = np.zeros((dataShape[1]*dataShape[0],1),dtype='float64')* np.nan
+# 	tmpsumVerticesB = np.zeros((dataShape[1]*dataShape[0],1),dtype='float64')* np.nan
+# 	tmpShapeRatioB = np.zeros((dataShape[1]*dataShape[0],1),dtype='float64')* np.nan
+# 	tmpWidthB = np.zeros((dataShape[1]*dataShape[0],1),dtype='float64')* np.nan
+# 	tmpLengthB = np.zeros((dataShape[1]*dataShape[0],1),dtype='float64')* np.nan
 
-	for idx,val in enumerate(indsMatrix):
-		SurfaceA,sumVerticesA,ShapeRatioA = groupSurface(XpositionMatrix[idx,teamAcols],YpositionMatrix[idx,teamAcols])
-		SurfaceB,sumVerticesB,ShapeRatioB = groupSurface(XpositionMatrix[idx,teamBcols],YpositionMatrix[idx,teamBcols])		
+# 	for idx,val in enumerate(indsMatrix):
+# 		SurfaceA,sumVerticesA,ShapeRatioA = groupSurface(XpositionMatrix[idx,teamAcols],YpositionMatrix[idx,teamAcols])
+# 		SurfaceB,sumVerticesB,ShapeRatioB = groupSurface(XpositionMatrix[idx,teamBcols],YpositionMatrix[idx,teamBcols])		
 
-		# Width ************** ASSUMPTION --> field width = X-axis, field length = Y-axis
-		WidthA = max(XpositionMatrix[idx,teamAcols])-min(XpositionMatrix[idx,teamAcols])
-		WidthB = max(XpositionMatrix[idx,teamBcols])-min(XpositionMatrix[idx,teamBcols])
-		# Length
-		LengthA = max(YpositionMatrix[idx,teamAcols])-min(YpositionMatrix[idx,teamAcols])
-		LengthB = max(YpositionMatrix[idx,teamBcols])-min(YpositionMatrix[idx,teamBcols])
-		warn('\nUnverified assumption: field width = X-axis, field length = Y-axis\n')
+# 		# Width ************** ASSUMPTION --> field width = X-axis, field length = Y-axis
+# 		WidthA = max(XpositionMatrix[idx,teamAcols])-min(XpositionMatrix[idx,teamAcols])
+# 		WidthB = max(XpositionMatrix[idx,teamBcols])-min(XpositionMatrix[idx,teamBcols])
+# 		# Length
+# 		LengthA = max(YpositionMatrix[idx,teamAcols])-min(YpositionMatrix[idx,teamAcols])
+# 		LengthB = max(YpositionMatrix[idx,teamBcols])-min(YpositionMatrix[idx,teamBcols])
+# 		warn('\nUnverified assumption: field width = X-axis, field length = Y-axis\n')
 
-		# Store immediately
-		tmpSurfaceA[int(val)] = SurfaceA
-		tmpsumVerticesA[int(val)] = sumVerticesA
-		tmpShapeRatioA[int(val)] = ShapeRatioA
-		tmpWidthA[int(val)] = WidthA
-		tmpLengthA[int(val)] = LengthA
+# 		# Store immediately
+# 		tmpSurfaceA[int(val)] = SurfaceA
+# 		tmpsumVerticesA[int(val)] = sumVerticesA
+# 		tmpShapeRatioA[int(val)] = ShapeRatioA
+# 		tmpWidthA[int(val)] = WidthA
+# 		tmpLengthA[int(val)] = LengthA
 
-		tmpSurfaceB[int(val)] = SurfaceB
-		tmpsumVerticesB[int(val)] = sumVerticesB
-		tmpShapeRatioB[int(val)] = ShapeRatioB
-		tmpWidthB[int(val)] = WidthB
-		tmpLengthB[int(val)] = LengthB
+# 		tmpSurfaceB[int(val)] = SurfaceB
+# 		tmpsumVerticesB[int(val)] = sumVerticesB
+# 		tmpShapeRatioB[int(val)] = ShapeRatioB
+# 		tmpWidthB[int(val)] = WidthB
+# 		tmpLengthB[int(val)] = LengthB
 
-	# Export these new values to temporary dictionary
-	tmpAtDi3 = {'SurfaceA': tmpSurfaceA, 'SurfaceB': tmpSurfaceB, \
-	'sumVerticesA': tmpsumVerticesA,'sumVerticesB': tmpsumVerticesB, \
-	'ShapeRatioA': tmpShapeRatioA,'ShapeRatioB': tmpShapeRatioB, \
-	'WidthA': tmpWidthA,'WidthB': tmpWidthB, \
-	'LengthA': tmpLengthA,'LengthB': tmpLengthB }
+# 	# Export these new values to temporary dictionary
+# 	tmpAtDi3 = {'SurfaceA': tmpSurfaceA, 'SurfaceB': tmpSurfaceB, \
+# 	'sumVerticesA': tmpsumVerticesA,'sumVerticesB': tmpsumVerticesB, \
+# 	'ShapeRatioA': tmpShapeRatioA,'ShapeRatioB': tmpShapeRatioB, \
+# 	'WidthA': tmpWidthA,'WidthB': tmpWidthB, \
+# 	'LengthA': tmpLengthA,'LengthB': tmpLengthB }
 
-	tmpSurfaceAString = 'Surface area of %s (m^2)' %TeamAstring
-	tmpSurfaceBString = 'Surface area of %s (m^2)' %TeamBstring
-	tmpsumVerticesAString = 'Circumference of surface area of %s (m)' %TeamAstring
-	tmpsumVerticesBString = 'Circumference of surface area of %s (m)' %TeamBstring
-	tmpShapeRatioAString = 'Uniformity of surface area of %s (1 = uniform, closer to 0 = elongated)' %TeamAstring
-	tmpShapeRatioBString = 'Uniformity of surface area of %s (1 = uniform, closer to 0 = elongated)' %TeamBstring
-	tmpWidthAString = 'Distance along X-axis %s (m)' %TeamAstring
-	tmpWidthBString = 'Distance along X-axis %s (m)' %TeamBstring
-	tmpLengthAString = 'Distance along Y-axis %s (m)' %TeamAstring
-	tmpLengthBString = 'Distance along Y-axis %s (m)' %TeamBstring
+# 	tmpSurfaceAString = 'Surface area of %s (m^2)' %TeamAstring
+# 	tmpSurfaceBString = 'Surface area of %s (m^2)' %TeamBstring
+# 	tmpsumVerticesAString = 'Circumference of surface area of %s (m)' %TeamAstring
+# 	tmpsumVerticesBString = 'Circumference of surface area of %s (m)' %TeamBstring
+# 	tmpShapeRatioAString = 'Uniformity of surface area of %s (1 = uniform, closer to 0 = elongated)' %TeamAstring
+# 	tmpShapeRatioBString = 'Uniformity of surface area of %s (1 = uniform, closer to 0 = elongated)' %TeamBstring
+# 	tmpWidthAString = 'Distance along X-axis %s (m)' %TeamAstring
+# 	tmpWidthBString = 'Distance along X-axis %s (m)' %TeamBstring
+# 	tmpLengthAString = 'Distance along Y-axis %s (m)' %TeamAstring
+# 	tmpLengthBString = 'Distance along Y-axis %s (m)' %TeamBstring
 
-	# Export labels
-	tmpAtLa3 = {'SurfaceA': tmpSurfaceAString, 'SurfaceB': tmpSurfaceBString, \
-	'sumVerticesA': tmpsumVerticesAString,'sumVerticesB': tmpsumVerticesBString, \
-	'ShapeRatioA': tmpShapeRatioAString,'ShapeRatioB': tmpShapeRatioBString, \
-	'WidthA': tmpWidthAString,'WidthB': tmpWidthBString, \
-	'LengthA': tmpLengthAString,'LengthB': tmpLengthBString }	
-	return tmpAtDi3,tmpAtLa3
+# 	# Export labels
+# 	tmpAtLa3 = {'SurfaceA': tmpSurfaceAString, 'SurfaceB': tmpSurfaceBString, \
+# 	'sumVerticesA': tmpsumVerticesAString,'sumVerticesB': tmpsumVerticesBString, \
+# 	'ShapeRatioA': tmpShapeRatioAString,'ShapeRatioB': tmpShapeRatioBString, \
+# 	'WidthA': tmpWidthAString,'WidthB': tmpWidthBString, \
+# 	'LengthA': tmpLengthAString,'LengthB': tmpLengthBString }	
+# 	return tmpAtDi3,tmpAtLa3
 
-#####################################################################################
+# #####################################################################################
 
 def groupSurface(X,Y):
 	if len(X) < 3:

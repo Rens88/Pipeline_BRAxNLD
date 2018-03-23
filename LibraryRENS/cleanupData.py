@@ -48,25 +48,46 @@ if __name__ == '__main__':
 	NP(dataFiles,cleanFname,folder,cleanedFolder,TeamAstring,TeamBstring)
 
 #########################################################################
-def process(dirtyFname,cleanFname,dataType,dataFolder,cleanedFolder,TeamAstring,TeamBstring,headers,readAttributeCols,timestampString,readEventColumns,conversionToMeter):
+def process(dirtyFname,cleanFname,dataType,dataFolder,cleanedFolder,spatAggFname,spatAggFolder,TeamAstring,TeamBstring,headers,readAttributeCols,timestampString,readEventColumns,conversionToMeter,skipCleanup,skipSpatAgg,debuggingMode):
+	tCleanup = time.time()	# do stuff
 
 	debugOmittedRows = False # Optional export of data that was omitted in the cleaning process
 	fatalTimeStampIssue = False
+	fatalTeamIDissue = False
+	fatalIssue = False
+
 	# Clean up data, if necessary
 	cleanFnames = [f for f in listdir(cleanedFolder) if isfile(join(cleanedFolder, f)) if '.csv' in f]
+	spatAggFnames = [f for f in listdir(spatAggFolder) if isfile(join(spatAggFolder, f)) if '.csv' in f]
+	if spatAggFname in spatAggFnames and skipSpatAgg == True:
+		warn('\nContinued with previously cleaned and spatially aggregated data.\nIf you want to add new spatial aggregates, change <skipSpatAgg> into <False>.\n')
+		# Spat agg files don't exist if there was a fatal error, so:
+		fatalIssue = False
+		loadFolder = spatAggFolder
+		loadFname = spatAggFname
+		if debuggingMode:
+			elapsed = str(round(time.time() - tCleanup, 2))
+			print('Time elapsed during cleanupData: %ss' %elapsed)
+		return loadFolder,loadFname,fatalIssue,skipSpatAgg
 
-	if cleanFname in cleanFnames:
+	skipSpatAgg = False # over-rule skipSpatAgg as the corresponding spatAgg output file could not be found
+	if cleanFname in cleanFnames and skipCleanup:
 		with open(cleanedFolder+cleanFname, 'r') as f:
 			reader = csv.reader(f)
 			fileHeaders = list(next(reader))
 
-		if 'fatalTimeStampIssue' in fileHeaders:
-			fatalTimeStampIssue = True
+		if 'fatalIssue' in fileHeaders:
+			fatalIssue = True
 			warn('\nFATAL WARNING: In a previous clean-up, there was a problem with timestamp:\nSome timestamps occurred more often than there were unique <PlayerID>s')
 		else:
 			warn('\nContinued with previously cleaned data.\nIf problems exist with data consistency, consider writing a function in cleanupData.py.\n')
-
-		return cleanedFolder,fatalTimeStampIssue#, readAttributeCols#, attrLabel
+		loadFolder = cleanedFolder
+		loadFname = cleanFname
+		
+		if debuggingMode:
+			elapsed = str(round(time.time() - tCleanup, 2))
+			print('Time elapsed during cleanupData: %ss' %elapsed)
+		return loadFolder,loadFname,fatalIssue,skipSpatAgg#, readAttributeCols#, attrLabel
 	else: # create a new clean Fname
 		print('\nCleaning up file...')
 		if dataType == "NP":
@@ -78,8 +99,14 @@ def process(dirtyFname,cleanFname,dataType,dataFolder,cleanedFolder,TeamAstring,
 			df_cleaned,df_omitted,fatalTeamIDissue = FDP(dirtyFname,cleanFname,dataFolder,cleanedFolder,headers,readAttributeCols,debugOmittedRows,readEventColumns,TeamAstring,TeamBstring)
 		else:
 			# overwrite cleanedFolder and add a warning that no cleanup had taken place
-			cleanedFolder = dataFolder
-			exit('\exit: No clean-up function available for file <%s>.\nContinued without cleaning the data.' %dirtyFname)
+			loadFolder = dataFolder
+			loadFname = dirtyFname
+			warn('\nWARNING: No clean-up function available for file <%s>.\nContinued without cleaning the data.' %dirtyFname)
+
+			if debuggingMode:
+				elapsed = str(round(time.time() - tCleanup, 2))
+				print('Time elapsed during cleanupData: %ss' %elapsed)
+			return loadFolder,loadFname,fatalIssue,skipSpatAgg
 
 		## Genereic clean up function (for all datasets)
 		# First: Rename columns to be standardized.
@@ -109,16 +136,15 @@ def process(dirtyFname,cleanFname,dataType,dataFolder,cleanedFolder,TeamAstring,
 
 		# Export cleaned data to CSV
 		if fatalTeamIDissue:
-			df_Fatal = pd.DataFrame([],columns=['fatalTeamIDissue'])
+			df_Fatal = pd.DataFrame([],columns=['fatalIssue'])
 			df_Fatal.to_csv(cleanedFolder + cleanFname)
 			fatalIssue = True
 		elif fatalTimeStampIssue:
-			df_Fatal = pd.DataFrame([],columns=['fatalTimeStampIssue'])
+			df_Fatal = pd.DataFrame([],columns=['fatalIssue'])
 			df_Fatal.to_csv(cleanedFolder + cleanFname)
 			fatalIssue = True
 		else:
 			df_cleaned.to_csv(cleanedFolder + cleanFname)
-			fatalIssue = False
 	
 		# Optional: Export data that has been omitted, in case you suspect that relevent rows were omitted.
 		if debugOmittedRows:
@@ -136,8 +162,14 @@ def process(dirtyFname,cleanFname,dataType,dataFolder,cleanedFolder,TeamAstring,
 		# readAttributeCols = [timestampString] + readAttributeCols # This makes sure that timeStamp is also imported in attribute cols, necessary for pivoting etc.
 		# attrLabel.update({'Ts': 'Time (s)'})
 		# readAttributeCols[0] = 'Ts'
+		loadFolder = cleanedFolder
+		loadFname = cleanFname
 
-	return cleanedFolder,fatalIssue#, readAttributeCols#, attrLabel
+	if debuggingMode:
+		elapsed = str(round(time.time() - tCleanup, 2))
+		print('Time elapsed during cleanupData: %ss' %elapsed)
+
+	return loadFolder,loadFname,fatalIssue,skipSpatAgg#, readAttributeCols#, attrLabel
 
 def FDP(fname,cleanFname,dataFolder,cleanedFolder,headers,readAttributeCols,debugOmittedRows,readEventColumns,TeamAstring,TeamBstring):
 

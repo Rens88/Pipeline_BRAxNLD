@@ -42,6 +42,7 @@ def checkFolders(folder,aggregateEvent):
 	tmpFigFolder = folder + 'Figs' + sep + 'Temp' + sep + aggregateEvent + sep
 	outputFolder = folder + 'Output' + sep# Folder where tabular output will be stored (aggregated spatially and temporally)
 	cleanedFolder = dataFolder + 'Cleaned' + sep    
+	spatAggFolder = dataFolder + 'SpatAgg' + sep
 
 	# Verify if folders exists
 	if not exists(dataFolder):
@@ -53,10 +54,12 @@ def checkFolders(folder,aggregateEvent):
 		makedirs(tmpFigFolder)
 	if not exists(cleanedFolder):
 		makedirs(cleanedFolder)
+	if not exists(spatAggFolder):
+		makedirs(spatAggFolder)
 
 	timeString = time.strftime("%Hh%Mm_%d_%B_%Y")
 	outputFilename = outputFolder + 'output_' + aggregateEvent + '_' + timeString +  '.csv'
 	outputDescriptionFilename = outputFolder + 'output_Description_' + aggregateEvent + '.txt'
-	return dataFolder,tmpFigFolder,outputFolder,cleanedFolder,outputFilename,outputDescriptionFilename
+	return dataFolder,tmpFigFolder,outputFolder,cleanedFolder,spatAggFolder,outputFilename,outputDescriptionFilename,
 
 # >>>>>>> d6c15d944b1168972454264b6f2fc40ddffffa10
