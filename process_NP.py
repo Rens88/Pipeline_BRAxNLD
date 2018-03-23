@@ -79,12 +79,12 @@ conversionToMeter = 111111 # https://gis.stackexchange.com/questions/8650/measur
 
 ## -- work in progress -- 
 # Indicate some parameters for temporal aggregation: 'Full' aggregates over the whole file, any other event needs to be specified with the same string as in the header of the CSV file.
-aggregateEvent = 'Goals' # Event that will be used to aggregate over ('full' denotes aggregating over the whole file. 'None' denotes skipping the temporal aggregation)
+aggregateEvent = 'Full' # Event that will be used to aggregate over ('full' denotes aggregating over the whole file. 'None' denotes skipping the temporal aggregation)
 aggregateWindow = 10 # in seconds #NB: still need to write warning in temporal aggregation in case you have Goals in combination with None.
 aggregateLag = 0 # in seconds
 
 # This (simple) visualization plots every outcome variable for the given window for the temporal aggregation
-Visualization = False # True = includes visualization, False = skips visualization
+Visualization = True # True = includes visualization, False = skips visualization
 
 # Key events (TO DO)
 # - Load existing events
@@ -94,6 +94,11 @@ Visualization = False # True = includes visualization, False = skips visualizati
 # Parts of the pipeline can be skipped
 skipCleanup = True # Only works if cleaned file exists
 skipSpatAgg = True # Only works if spat agg export exists
+
+# Strings need to correspond to outcome variables (dict keys). 
+# Individual level variables ('vNorm') should be included as a list element.
+# Group level variables ('LengthA','LengthB') should be included as a tuple (and will be plotted in the same plot).
+plotTheseAttributes = ['vNorm',('SurfaceA','SurfaceB')]#,'LengthB',('LengthA','LengthB'),('SurfaceA','SurfaceB'),('SpreadA','SpreadB'),('WidthA','WidthB')] # [('LengthA','LengthB'),('WidthA','WidthB'),('SurfaceA','SurfaceB'),('SpreadA','SpreadB')] # teams that need to be compared as tuple
 
 #########################
 # END USER INPUT ########
@@ -131,6 +136,7 @@ import pandas as pd
 import exportCSV
 import estimateRemainingTime
 import plotTimeseries
+import computeEvents
 #  Unused modules: 
 # CSVexcerpt CSVimportAsColumns identifyDuplHeader LoadOrCreateCSVexcerpt individualAttributes plotTimeseries dataToDict 
 # dataToDict2 safetyWarning countExistingEvents exportCSV importTimeseriesData csv importEvents CSVtoDF plotSnapshot
@@ -206,12 +212,13 @@ for dirtyFname in DirtyDataFiles:
 	attrPanda,attrLabel = spatialAggregation.process(rawPanda,attrPanda,attrLabel,TeamAstring,TeamBstring,skipSpatAgg_curFile,debuggingMode)
 
 	###### Work in progress ##########
-	# computeEvents.process()
+	targetEvents = \
+	computeEvents.process(targetEventsImported,aggregateLevel,rawPanda,attrPanda,eventsPanda,TeamAstring,TeamBstring,debuggingMode)
 	###### \Work in progress #########
 
 	## Temporal aggregation
 	exportData,exportDataString,exportFullExplanation = \
-	temporalAggregation.process(targetEventsImported,aggregateLevel,rawPanda,attrPanda,exportData,exportDataString,exportDataFullExplanation,TeamAstring,TeamBstring,debuggingMode)
+	temporalAggregation.process(targetEvents,aggregateLevel,rawPanda,attrPanda,exportData,exportDataString,exportDataFullExplanation,TeamAstring,TeamBstring,debuggingMode)
 
 	########################################################################################
 	####### EXPORT to CSV ##################################################################
@@ -223,8 +230,8 @@ for dirtyFname in DirtyDataFiles:
 	exportCSV.varDescription(outputDescriptionFilename,exportDataString,exportFullExplanation)
 
 	# Spatially aggregated data
-	spatAgg = pd.concat([rawPanda, eventsPanda, attrPanda], axis=1) # debugging only
-	spatAgg.to_csv(spatAggFolder + spatAggFname) # debugging only		
+	spatAggPanda = pd.concat([rawPanda, eventsPanda.loc[:, eventsPanda.columns != 'Ts'], attrPanda.loc[:, attrPanda.columns != 'Ts']], axis=1) # Skip the duplicate 'Ts' columns
+	spatAggPanda.to_csv(spatAggFolder + spatAggFname) # debugging only		
 
 	## EDIT: Instead of exporting the attributes labels, 
 	## it's easier to create the attribute lables, 
@@ -239,7 +246,7 @@ for dirtyFname in DirtyDataFiles:
 	########################################################################################
 	####### Visualization  #################################################################
 	########################################################################################
-
-	# printTheseAttributes = [('LengthA','LengthB'),('WidthA','WidthB'),('SurfaceA','SurfaceB'),('SpreadA','SpreadB')] # teams that need to be compared as tuple
-	printTheseAttributes = ['vNorm',('LengthA','LengthB'),('SurfaceA','SurfaceB'),('SpreadA','SpreadB'),('WidthA','WidthB')]
-	plotTimeseries.process(printTheseAttributes,aggregateLevel,targetEventsImported,rawPanda,attrPanda,attrLabel,tmpFigFolder,cleanFname[:-4],TeamAstring,TeamBstring,debuggingMode)
+	
+	# It's not that elaborate, but functional enough to get an idea whether the computed outcome variables are correct
+	plotTimeseries.process(plotTheseAttributes,aggregateLevel,targetEvents,rawPanda,attrPanda,attrLabel,tmpFigFolder,cleanFname[:-4],TeamAstring,TeamBstring,debuggingMode)
+	pdb.set_trace()

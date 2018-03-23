@@ -17,19 +17,27 @@ from os import listdir, makedirs
 import matplotlib.pyplot as plt
 from matplotlib import colors as mcolors
 import time
+import math
 import pandas as pd
 
 if __name__ == '__main__':		
 
 	# 09-02-2018 Rens Meerhoff
 	# The plot new style
-	process(printTheseAttributes,aggregateLevel,targetEvents,rawDict,attributeDict,attributeLabel,tmpFigFolder,fname,TeamAstring,TeamBstring)
+	process(plotTheseAttributes,aggregateLevel,targetEvents,rawDict,attributeDict,attributeLabel,tmpFigFolder,fname,TeamAstring,TeamBstring)
 
-def process(printTheseAttributes,aggregateLevel,targetEvents,rawDict,attributeDict,attributeLabel,tmpFigFolder,fname,TeamAstring,TeamBstring,debuggingMode):
+def process(plotTheseAttributes,aggregateLevel,targetEvents,rawDict,attributeDict,attributeLabel,tmpFigFolder,fname,TeamAstring,TeamBstring,debuggingMode):
 	# Idea: add overview of positions on the court
 	tPlot = time.time()	# do stuff
 	
 	xLabel = attributeLabel['Ts']
+	
+	# Put TeamID and PlayerID in attributeDict for pivoting
+	if 'PlayerID' not in attributeDict.keys():
+		attributeDict = pd.concat([attributeDict, rawDict['PlayerID']], axis = 1) # Skip the duplicate 'Ts' columns
+	if 'TeamID' not in attributeDict.keys():
+		attributeDict = pd.concat([attributeDict, rawDict['TeamID']], axis = 1) # Skip the duplicate 'Ts' columns		
+	# attributeDict.drop('Ts', axis = 1, inplace = True)
 	
 	for idx,currentEvent in enumerate(targetEvents[aggregateLevel[0]]):
 		# Find rows
@@ -40,33 +48,36 @@ def process(printTheseAttributes,aggregateLevel,targetEvents,rawDict,attributeDi
 		if skipCurrentEvent:
 			continue
 		
-		for i in printTheseAttributes:
+		for plotThisAttribute in plotTheseAttributes:
 
 			plt.figure(num=None, figsize=(3.8*5,3*5), dpi=300, facecolor='w', edgecolor='k')
 
 
-			if type(i) == tuple: # pairwise comparison of team
+			if type(plotThisAttribute) == tuple: # pairwise comparison of team
 				# Pairwise per team
-				yLabel = findYlabel(i,attributeLabel,TeamAstring,TeamBstring) 
+				yLabel = findYlabel(plotThisAttribute,attributeLabel,TeamAstring,TeamBstring) 
 				# Plot it
-				pairwisePerTeam(i,attributeDict,rowswithinrangeTeam,rawDict,TeamAstring,TeamBstring)
-
-				outputFilename = tmpFigFolder + fname + '_' + i[0] + '_' + fileAggregateID + '.jpg'
+				pairwisePerTeam(plotThisAttribute,attributeDict,rowswithinrangeTeam,rawDict,TeamAstring,TeamBstring)
+				varName = plotThisAttribute[0]
+				if plotThisAttribute[0][-1] == 'A' or plotThisAttribute[0][-1] == 'B':
+					varName = varName[:-1]
+				outputFilename = tmpFigFolder + fname + '_' + varName + '_' + fileAggregateID + '.jpg'
 			else:
 				# Plot it
-				plotPerPlayerPerTeam(i,attributeDict,rowswithinrangePlayerA,rowswithinrangePlayerB,TeamAstring,TeamBstring)
-				labelProvided = [True for j in attributeLabel.keys() if i == j]
+				plotPerPlayerPerTeam(plotThisAttribute,attributeDict,rowswithinrangePlayerA,rowswithinrangePlayerB,TeamAstring,TeamBstring)
+				labelProvided = [True for j in attributeLabel.keys() if plotThisAttribute == j]
 				if labelProvided:
-					yLabel = attributeLabel[i]
+					yLabel = attributeLabel[plotThisAttribute]
 				else:
 					yLabel = 'Unknown'
 
-				outputFilename = tmpFigFolder + fname + '_' + i + '_' + fileAggregateID + '.jpg'
+				outputFilename = tmpFigFolder + fname + '_' + plotThisAttribute + '_' + fileAggregateID + '.jpg'
 
 			plt.title(fileAggregateID)
 			plt.xlabel(xLabel)
 			plt.ylabel(yLabel)
 			plt.savefig(outputFilename, figsize=(1,1), dpi = 300, bbox_inches='tight')
+			print('EXPORTED: <%s>' %outputFilename)
 			plt.close()
 
 		if specialCase:
@@ -125,23 +136,36 @@ def findRows(idx,aggregateLevel,targetEvents,rawDict,TeamAstring,TeamBstring,cur
 	tmp = rawDict[rawDict['Ts'] > window[0]]
 	rowswithinrange = tmp[tmp['Ts'] <= window[1]].index
 	del(tmp)
-
+	## The old notation.
 	rowswithinrangeTeam = rawDict['Ts'][rowswithinrange].index[rawDict['PlayerID'][rowswithinrange] == 'groupRow']
 	rowswithinrangeBall = rawDict['Ts'][rowswithinrange].index[rawDict['PlayerID'][rowswithinrange] == 'ball']
 	rowswithinrangePlayer = rawDict['Ts'][rowswithinrange].index[rawDict['TeamID'][rowswithinrange] != '']
 	rowswithinrangePlayerA = rawDict['Ts'][rowswithinrange].index[rawDict['TeamID'][rowswithinrange] == TeamAstring]
 	rowswithinrangePlayerB = rawDict['Ts'][rowswithinrange].index[rawDict['TeamID'][rowswithinrange] == TeamBstring]
+	
+	# rowswithinrangeTeam = rawDict['Ts'][rowswithinrange].index[rawDict['PlayerID'].loc[rowswithinrange] == 'groupRow']
+	# rowswithinrangeBall = rawDict['Ts'][rowswithinrange].index[rawDict['PlayerID'].loc[rowswithinrange] == 'ball']
+	# rowswithinrangePlayer = rawDict['Ts'][rowswithinrange].index[rawDict['TeamID'].loc[rowswithinrange] != '']
+	# rowswithinrangePlayerA = rawDict['Ts'][rowswithinrange].index[rawDict['TeamID'].loc[rowswithinrange] == TeamAstring]
+	# rowswithinrangePlayerB = rawDict['Ts'][rowswithinrange].index[rawDict['TeamID'].loc[rowswithinrange] == TeamBstring]
+
+	# # rowswithinrangeTeam = spatAggPanda['PlayerID'].loc[rowswithinrange] == 'groupRow'.index
+	# rowswithinrangeTeam = rawDict['PlayerID'].loc[rowswithinrange] == 'groupRow'.index
+	# rowswithinrangeBall = rawDict['PlayerID'].loc[rowswithinrange] == 'ball'.index
+	# rowswithinrangePlayer = rawDict['TeamID'].loc[rowswithinrange] != ''.index
+	# rowswithinrangePlayerA = [rawDict['TeamID'].loc[rowswithinrange] == TeamAstring].index
+	# rowswithinrangePlayerB = rawDict['TeamID'].loc[rowswithinrange] == TeamBstring .index
 
 	return fileAggregateID,rowswithinrangeTeam,rowswithinrangeBall,rowswithinrangePlayer,rowswithinrangePlayerA,rowswithinrangePlayerB,specialCase,skipCurrentEvent
 
-def findYlabel(i,attributeLabel,TeamAstring,TeamBstring):
+def findYlabel(plotThisAttribute,attributeLabel,TeamAstring,TeamBstring):
 	
 	tmp = []
 	for itmp in [0,1]:
-		labelProvided = [True for j in attributeLabel.keys() if i[itmp] == j]
+		labelProvided = [True for j in attributeLabel.keys() if plotThisAttribute[itmp] == j]
 		
 		if labelProvided:
-			tmp.append(attributeLabel[i[itmp]]) # take the label as provided
+			tmp.append(attributeLabel[plotThisAttribute[itmp]]) # take the label as provided
 			if TeamAstring in tmp[itmp]:
 				ofTeamAstring = ' of %s' %TeamAstring
 				if ofTeamAstring in tmp[itmp]:
@@ -158,7 +182,7 @@ def findYlabel(i,attributeLabel,TeamAstring,TeamBstring):
 
 		else:
 			tmp.append('Unknown')
-			warn('\nWARNING: y-label not specified.\nPlease provide y-label in <attributeLabel> for <%s>.' %i[itmp])
+			warn('\nWARNING: y-label not specified.\nPlease provide y-label in <attributeLabel> for <%s>.' %plotThisAttribute[itmp])
 	yLabel = tmp[0]
 
 	if tmp[0] != tmp[1]:
@@ -167,9 +191,9 @@ def findYlabel(i,attributeLabel,TeamAstring,TeamBstring):
 
 	return yLabel
 
-def pairwisePerTeam(i,attributeDict,rowswithinrangeTeam,rawDict,TeamAstring,TeamBstring):
-	Y1 = attributeDict[i[0]][rowswithinrangeTeam]
-	Y2 = attributeDict[i[1]][rowswithinrangeTeam]
+def pairwisePerTeam(plotThisAttribute,attributeDict,rowswithinrangeTeam,rawDict,TeamAstring,TeamBstring):
+	Y1 = attributeDict[plotThisAttribute[0]][rowswithinrangeTeam]
+	Y2 = attributeDict[plotThisAttribute[1]][rowswithinrangeTeam]
 
 	X1 = rawDict['Ts'][rowswithinrangeTeam]
 	X2 = rawDict['Ts'][rowswithinrangeTeam]
@@ -203,11 +227,11 @@ def pairwisePerTeam(i,attributeDict,rowswithinrangeTeam,rawDict,TeamAstring,Team
 			nextStart = curEnd + 2
 		plt.legend([pltA[0], pltB[0]], [TeamAstring,TeamBstring])
 
-def plotPerPlayerPerTeam(i,attributeDict,rowswithinrangePlayerA,rowswithinrangePlayerB,TeamAstring,TeamBstring):
+def plotPerPlayerPerTeam(plotThisAttribute,attributeDict,rowswithinrangePlayerA,rowswithinrangePlayerB,TeamAstring,TeamBstring):
 
 	# Team_AX = dfA.pivot(columns='Ts', values='X')
-	Y1 = attributeDict.loc[rowswithinrangePlayerA].pivot(columns='PlayerID',values=i)
-	Y2 = attributeDict.loc[rowswithinrangePlayerB].pivot(columns='PlayerID',values=i)
+	Y1 = attributeDict.loc[rowswithinrangePlayerA].pivot(columns='PlayerID',values=plotThisAttribute)
+	Y2 = attributeDict.loc[rowswithinrangePlayerB].pivot(columns='PlayerID',values=plotThisAttribute)
 	X1 = attributeDict.loc[rowswithinrangePlayerA].pivot(columns='PlayerID',values='Ts')
 	X2 = attributeDict.loc[rowswithinrangePlayerB].pivot(columns='PlayerID',values='Ts')
 
@@ -216,27 +240,43 @@ def plotPerPlayerPerTeam(i,attributeDict,rowswithinrangePlayerA,rowswithinrangeP
 	by_hsv = sorted((tuple(mcolors.rgb_to_hsv(mcolors.to_rgba(color)[:3])), name)
 	                for name, color in colors.items())
 	sorted_names = [name for hsv, name in by_hsv]
+	[sorted_names.remove(i) for i in ['gainsboro', 'whitesmoke', 'w', 'white', 'snow']] # remove some silly colors
 	
+	# Use this to make code more generic (and allow user to specify color)
+	refColorA = 'red'
+	refColorB = 'blue'
+	
+
 	# Colors A
+	refIndA = [i for i,v in enumerate(sorted_names) if v == refColorA]
+	if refIndA == []:
+		warn('\nWARNING: Specified reference color not found.\nConsider specifying a different color.')
+
 	indA = Y1.shape[1]
-	startColor = round((len(sorted_names) / 4 * 1) - .5 * indA)
-	endColor = round((len(sorted_names) / 4 * 1) + .5 * indA)
+	startColor = math.floor(refIndA[0] - .5 * indA)
+	endColor = math.floor(refIndA[0] + .5 * indA)
 	dC = round((endColor - startColor) / indA)
 	colorPickerA = np.arange(startColor,endColor,dC)
+	colorPickerA[round(len(colorPickerA)/2)], colorPickerA[-1] = colorPickerA[-1], colorPickerA[round(len(colorPickerA)/2)]
 
 	# Colors B
+	refIndB = [i for i,v in enumerate(sorted_names) if v == refColorB]
+	if refIndB == []:
+		warn('\nWARNING: Specified reference color not found.\nConsider specifying a different color.')
+
 	indB = Y2.shape[1]
-	startColor = round((len(sorted_names) / 4 * 3) - .5 * indB)
-	endColor = round((len(sorted_names) / 4 * 3) + .5 * indB)
+	startColor = math.floor(refIndB[0] - .5 * indB)
+	endColor = math.floor(refIndB[0] + .5 * indB)
 	dC = round((endColor - startColor) / indB)
 	colorPickerB = np.arange(startColor,endColor,dC)
+	colorPickerB[round(len(colorPickerB)/2)], colorPickerB[-1] = colorPickerB[-1], colorPickerB[round(len(colorPickerB)/2)]
 
 	for ix,player in enumerate(X1.keys()):
 		curColor = sorted_names[colorPickerA[ix]]
 		pltA = plt.plot(X1[player],Y1[player],color=curColor,linestyle='-') 
-	
+
 	for ix,player in enumerate(X2.keys()):
 		curColor = sorted_names[colorPickerB[ix]]
 		pltB = plt.plot(X2[player],Y2[player],color=curColor,linestyle='-')
 
-	plt.legend([pltA[0], pltB[0]], [TeamAstring,TeamBstring])
+	plt.legend([pltA[0], pltB[0]], [TeamAstring,TeamBstring])	
