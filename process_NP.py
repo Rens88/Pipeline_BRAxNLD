@@ -83,9 +83,6 @@ aggregateEvent = 'Full' # Event that will be used to aggregate over ('full' deno
 aggregateWindow = 10 # in seconds #NB: still need to write warning in temporal aggregation in case you have Goals in combination with None.
 aggregateLag = 0 # in seconds
 
-# This (simple) visualization plots every outcome variable for the given window for the temporal aggregation
-Visualization = True # True = includes visualization, False = skips visualization
-
 # Key events (TO DO)
 # - Load existing events
 # - Include modules to compute events
@@ -94,6 +91,9 @@ Visualization = True # True = includes visualization, False = skips visualizatio
 # Parts of the pipeline can be skipped
 skipCleanup = True # Only works if cleaned file exists
 skipSpatAgg = True # Only works if spat agg export exists
+
+# This (simple) visualization plots every outcome variable for the given window for the temporal aggregation
+Visualization = True # True = includes visualization, False = skips visualization
 
 # Strings need to correspond to outcome variables (dict keys). 
 # Individual level variables ('vNorm') should be included as a list element.
