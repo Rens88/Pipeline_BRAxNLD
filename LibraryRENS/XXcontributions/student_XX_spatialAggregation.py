@@ -13,9 +13,9 @@ from warnings import warn
 import pdb; #pdb.set_trace()
 
 ## Here, you can clarify which functions exist in this module.
-if __name__ == '__main__': 
+if __name__ == '__main__':
 
-	# -- rawDict  -- 
+	# -- rawDict  --
 	# A panda that contains the raw data with the keys:
 	# - 'Ts' for the time in seconds
 	# - 'X' for the x position in meters
@@ -23,14 +23,14 @@ if __name__ == '__main__':
 	# - 'PlayerID' for the identifier of a player. *
 	# - 'TeamID' for the string that identifies a team.
 
-	# * Note that the 'ball' and 'groupRow' don't refer to a player, 
-	# but to a row corresponding to the ball and a row with grouped 
+	# * Note that the 'ball' and 'groupRow' don't refer to a player,
+	# but to a row corresponding to the ball and a row with grouped
 	# information only (e.g., Team A, defenders, all players)
 
 	# -- attributeDict --
 	# A panda that contains all the features that are based on the positional data.
 
-	# -- attributeLabel -- 
+	# -- attributeLabel --
 	# A dictionary that has the same keys as attributeDict. The contents
 	# of each key provide a label for each of the computed features,
 	# for example: 'Distance to the goal (m)'.
@@ -54,6 +54,12 @@ if __name__ == '__main__':
 	teamCentroid_panda(rawDict,attributeDict,attributeLabel,TeamAstring,TeamBstring)
 	# This is an example that can be used to see how to compute an individual level variable.
 	distanceToCentroid(rawDict,attributeDict,attributeLabel,TeamAstring,TeamBstring)
+	# Calculates the distance from a player to the opponent
+	distanceToOpponent(rawDict,attributeDict,attributeLabel,TeamAstring,TeamBstring)
+	# Calculates the distance from a player to the team mate
+	distanceToOpponent(rawDict,attributeDict,attributeLabel,TeamAstring,TeamBstring)
+
+	ballPossession(rawDict,attributeDict,attributeLabel,TeamAstring,TeamBstring)
 
 ## Here, you specifiy what each function does
 def process(rawDict,attributeDict,attributeLabel,TeamAstring,TeamBstring):
@@ -64,6 +70,12 @@ def process(rawDict,attributeDict,attributeLabel,TeamAstring,TeamBstring):
 	# Use this is an example for a PLAYER level aggregate
 	attributeDict_EXAMPLE,attributeLabel_EXAMPLE = \
 	distanceToCentroid(rawDict,attributeDict,attributeLabel,TeamAstring,TeamBstring)
+
+	attributeDict_EXAMPLE,attributeLabel_EXAMPLE = \
+	distanceToOpponent(rawDict,attributeDict,attributeLabel,TeamAstring,TeamBstring)
+
+	attributeDict_EXAMPLE,attributeLabel_EXAMPLE = \
+	ballPossession(rawDict,attributeDict,attributeLabel,TeamAstring,TeamBstring)
 
 	# NB: Centroid and distance to centroid are stored in example variables that are not exported
 	# when 'process' is finished, because these features are already embedded in the main pipeline.
@@ -79,7 +91,7 @@ def teamCentroid_panda(rawDict,attributeDict,attributeLabel,TeamAstring,TeamBstr
 	###############
 	# Use this as an example to compute a GROUP level variable. Pay attention to the indexing. Let me know if you have an easier way.
 	###############
-	
+
 	##### THE DATA #####
 	# Prepare the indices of the groupRows. This will be used to store the computed values in the index corresponding to attributeDict.
 	ind_groupRows = attributeDict[rawDict['PlayerID'] == 'groupRow'].index
@@ -93,7 +105,7 @@ def teamCentroid_panda(rawDict,attributeDict,attributeLabel,TeamAstring,TeamBstr
 	Team_A_Y = dfA.pivot(columns='Ts', values='Y')
 	# Pivot X and Y dataframes for Team B
 	Team_B_X = dfB.pivot(columns='Ts', values='X')
-	Team_B_Y = dfB.pivot(columns='Ts', values='Y')   
+	Team_B_Y = dfB.pivot(columns='Ts', values='Y')
 
 	# The warnings below were included to debug problems with different lengths per team and/or group row
 	if len(ind_groupRows) != Team_A_X.shape[1]:
@@ -115,18 +127,18 @@ def teamCentroid_panda(rawDict,attributeDict,attributeLabel,TeamAstring,TeamBstr
 		# Index of the groupRows for every unique timestamp that exists for each team separately
 		uniqueTs_TeamA_Rows = rawDict['Ts'][rawDict['TeamID'] == TeamAstring].unique()
 		ind_groupRowsA = [i for i in ind_groupRows if np.isin(rawDict['Ts'][i],uniqueTs_TeamA_Rows)]
-		
+
 		uniqueTs_TeamB_Rows = rawDict['Ts'][rawDict['TeamID'] == TeamBstring].unique()
 		ind_groupRowsB = [i for i in ind_groupRows if np.isin(rawDict['Ts'][i],uniqueTs_TeamB_Rows)]
 
 	# Create empty DataFrame to store results, NB: columns need to be assigend beforehand.
 	# newAttributes = pd.DataFrame(index = ind_groupRows,columns = ['TeamCentXA', 'TeamCentYA', 'LengthA', 'WidthA', 'TeamCentXB', 'TeamCentYB', 'LengthB', 'WidthB'])
-	newAttributesA = pd.DataFrame(index = ind_groupRowsA,columns = ['TeamCentXA', 'TeamCentYA', 'LengthA', 'WidthA'])	
+	newAttributesA = pd.DataFrame(index = ind_groupRowsA,columns = ['TeamCentXA', 'TeamCentYA', 'LengthA', 'WidthA'])
 	newAttributesB = pd.DataFrame(index = ind_groupRowsB,columns = ['TeamCentXB', 'TeamCentYB', 'LengthB', 'WidthB'])
 
 	# Compute the new attributes and store them with the index that corresponds to attributeDict
 	pd.options.mode.chained_assignment = None  # default='warn' # NB: The code below gives a warning because it may be uncertain whether the right ind_groupRows are called. If you know a work-around, let me know.
-		
+
 	# For team A
 	newAttributesA['TeamCentXA'][ind_groupRowsA] = Team_A_X.mean(axis=0, skipna=True)
 	newAttributesA['TeamCentYA'][ind_groupRowsA] = Team_A_Y.mean(axis=0, skipna=True)
@@ -141,19 +153,19 @@ def teamCentroid_panda(rawDict,attributeDict,attributeLabel,TeamAstring,TeamBstr
 
 	# Combine the pre-existing attributes with the new attributes:
 	attributeDict = pd.concat([attributeDict, newAttributesA, newAttributesB], axis=1)
-	
+
 	##### THE STRINGS #####
 	# Export a string label of each new attribute in the labels dictionary (useful for plotting purposes)
 	tmpXAString = 'X-position of %s (m)' %TeamAstring
 	tmpYAString = 'Y-position of %s (m)' %TeamAstring
 	tmpLengthAString = 'Distance along Y-axis %s (m)' %TeamAstring
 	tmpWidthAString = 'Distance along X-axis %s (m)' %TeamAstring
-	
+
 	tmpXBString = 'X-position of %s (m)' %TeamBstring
-	tmpYBString = 'Y-position of %s (m)' %TeamBstring			
+	tmpYBString = 'Y-position of %s (m)' %TeamBstring
 	tmpLengthBString = 'Distance along Y-axis %s (m)' %TeamBstring
 	tmpWidthBString = 'Distance along X-axis %s (m)' %TeamBstring
-	
+
 	attributeLabel_tmp = {'TeamCentXA': tmpXAString, 'TeamCentYA': tmpYAString, 'LengthA': tmpLengthAString,'WidthA': tmpWidthAString,\
 	'TeamCentXB': tmpXBString,'TeamCentYB': tmpYBString,'LengthB': tmpLengthBString,'WidthB': tmpWidthBString}
 	attributeLabel.update(attributeLabel_tmp)
@@ -163,17 +175,59 @@ def teamCentroid_panda(rawDict,attributeDict,attributeLabel,TeamAstring,TeamBstr
 
 ############################################################################
 
+def ballPossession(rawDict,attributeDict,attributeLabel,TeamAstring,TeamBstring):
+	TeamVals = attributeDict[rawDict['PlayerID'] == 'groupRow'].set_index('Ts')
+	newAttributes = pd.DataFrame(index = attributeDict.index, columns = ['ballPosession'])
+	lowestDistance = 999999;
+	playerInPossession = 0;
+
+	#Search the ball in de DataFrame (Kan dit zonder for-loop)?
+	for idx,i in enumerate(pd.unique(rawDict['PlayerID'])):
+		ball = rawDict[rawDict['PlayerID'] == i]
+		ballDict = ball.set_index('Ts')
+		if all(ball['PlayerID'] == 'ball'):
+			for idx,j in enumerate(pd.unique(rawDict['PlayerID'])):
+				curPlayer = rawDict[rawDict['PlayerID'] == j]
+				curPlayerDict = curPlayer.set_index('Ts')
+				if all(ball['PlayerID'] == 'ball'):
+					continue
+				elif all(ball['PlayerID'] == 'groupRow'):
+					continue
+				else:
+					curPlayer_distToBall = np.sqrt((curPlayerDict['X'] - ballDict['X'])**2 + (curPlayerDict['Y'] - ballDict['Y'])**2)
+					if(curPlayer_distToBall < lowestDistance):
+						lowestDistance = curPlayer_distToBall
+						playerInPossession = curPlayer['PlayerID'];
+
+	for idx,k in enumerate(pd.unique(rawDict['PlayerID'])):
+		currentPlayer = rawDict[rawDict['PlayerID'] == k]
+		currentPlayer = currentPlayer.set_index('Ts')
+		if all(currentPlayer['PlayerID'] == playerInPossession):
+			newAttributes['ballPosession'][currentPlayer.index] = 1;
+		#elif all(currentPlayer['PlayerID'] != playerInPossession):
+			#newAttributes['ballPosession'][currentPlayer.index] = 0;
+
+	# Combine the pre-existing attributes with the new attributes:
+	attributeDict = pd.concat([attributeDict, newAttributes], axis=1)
+
+	##### THE STRINGS #####
+	# Export a string label of each new attribute in the labels dictionary (useful for plotting purposes)
+	tmpPossessionString = 'Bool Player in Possession (m)'
+	attributeLabel.update({'InPossession':tmpPossessionString})
+
+	return attributeDict,attributeLabel
+
 def distanceToCentroid(rawDict,attributeDict,attributeLabel,TeamAstring,TeamBstring):
 	###############
 	# Use this as an example to compute a PLAYER level variable. Pay attention to the indexing. Let me know if you have an easier way.
 	###############
-	
+
 	##### THE DATA #####
 	# In this case, the new attribute will be computed based on a group (i.e., team) value
 	TeamVals = attributeDict[rawDict['PlayerID'] == 'groupRow'].set_index('Ts')
 	# Create empty DataFrame to store results, NB: columns need to be assigend beforehand.
 	newAttributes = pd.DataFrame(index = attributeDict.index, columns = ['distToCent'])
-	
+
 	# For every player in the dataFrame
 	for idx,i in enumerate(pd.unique(rawDict['PlayerID'])):
 		curPlayer = rawDict[rawDict['PlayerID'] == i]
@@ -202,6 +256,95 @@ def distanceToCentroid(rawDict,attributeDict,attributeLabel,TeamAstring,TeamBstr
 	# Export a string label of each new attribute in the labels dictionary (useful for plotting purposes)
 	tmpDistToCentString = 'Player\'s distance to its team\'s centroid (m)'
 	attributeLabel.update({'distToCent':tmpDistToCentString})
-	
+
 	return attributeDict,attributeLabel
 
+def distanceToOpponent(rawDict,attributeDict,attributeLabel,TeamAstring,TeamBstring):
+	# Create empty DataFrame to store results, NB: columns need to be assigend beforehand.
+	TeamVals = attributeDict[rawDict['PlayerID'] == 'groupRow'].set_index('Ts')
+	# Create empty DataFrame to store results, NB: columns need to be assigend beforehand.
+	newAttributes = pd.DataFrame(index = attributeDict.index, columns = ['distToOpp'])
+
+	# For every player in the dataFrame
+	for idx,i in enumerate(pd.unique(rawDict['PlayerID'])):
+		curPlayer = rawDict[rawDict['PlayerID'] == i]
+		curPlayerDict = curPlayer.set_index('Ts')
+		lowestDistance = 9999999
+
+		for jdx,j in enumerate(pd.unique(rawDict['PlayerID'])):
+			oppPlayer = rawDict[rawDict['PlayerID'] == j]
+			oppPlayerDict = oppPlayer.set_index('Ts')
+
+			if all(curPlayer['PlayerID'] == 'groupRow'):
+				# It's actually not a player, but a group, so skip it.
+				continue # do nothing
+			elif (str(curPlayer['PlayerID']) == str(oppPlayer['PlayerID'])):
+				continue
+			elif all(curPlayer['PlayerID'] == 'ball'):
+				# It's actually not a player, but the ball, so skip it.
+				continue # do nothing
+			elif (str(curPlayer['TeamID']) == str(oppPlayer['TeamID'])):
+				continue # player is not part of opposition
+			elif (str(curPlayer['TeamID']) != str(oppPlayer['TeamID'])):
+				# Compute the distance to the centroid, NB: team specific!!
+				distanceCurPlayer_Opponent = np.sqrt((curPlayerDict['X'] - oppPlayerDict['X'])**2 + (curPlayerDict['Y'] - oppPlayerDict['Y'])**2)
+				if all(distanceCurPlayer_Opponent < lowestDistance):
+					lowestDistance = distanceCurPlayer_Opponent
+		# Put compute values in the right place in the dataFrame
+		newAttributes['distToOpp'][curPlayer.index] = lowestDistance
+
+		# Combine the pre-existing attributes with the new attributes:
+		attributeDict = pd.concat([attributeDict, newAttributes], axis=1)
+
+		##### THE STRINGS #####
+		# Export a string label of each new attribute in the labels dictionary (useful for plotting purposes)
+		tmpDistToOpp= 'Player\'s distance to its nearest opponent (m)'
+		attributeLabel.update({'distToOpp':tmpDistToOpp})
+
+	return attributeDict,attributeLabel
+
+
+
+def distanceToTeamMate(rawDict,attributeDict,attributeLabel,TeamAstring,TeamBstring):
+	# Create empty DataFrame to store results, NB: columns need to be assigend beforehand.
+	TeamVals = attributeDict[rawDict['PlayerID'] == 'groupRow'].set_index('Ts')
+	# Create empty DataFrame to store results, NB: columns need to be assigend beforehand.
+	newAttributes = pd.DataFrame(index = attributeDict.index, columns = ['distToTeamMate'])
+
+	# For every player in the dataFrame
+	for idx,i in enumerate(pd.unique(rawDict['PlayerID'])):
+		curPlayer = rawDict[rawDict['PlayerID'] == i]
+		curPlayerDict = curPlayer.set_index('Ts')
+		lowestDistance = 9999999
+
+		for jdx,j in enumerate(pd.unique(rawDict['PlayerID'])):
+			teamPlayer = rawDict[rawDict['PlayerID'] == j]
+			teamPlayerDict = teamPlayer.set_index('Ts')
+
+			if all(curPlayer['PlayerID'] == 'groupRow'):
+				# It's actually not a player, but a group, so skip it.
+				continue # do nothing
+			elif (str(curPlayer['PlayerID']) == str(teamPlayer['PlayerID'])):
+				continue
+			elif all(curPlayer['PlayerID'] == 'ball'):
+				# It's actually not a player, but the ball, so skip it.
+				continue # do nothing
+			elif (str(curPlayer['TeamID']) != str(teamPlayer['TeamID'])):
+				continue # player is not part of opposition
+			elif (str(curPlayer['TeamID']) == str(teamPlayer['TeamID'])):
+				# Compute the distance to the centroid, NB: team specific!!
+				distanceCurPlayer_TeamMate = np.sqrt((curPlayerDict['X'] - teamPlayerDict['X'])**2 + (curPlayerDict['Y'] - teamPlayerDict['Y'])**2)
+				if all(distanceCurPlayer_TeamMate < lowestDistance):
+					lowestDistance = distanceCurPlayer_TeamMate
+		# Put compute values in the right place in the dataFrame
+		newAttributes['distToTeamMate'][curPlayer.index] = lowestDistance
+
+		# Combine the pre-existing attributes with the new attributes:
+		attributeDict = pd.concat([attributeDict, newAttributes], axis=1)
+
+		##### THE STRINGS #####
+		# Export a string label of each new attribute in the labels dictionary (useful for plotting purposes)
+		tmpDistToTeamMate= 'Player\'s distance to its nearest team mate (m)'
+		attributeLabel.update({'distToTeamMate':tmpDistToTeamMate})
+
+	return attributeDict,attributeLabel

@@ -6,16 +6,16 @@ import csv
 from warnings import warn
 # import numpy as np
 from os.path import isfile, join, isdir
-from os import listdir, startfile
+from os import listdir#, startfile
 # import CSVexcerpt
 
 
 if __name__ == '__main__':
-	
+
 	# fname can include the folder as well
-	newOrAdd(fname,header,data,skippedData)	
+	newOrAdd(fname,header,data,skippedData)
 	varDescription(fname,exportDataString,exportFullExplanation)
-	
+
 	# Filename should probably be 'temp.csv'
 	# varToPrint is the variable you want to print
 	# winopen: if True: open in windows
@@ -34,7 +34,7 @@ def debugPrint(filename,varToPrint,winopen):
 			# else:
 			# 	print('I did the other this')
 			# 	print(len(i))
-			# 	print(i[0:5])				
+			# 	print(i[0:5])
 			wr.writerow(i)
 
 
@@ -49,9 +49,9 @@ def varDescription(fname,exportDataString,exportFullExplanation):
 
 			curLine = '%s:\t\t\t %s\n' %(val,exportFullExplanation[idx])
 			if len(val) >= 15:
-				curLine = '%s:\t\t %s\n' %(val,exportFullExplanation[idx])	
+				curLine = '%s:\t\t %s\n' %(val,exportFullExplanation[idx])
 			if len(val) >= 23:
-				curLine = '%s:\t %s\n' %(val,exportFullExplanation[idx])				
+				curLine = '%s:\t %s\n' %(val,exportFullExplanation[idx])
 			myfile.write(curLine)
 
 #########################################################################
@@ -68,7 +68,7 @@ def newOrAdd(fname,header,data,skippedData):
 				missingValue = [missingValue for missingValue,value in enumerate(row) if value == None]
 				for i in missingValue:
 					row[i] = 'NaN'
-				wr.writerow(row)			
+				wr.writerow(row)
 
 	else:
 		# append
@@ -94,7 +94,7 @@ def newOrAdd(fname,header,data,skippedData):
 				data = newData
 				# print(data)
 			else:
-				warn('\nWARNING: original file did not have the same number of columns as the newly exported data.\nConsider creating a new file or at least edit the existingHeaders.')	    
+				warn('\nWARNING: original file did not have the same number of columns as the newly exported data.\nConsider creating a new file or at least edit the existingHeaders.')
 
 		with open(fname, 'a',newline='') as myfile:
 			wr = csv.writer(myfile)

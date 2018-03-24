@@ -1,11 +1,14 @@
+import os
+if os.path.isfile('/Users/Victor/Desktop/Universiteit/AnalyseKNVB/Data/Cleaned/CROPPED_XX123456_XX0001_v_XX0002_vPP_SpecialExport_cleaned.csv'):
+    os.remove('/Users/Victor/Desktop/Universiteit/AnalyseKNVB/Data/Cleaned/CROPPED_XX123456_XX0001_v_XX0002_vPP_SpecialExport_cleaned.csv')
 # # # THESE FIRST FOUR LINES OF CODE ARE ONLY NECESSARY TO TEST WHETHER THE TEMPLATE STILL WORKS ON FDP DATA.
 # import os
 # if os.path.isfile('C:\\Users\\rensm\\Documents\\PostdocLeiden\\BRAxNLD repository\\Data\\Cleaned\\CROPPED_XX123456_XX0001_v_XX0002_vPP_SpecialExport_cleaned.csv'):
 # 	os.remove('C:\\Users\\rensm\\Documents\\PostdocLeiden\\BRAxNLD repository\\Data\\Cleaned\\CROPPED_XX123456_XX0001_v_XX0002_vPP_SpecialExport_cleaned.csv')
 
-# If you want to edit something in the code and you're not sure where it is, 
+# If you want to edit something in the code and you're not sure where it is,
 # just ask. l.a.meerhoff@liacs.leidenuniv.nl
-# Also, if you want to add something to the code and you're not sure where, 
+# Also, if you want to add something to the code and you're not sure where,
 # it's probably going to be somewhere in spatialAggregation. But you can always ask.
 
 # 02-03-2018 Rens Meerhoff
@@ -20,7 +23,7 @@
 # It should always be able to do 'full' (aggregates whole trial)
 # The information is imported in << targetEvents >>
 # targetEvents can hold information about 'Goals', 'Passes', and 'Possession' in a dictionary with the same names.
-# One could add events to this variable manually, most goals has the format (<time of event>,<team>), 
+# One could add events to this variable manually, most goals has the format (<time of event>,<team>),
 # passes (<time of event>,<team>,<nth possession it occurs in>) and for possession (<tstart>,<tEnd>,<team>)
 #
 #
@@ -37,7 +40,7 @@
 # 26-01-2018, Rens Meerhoff
 # This template can be copied to use the BRAxNLD pipeline.
 
-# Look for the lines starting with 
+# Look for the lines starting with
 # '## CHANGE THIS'
 # '## TO DO'
 # '## Idea'
@@ -49,10 +52,10 @@
 #########################
 ## CHANGE THIS all these variables until 'END USER INPUT'
 # This folder should contain a folder with 'Data'. The tabular output and figures will be stored in this folder as well.
-folder = 'C:\\Users\\rensm\\Documents\\PostdocLeiden\\BRAxNLD repository\\'
+folder = '/Users/Victor/Desktop/Universiteit/AnalyseKNVB/'
 
 # Here, you provide the string name of the student folder that you want to include.
-studentFolder = 'XXcontributions' 
+studentFolder = 'XXcontributions'
 
 # Temporary inputs (whilst updating to using pandas)
 exportPerFile = True # whether you want to export a csv for every complete file (no temporal aggregation)
@@ -63,7 +66,7 @@ dataType =  "FDP" # "FPD" or or "NP" --> so far, only used to call the right cle
 
 # String representing the different teams
 # NB: not necessary for FDP (and other datasets where teamstring can be read from the filename, should be done in discetFilename.py)
-TeamAstring = 'Provide the string that represents one team' 
+TeamAstring = 'Provide the string that represents one team'
 TeamBstring = 'Provide the string that represents the other team'
 
 # Input of raw data, indicate at least timestamp, entity and Location info
@@ -75,7 +78,7 @@ YPositionString = 'Y' 								#'enter the string in the header of the column tha
 
 # Case-sensitive string rawHeaders of attribute columns that already exist in the data (optional). NB: String also sensitive for extra spaces.
 readAttributeCols = ['Snelheid','Acceleration']
-attrLabel = {readAttributeCols[0]: 'Speed (m/s)',readAttributeCols[1]: 'Acceleration (m/s^2)'} 
+attrLabel = {readAttributeCols[0]: 'Speed (m/s)',readAttributeCols[1]: 'Acceleration (m/s^2)'}
 
 # When event columns exist in the raw data, they can be read to export an event file
 readEventColumns = []
@@ -97,7 +100,7 @@ Visualization = False # True = includes visualization, False = skips visualizati
 # Key events (TO DO)
 # - Load existing events
 # - Include modules to compute events
-## -- \work in progress -- 
+## -- \work in progress --
 
 #########################
 # END USER INPUT ########
@@ -113,8 +116,8 @@ Visualization = False # True = includes visualization, False = skips visualizati
 # To do: convert to Python package?
 
 import initialization
-# In this module, the library is added to the system path. 
-# This allows Python to import the custom modules in our library. 
+# In this module, the library is added to the system path.
+# This allows Python to import the custom modules in our library.
 # If you add new subfolders in the library, they need to be added in addLibary (in initialization.py) as well.
 initialization.addLibrary(studentFolder)
 dataFolder,tmpFigFolder,outputFolder,cleanedFolder,aggregatedOutputFilename,outputDescriptionFilename =\
@@ -134,8 +137,8 @@ import cleanupData
 import pandas as pd
 import exportCSV
 import estimateRemainingTime
-#  Unused modules: 
-# CSVexcerpt CSVimportAsColumns identifyDuplHeader LoadOrCreateCSVexcerpt individualAttributes plotTimeseries dataToDict 
+#  Unused modules:
+# CSVexcerpt CSVimportAsColumns identifyDuplHeader LoadOrCreateCSVexcerpt individualAttributes plotTimeseries dataToDict
 # dataToDict2 safetyWarning countExistingEvents exportCSV importTimeseriesData csv importEvents CSVtoDF plotSnapshot
 
 ## These lines should be embedded elsewhere in the future.
@@ -174,7 +177,7 @@ for dirtyFname in DirtyDataFiles:
 
 	if fatalTimeStampIssue:
 		skippedData = True
-		exportCSV.newOrAdd(aggregatedOutputFilename,exportDataString,exportData,skippedData)	
+		exportCSV.newOrAdd(aggregatedOutputFilename,exportDataString,exportData,skippedData)
 		continue
 	# From now onward, rawData contains:
 	#  'Ts' --> Timestamp
@@ -194,7 +197,7 @@ for dirtyFname in DirtyDataFiles:
 
 	rawPanda = importTimeseries_aspanda.rawData(cleanFname,cleanedFolder)
 	attrPanda,attrLabel = importTimeseries_aspanda.existingAttributes(cleanFname,cleanedFolder,readAttributeCols,attrLabel)
-	eventsPanda,eventsLabel = importTimeseries_aspanda.existingAttributes(cleanFname,cleanedFolder,readEventColumns,attrLabel)	
+	eventsPanda,eventsLabel = importTimeseries_aspanda.existingAttributes(cleanFname,cleanedFolder,readEventColumns,attrLabel)
 
 	###### Work in progress ##########
 	# Currently code is not very generic. It should work for NP though..
@@ -221,14 +224,14 @@ for dirtyFname in DirtyDataFiles:
 	# This can be written more efficiently.
 	# Idea: recognize when trial already exists in data and overwrite.
 	skippedData = False
-	exportCSV.newOrAdd(aggregatedOutputFilename,exportDataString,exportData,skippedData)	
+	exportCSV.newOrAdd(aggregatedOutputFilename,exportDataString,exportData,skippedData)
 	exportCSV.varDescription(outputDescriptionFilename,exportDataString,exportFullExplanation)
 
 	## As a temporary work around, the raw data is here exported per file
 	if exportPerFile:
 		# debugging only
 		altogether = pd.concat([rawPanda, attrPanda], axis=1) # debugging only
-		altogether.to_csv(outputFolder + 'output_' + dirtyFname) # debugging only		
+		altogether.to_csv(outputFolder + 'output_' + dirtyFname) # debugging only
 		print('EXPORTED <%s>' %dirtyFname[:-4])
 		print('in <%s>' %outputFolder)
 	continue
@@ -256,17 +259,17 @@ for dirtyFname in DirtyDataFiles:
 	if not debuggingMode:
 		continue
 	"""
-	The 3 lines below read and clean the csv file with LPM data as a pandas DataFrame and save the result again as a csv file. 
+	The 3 lines below read and clean the csv file with LPM data as a pandas DataFrame and save the result again as a csv file.
 	"""
 	RawPos_df = CSVtoDF.LoadPosData(cleanedFolder + cleanFname)
 	outputFilename = outputFolder + 'output_' + aggregateLevel[0] + '.csv'
 	RawPos_df.to_csv(outputFilename)
-	
+
 	rawDict,timestampIssues = importTimeseriesData.rawData(cleanFname,cleanedFolder,rawHeaders,conversionToMeter)
 	if timestampIssues:
 		skippedData = True
 		outputFilename = outputFolder + 'output_' + aggregateLevel[0] + '.csv'
-		exportCSV.newOrAdd(outputFilename,exportDataString,exportData,skippedData)	
+		exportCSV.newOrAdd(outputFilename,exportDataString,exportData,skippedData)
 		continue
 	attributeDict,attributeLabel = importTimeseriesData.existingAttributes(cleanFname,cleanedFolder,readAttributeCols)
 
@@ -291,14 +294,14 @@ for dirtyFname in DirtyDataFiles:
 	# TO DO: I'm not yet exporting the averages of team centroid (perhaps not informative)
 	exportData,exportDataString,exportFullExplanation = \
 	temporalAggregation.process(targetEvents,aggregateLevel,rawDict,attributeDict,exportData,exportDataString,exportFullExplanation,TeamAstring,TeamBstring)
-	
+
 	########################################################################################
 	####### EXPORT to CSV #########################################################
 	########################################################################################
 	## TO DO: include a better way to skip data when necessary
 	skippedData = False
 	outputFilename = outputFolder + 'output_' + aggregateLevel[0] + '.csv'
-	exportCSV.newOrAdd(outputFilename,exportDataString,exportData,skippedData)	
+	exportCSV.newOrAdd(outputFilename,exportDataString,exportData,skippedData)
 	outputFilename = outputFolder + 'outputDescription_' + aggregateLevel[0] + '.txt'
 	exportCSV.varDescription(outputFilename,exportDataString,exportFullExplanation)
 	# TO DO
