@@ -68,6 +68,12 @@ def process(rawDict,attributeDict,attributeLabel,TeamAstring,TeamBstring):
 	attributeDict,attributeLabel = \
 	control(rawDict,attributeDict,attributeLabel,TeamAstring,TeamBstring)
 
+	attributeDict,attributeLabel = \
+	distToBall(rawDict,attributeDict,attributeLabel,TeamAstring,TeamBstring)
+
+	attributeDict,attributeLabel = \
+	ballPossession(rawDict,attributeDict,attributeLabel,TeamAstring,TeamBstring)
+
 	# NB: Centroid and distance to centroid are stored in example variables that are not exported
 	# when 'process' is finished, because these features are already embedded in the main pipeline.
 	# Make sure that the name of the output variables that you create corresponds to the variables
@@ -75,8 +81,185 @@ def process(rawDict,attributeDict,attributeLabel,TeamAstring,TeamBstring):
 
 	return attributeDict,attributeLabel
 
+#def zone(rawDict,attributeDict,attributeLabel,TeamAstring,TeamBstring):
+
+def distToBall(rawDict,attributeDict,attributeLabel,TeamAstring,TeamBstring):
+	###############
+	# Use this as an example to compute a PLAYER level variable. Pay attention to the indexing. Let me know if you have an easier way.
+	###############
+	
+	##### THE DATA #####
+	# In this case, the new attribute will be computed based on a group (i.e., team) value
+	ballComplete = rawDict[rawDict['PlayerID'] == 'ball']
+
+	# NB Ball er nog uit!!
+	tmp = rawDict[rawDict['PlayerID'] != 'ball']
+	players = tmp[tmp['PlayerID'] != 'groupRow']
+
+	# Create empty DataFrame to store results, NB: columns need to be assigend beforehand.
+	newAttributes = pd.DataFrame(index = attributeDict.index, columns = ['distToBall', 'InPossession'])
+	newAttributes['InPossession'] = 0
+
+	lowestDistance = 999999;
+	playerInPossession = 0;
+	
+	# For every player in the dataFrame
+	for idx,i in enumerate(ballComplete['Ts']):
+		curTime = ballComplete['Ts'][idx]
+		
+		curBallX = ballComplete['X'][idx]
+		curBallY = ballComplete['Y'][idx]
+
+		# Take all corresponding Ts (for PlayerID != 'groupRow')
+		curPlayersX = players['X'][players['Ts'] == curTime]
+		curPlayersY = players['Y'][players['Ts'] == curTime]
+
+		curPlayersID = players['PlayerID'][players['Ts'] == curTime]
+
+		curPlayer_distToBall = np.sqrt((curPlayersX - curBallX)**2 + (curPlayersY - curBallY)**2)
+		newAttributes['distToBall'][curPlayer_distToBall.index] = curPlayer_distToBall
+		# print(curPlayer_distToBall)
+		# mindist = 
+		# print('--')
+		idxPossession = curPlayer_distToBall[curPlayer_distToBall == min(curPlayer_distToBall)].index
+		newAttributes['InPossession'][idxPossession] = 1
+		# # tmpRange = np.arange(int(idxPossession)-5,int(idxPossession)+5)
+		# print(newAttributes['InPossession'][idxPossession-1])
+		# print(newAttributes['InPossession'][idxPossession])
+		# print(newAttributes['InPossession'][idxPossession+1])
+		# IDEA??
+		# Duration threshold?
+
+		# absolute threshold (<3m?)
+
+		# velocity (same direction?)
+
+		# prioritization?
+
+
+		#print(curPlayersX,curPlayersY)
+
+		# Take the smallest distance
+		#if any(curPlayer_distToBall < lowestDistance):
+		#	lowestDistance = curPlayer_distToBall
+		#	playerInPossession = curPlayersID
+		#	print(playerInPossession)
+
+		# newAttributes['distToBall'][curPlayersID.index] = curPlayer_distToBall[curPlayersID.index]
+
+	'''
+	for idx,i in enumerate(pd.unique(rawDict['PlayerID'])):
+		curPlayer = rawDict[rawDict['PlayerID'] == i]
+		curPlayerDict = curPlayer.set_index('Ts')
+
+		if all(curPlayer['PlayerID'] != 'groupRow') and all(curPlayer['PlayerID'] != 'ball'):
+			curPlayer_distToBall = np.sqrt((curPlayerDict['X'] - ball['X'])**2 + (curPlayerDict['Y'] - ball['Y'])**2)
+			
+			print(curPlayer_distToBall)
+			print('---')
+			print(lowestDistance)
+			print(curPlayer_distToBall < lowestDistance)
+			#curPlayer_distToBall = curPlayer_distToBall[~np.isnan(curPlayer_distToBall)]
+			if any(curPlayer_distToBall < lowestDistance):
+				lowestDistance = curPlayer_distToBall
+				playerInPossession = curPlayer['PlayerID'];
+				print(playerInPossession)
+			#print(curPlayer_distToBall)
+			pdb.set_trace()
+
+		else:
+			continue
+
+
+		# Put compute values in the right place in the dataFrame
+		newAttributes['distToBall'][curPlayer.index] = curPlayer_distToBall[curPlayerDict.index]
+	'''
+
+	'''
+	for idx,i in enumerate(pd.unique(rawDict['Ts'])):
+		curTs = rawDict[rawDict['Ts'] == i]
+		curTsDict = curTs.set_index('Ts')
+		print(idx, min(curPlayer_distToBall[curTsDict.index]))
+	'''
+
+	# Combine the pre-existing attributes with the new attributes:
+	attributeDict = pd.concat([attributeDict, newAttributes], axis=1)
+	# altogether = pd.concat([rawDict,attributeDict], axis=1)
+	# altogether.to_csv('D:\\KNVB\\test.csv')
+
+	##### THE STRINGS #####
+	# Export a string label of each new attribute in the labels dictionary (useful for plotting purposes)
+	tmpDistToBallString = 'Distance from player to ball.'
+	attributeLabel.update({'distToBall':tmpDistToBallString})
+	print('voeg string description toe voor possession')
+	
+	return attributeDict,attributeLabel
+
+#Victor
+def ballPossession(rawDict,attributeDict,attributeLabel,TeamAstring,TeamBstring):
+	TeamVals = attributeDict[rawDict['PlayerID'] == 'groupRow'].set_index('Ts')
+	newAttributes = pd.DataFrame(index = attributeDict.index, columns = ['ballPosession'])
+	lowestDistance = 999999;
+	playerInPossession = 0;
+
+	#Search the ball in de DataFrame (Kan dit zonder for-loop)?
+	for idx,i in enumerate(pd.unique(rawDict['PlayerID'])):
+		ball = rawDict[rawDict['PlayerID'] == i]
+		ballDict = ball.set_index('Ts')
+		if all(ball['PlayerID'] == 'ball'):
+			for idx,j in enumerate(pd.unique(rawDict['PlayerID'])):
+				curPlayer = rawDict[rawDict['PlayerID'] == j]
+				curPlayerDict = curPlayer.set_index('Ts')
+				if all(ball['PlayerID'] == 'ball'):
+					continue
+				elif all(ball['PlayerID'] == 'groupRow'):
+					continue
+				else:
+					curPlayer_distToBall = np.sqrt((curPlayerDict['X'] - ballDict['X'])**2 + (curPlayerDict['Y'] - ballDict['Y'])**2)
+					if(curPlayer_distToBall < lowestDistance):
+						lowestDistance = curPlayer_distToBall
+						playerInPossession = curPlayer['PlayerID'];
+						#print(playerInPossession)
+
+	for idx,k in enumerate(pd.unique(rawDict['PlayerID'])):
+		currentPlayer = rawDict[rawDict['PlayerID'] == k]
+		currentPlayer = currentPlayer.set_index('Ts')
+		if all(currentPlayer['PlayerID'] == playerInPossession):
+			newAttributes['ballPosession'][currentPlayer.index] = 1;
+		#elif all(currentPlayer['PlayerID'] != playerInPossession):
+			#newAttributes['ballPosession'][currentPlayer.index] = 0;
+
+	# Combine the pre-existing attributes with the new attributes:
+	attributeDict = pd.concat([attributeDict, newAttributes], axis=1)
+
+	##### THE STRINGS #####
+	# Export a string label of each new attribute in the labels dictionary (useful for plotting purposes)
+	tmpPossessionString = 'Bool Player in Possession (m)'
+	attributeLabel.update({'InPossession':tmpPossessionString})
+
+	return attributeDict,attributeLabel
+
+
+'''
+def ballPossession(rawDict,attributeDict,attributeLabel,TeamAstring,TeamBstring):
+	
+	notball = attributeDict[rawDict['PlayerID'] != 'ball'].set_index('Ts')
+	distToBall = notball['distToBall']
+	#distToBall = distToBall[~np.isnan(distToBall)]
+	for idx,i in enumerate(pd.unique(rawDict['Ts'])):
+		ballposs = [k for k in distToBall if distToBall[k] == min(distToBall[k])]
+		print(ballposs)
+		#print(ballPoss)
+	
+	for idx,i in enumerate(pd.unique(rawDict['Ts'])):
+		#print(idx, min(attributeDict['distToBall']))
+		continue
+
+	return attributeDict,attributeLabel
+'''
+
 def control(rawDict,attributeDict,attributeLabel,TeamAstring,TeamBstring):
-	Ball = attributeDict[rawDict['PlayerID'] == 'ball'].set_index('Ts')
+	ball = attributeDict[rawDict['PlayerID'] == 'ball'].set_index('Ts')
 	newAttributes = pd.DataFrame(index = attributeDict.index, columns = ['avgRelSpeedPlayerBall','control'])
 
 	##LT: how to determine this constant? 
@@ -91,7 +274,7 @@ def control(rawDict,attributeDict,attributeLabel,TeamAstring,TeamBstring):
 		##LT: if player is in ball possesion? 
 		if all(curPlayer['PlayerID'] != 'groupRow') and all(curPlayer['PlayerID'] != 'ball'):
 			#average relative speed of player and ball. Always value between 0 and 1
-			curPlayer_speedDiffBall = abs((curPlayerDictAtt['Snelheid'] - Ball['Snelheid'])/Ball['Snelheid'])
+			curPlayer_speedDiffBall = abs((curPlayerDictAtt['Snelheid'] - ball['Snelheid'])/ball['Snelheid'])
 			control = 1 - constant * curPlayer_speedDiffBall**2
 			#print(control)
 		else:
@@ -113,6 +296,9 @@ def control(rawDict,attributeDict,attributeLabel,TeamAstring,TeamBstring):
 	attributeLabel.update(attributeLabel_tmp)
 	
 	return attributeDict,attributeLabel
+
+#def pressure(rawDict,attributeDict,attributeLabel,TeamAstring,TeamBstring):
+
 
 
 ## Of course, you can also create new modules (seperate files), to avoid having a very long file.

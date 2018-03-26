@@ -218,7 +218,8 @@ for dirtyFname in DirtyDataFiles:
 
 	## Spatial aggregation
 	attrPanda,attrLabel = spatialAggregation.process(rawPanda,attrPanda,attrLabel,TeamAstring,TeamBstring)
-
+	print(attrPanda.keys())
+	pdb.set_trace()
 	###### Work in progress ##########
 	## Temporal aggregation
 	exportData,exportDataString,exportFullExplanation = \
