@@ -37,7 +37,9 @@ def process(fname,dataType,TeamAstring,TeamBstring):
 		student_LT_dissectFilename.process(fname,dataType,TeamAstring,TeamBstring)
 		# exportData, exportDataString, exportDataFullExplanation,cleanFname = default(fname)
 
-	return exportData, exportDataString, exportDataFullExplanation,cleanFname,TeamAstring,TeamBstring
+	spatAggFname = 'TimeseriesAttributes_' + cleanFname
+
+	return exportData, exportDataString, exportDataFullExplanation,cleanFname,spatAggFname,TeamAstring,TeamBstring
 
 def FDP(fname):	
 	# Using regular expression to extract info from filename		
@@ -136,8 +138,8 @@ def NP(fname):
 
 	cleanFname = School + '_' + Class + '_' + Group + '_' + Test + '_' + Exp + '.csv'
 
-	exportData = [School, Class, Group, Test]
-	exportDataString = ['School', 'Class', 'Group', 'Test']
-	exportDataFullExplanation = ['School experiment was held at','Class the participants were from','Identifier groups that played each other','Name of the type of trial (PRE = pre-test, POS = post-test, TRA = transfer test, RET = retention test)']
+	exportData = [School, Class, Group, Test, Exp]
+	exportDataString = ['School', 'Class', 'Group', 'Test', 'Exp']
+	exportDataFullExplanation = ['School experiment was held at','Class the participants were from','Identifier groups that played each other','Name of the type of trial (PRE = pre-test, POS = post-test, TRA = transfer test, RET = retention test)', 'Experimental group (LP = Linear Pedagogy, NP = Nonlinear Pedgagogy)']
 
 	return exportData, exportDataString, exportDataFullExplanation,cleanFname

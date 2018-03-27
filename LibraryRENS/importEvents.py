@@ -44,6 +44,8 @@ def process(eventsPanda,TeamAstring,TeamBstring):
 	targetEvents = goals(eventsPanda,TeamAstring,TeamBstring,targetEvents)
 	## possession / turnovers
 	targetEvents = possession(eventsPanda,TeamAstring,TeamBstring,targetEvents)
+	## Runs
+	targetEvents = runs(eventsPanda,TeamAstring,TeamBstring,targetEvents)
 	## Pass
 	# NB: If available, possession should be computed before passes to incorporate number of consecutive passes
 	# Could implement a safer procedure by starting with an empty dictionary and then adding the eventspecific dictionary after it's done the module (exporting an empty dictionary if info not available), then, the possession dictionary HAS to exist before going through
@@ -87,6 +89,41 @@ def goals(eventsPanda,TeamAstring,TeamBstring,targetEvents):
 
 #################################################################
 #################################################################
+
+def runs(eventsPanda,TeamAstring,TeamBstring,targetEvents):
+	targetEvents = {**targetEvents,'Run':[]} 
+
+	if not 'Run' in eventsPanda.keys():
+		# No Run information, so return immediately
+		return targetEvents
+
+	runEvent = [(i,val) for i,val in enumerate(eventsPanda['Run']) if val  != '' and pd.notnull(val)]
+	dt = []
+	in1 = []
+	in2 = []
+	for idx,i in enumerate(runEvent):
+		curFrame = i[0] # frame
+		curTime = eventsPanda['Ts'][i[0]]
+		curStatus = i[1]
+		# Determine per event who has possession from that frame onward
+		if curStatus[:3].lower() == 'run':
+			in1 = float(eventsPanda['Ts'][curFrame])
+
+		elif curStatus[:7].lower() == 'end run':
+			in2 = float(eventsPanda['Ts'][curFrame])
+
+		if in2 != []:
+			if in1 == []:
+				# Weird, found an end without a start.
+				warn('\nWARNING: Found an end without a start. Ignored it. \nConsider checking the raw data.')
+				in2 = []
+			else:
+				# Found a start and an end
+				targetEvents['Run'].append((in1,in2))
+				in1 = []
+				in2 = []
+
+	return targetEvents
 
 def possession(eventsPanda,TeamAstring,TeamBstring,targetEvents):
 	targetEvents = {**targetEvents,'Possession':[],'Turnovers':[]} 
