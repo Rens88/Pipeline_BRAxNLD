@@ -48,28 +48,22 @@ if __name__ == '__main__':
 	# a player belongs to.
 
 	# The process function is called to process all subfunctions
-	process(rawDict,attributeDict,attributeLabel,TeamAstring,TeamBstring)
+	process(rawDict,attributeDict,attributeLabel,TeamAstring,TeamBstring,skipSpatAgg)
 
 	# This is an example that can be used to see how you compute a group level variable.
-	teamCentroid_panda(rawDict,attributeDict,attributeLabel,TeamAstring,TeamBstring)
+	teamCentroid_panda(rawDict,attributeDict,attributeLabel,TeamAstring,TeamBstring,skipSpatAgg)
 	# This is an example that can be used to see how to compute an individual level variable.
-	distanceToCentroid(rawDict,attributeDict,attributeLabel,TeamAstring,TeamBstring)
+	distanceToCentroid(rawDict,attributeDict,attributeLabel,TeamAstring,TeamBstring,skipSpatAgg)
 
 ## Here, you specifiy what each function does
 def process(rawDict,attributeDict,attributeLabel,TeamAstring,TeamBstring,skipSpatAgg):
 	# Use this is an example for a GROUP level aggregate
 	attributeDict_EXAMPLE,attributeLabel_EXAMPLE = \
-	teamCentroid_panda(rawDict,attributeDict,attributeLabel,TeamAstring,TeamBstring)
+	teamCentroid_panda(rawDict,attributeDict,attributeLabel,TeamAstring,TeamBstring,skipSpatAgg)
 
 	# Use this is an example for a PLAYER level aggregate
 	attributeDict_EXAMPLE,attributeLabel_EXAMPLE = \
-	distanceToCentroid(rawDict,attributeDict,attributeLabel,TeamAstring,TeamBstring)
-
-	attributeDict,attributeLabel = \
-	ballPossession(rawDict,attributeDict,attributeLabel,TeamAstring,TeamBstring)
-
-	attributeDict,attributeLabel = \
-	control(rawDict,attributeDict,attributeLabel,TeamAstring,TeamBstring)
+	distanceToCentroid(rawDict,attributeDict,attributeLabel,TeamAstring,TeamBstring,skipSpatAgg)
 
 	# NB: Centroid and distance to centroid are stored in example variables that are not exported
 	# when 'process' is finished, because these features are already embedded in the main pipeline.
@@ -77,107 +71,33 @@ def process(rawDict,attributeDict,attributeLabel,TeamAstring,TeamBstring,skipSpa
 	# that this function returns (i.e., 'attributeDict' and 'attributeLabel').
 
 	return attributeDict,attributeLabel
-
-def ballPossession(rawDict,attributeDict,attributeLabel,TeamAstring,TeamBstring):
-	#ball
-	ballComplete = rawDict[rawDict['PlayerID'] == 'ball']
-
-	#only players
-	tmp = rawDict[rawDict['PlayerID'] != 'ball']
-	players = tmp[tmp['PlayerID'] != 'groupRow']
-
-	newAttributes = pd.DataFrame(index = attributeDict.index, columns = ['distToBall', 'inPossession'])
-	newAttributes['inPossession'] = 0
-	
-	# For every ball
-	for idx,i in enumerate(ballComplete['Ts']):
-		curTime = ballComplete['Ts'][idx]
-		
-		curBallX = ballComplete['X'][idx]
-		curBallY = ballComplete['Y'][idx]
-
-		# Take all corresponding Ts (for PlayerID != 'groupRow' and 'ball')
-		curPlayersX = players['X'][players['Ts'] == curTime]
-		curPlayersY = players['Y'][players['Ts'] == curTime]
-
-		curPlayersID = players['PlayerID'][players['Ts'] == curTime]
-
-		curPlayer_distToBall = np.sqrt((curPlayersX - curBallX)**2 + (curPlayersY - curBallY)**2)
-		newAttributes['distToBall'][curPlayer_distToBall.index] = curPlayer_distToBall
-		idxPossession = curPlayer_distToBall[curPlayer_distToBall == min(curPlayer_distToBall)].index
-		newAttributes['inPossession'][idxPossession] = 1
-		# IDEA??
-		# Duration threshold?
-
-		# absolute threshold (<3m?)
-
-		# velocity (same direction?)
-
-		# prioritization?
-
-	# Combine the pre-existing attributes with the new attributes:
-	attributeDict = pd.concat([attributeDict, newAttributes], axis=1)
-
-	##### THE STRINGS #####	
-	# Export a string label of each new attribute in the labels dictionary (useful for plotting purposes)
-	tmpDistToBallString = 'Distance from player to ball.'
-	tmpInPossession = 'Boolean for player in possession of the ball.'
-	attributeLabel_tmp = {'distToBall':tmpDistToBallString,'inPossession':tmpInPossession}
-	attributeLabel.update(attributeLabel_tmp)
-	
-	return attributeDict,attributeLabel
-
-def control(rawDict,attributeDict,attributeLabel,TeamAstring,TeamBstring):
-	#Only players in possession
-	inPossession = attributeDict[attributeDict['inPossession'] == 1]
-
-	#ball
-	ballComplete = attributeDict[rawDict['PlayerID'] == 'ball']
-	
-	newAttributes = pd.DataFrame(index = attributeDict.index, columns = ['avgRelSpeedPlayerBall','control'])
-	newAttributes['avgRelSpeedPlayerBall'] = 0
-	newAttributes['control'] = 0
-
-	#LT: how to determine this constant?
-	constant = 1
-	
-	# For every timestamp in ball
-	for idx,i in enumerate(ballComplete['Ts']):
-		curTime = ballComplete['Ts'][idx]
-
-		curBallSpeed = ballComplete['Snelheid'][idx]
-		curPlayerSpeed = inPossession['Snelheid'][inPossession['Ts'] == curTime]
-		curPlayerSpeedDiffBall = abs((curPlayerSpeed - curBallSpeed)/curBallSpeed)
-		control = 1 - constant * curPlayerSpeedDiffBall**2
-
-		newAttributes['avgRelSpeedPlayerBall'][curPlayerSpeedDiffBall.index] = curPlayerSpeedDiffBall
-		newAttributes['control'][curPlayerSpeedDiffBall.index] = control
-		
-	attributeDict = pd.concat([attributeDict, newAttributes], axis=1)
-
-	##### THE STRINGS #####
-	# Export a string label of each new attribute in the labels dictionary (useful for plotting purposes)
-	tmpAvgRelSpeedPlayerBall = 'Average relative speed of player and ball.'
-	tmpControl = 'Control of the player with ball'
-
-	attributeLabel_tmp = {'avgRelSpeedPlayerBall': tmpAvgRelSpeedPlayerBall, 'control': tmpControl}
-	attributeLabel.update(attributeLabel_tmp)
-
-	# altogether = pd.concat([rawDict,attributeDict], axis=1)
-	# altogether.to_csv('D:\\KNVB\\test.csv')
-	
-	return attributeDict,attributeLabel
-
-
 ## Of course, you can also create new modules (seperate files), to avoid having a very long file.
 ## If you do, don't forget to import the module at the top of this file using <import newModule>.
 
 #####################################################################
-def teamCentroid_panda(rawDict,attributeDict,attributeLabel,TeamAstring,TeamBstring):
+def teamCentroid_panda(rawDict,attributeDict,attributeLabel,TeamAstring,TeamBstring,skipSpatAgg):
 	###############
 	# Use this as an example to compute a GROUP level variable. Pay attention to the indexing. Let me know if you have an easier way.
 	###############
 	
+	##### THE STRINGS #####
+	# Export a string label of each new attribute in the labels dictionary (useful for plotting purposes)
+	tmpXAString = 'X-position of %s (m)' %TeamAstring
+	tmpYAString = 'Y-position of %s (m)' %TeamAstring
+	tmpLengthAString = 'Distance along Y-axis %s (m)' %TeamAstring
+	tmpWidthAString = 'Distance along X-axis %s (m)' %TeamAstring
+	
+	tmpXBString = 'X-position of %s (m)' %TeamBstring
+	tmpYBString = 'Y-position of %s (m)' %TeamBstring			
+	tmpLengthBString = 'Distance along Y-axis %s (m)' %TeamBstring
+	tmpWidthBString = 'Distance along X-axis %s (m)' %TeamBstring
+	
+	attributeLabel_tmp = {'TeamCentXA': tmpXAString, 'TeamCentYA': tmpYAString, 'LengthA': tmpLengthAString,'WidthA': tmpWidthAString,\
+	'TeamCentXB': tmpXBString,'TeamCentYB': tmpYBString,'LengthB': tmpLengthBString,'WidthB': tmpWidthBString}
+	attributeLabel.update(attributeLabel_tmp)
+
+	if skipSpatAgg:
+		return attributeDict,attributeLabel
 	##### THE DATA #####
 	# Prepare the indices of the groupRows. This will be used to store the computed values in the index corresponding to attributeDict.
 	ind_groupRows = attributeDict[rawDict['PlayerID'] == 'groupRow'].index
@@ -240,32 +160,24 @@ def teamCentroid_panda(rawDict,attributeDict,attributeLabel,TeamAstring,TeamBstr
 	# Combine the pre-existing attributes with the new attributes:
 	attributeDict = pd.concat([attributeDict, newAttributesA, newAttributesB], axis=1)
 	
-	##### THE STRINGS #####
-	# Export a string label of each new attribute in the labels dictionary (useful for plotting purposes)
-	tmpXAString = 'X-position of %s (m)' %TeamAstring
-	tmpYAString = 'Y-position of %s (m)' %TeamAstring
-	tmpLengthAString = 'Distance along Y-axis %s (m)' %TeamAstring
-	tmpWidthAString = 'Distance along X-axis %s (m)' %TeamAstring
-	
-	tmpXBString = 'X-position of %s (m)' %TeamBstring
-	tmpYBString = 'Y-position of %s (m)' %TeamBstring			
-	tmpLengthBString = 'Distance along Y-axis %s (m)' %TeamBstring
-	tmpWidthBString = 'Distance along X-axis %s (m)' %TeamBstring
-	
-	attributeLabel_tmp = {'TeamCentXA': tmpXAString, 'TeamCentYA': tmpYAString, 'LengthA': tmpLengthAString,'WidthA': tmpWidthAString,\
-	'TeamCentXB': tmpXBString,'TeamCentYB': tmpYBString,'LengthB': tmpLengthBString,'WidthB': tmpWidthBString}
-	attributeLabel.update(attributeLabel_tmp)
-
 	return attributeDict,attributeLabel
 
 
 ############################################################################
 
-def distanceToCentroid(rawDict,attributeDict,attributeLabel,TeamAstring,TeamBstring):
+def distanceToCentroid(rawDict,attributeDict,attributeLabel,TeamAstring,TeamBstring,skipSpatAgg):
 	###############
 	# Use this as an example to compute a PLAYER level variable. Pay attention to the indexing. Let me know if you have an easier way.
 	###############
 	
+	##### THE STRINGS #####
+	# Export a string label of each new attribute in the labels dictionary (useful for plotting purposes)
+	tmpDistToCentString = 'Player\'s distance to its team\'s centroid (m)'
+	attributeLabel.update({'distToCent':tmpDistToCentString})
+
+	if skipSpatAgg:
+		return attributeDict,attributeLabel
+
 	##### THE DATA #####
 	# In this case, the new attribute will be computed based on a group (i.e., team) value
 	TeamVals = attributeDict[rawDict['PlayerID'] == 'groupRow'].set_index('Ts')
@@ -296,9 +208,5 @@ def distanceToCentroid(rawDict,attributeDict,attributeLabel,TeamAstring,TeamBstr
 	# Combine the pre-existing attributes with the new attributes:
 	attributeDict = pd.concat([attributeDict, newAttributes], axis=1)
 
-	##### THE STRINGS #####
-	# Export a string label of each new attribute in the labels dictionary (useful for plotting purposes)
-	tmpDistToCentString = 'Player\'s distance to its team\'s centroid (m)'
-	attributeLabel.update({'distToCent':tmpDistToCentString})
-	
 	return attributeDict,attributeLabel
+
