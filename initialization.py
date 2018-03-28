@@ -33,16 +33,17 @@ def addLibrary(studentFolder):
 	#########################################
 
 
-def checkFolders(folder,aggregateEvent):
+def checkFolders(folder,aggregateLevel):
 	if folder[-1:] != sep:
 		warn('\n<folder> did not end with <%s>. \nOriginal input <%s>\nReplaced with <%s>' %(sep,folder,folder+sep))
 		folder = folder + sep
 
 	dataFolder = folder + 'Data' + sep
-	tmpFigFolder = folder + 'Figs' + sep + 'Temp' + sep + aggregateEvent + sep
+	tmpFigFolder = folder + 'Figs' + sep + 'Temp' + sep + aggregateLevel[0] + sep
 	outputFolder = folder + 'Output' + sep# Folder where tabular output will be stored (aggregated spatially and temporally)
 	cleanedFolder = dataFolder + 'Cleaned' + sep    
 	spatAggFolder = dataFolder + 'SpatAgg' + sep
+	eventAggFolder = dataFolder + 'EventAgg' + sep
 
 	# Verify if folders exists
 	if not exists(dataFolder):
@@ -56,10 +57,12 @@ def checkFolders(folder,aggregateEvent):
 		makedirs(cleanedFolder)
 	if not exists(spatAggFolder):
 		makedirs(spatAggFolder)
-
+	if not exists(eventAggFolder):
+		makedirs(eventAggFolder)
+	
 	timeString = time.strftime("%Hh%Mm_%d_%B_%Y")
-	outputFilename = outputFolder + 'output_' + aggregateEvent + '_' + timeString +  '.csv'
-	outputDescriptionFilename = outputFolder + 'output_Description_' + aggregateEvent + '.txt'
-	return dataFolder,tmpFigFolder,outputFolder,cleanedFolder,spatAggFolder,outputFilename,outputDescriptionFilename,
+	outputFilename = outputFolder + 'output_' + aggregateLevel[0] + '_' + timeString +  '.csv'
+	outputDescriptionFilename = outputFolder + 'output_Description_' + aggregateLevel[0] + '.txt'
+	eventAggFname = 'eventExcerpt_' + aggregateLevel[0] + '_window(' + str(aggregateLevel[1]) + ')_lag(' + str(aggregateLevel[2]) + ').csv'
 
-# >>>>>>> d6c15d944b1168972454264b6f2fc40ddffffa10
+	return dataFolder,tmpFigFolder,outputFolder,cleanedFolder,spatAggFolder,eventAggFolder, outputFilename,outputDescriptionFilename,eventAggFname

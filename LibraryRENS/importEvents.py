@@ -60,7 +60,7 @@ def full(eventsPanda,targetEvents):
 	return targetEvents
 
 def goals(eventsPanda,TeamAstring,TeamBstring,targetEvents):
-	targetEvents = {**targetEvents,'Goals':[]}
+	targetEvents = {**targetEvents,'Goal':[]}
 
 	if not 'Goal' in eventsPanda.keys():
 		# No Goal information, so return immediately
@@ -77,10 +77,10 @@ def goals(eventsPanda,TeamAstring,TeamBstring,targetEvents):
 
 			if TeamAstring in i:
 				goalsOut[count,0] = 0
-				targetEvents['Goals'].append((float(eventsPanda['Ts'][idx]),TeamAstring))
+				targetEvents['Goal'].append((float(eventsPanda['Ts'][idx]),TeamAstring))
 			elif TeamBstring in i:
 				goalsOut[count,0] = 1
-				targetEvents['Goals'].append((float(eventsPanda['Ts'][idx]),TeamBstring))
+				targetEvents['Goal'].append((float(eventsPanda['Ts'][idx]),TeamBstring))
 			else:
 				warn('\n\nCould not recognize team:\n<<%s>>' %i)
 			count = count + 1

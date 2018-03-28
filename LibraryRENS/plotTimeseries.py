@@ -26,28 +26,50 @@ if __name__ == '__main__':
 	# The plot new style
 	process(plotTheseAttributes,aggregateLevel,targetEvents,rawDict,attributeDict,attributeLabel,tmpFigFolder,fname,TeamAstring,TeamBstring)
 
-def process(plotTheseAttributes,aggregateLevel,targetEvents,rawDict,attributeDict,attributeLabel,tmpFigFolder,fname,TeamAstring,TeamBstring,debuggingMode):
+def process(plotTheseAttributes,aggregateLevel,targetEvents,eventExcerptPanda,attributeLabel,tmpFigFolder,fname,TeamAstring,TeamBstring,debuggingMode):
+	# process(plotTheseAttributes,aggregateLevel,targetEvents,rawDict,attributeDict,attributeLabel,tmpFigFolder,fname,TeamAstring,TeamBstring,debuggingMode):
+	
 	# Idea: add overview of positions on the court
 	tPlot = time.time()	# do stuff
 	
 	xLabel = attributeLabel['Ts']
 	
-	# Put TeamID and PlayerID in attributeDict for pivoting
-	if 'PlayerID' not in attributeDict.keys():
-		attributeDict = pd.concat([attributeDict, rawDict['PlayerID']], axis = 1) # Skip the duplicate 'Ts' columns
-	if 'TeamID' not in attributeDict.keys():
-		attributeDict = pd.concat([attributeDict, rawDict['TeamID']], axis = 1) # Skip the duplicate 'Ts' columns		
+	# # Put TeamID and PlayerID in attributeDict for pivoting
+	# if 'PlayerID' not in attributeDict.keys():
+	# 	attributeDict = pd.concat([attributeDict, rawDict['PlayerID']], axis = 1) # Skip the duplicate 'Ts' columns
+	# if 'TeamID' not in attributeDict.keys():
+	# 	attributeDict = pd.concat([attributeDict, rawDict['TeamID']], axis = 1) # Skip the duplicate 'Ts' columns		
 	# attributeDict.drop('Ts', axis = 1, inplace = True)
 	
-	for idx,currentEvent in enumerate(targetEvents[aggregateLevel[0]]):
+	if not 'temporalAggregate' in eventExcerptPanda.keys():
+		# No events detected
+		warn('\nWARNING: No temporalAggregate detected. \nCouldnt plot any data.\nUse <Random> to create random events, or <full> to plot the whole file.\n')
+		return
+	# for idx,currentEvent in enumerate(targetEvents[aggregateLevel[0]]):
+	for i in pd.unique(eventExcerptPanda['temporalAggregate']):
+
 		# Find rows
 		# Idea: Similar to tempAgg. Maybe write a generic module?
-		fileAggregateID,rowswithinrangeTeam,rowswithinrangeBall,rowswithinrangePlayer,rowswithinrangePlayerA,rowswithinrangePlayerB,specialCase,skipCurrentEvent = \
-		findRows(idx,aggregateLevel,targetEvents,rawDict,TeamAstring,TeamBstring,currentEvent)
+
+		# fileAggregateID,rowswithinrangeTeam,rowswithinrangeBall,rowswithinrangePlayer,rowswithinrangePlayerA,rowswithinrangePlayerB,specialCase,skipCurrentEvent = \
+		# findRows(idx,aggregateLevel,targetEvents,rawDict,TeamAstring,TeamBstring,currentEvent)
 		
-		if skipCurrentEvent:
-			continue
-		
+		# if skipCurrentEvent:
+		# 	continue
+
+		# A bit of an elaborate way of finding the rows, but that's a leftover of converting an old script that was based on rawDict and attributeDict
+		currentEvent = eventExcerptPanda.loc[eventExcerptPanda['temporalAggregate'] == i]
+		currentEvent = currentEvent.reset_index()
+
+		tmp = currentEvent.loc[currentEvent['PlayerID'] == 'groupRow']
+		rowswithinrangeTeam = tmp.index
+		tmp = currentEvent.loc[currentEvent['TeamID'] == TeamAstring]#.index
+		rowswithinrangePlayerA = tmp.index
+		tmp = currentEvent.loc[currentEvent['TeamID'] == TeamBstring]#.index
+		rowswithinrangePlayerB = tmp.index
+
+		fileAggregateID = i + '_window(' + str(aggregateLevel[1]) + ')_lag(' + str(aggregateLevel[2]) + ')'
+
 		for plotThisAttribute in plotTheseAttributes:
 
 			plt.figure(num=None, figsize=(3.8*5,3*5), dpi=300, facecolor='w', edgecolor='k')
@@ -57,14 +79,15 @@ def process(plotTheseAttributes,aggregateLevel,targetEvents,rawDict,attributeDic
 				# Pairwise per team
 				yLabel = findYlabel(plotThisAttribute,attributeLabel,TeamAstring,TeamBstring) 
 				# Plot it
-				pairwisePerTeam(plotThisAttribute,attributeDict,rowswithinrangeTeam,rawDict,TeamAstring,TeamBstring)
+				pairwisePerTeam(plotThisAttribute,currentEvent,rowswithinrangeTeam,TeamAstring,TeamBstring)
+
 				varName = plotThisAttribute[0]
 				if plotThisAttribute[0][-1] == 'A' or plotThisAttribute[0][-1] == 'B':
 					varName = varName[:-1]
 				outputFilename = tmpFigFolder + fname + '_' + varName + '_' + fileAggregateID + '.jpg'
 			else:
 				# Plot it
-				plotPerPlayerPerTeam(plotThisAttribute,attributeDict,rowswithinrangePlayerA,rowswithinrangePlayerB,TeamAstring,TeamBstring)
+				plotPerPlayerPerTeam(plotThisAttribute,currentEvent,rowswithinrangePlayerA,rowswithinrangePlayerB,TeamAstring,TeamBstring)
 				labelProvided = [True for j in attributeLabel.keys() if plotThisAttribute == j]
 				if labelProvided:
 					yLabel = attributeLabel[plotThisAttribute]
@@ -80,83 +103,12 @@ def process(plotTheseAttributes,aggregateLevel,targetEvents,rawDict,attributeDic
 			print('EXPORTED: <%s>' %outputFilename)
 			plt.close()
 
-		if specialCase:
-			break
+		# if specialCase:
+		# 	break
 	if debuggingMode:
 		elapsed = str(round(time.time() - tPlot, 2))
 		print('Time elapsed during plotTimeseries: %ss' %elapsed)
 
-def findRows(idx,aggregateLevel,targetEvents,rawDict,TeamAstring,TeamBstring,currentEvent):
-	# Create the output string that identifies the current event
-	aggregateString = '%03d_%s' %(idx,aggregateLevel[0])	
-	specialCase = False
-	skipCurrentEvent = False
-	if type(targetEvents[aggregateLevel[0]]) != list:			
-		# A special case: there was only one event identified, which means that <enumerate> now 
-		# goes through the contents of that specific event, rather than iterating over the events.
-		# Improvised solution is to overwrite currentEvent and subsequently terminate early.
-		#
-		# necessary to adjust input style of aggregateLevel[0] (which determines currentEvent)
-		# find a better way to store aggregateLevel ?
-		# Gebeurt alleen bij full?
-		currentEvent = targetEvents[aggregateLevel[0]]
-		fileAggregateID = aggregateString + '_window(' + str(aggregateLevel[1]) + ')_lag(' + str(aggregateLevel[2]) + ')'
-		specialCase = True
-	# Determine tStart and tEnd
-	if aggregateLevel[0] == 'Possession' or aggregateLevel[0] == 'Full' or aggregateLevel[0] == 'Run':
-		# These are the events that have a fixed window. Technically it combines 2 events. The start of a targetEvent and the end of a targetEvent.
-		# E.g., from possession start to possession end.
-		# E.g., from start of the file to the end.
-		# E.g., from the start of an attack to the end.
-		# In general terms:
-		# Anything that has a start and an end time should be captured here.
-		tStart = currentEvent[0]
-		tEnd = currentEvent[1]
-		fileAggregateID = aggregateString + '_' 'window(all)_lag(none)'
-	else:
-		# And these are the remaining ones. The ones for which the ijk-algorithm should be designed.
-		# Here, the window is determined by the user input: window-size and lag (and possibly in the future aggregation method)
-
-		tEnd = currentEvent[0] - aggregateLevel[2]
-		tStart = tEnd - aggregateLevel[1]
-		fileAggregateID = aggregateString + '_window(' + str(aggregateLevel[1]) + ')_lag(' + str(aggregateLevel[2]) + ')'
-
-	# Determine the rows corresponding to the current event.
-	if tEnd == None or tStart == None: # Check if both end and start are allocated
-		warn('\nEvent %d skipped because tStart = <<%s>> and tEnd = <<%s>>.\n' %(idx,tStart,tEnd))
-		skipCurrentEvent = True
-		return None,None,None,None,None,None,None,skipCurrentEvent
-	# Find index of rows within tStart and tEnd
-	if round(tStart,2) <= round(tEnd,2):
-		window = (tStart,tEnd)
-	else:
-		window = (tEnd,tStart)
-		warn('\nSTRANGE: tStart <%s> was bigger than tEnd <%s>.\nSwapped them to determine window' %(tStart,tEnd))
-	
-	tmp = rawDict[rawDict['Ts'] > window[0]]
-	rowswithinrange = tmp[tmp['Ts'] <= window[1]].index
-	del(tmp)
-	## The old notation.
-	rowswithinrangeTeam = rawDict['Ts'][rowswithinrange].index[rawDict['PlayerID'][rowswithinrange] == 'groupRow']
-	rowswithinrangeBall = rawDict['Ts'][rowswithinrange].index[rawDict['PlayerID'][rowswithinrange] == 'ball']
-	rowswithinrangePlayer = rawDict['Ts'][rowswithinrange].index[rawDict['TeamID'][rowswithinrange] != '']
-	rowswithinrangePlayerA = rawDict['Ts'][rowswithinrange].index[rawDict['TeamID'][rowswithinrange] == TeamAstring]
-	rowswithinrangePlayerB = rawDict['Ts'][rowswithinrange].index[rawDict['TeamID'][rowswithinrange] == TeamBstring]
-	
-	# rowswithinrangeTeam = rawDict['Ts'][rowswithinrange].index[rawDict['PlayerID'].loc[rowswithinrange] == 'groupRow']
-	# rowswithinrangeBall = rawDict['Ts'][rowswithinrange].index[rawDict['PlayerID'].loc[rowswithinrange] == 'ball']
-	# rowswithinrangePlayer = rawDict['Ts'][rowswithinrange].index[rawDict['TeamID'].loc[rowswithinrange] != '']
-	# rowswithinrangePlayerA = rawDict['Ts'][rowswithinrange].index[rawDict['TeamID'].loc[rowswithinrange] == TeamAstring]
-	# rowswithinrangePlayerB = rawDict['Ts'][rowswithinrange].index[rawDict['TeamID'].loc[rowswithinrange] == TeamBstring]
-
-	# # rowswithinrangeTeam = spatAggPanda['PlayerID'].loc[rowswithinrange] == 'groupRow'.index
-	# rowswithinrangeTeam = rawDict['PlayerID'].loc[rowswithinrange] == 'groupRow'.index
-	# rowswithinrangeBall = rawDict['PlayerID'].loc[rowswithinrange] == 'ball'.index
-	# rowswithinrangePlayer = rawDict['TeamID'].loc[rowswithinrange] != ''.index
-	# rowswithinrangePlayerA = [rawDict['TeamID'].loc[rowswithinrange] == TeamAstring].index
-	# rowswithinrangePlayerB = rawDict['TeamID'].loc[rowswithinrange] == TeamBstring .index
-
-	return fileAggregateID,rowswithinrangeTeam,rowswithinrangeBall,rowswithinrangePlayer,rowswithinrangePlayerA,rowswithinrangePlayerB,specialCase,skipCurrentEvent
 
 def findYlabel(plotThisAttribute,attributeLabel,TeamAstring,TeamBstring):
 	
@@ -191,12 +143,12 @@ def findYlabel(plotThisAttribute,attributeLabel,TeamAstring,TeamBstring):
 
 	return yLabel
 
-def pairwisePerTeam(plotThisAttribute,attributeDict,rowswithinrangeTeam,rawDict,TeamAstring,TeamBstring):
-	Y1 = attributeDict[plotThisAttribute[0]][rowswithinrangeTeam]
-	Y2 = attributeDict[plotThisAttribute[1]][rowswithinrangeTeam]
+def pairwisePerTeam(plotThisAttribute,eventExcerptPanda,rowswithinrangeTeam,TeamAstring,TeamBstring):
+	Y1 = eventExcerptPanda[plotThisAttribute[0]][rowswithinrangeTeam]
+	Y2 = eventExcerptPanda[plotThisAttribute[1]][rowswithinrangeTeam]
 
-	X1 = rawDict['Ts'][rowswithinrangeTeam]
-	X2 = rawDict['Ts'][rowswithinrangeTeam]
+	X1 = eventExcerptPanda['Ts'][rowswithinrangeTeam]
+	X2 = eventExcerptPanda['Ts'][rowswithinrangeTeam]
 	
 	# Look for gaps in time:
 	# Idea: could separate this per team. But with the current definitions, Values for one team should occur equally often as for any other team
@@ -227,34 +179,38 @@ def pairwisePerTeam(plotThisAttribute,attributeDict,rowswithinrangeTeam,rawDict,
 			nextStart = curEnd + 2
 		plt.legend([pltA[0], pltB[0]], [TeamAstring,TeamBstring])
 
-def plotPerPlayerPerTeam(plotThisAttribute,attributeDict,rowswithinrangePlayerA,rowswithinrangePlayerB,TeamAstring,TeamBstring):
+def plotPerPlayerPerTeam(plotThisAttribute,eventExcerptPanda,rowswithinrangePlayerA,rowswithinrangePlayerB,TeamAstring,TeamBstring):
 
 	# Team_AX = dfA.pivot(columns='Ts', values='X')
-	Y1 = attributeDict.loc[rowswithinrangePlayerA].pivot(columns='PlayerID',values=plotThisAttribute)
-	Y2 = attributeDict.loc[rowswithinrangePlayerB].pivot(columns='PlayerID',values=plotThisAttribute)
-	X1 = attributeDict.loc[rowswithinrangePlayerA].pivot(columns='PlayerID',values='Ts')
-	X2 = attributeDict.loc[rowswithinrangePlayerB].pivot(columns='PlayerID',values='Ts')
+	Y1 = eventExcerptPanda.loc[rowswithinrangePlayerA].pivot(columns='PlayerID',values=plotThisAttribute)
+	Y2 = eventExcerptPanda.loc[rowswithinrangePlayerB].pivot(columns='PlayerID',values=plotThisAttribute)
+	X1 = eventExcerptPanda.loc[rowswithinrangePlayerA].pivot(columns='PlayerID',values='Ts')
+	X2 = eventExcerptPanda.loc[rowswithinrangePlayerB].pivot(columns='PlayerID',values='Ts')
 
 	# # Sort colors by hue, saturation, value and name.
 	colors = dict(mcolors.BASE_COLORS, **mcolors.CSS4_COLORS)
 	by_hsv = sorted((tuple(mcolors.rgb_to_hsv(mcolors.to_rgba(color)[:3])), name)
 	                for name, color in colors.items())
 	sorted_names = [name for hsv, name in by_hsv]
-	[sorted_names.remove(i) for i in ['gainsboro', 'whitesmoke', 'w', 'white', 'snow']] # remove some silly colors
+	[sorted_names.remove(i) for i in ['gainsboro', 'whitesmoke', 'w', 'white', 'snow','salmon']] # remove some hard to see colors
 	
 	# Use this to make code more generic (and allow user to specify color)
 	refColorA = 'red'
 	refColorB = 'blue'
-	
 
 	# Colors A
 	refIndA = [i for i,v in enumerate(sorted_names) if v == refColorA]
 	if refIndA == []:
 		warn('\nWARNING: Specified reference color not found.\nConsider specifying a different color.')
 
+	# A little trick to make the colors - if there's only a few players - a bit more distinct
+	rangeMultiplier = .5
+	if Y1.shape[1] < 8:
+		rangeMultiplier = 2
+
 	indA = Y1.shape[1]
-	startColor = math.floor(refIndA[0] - .5 * indA)
-	endColor = math.floor(refIndA[0] + .5 * indA)
+	startColor = math.floor(refIndA[0] - rangeMultiplier * indA)
+	endColor = math.floor(refIndA[0] + rangeMultiplier * indA)
 	dC = round((endColor - startColor) / indA)
 	colorPickerA = np.arange(startColor,endColor,dC)
 	colorPickerA[round(len(colorPickerA)/2)], colorPickerA[-1] = colorPickerA[-1], colorPickerA[round(len(colorPickerA)/2)]
@@ -265,8 +221,8 @@ def plotPerPlayerPerTeam(plotThisAttribute,attributeDict,rowswithinrangePlayerA,
 		warn('\nWARNING: Specified reference color not found.\nConsider specifying a different color.')
 
 	indB = Y2.shape[1]
-	startColor = math.floor(refIndB[0] - .5 * indB)
-	endColor = math.floor(refIndB[0] + .5 * indB)
+	startColor = math.floor(refIndB[0] - rangeMultiplier * indB)
+	endColor = math.floor(refIndB[0] + rangeMultiplier * indB)
 	dC = round((endColor - startColor) / indB)
 	colorPickerB = np.arange(startColor,endColor,dC)
 	colorPickerB[round(len(colorPickerB)/2)], colorPickerB[-1] = colorPickerB[-1], colorPickerB[round(len(colorPickerB)/2)]

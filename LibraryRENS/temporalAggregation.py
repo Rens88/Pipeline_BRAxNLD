@@ -7,6 +7,7 @@
 import csv
 import pdb; #pdb.set_trace()
 import numpy as np
+import pandas as pd
 from os.path import isfile, join, isdir
 from os import listdir, path
 from warnings import warn
@@ -33,62 +34,37 @@ if __name__ == '__main__':
 	# Aggregates a range of pre-defined features over a specific window:
 	specific(rowswithinrange,aggregateString,rawDict,attributeDict,exportData,exportDataString,exportFullExplanation,TeamAstring,TeamBstring)	
 
-def process(targetEvents,aggregateLevel,rawDict,attributeDict,exportData,exportDataString,exportFullExplanation,TeamAstring,TeamBstring,debuggingMode):
+def process(targetEvents,aggregateLevel,rawDict,attributeDict,exportData,exportDataString,exportFullExplanation,TeamAstring,TeamBstring,debuggingMode,tobeDeletedWithWarning):
 	tTempAgg = time.time()
+
+	# Create an empty to export when there are no events??
+	eventExcerptPanda = pd.DataFrame()
 	if aggregateLevel[0] == 'None':
 		warn('\nWARNING: No temporal aggregate level indicated. \nNo temporally aggregated data exported.\nChange aggregateEvent = <%s> in USER INPUT.\n' %aggregateLevel[0])
-		return exportData,exportDataString,exportFullExplanation
+		return exportData,exportDataString,exportFullExplanation,eventExcerptPanda
 
 	elif len(targetEvents[aggregateLevel[0]]) == 0:
 		warn('\nWARNING: No targetevents detected. \nCouldnt aggregate temporally. \nNo Data exported.\n')
-		return exportData,exportDataString,exportFullExplanation
+		return exportData,exportDataString,exportFullExplanation,eventExcerptPanda
 
 	exportMatrix = []
 	exportDataString.append('temporalAggregate')
 	exportFullExplanation.append('Level of temporal aggregation, based on <<%s>> event and counted chronologically' %aggregateLevel[0])
+	
+	attrDictCols = [i for i in attributeDict.columns if not i in ['Ts','TeamID','PlayerID','X','Y']]
 	## FYI:
 	# aggregateLevel[0] --> event ID
 	# aggregateLevel[1] --> window (s)
 	# aggregateLevel[2] --> lag (s)
-	specialCase = False # when there's only one event (which is annoying when accessing it as a list instead of a list of lists)
+	eventExcerptPanda = pd.DataFrame()
 	for idx,currentEvent in enumerate(targetEvents[aggregateLevel[0]]):
-		if type(targetEvents[aggregateLevel[0]]) != list:
-			# A special case: there was only one event identified, which means that <enumerate> now 
-			# goes through the contents of that specific event, rather than iterating over the events.
-			# Improvised solution is to overwrite currentEvent and subsequently terminate early.
-			currentEvent = targetEvents[aggregateLevel[0]]
-			specialCase = True
-		if aggregateLevel[0] == 'Possession' or aggregateLevel[0] == 'Full':
-			
-			tStart = currentEvent[0]
-			tEnd = currentEvent[1]
-		else:
-			tEnd = currentEvent[0] - aggregateLevel[2]
-			tStart = tEnd - aggregateLevel[1]
-			if aggregateLevel[0] != 'Possession' or aggregateLevel[0] != 'Full':
-				warn('\nCode not yet adjusted to have an unspecified period for any other event than <Possession> and <Full>.\nMay lead to an error.\n')
-
-		# Ideas:
-		# 	- in 'currentEvent', use value with teamstring to double check if the right time was selected
-		#	- negative lags could be used to indicate time after the event (not sure why that's useful though)
-		#	- check if overlap with the next occurrence of the event, this needs to be signalled and possibly banned
-		#	- Make generic / call-able from for example plotTimeseries.py
-		#	- make it possible to have possession analyzed as window / lag as well (now it's automatically analyzed as a complete possession)
-		# Determine the rows corresponding to the current event.
-		if tEnd == None or tStart == None: # Check if both end and start are allocated
+		window,rowswithinrange,rowswithinrangeTeam,rowswithinrangeBall,rowswithinrangePlayer,rowswithinrangePlayerA,rowswithinrangePlayerB,specialCase,skipCurrentEvent = \
+		findRows(aggregateLevel,targetEvents,rawDict,TeamAstring,TeamBstring,currentEvent)
+		
+		if skipCurrentEvent:
 			warn('\nEvent %d skipped because tStart = <<%s>> and tEnd = <<%s>>.\n' %(idx,tStart,tEnd))
 			continue
-		TsS = rawDict['Ts']
-		rowswithinrange = [idx2 for idx2,i in enumerate(TsS) if i >= tStart and i <= tEnd]
-		tmp = [rawDict['TeamID'][i] for i in rowswithinrange]
-		rowswithinrangePlayers = [rowswithinrange[idx] for idx,val in enumerate(tmp) if val != '']
-		rowswithinrangeTeam = [rowswithinrange[idx] for idx,val in enumerate(tmp) if val == '']		
-		if round(tStart,2) <= round(tEnd,2):
-			window = (tStart,tEnd)
-		else:
-			window = (tEnd,tStart)
-			warn('\nSTRANGE: tStart <%s> was bigger than tEnd <%s>.\nSwapped them to determine window' %(tStart,tEnd))
-	
+		
 		exportCurrentData = exportData.copy()
 		overallString = exportDataString.copy()
 		overallExplanation = exportFullExplanation.copy()
@@ -96,9 +72,40 @@ def process(targetEvents,aggregateLevel,rawDict,attributeDict,exportData,exportD
 		# Create the output string that identifies the current event
 		aggregateString = '%03d_%s' %(idx,aggregateLevel[0])		
 		exportCurrentData.append(aggregateString) # NB: String and explanation are defined before the for loop
+		
+		# All data in exportCurrentData are trial identifiers. Create a column in a new panda copying these:
+		currentEventID = pd.DataFrame([],columns = [exportDataString],index = [rawDict['Ts'][rowswithinrange].index])
+		for i,val in enumerate(exportCurrentData):
+			currentEventID[exportDataString[i]] = val
+		
+		# Create a new panda that has the identifiers of the current event and the rawdata
+		curEventExcerptPanda = pd.concat([currentEventID, rawDict.loc[rowswithinrange], attributeDict.loc[rowswithinrange, attrDictCols]], axis=1) # Skip the duplicate 'Ts' columns
+
+		# Create an index that restarts per event
+		times = curEventExcerptPanda['Ts'].unique()
+		timesSorted = np.sort(times)
+		newColumn = pd.DataFrame([], columns = ['newIndex', 'eventTime'])
+		for i,val in np.ndenumerate(timesSorted):
+			oldIndex = curEventExcerptPanda[curEventExcerptPanda['Ts'] == val].index
+			eventTime = val - max(times)
+			# It seems that the index can actually be negative.
+			# If problematic, change the '0' below to e.g. '1000'
+			newIndex = 0 - len(times) + i[0] + 1
+
+			tmp = pd.DataFrame([], columns = ['newIndex','eventTime'], index = oldIndex)
+			tmp['newIndex'] = newIndex
+			tmp['eventTime'] = eventTime
+			newColumn = newColumn.append(tmp)
+
+		# Add the new index
+		curEventExcerptPanda = pd.concat([newColumn,curEventExcerptPanda], axis=1) # Skip the duplicate 'Ts' columns			
+		# Use the new index as the index
+		curEventExcerptPanda = curEventExcerptPanda.set_index('newIndex', drop=True, append=False, inplace=False, verify_integrity=False)
+		eventExcerptPanda = eventExcerptPanda.append(curEventExcerptPanda)
+		# eventExcerptPanda.to_csv('C:\\Users\\rensm\\Documents\\PostdocLeiden\\NP repository\\test.csv')
+
 		## Count exsiting events (goals, possession and passes)
 		# Ideas:
-		# - Should include a code for identifying whether information is available.
 		# - Should only rely on events as made available through targetEvents (rather than obtain it from attributeDict)
 
 		exportCurrentData,overallString,overallExplanation =\
@@ -112,23 +119,27 @@ def process(targetEvents,aggregateLevel,rawDict,attributeDict,exportData,exportD
 	
 		exportCurrentData,overallString,overallExplanation =\
 		countEvents2.passes(window,aggregateLevel[0],targetEvents,TeamAstring,TeamBstring,exportCurrentData,overallString,overallExplanation)
-	
+
 		## Aggregate timeseries variables for the given time-period
 		## By default, it uses (where easily possible) mean (avg), standard deviation (std), minimum (min), maximum (max), sum
 		# Ideas:
 		# - something to think about: the aggregation method (avg, std, min, max, sum) should also be data-driven. Perhaps it needs to be placed outside of this script?
 		tmp,overallString,overallExplanation = \
-		specific(rowswithinrange,aggregateLevel[0],rawDict,attributeDict,exportCurrentData,overallString,overallExplanation,TeamAstring,TeamBstring)
+		specific(rowswithinrange,aggregateLevel[0],rawDict,attributeDict,exportCurrentData,overallString,overallExplanation,TeamAstring,TeamBstring,tobeDeletedWithWarning)
+		
 		exportMatrix.append(tmp)
+
+		# Create / append / exporteer een dataframe met alle windowsinrange (evt met huidige index, maar die moet later gereset)
+		# NB: use eventExcerptPanda (which already has the trial characteristics)
 
 		if specialCase:
 			break
 	if debuggingMode:
 		elapsed = str(round(time.time() - tTempAgg, 2))
 		print('Time elapsed during temporalAggregation: %ss' %elapsed)
-	return exportMatrix,overallString,overallExplanation
+	return exportMatrix,overallString,overallExplanation,eventExcerptPanda
 
-def specific(rowswithinrange,aggregateString,rawData,attributeDict,exportData,exportDataString,exportFullExplanation,TeamAstring,TeamBstring):
+def specific(rowswithinrange,aggregateString,rawData,attributeDict,exportData,exportDataString,exportFullExplanation,TeamAstring,TeamBstring,tobeDeletedWithWarning):
 	# Per event
 	# Per Team and for both teams (for vNorm, the team aggregate -techinically spatial aggregation - still has to be made)
 	vel = [val for idx,val in enumerate(attributeDict['vNorm'][rowswithinrange])]
@@ -136,9 +147,9 @@ def specific(rowswithinrange,aggregateString,rawData,attributeDict,exportData,ex
 	velB = [val for idx,val in enumerate(attributeDict['vNorm'][rowswithinrange]) if rawData['TeamID'][rowswithinrange[idx]] == TeamBstring]
 
 	if velA == []:
-		warn('\nWARNING: No values found for <%s>\nCould be a result of an incomplete dataset.\nConsider cleaning the data again and/or running the spatial aggregation again.\n(Or you could delete the spatially aggregated file.)\n' %TeamAstring)
+		warn('\nWARNING: No values found for <%s>\nCould be a result of an incomplete dataset.\nConsider cleaning the data again and/or running the spatial aggregation again.\nOr, you could delete the spatially aggregated file:\n<%s>\n!!!!!!!!!!!!!!!!!!!!\n' %(TeamAstring,tobeDeletedWithWarning))
 	if velB == []:
-		warn('\nWARNING: No values found for <%s>\nCould be a result of an incomplete dataset.\nConsider cleaning the data again and/or running the spatial aggregation again.\n(Or you could delete the spatially aggregated file.)\n' %TeamBstring)
+		warn('\nWARNING: No values found for <%s>\nCould be a result of an incomplete dataset.\nConsider cleaning the data again and/or running the spatial aggregation again.\nOr, you could delete the spatially aggregated file:\n<%s>\n!!!!!!!!!!!!!!!!!!!!\n' %(TeamBstring,tobeDeletedWithWarning))
 	# pritn(vel)
 	# print(velA)
 	# print(velB)
@@ -551,3 +562,60 @@ def simple(rawData,attributeDict,exportData,exportDataString,exportFullExplanati
 	# attributeDict['Possession/Turnover ']	attributeDict['Pass']	attributeDict['distFrame']	attributeDict['Goal ']	attributeDict['currentPossession'] attributeDict['TeamCentXA']	attributeDict['TeamCentYA']	attributeDict['TeamCentXB']	attributeDict['TeamCentYB']
 
 	return 	exportData,exportDataString,exportFullExplanation
+
+def findRows(aggregateLevel,targetEvents,rawDict,TeamAstring,TeamBstring,currentEvent):
+
+	specialCase = False
+	skipCurrentEvent = False
+	if type(targetEvents[aggregateLevel[0]]) != list:			
+		# A special case: there was only one event identified, which means that <enumerate> now 
+		# goes through the contents of that specific event, rather than iterating over the events.
+		# Improvised solution is to overwrite currentEvent and subsequently terminate early.
+		#
+		# necessary to adjust input style of aggregateLevel[0] (which determines currentEvent)
+		# find a better way to store aggregateLevel ?
+		# Gebeurt alleen bij full?
+		currentEvent = targetEvents[aggregateLevel[0]]
+		# fileAggregateID = aggregateString + '_window(' + str(aggregateLevel[1]) + ')_lag(' + str(aggregateLevel[2]) + ')'
+		specialCase = True
+	# Determine tStart and tEnd
+	if aggregateLevel[0] == 'Possession' or aggregateLevel[0] == 'Full' or aggregateLevel[0] == 'Run':
+		# These are the events that have a fixed window. Technically it combines 2 events. The start of a targetEvent and the end of a targetEvent.
+		# E.g., from possession start to possession end.
+		# E.g., from start of the file to the end.
+		# E.g., from the start of an attack to the end.
+		# In general terms:
+		# Anything that has a start and an end time should be captured here.
+		tStart = currentEvent[0]
+		tEnd = currentEvent[1]
+		# fileAggregateID = aggregateString + '_' 'window(all)_lag(none)'
+	else:
+		# And these are the remaining ones. The ones for which the ijk-algorithm should be designed.
+		# Here, the window is determined by the user input: window-size and lag (and possibly in the future aggregation method)
+
+		tEnd = currentEvent[0] - aggregateLevel[2]
+		tStart = tEnd - aggregateLevel[1]
+		# fileAggregateID = aggregateString + '_window(' + str(aggregateLevel[1]) + ')_lag(' + str(aggregateLevel[2]) + ')'
+
+	# Determine the rows corresponding to the current event.
+	if tEnd == None or tStart == None: # Check if both end and start are allocated
+		skipCurrentEvent = True
+		return None,None,None,None,None,None,None,skipCurrentEvent
+	# Find index of rows within tStart and tEnd
+	if round(tStart,2) <= round(tEnd,2):
+		window = (tStart,tEnd)
+	else:
+		window = (tEnd,tStart)
+		warn('\nSTRANGE: tStart <%s> was bigger than tEnd <%s>.\nSwapped them to determine window' %(tStart,tEnd))
+	
+	tmp = rawDict[rawDict['Ts'] > window[0]]
+	rowswithinrange = tmp[tmp['Ts'] <= window[1]].index
+	del(tmp)
+
+	rowswithinrangeTeam = rawDict['Ts'][rowswithinrange].index[rawDict['PlayerID'][rowswithinrange] == 'groupRow']
+	rowswithinrangeBall = rawDict['Ts'][rowswithinrange].index[rawDict['PlayerID'][rowswithinrange] == 'ball']
+	rowswithinrangePlayer = rawDict['Ts'][rowswithinrange].index[rawDict['TeamID'][rowswithinrange] != '']
+	rowswithinrangePlayerA = rawDict['Ts'][rowswithinrange].index[rawDict['TeamID'][rowswithinrange] == TeamAstring]
+	rowswithinrangePlayerB = rawDict['Ts'][rowswithinrange].index[rawDict['TeamID'][rowswithinrange] == TeamBstring]
+
+	return window,rowswithinrange,rowswithinrangeTeam,rowswithinrangeBall,rowswithinrangePlayer,rowswithinrangePlayerA,rowswithinrangePlayerB,specialCase,skipCurrentEvent

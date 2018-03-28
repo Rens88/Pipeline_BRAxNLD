@@ -27,9 +27,9 @@ if __name__ == '__main__':
 	# targetEvents = {'Goals':[],'Passes':[],'Turnovers':[],'Possession':[]}
 def goals(window,aggregateEvent,targetEvents,TeamAstring,TeamBstring,exportData,exportDataString,exportFullExplanation):
 
-	if targetEvents['Goals'] != []:
+	if targetEvents['Goal'] != []:
 		goals = []
-		for eventInstant,eventID in targetEvents['Goals']:
+		for eventInstant,eventID in targetEvents['Goal']:
 			if eventInstant > window[0] and eventInstant <= window[1]:
 				goals.append(eventID)
 
