@@ -9,9 +9,9 @@
 import numpy as np
 import math
 import pandas as pd
-import csv
+import os
 from warnings import warn
-import pdb; #pdb.set_trace()
+import pdb;
 
 ## Here, you can clarify which functions exist in this module.
 if __name__ == '__main__': 
@@ -59,12 +59,12 @@ if __name__ == '__main__':
 ## Here, you specifiy what each function does
 def process(rawDict,attributeDict,attributeLabel,TeamAstring,TeamBstring,skipSpatAgg):
 	# Use this is an example for a GROUP level aggregate
-	attributeDict_EXAMPLE,attributeLabel_EXAMPLE = \
-	teamCentroid_panda(rawDict,attributeDict,attributeLabel,TeamAstring,TeamBstring)
+	# attributeDict_EXAMPLE,attributeLabel_EXAMPLE = \
+	# teamCentroid_panda(rawDict,attributeDict,attributeLabel,TeamAstring,TeamBstring)
 
-	# Use this is an example for a PLAYER level aggregate
-	attributeDict_EXAMPLE,attributeLabel_EXAMPLE = \
-	distanceToCentroid(rawDict,attributeDict,attributeLabel,TeamAstring,TeamBstring)
+	# # Use this is an example for a PLAYER level aggregate
+	# attributeDict_EXAMPLE,attributeLabel_EXAMPLE = \
+	# distanceToCentroid(rawDict,attributeDict,attributeLabel,TeamAstring,TeamBstring)
 
 	attributeDict,attributeLabel = \
 	ballPossession(rawDict,attributeDict,attributeLabel,TeamAstring,TeamBstring)
@@ -74,6 +74,9 @@ def process(rawDict,attributeDict,attributeLabel,TeamAstring,TeamBstring,skipSpa
 
 	attributeDict,attributeLabel = \
 	control(rawDict,attributeDict,attributeLabel,TeamAstring,TeamBstring)
+
+	# attributeDict,attributeLabel = \
+	# pressure(rawDict,attributeDict,attributeLabel,TeamAstring,TeamBstring)
 
 	# NB: Centroid and distance to centroid are stored in example variables that are not exported
 	# when 'process' is finished, because these features are already embedded in the main pipeline.
@@ -131,30 +134,19 @@ def ballPossession(rawDict,attributeDict,attributeLabel,TeamAstring,TeamBstring)
 	
 	return attributeDict,attributeLabel
 
-def determineZoneA(zone_A_X,zone_A_Y):
-	zone = 1
-	return zone
-
-def determineZoneB(zone_B_X,zone_B_Y):
-	zoneMatrix = [[0 for x in zone_B_X] for y in zone_B_Y] 
-	for x in zone_B_X:
-		for y in zone_B_Y:
-			zoneMatrix[x][y] = 1
-
-
-	with open('D:\\KNVB\\zoneMatrix.csv', 'w') as f:
-	    writer = csv.writer(f)
-	    writer.writerows(zoneMatrix)
-
-	# zoneMatrix.to_csv('D:\\KNVB\\zoneMatrix.csv')
-	return zoneMatrix
-
 def zone(rawDict,attributeDict,attributeLabel,TeamAstring,TeamBstring):
-	#LT: how to determine? #NB needs to be integer
-	length = 110
-	width = 70
+	#standard KNVB settings
+	length = 105
+	width = 68
 	beginZone = 34
+	zoneMin_X = length / 2 - beginZone
 
+	##############   READ ZONE CSV   ###############
+	dirPath = os.path.dirname(os.path.realpath(__file__))
+	fileName = dirPath + '\\Zone.csv'
+	zoneMatrix = np.loadtxt(open(fileName, 'r'),delimiter=os.pathsep)
+
+	##############   DETERMINE SIDE   ###############
 	team_A = rawDict[rawDict['TeamID'] == TeamAstring]
 	team_B = rawDict[rawDict['TeamID'] == TeamBstring]
 
@@ -166,68 +158,71 @@ def zone(rawDict,attributeDict,attributeLabel,TeamAstring,TeamBstring):
 	team_A_Begin_X = sum(team_A_Begin['X'])
 	team_B_Begin_X = sum(team_B_Begin['X'])
 
+	#LT: switch sides at half time? When is it half time?
 	#determine zone X of both teams
 	if(team_A_Begin_X < 0 and team_B_Begin_X > 0):
-		zone_A_X = range(length//2-beginZone,length//2+1) #LT: +1 because the range does not include the endpoint. Otherwise 1 meter to short.
-		zone_B_X = range((length//2)*-1,(length//2)*-1+beginZone+1)
+		zoneA = -1
+		zoneB = 1
+		zoneMin_A_X = (length / 2) - beginZone
+		zoneMax_A_X = (length / 2)
+		zoneMin_B_X = (length / 2) * -1
+		zoneMax_B_X = (length / 2) *-1 + beginZone
 	elif(team_A_Begin_X > 0 and team_B_Begin_X < 0):
-		zone_A_X = range((length//2)*-1,(length//2)*-1+beginZone+1)
-		zone_B_X = range(length//2-beginZone,length//2+1)
+		zoneA = 1
+		zoneB = -1
+		zoneMin_A_X = (length / 2) * -1
+		zoneMax_A_X = (length / 2) *-1 + beginZone
+		zoneMin_B_X = (length / 2) - beginZone
+		zoneMax_B_X = (length / 2)
 	else:
 		warn('\nWARNING: Cannot determine the zone, because the players of the teams are not on the same side at timestamp 0, or there is no timestamp 0.\n')
+		return attributeDict,attributeLabel
 
-	#determine zone Y. For both teams the same
-	zone_A_Y = range((width//2)*-1,(width//2))
-	zone_B_Y = range((width//2)*-1,(width//2))
+	#determine zone Y, For both teams the same
+	zoneMin_Y = (width / 2) * -1
+	zoneMax_Y = (width / 2)
 
-	print(zone_A_X,zone_A_Y)
-	print('----------')
-	print(zone_B_X,zone_B_Y)
-
-	zoneMatrixB = determineZoneB(zone_B_X,zone_B_Y)
-
-	pdb.set_trace()
-
+	##############   CREATE ATTRIBUTES   ###############
 	newAttributes = pd.DataFrame(index = attributeDict.index, columns = ['zone','inZone'])
 	newAttributes['inZone'] = 0
 	newAttributes['zone'] = 0
 
-	#LT: switch sides at half time? When is it half time?
 	inPossession = rawDict[attributeDict['inPossession'] == 1]
 
+	##############   DETERMINE ZONE VALUE IF PLAYER IS IN ZONE   ###############
 	for idx,i in enumerate(pd.unique(rawDict['Ts'])):
 		curTime = rawDict['Ts'][idx]
 		curPlayerX = inPossession['X'][inPossession['Ts'] == curTime]
 		curPlayerY = inPossession['Y'][inPossession['Ts'] == curTime]
 		curPlayerTeam = inPossession['TeamID'][inPossession['Ts'] == curTime]
 
-		#round X and Y coördinates and skip if NaN
-		if all(np.isnan(curPlayerX)):
-			# print('NaN-X')
-			continue #LT: or break?
-		else:
-			curPlayerX = int(round(curPlayerX))
-			
-		if all(np.isnan(curPlayerY)):
-			# print('ANANNANANAN YYYYYY')
-			continue
-		else:
-			curPlayerY = int(round(curPlayerY))
+		#skip if NaN
+		if all(np.isnan(curPlayerX)) or all(np.isnan(curPlayerY)):
+		 	continue #LT: or break?
 
-		# print(curTime,curPlayerX,curPlayerY, inPossession['PlayerID'][inPossession['Ts'] == curTime])
+		#TEAM A
+		if all(curPlayerTeam == TeamAstring) and all(curPlayerX >= zoneMin_A_X) and all(curPlayerX <= zoneMax_A_X) and all(curPlayerY >= zoneMin_Y) and all(curPlayerY <= zoneMax_Y):
+			zone_X = int(round(abs(curPlayerX + (zoneA * zoneMin_X))))
+			zone_Y = int(round(abs(curPlayerY + zoneMax_Y)))
+			zoneValue = zoneMatrix[zone_X][zone_Y]
 
-		if all(curPlayerTeam == TeamAstring) and (curPlayerX in zone_A_X) and (curPlayerY in zone_A_Y):
+			newAttributes['zone'][curPlayerTeam.index] = zoneValue
 			newAttributes['inZone'][curPlayerTeam.index] = 1
-			print(curTime, inPossession['PlayerID'][inPossession['Ts'] == curTime])
-		elif all(curPlayerTeam == TeamBstring) and (curPlayerX in zone_B_X) and (curPlayerY in zone_B_Y):
+		#TEAM B
+		elif all(curPlayerTeam == TeamBstring) and all(curPlayerX >= zoneMin_B_X) and all(curPlayerX <= zoneMax_B_X) and all(curPlayerY >= zoneMin_Y) and all(curPlayerY <= zoneMax_Y):
+			zone_X = int(round(abs(curPlayerX + (zoneB * zoneMin_X))))
+			zone_Y = int(round(abs(curPlayerY + zoneMax_Y)))
+			zoneValue = zoneMatrix[zone_X][zone_Y]
+
+			newAttributes['zone'][curPlayerTeam.index] = zoneValue
 			newAttributes['inZone'][curPlayerTeam.index] = 1
-			print(curTime, inPossession['PlayerID'][inPossession['Ts'] == curTime])
 		else:
 			continue
 
 	attributeDict = pd.concat([attributeDict, newAttributes], axis=1)
 
-	tmpZone = 'Value of player with ball in the zone.'
+	##### THE STRINGS #####
+	tmpZone = 'Value of player with ball in the zone (last' + str(beginZone) + 'meters).'
 	tmpInZone = 'Is player with ball in the zone?'
 
 	attributeLabel_tmp = {'zone': tmpZone, 'inZone': tmpInZone}
@@ -236,10 +231,7 @@ def zone(rawDict,attributeDict,attributeLabel,TeamAstring,TeamBstring):
 	altogether = pd.concat([rawDict,attributeDict], axis=1)
 	altogether.to_csv('D:\\KNVB\\test.csv')
 
-	pdb.set_trace()
-
 	return attributeDict,attributeLabel
-
 
 def control(rawDict,attributeDict,attributeLabel,TeamAstring,TeamBstring):
 	#Only players in possession
@@ -281,6 +273,25 @@ def control(rawDict,attributeDict,attributeLabel,TeamAstring,TeamBstring):
 	# altogether.to_csv('D:\\KNVB\\test.csv')
 	
 	return attributeDict,attributeLabel
+
+def pressure(rawDict,attributeDict,attributeLabel,TeamAstring,TeamBstring):
+	#Only players in possession
+	inPossession = rawDict[attributeDict['inPossession'] == 1]
+	notInPossession = rawDict[attributeDict['inPossession'] == 0]
+
+	for idx,i in enumerate(pd.unique(rawDict['Ts'])):
+		curTime = rawDict['Ts'][idx]
+		inPossessionX = inPossession['X'][inPossession['Ts'] == curTime]
+		inPossessionY = inPossession['Y'][inPossession['Ts'] == curTime]
+		notInPossessionX = notInPossession['X'][notInPossession['Ts'] == curTime]
+		notInPossessionY = notInPossession['Y'][notInPossession['Ts'] == curTime]
+
+		print(curTime,inPossession['TeamID'][inPossession['Ts'] == curTime])
+
+		pdb.set_trace()
+
+	return attributeDict,attributeLabel
+
 
 
 ## Of course, you can also create new modules (seperate files), to avoid having a very long file.
