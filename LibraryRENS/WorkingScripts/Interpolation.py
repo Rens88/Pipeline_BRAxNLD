@@ -28,6 +28,7 @@ plt.show()
 # AS FUNCTION
 def resampleData(x,y,xnew,order): # order 1) = linear, 2) = quadratic, 3) = cubic
 	f = InterpolatedUnivariateSpline(x, y, k=order)
+	
 	ynew = f(xnew)   # use interpolation function returned by `interp1d`
 	# limit ynew to values around original x
 	# next(x[0] for x in enumerate(L) if x[1] > 0.7)

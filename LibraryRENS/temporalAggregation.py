@@ -19,7 +19,7 @@ import plotSnapshot
 # import identifyDuplHeader
 # import LoadOrCreateCSVexcerpt
 # import individualAttributes
-import plotTimeseries
+# import plotTimeseries
 # import dataToDict
 # import dataToDict2
 import safetyWarning
@@ -34,7 +34,7 @@ if __name__ == '__main__':
 	# Aggregates a range of pre-defined features over a specific window:
 	specific(rowswithinrange,aggregateString,rawDict,attributeDict,exportData,exportDataString,exportFullExplanation,TeamAstring,TeamBstring)	
 
-def process(targetEvents,aggregateLevel,rawDict,attributeDict,exportData,exportDataString,exportFullExplanation,TeamAstring,TeamBstring,debuggingMode,tobeDeletedWithWarning):
+def process(targetEvents,aggregateLevel,rawDict,attributeDict,exportData,exportDataString,exportFullExplanation,TeamAstring,TeamBstring,debuggingMode,tobeDeletedWithWarning,skipEventAgg_curFile):
 	tTempAgg = time.time()
 
 	# Create an empty to export when there are no events??
@@ -78,30 +78,33 @@ def process(targetEvents,aggregateLevel,rawDict,attributeDict,exportData,exportD
 		for i,val in enumerate(exportCurrentData):
 			currentEventID[exportDataString[i]] = val
 		
-		# Create a new panda that has the identifiers of the current event and the rawdata
-		curEventExcerptPanda = pd.concat([currentEventID, rawDict.loc[rowswithinrange], attributeDict.loc[rowswithinrange, attrDictCols]], axis=1) # Skip the duplicate 'Ts' columns
+		if not skipEventAgg_curFile:
+			# Create a new panda that has the identifiers of the current event and the rawdata
+			curEventExcerptPanda = pd.concat([currentEventID, rawDict.loc[rowswithinrange], attributeDict.loc[rowswithinrange, attrDictCols]], axis=1) # Skip the duplicate 'Ts' columns
 
-		# Create an index that restarts per event
-		times = curEventExcerptPanda['Ts'].unique()
-		timesSorted = np.sort(times)
-		newColumn = pd.DataFrame([], columns = ['newIndex', 'eventTime'])
-		for i,val in np.ndenumerate(timesSorted):
-			oldIndex = curEventExcerptPanda[curEventExcerptPanda['Ts'] == val].index
-			eventTime = val - max(times)
-			# It seems that the index can actually be negative.
-			# If problematic, change the '0' below to e.g. '1000'
-			newIndex = 0 - len(times) + i[0] + 1
+			# Create an index that restarts per event
+			times = curEventExcerptPanda['Ts'].unique()
+			timesSorted = np.sort(times)
+			newColumn = pd.DataFrame([], columns = ['newIndex', 'eventTime'])
+			for i,val in np.ndenumerate(timesSorted):
+				oldIndex = curEventExcerptPanda[curEventExcerptPanda['Ts'] == val].index
+				eventTime = val - max(times)
+				# It seems that the index can actually be negative.
+				# If problematic, change the '0' below to e.g. '1000'
+				newIndex = 0 - len(times) + i[0] + 1
 
-			tmp = pd.DataFrame([], columns = ['newIndex','eventTime'], index = oldIndex)
-			tmp['newIndex'] = newIndex
-			tmp['eventTime'] = eventTime
-			newColumn = newColumn.append(tmp)
+				tmp = pd.DataFrame([], columns = ['newIndex','eventTime'], index = oldIndex)
+				tmp['newIndex'] = newIndex
+				tmp['eventTime'] = eventTime
+				newColumn = newColumn.append(tmp)
 
-		# Add the new index
-		curEventExcerptPanda = pd.concat([newColumn,curEventExcerptPanda], axis=1) # Skip the duplicate 'Ts' columns			
-		# Use the new index as the index
-		curEventExcerptPanda = curEventExcerptPanda.set_index('newIndex', drop=True, append=False, inplace=False, verify_integrity=False)
-		eventExcerptPanda = eventExcerptPanda.append(curEventExcerptPanda)
+			# Add the new index
+			curEventExcerptPanda = pd.concat([newColumn,curEventExcerptPanda], axis=1) # Skip the duplicate 'Ts' columns			
+			# Use the new index as the index
+			curEventExcerptPanda = curEventExcerptPanda.set_index('newIndex', drop=True, append=False, inplace=False, verify_integrity=False)
+			eventExcerptPanda = eventExcerptPanda.append(curEventExcerptPanda)
+		else:
+			warn('\nContinued with previously aggregated event data.\nIf you want to add new (or revised) spatial aggregates, change <skipEventAgg> into <False>.\n')
 		# eventExcerptPanda.to_csv('C:\\Users\\rensm\\Documents\\PostdocLeiden\\NP repository\\test.csv')
 
 		## Count exsiting events (goals, possession and passes)

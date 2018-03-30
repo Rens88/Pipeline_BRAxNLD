@@ -48,7 +48,7 @@ if __name__ == '__main__':
 	NP(dataFiles,cleanFname,folder,cleanedFolder,TeamAstring,TeamBstring)
 
 #########################################################################
-def process(dirtyFname,cleanFname,dataType,dataFolder,cleanedFolder,spatAggFname,spatAggFolder,TeamAstring,TeamBstring,headers,readAttributeCols,timestampString,readEventColumns,conversionToMeter,skipCleanup,skipSpatAgg,debuggingMode):
+def process(dirtyFname,cleanFname,dataType,dataFolder,cleanedFolder,spatAggFname,spatAggFolder,eventAggFolder,eventAggFname,TeamAstring,TeamBstring,headers,readAttributeCols,timestampString,readEventColumns,conversionToMeter,skipCleanup,skipSpatAgg,skipEventAgg,exportData, exportDataString,debuggingMode):
 	tCleanup = time.time()	# do stuff
 
 	debugOmittedRows = False # Optional export of data that was omitted in the cleaning process
@@ -65,11 +65,42 @@ def process(dirtyFname,cleanFname,dataType,dataFolder,cleanedFolder,spatAggFname
 		fatalIssue = False
 		loadFolder = spatAggFolder
 		loadFname = spatAggFname
+
+		if skipEventAgg:
+		# If there is a spat agg file, AND if skipEventAgg == True,
+		# then, it needs to be verified whether there is a row with an event aggregate for the current file.
+			df = pd.read_csv(eventAggFolder+eventAggFname,usecols=(exportDataString),low_memory=False)
+			# testCount = 0
+			for i in np.arange(len(df.keys())):
+				# testCount = testCount + 1
+
+				try:
+					if not any(df[exportDataString[i]] == exportData[i]):
+						skipEventAgg = False
+						break
+				except: # this error occurred a couple of times. Not sure why... something with an invalid comparison, so presumably one of the inputs wasnt a string??
+					print('DataFrame type:')
+					print(type(df[exportDataString[i]]))
+					print('\nDataFrame contents:')
+					print(df[exportDataString[i]])
+					print('\n----------\n')
+					print('File identifiers type:')
+					print(type(exportData[i]))
+					print('\nFile identifiers contents:')
+					print(exportData[i])
+					print('\nNB: In the past, this problem was related to the string input resembling a float input.\nFor example, <1E3>, which (with low_memory = True) is read as a float (1,000).\n')
+					exit()
+			# print('testCount = <%s>' %testCount)
+			# if testCount != len(df.keys()) and skipEventAgg:
+			# 	print('wtf')
+			# 	print('skipevent should be negative, but it''s not')
+			# 	pdb.set_trace()
 		if debuggingMode:
 			elapsed = str(round(time.time() - tCleanup, 2))
 			print('Time elapsed during cleanupData: %ss' %elapsed)
-		return loadFolder,loadFname,fatalIssue,skipSpatAgg
+		return loadFolder,loadFname,fatalIssue,skipSpatAgg,skipEventAgg
 
+	skipEventAgg = False
 	skipSpatAgg = False # over-rule skipSpatAgg as the corresponding spatAgg output file could not be found
 	if cleanFname in cleanFnames and skipCleanup:
 		with open(cleanedFolder+cleanFname, 'r') as f:
@@ -87,7 +118,7 @@ def process(dirtyFname,cleanFname,dataType,dataFolder,cleanedFolder,spatAggFname
 		if debuggingMode:
 			elapsed = str(round(time.time() - tCleanup, 2))
 			print('Time elapsed during cleanupData: %ss' %elapsed)
-		return loadFolder,loadFname,fatalIssue,skipSpatAgg#, readAttributeCols#, attrLabel
+		return loadFolder,loadFname,fatalIssue,skipSpatAgg,skipEventAgg#, readAttributeCols#, attrLabel
 	else: # create a new clean Fname
 		print('\nCleaning up file...')
 		if dataType == "NP":
@@ -106,7 +137,7 @@ def process(dirtyFname,cleanFname,dataType,dataFolder,cleanedFolder,spatAggFname
 			if debuggingMode:
 				elapsed = str(round(time.time() - tCleanup, 2))
 				print('Time elapsed during cleanupData: %ss' %elapsed)
-			return loadFolder,loadFname,fatalIssue,skipSpatAgg
+			return loadFolder,loadFname,fatalIssue,skipSpatAgg,skipEventAgg
 
 		## Genereic clean up function (for all datasets)
 		# First: Rename columns to be standardized.
@@ -169,7 +200,7 @@ def process(dirtyFname,cleanFname,dataType,dataFolder,cleanedFolder,spatAggFname
 		elapsed = str(round(time.time() - tCleanup, 2))
 		print('Time elapsed during cleanupData: %ss' %elapsed)
 
-	return loadFolder,loadFname,fatalIssue,skipSpatAgg#, readAttributeCols#, attrLabel
+	return loadFolder,loadFname,fatalIssue,skipSpatAgg,skipEventAgg#, readAttributeCols#, attrLabel
 
 def FDP(fname,cleanFname,dataFolder,cleanedFolder,headers,readAttributeCols,debugOmittedRows,readEventColumns,TeamAstring,TeamBstring):
 

@@ -5,7 +5,7 @@ import pdb; #pdb.set_trace()
 import csv
 from warnings import warn
 # import numpy as np
-from os.path import isfile, join, isdir
+from os.path import isfile, join, exists#, isdir, exists
 from os import listdir, startfile
 # import CSVexcerpt
 
@@ -21,6 +21,27 @@ if __name__ == '__main__':
 	# winopen: if True: open in windows
 	debugPrint(filename,varToPrint,winopen)
 #########################################################################
+
+def eventAggregate(eventAggFolder,eventAggFname,appendEventAggregate,eventExcerptPanda,skipEventAgg_curFile):
+	if skipEventAgg_curFile:
+		warn('\nDid not export any new eventAggregate data.\nIf you want to add new (or revised) spatial aggregates, change <skipEventAgg> into <False>.\n')
+		return appendEventAggregate
+		
+	if exists(eventAggFolder + eventAggFname) and appendEventAggregate:# and not stat(eventAggFolder + eventAggFname).st_size == 0: 
+		# print('2asdfasdf')
+		with open(eventAggFolder + eventAggFname,'a') as f:			
+			eventExcerptPanda.to_csv(f,header=False)
+		# print('!!!!!!!!!!!!')
+		# pdb.set_trace()
+	elif not eventExcerptPanda.empty:
+		
+		eventExcerptPanda.to_csv(eventAggFolder + eventAggFname)
+		appendEventAggregate = True
+		
+	else: # apparently eventExcerptPanda was empty..
+		warn('\nWARNING: Targetevents were empty. \nNo Data exported.\n')
+	
+	return appendEventAggregate
 
 def debugPrint(filename,varToPrint,winopen):
 
