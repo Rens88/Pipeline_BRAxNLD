@@ -10,8 +10,14 @@ import numpy as np
 import math
 import pandas as pd
 import os
+import time
+import matplotlib.pyplot as plt
 from warnings import warn
 import pdb;
+
+#standard KNVB settings
+fieldLength = 105
+fieldWidth = 68
 
 ## Here, you can clarify which functions exist in this module.
 if __name__ == '__main__': 
@@ -66,17 +72,20 @@ def process(rawDict,attributeDict,attributeLabel,TeamAstring,TeamBstring,skipSpa
 	# attributeDict_EXAMPLE,attributeLabel_EXAMPLE = \
 	# distanceToCentroid(rawDict,attributeDict,attributeLabel,TeamAstring,TeamBstring)
 
+	# attributeDict,attributeLabel = \
+	# heatMap(rawDict,attributeDict,attributeLabel,TeamAstring,TeamBstring)
+
 	attributeDict,attributeLabel = \
 	ballPossession(rawDict,attributeDict,attributeLabel,TeamAstring,TeamBstring)
 
-	attributeDict,attributeLabel = \
-	zone(rawDict,attributeDict,attributeLabel,TeamAstring,TeamBstring)
-
-	attributeDict,attributeLabel = \
-	control(rawDict,attributeDict,attributeLabel,TeamAstring,TeamBstring)
+	# attributeDict,attributeLabel = \
+	# zone(rawDict,attributeDict,attributeLabel,TeamAstring,TeamBstring)
 
 	# attributeDict,attributeLabel = \
-	# pressure(rawDict,attributeDict,attributeLabel,TeamAstring,TeamBstring)
+	# control(rawDict,attributeDict,attributeLabel,TeamAstring,TeamBstring)
+
+	attributeDict,attributeLabel = \
+	pressure(rawDict,attributeDict,attributeLabel,TeamAstring,TeamBstring)
 
 	# NB: Centroid and distance to centroid are stored in example variables that are not exported
 	# when 'process' is finished, because these features are already embedded in the main pipeline.
@@ -85,6 +94,30 @@ def process(rawDict,attributeDict,attributeLabel,TeamAstring,TeamBstring,skipSpa
 
 	return attributeDict,attributeLabel
 
+def timing(f):
+    def wrap(*args):
+        time1 = time.time()
+        ret = f(*args)
+        time2 = time.time()
+        print('%s function took %0.3f s' % (f.__name__, (time2-time1)))
+        return ret
+    return wrap
+
+def heatMap(rawDict,attributeDict,attributeLabel,TeamAstring,TeamBstring):
+	# Generate some test data
+	x = rawDict['X'][rawDict['TeamID'] == TeamAstring]
+	y = rawDict['Y'][rawDict['TeamID'] == TeamAstring]
+
+	heatmap, xedges, yedges = np.histogram2d(x, y, bins=(68,105))
+	extent = [xedges[0], xedges[-1], yedges[0], yedges[-1]]
+
+	plt.clf()
+	plt.imshow(heatmap.T, extent=extent, origin='lower')
+	plt.show()
+
+	pdb.set_trace()
+
+@timing
 def ballPossession(rawDict,attributeDict,attributeLabel,TeamAstring,TeamBstring):
 	#ball
 	ballComplete = rawDict[rawDict['PlayerID'] == 'ball']
@@ -134,12 +167,38 @@ def ballPossession(rawDict,attributeDict,attributeLabel,TeamAstring,TeamBstring)
 	
 	return attributeDict,attributeLabel
 
+def determineSide(rawDict,attributeDict,attributeLabel,TeamAstring,TeamBstring):
+	##############   DETERMINE SIDE   ###############
+	team_A = rawDict[rawDict['TeamID'] == TeamAstring]
+	team_B = rawDict[rawDict['TeamID'] == TeamBstring]
+
+	#only first timestamp
+	team_A_Begin = team_A[team_A['Ts'] == min(team_A['Ts'])]
+	team_B_Begin = team_B[team_B['Ts'] == min(team_B['Ts'])]
+
+	#sum of all X positions of the players per team at timestamp 0
+	team_A_Begin_X = sum(team_A_Begin['X'])
+	team_B_Begin_X = sum(team_B_Begin['X'])
+
+	#return team that is on the left side of the field, and location of the goals
+	if(team_A_Begin_X < 0 and team_B_Begin_X > 0):
+		goal_A_X = (fieldLength / 2) * -1
+		goal_B_X = (fieldLength / 2)
+		goal_Y = 0
+		return TeamAstring, goal_A_X, goal_B_X, goal_Y
+	elif(team_A_Begin_X > 0 and team_B_Begin_X < 0):
+		goal_A_X = (fieldLength / 2)
+		goal_B_X = (fieldLength / 2) * -1
+		goal_Y = 0
+		return TeamBstring, goal_A_X, goal_B_X, goal_Y
+	else:
+		warn('\nWARNING: Cannot determine the side, because the players of the teams are not on the same side at the first timestamp.\n')
+		return 'Err','Err','Err','Err'
+
+@timing
 def zone(rawDict,attributeDict,attributeLabel,TeamAstring,TeamBstring):
-	#standard KNVB settings
-	length = 105
-	width = 68
 	beginZone = 34
-	zoneMin_X = length / 2 - beginZone
+	zoneMin_X = fieldLength / 2 - beginZone
 
 	##############   READ ZONE CSV   ###############
 	dirPath = os.path.dirname(os.path.realpath(__file__))
@@ -147,40 +206,31 @@ def zone(rawDict,attributeDict,attributeLabel,TeamAstring,TeamBstring):
 	zoneMatrix = np.loadtxt(open(fileName, 'r'),delimiter=os.pathsep)
 
 	##############   DETERMINE SIDE   ###############
-	team_A = rawDict[rawDict['TeamID'] == TeamAstring]
-	team_B = rawDict[rawDict['TeamID'] == TeamBstring]
-
-	#only timestamp 0
-	team_A_Begin = team_A[team_A['Ts'] == 0]
-	team_B_Begin = team_B[team_B['Ts'] == 0]
-
-	#sum of all X positions of the players per team at timestamp 0
-	team_A_Begin_X = sum(team_A_Begin['X'])
-	team_B_Begin_X = sum(team_B_Begin['X'])
+	leftSide, goal_A_X, goal_B_X, goal_Y = determineSide(rawDict,attributeDict,attributeLabel,TeamAstring,TeamBstring)
 
 	#LT: switch sides at half time? When is it half time?
 	#determine zone X of both teams
-	if(team_A_Begin_X < 0 and team_B_Begin_X > 0):
+	if(leftSide == TeamAstring):
 		zoneA = -1
 		zoneB = 1
-		zoneMin_A_X = (length / 2) - beginZone
-		zoneMax_A_X = (length / 2)
-		zoneMin_B_X = (length / 2) * -1
-		zoneMax_B_X = (length / 2) *-1 + beginZone
-	elif(team_A_Begin_X > 0 and team_B_Begin_X < 0):
+		zoneMin_A_X = goal_B_X - beginZone
+		zoneMax_A_X = goal_B_X
+		zoneMin_B_X = goal_A_X
+		zoneMax_B_X = goal_A_X + beginZone
+	elif(leftSide == TeamBstring):
 		zoneA = 1
 		zoneB = -1
-		zoneMin_A_X = (length / 2) * -1
-		zoneMax_A_X = (length / 2) *-1 + beginZone
-		zoneMin_B_X = (length / 2) - beginZone
-		zoneMax_B_X = (length / 2)
+		zoneMin_A_X = goal_B_X
+		zoneMax_A_X = goal_B_X + beginZone
+		zoneMin_B_X = goal_A_X - beginZone
+		zoneMax_B_X = goal_A_X
 	else:
-		warn('\nWARNING: Cannot determine the zone, because the players of the teams are not on the same side at timestamp 0, or there is no timestamp 0.\n')
+		#Error: see determineSide()
 		return attributeDict,attributeLabel
 
 	#determine zone Y, For both teams the same
-	zoneMin_Y = (width / 2) * -1
-	zoneMax_Y = (width / 2)
+	zoneMin_Y = (fieldWidth / 2) * -1
+	zoneMax_Y = (fieldWidth / 2)
 
 	##############   CREATE ATTRIBUTES   ###############
 	newAttributes = pd.DataFrame(index = attributeDict.index, columns = ['zone','inZone'])
@@ -228,11 +278,12 @@ def zone(rawDict,attributeDict,attributeLabel,TeamAstring,TeamBstring):
 	attributeLabel_tmp = {'zone': tmpZone, 'inZone': tmpInZone}
 	attributeLabel.update(attributeLabel_tmp)
 
-	altogether = pd.concat([rawDict,attributeDict], axis=1)
-	altogether.to_csv('D:\\KNVB\\test.csv')
+	# altogether = pd.concat([rawDict,attributeDict], axis=1)
+	# altogether.to_csv('D:\\KNVB\\test.csv')
 
 	return attributeDict,attributeLabel
 
+@timing
 def control(rawDict,attributeDict,attributeLabel,TeamAstring,TeamBstring):
 	#Only players in possession
 	inPossession = attributeDict[attributeDict['inPossession'] == 1]
@@ -264,7 +315,7 @@ def control(rawDict,attributeDict,attributeLabel,TeamAstring,TeamBstring):
 	##### THE STRINGS #####
 	# Export a string label of each new attribute in the labels dictionary (useful for plotting purposes)
 	tmpAvgRelSpeedPlayerBall = 'Average relative speed of player and ball.'
-	tmpControl = 'Control of the player with ball.'
+	tmpControl = 'Ball control of player with ball.'
 
 	attributeLabel_tmp = {'avgRelSpeedPlayerBall': tmpAvgRelSpeedPlayerBall, 'control': tmpControl}
 	attributeLabel.update(attributeLabel_tmp)
@@ -274,24 +325,124 @@ def control(rawDict,attributeDict,attributeLabel,TeamAstring,TeamBstring):
 	
 	return attributeDict,attributeLabel
 
+@timing
 def pressure(rawDict,attributeDict,attributeLabel,TeamAstring,TeamBstring):
-	#Only players in possession
+	def distance(X_1,Y_1,X_2,Y_2):
+		return np.sqrt((X_1 - X_2)**2 + (Y_1 - Y_2)**2)
+
+	#distances
+	highPressDist = 1
+	headOnDist = 4
+	lateralDist = 3
+	hindDist = 2 
+
+	#angles to both sides, so max angle is 180
+	highPressAngle = 180 #LT: not necessary --> everybody
+	headOnAngle = 90 #both sides 90 degrees
+	lateralAngle = 45
+	hindAngle = 45
+
+	#values
+	highPressValue = 10
+	headOnValue = 7
+	lateralValue = 5
+	hindValue = 2
+
+	#LT: how to determine this constant?
+	constant = 1
+
+	leftSide, goal_A_X, goal_B_X, goal_Y = determineSide(rawDict,attributeDict,attributeLabel,TeamAstring,TeamBstring)
+
+	newAttributes = pd.DataFrame(index = attributeDict.index, columns = ['pressureOnPlayerWithBall','pressureFromDefender','pressureZone','angleInPossDefGoal','distToPlayerWithBall'])
+
+	#players in possession
 	inPossession = rawDict[attributeDict['inPossession'] == 1]
-	notInPossession = rawDict[attributeDict['inPossession'] == 0]
+
+	#all players
+	players = rawDict[(rawDict['PlayerID'] != 'ball') & (rawDict['PlayerID'] != 'groupRow')]
+
+	newAttributes['pressureFromDefender'] = 0
 
 	for idx,i in enumerate(pd.unique(rawDict['Ts'])):
 		curTime = rawDict['Ts'][idx]
-		inPossessionX = inPossession['X'][inPossession['Ts'] == curTime]
-		inPossessionY = inPossession['Y'][inPossession['Ts'] == curTime]
-		notInPossessionX = notInPossession['X'][notInPossession['Ts'] == curTime]
-		notInPossessionY = notInPossession['Y'][notInPossession['Ts'] == curTime]
+		curPlayer = players[players['Ts'] == curTime]
+		curInPossession = inPossession[inPossession['Ts'] == curTime]
+		curTeamInPossession = inPossession['TeamID'][inPossession['Ts'] == curTime]
+		curInPossessionX = inPossession['X'][inPossession['Ts'] == curTime]
+		curInPossessionY = inPossession['Y'][inPossession['Ts'] == curTime]
 
-		print(curTime,inPossession['TeamID'][inPossession['Ts'] == curTime])
+		if all(np.isnan(curInPossessionX)) or all(np.isnan(curInPossessionY)):
+		 	continue #LT: or break?
+		else:
+			curInPossessionX = float(curInPossessionX)
+			curInPossessionY = float(curInPossessionY)
 
-		pdb.set_trace()
+		#calculate distances between player with ball, defender and goal
+		if all(curTeamInPossession == TeamAstring):
+			playersOpponent = curPlayer[curPlayer['TeamID'] == TeamBstring]
+
+			distInPossessDefender = distance(curInPossessionX,curInPossessionY,playersOpponent['X'],playersOpponent['Y'])
+			distInPossessGoal = distance(curInPossessionX,curInPossessionY,goal_B_X,goal_Y)
+			distDefenderGoal = distance(playersOpponent['X'],playersOpponent['Y'],goal_B_X,goal_Y)
+
+		elif all(curTeamInPossession == TeamBstring):
+			playersOpponent = curPlayer[curPlayer['TeamID'] == TeamAstring]
+
+			distInPossessDefender = distance(curInPossessionX,curInPossessionY,playersOpponent['X'],playersOpponent['Y'])
+			distInPossessGoal = distance(curInPossessionX,curInPossessionY,goal_A_X,goal_Y)
+			distDefenderGoal = distance(playersOpponent['X'],playersOpponent['Y'],goal_A_X,goal_Y)
+
+		else:#nobody in possession
+			continue
+
+		newAttributes['distToPlayerWithBall'][playersOpponent.index] = distInPossessDefender
+		#angle between player with ball, defender and goal, see https://stackoverflow.com/questions/1211212/how-to-calculate-an-angle-from-three-points
+		angleInPossDefGoal = np.degrees(np.arccos((distInPossessDefender**2 + distInPossessGoal**2 - distDefenderGoal**2) / (2 * distInPossessDefender * distInPossessGoal)))
+
+		#HIGH PRESSURE ZONE
+		defender = playersOpponent[(distInPossessDefender < highPressDist) & (angleInPossDefGoal < highPressAngle)]
+		newAttributes['angleInPossDefGoal'][defender.index] = angleInPossDefGoal[defender.index]
+		newAttributes['pressureFromDefender'][defender.index] = 1 - (distInPossessDefender[defender.index] / highPressValue)
+		newAttributes['pressureZone'][defender.index] = 'HIGH PRESSURE'
+
+		#HEAD-ON ZONE
+		defender = playersOpponent[(distInPossessDefender >= highPressDist) & (distInPossessDefender < headOnDist) & (angleInPossDefGoal < headOnAngle)]
+		newAttributes['angleInPossDefGoal'][defender.index] = angleInPossDefGoal[defender.index]
+		newAttributes['pressureFromDefender'][defender.index] = 1 - (distInPossessDefender[defender.index] / headOnValue)
+		newAttributes['pressureZone'][defender.index] = 'HEAD-ON'
+
+		#LATERAL ZONE
+		defender = playersOpponent[(distInPossessDefender >= highPressDist) & (distInPossessDefender < lateralDist) & (angleInPossDefGoal >= headOnAngle) & (angleInPossDefGoal < (headOnAngle + lateralAngle))]
+		newAttributes['angleInPossDefGoal'][defender.index] = angleInPossDefGoal[defender.index]
+		newAttributes['pressureFromDefender'][defender.index] = 1 - (distInPossessDefender[defender.index] / lateralValue)
+		newAttributes['pressureZone'][defender.index] = 'LATERAL'
+
+		#HIND ZONE
+		defender = playersOpponent[(distInPossessDefender >= highPressDist) & (distInPossessDefender < hindDist) & (angleInPossDefGoal >= headOnAngle + lateralAngle)]
+		newAttributes['angleInPossDefGoal'][defender.index] = angleInPossDefGoal[defender.index]
+		newAttributes['pressureFromDefender'][defender.index] = 1 - (distInPossessDefender[defender.index] / hindValue)
+		newAttributes['pressureZone'][defender.index] = 'HIND'
+
+		newAttributes['pressureOnPlayerWithBall'][curInPossession.index] = 1 - math.exp(-1 * constant * sum(newAttributes['pressureFromDefender'][playersOpponent.index]))
+
+	attributeDict = pd.concat([attributeDict, newAttributes], axis=1)
+
+	##### THE STRINGS #####
+	tmpPressureOnPlayerWithBall = 'Pressure on player with ball.'
+	tmpPressureFromDefender = 'Pressure from defender.'
+	tmpPressureZone = 'Pressure Zone for defender.'
+	tmpAngleInPossDefGoal = 'Angle for player with ball between defender and goal.'
+	tmpDistToPlayerWithBall = 'Distance to player with ball, only for defenders.'
+
+	attributeLabel_tmp = {'pressureOnPlayerWithBall': tmpPressureOnPlayerWithBall, 'pressureFromDefender': tmpPressureFromDefender, 'pressureZone': tmpPressureZone, 'angleInPossDefGoal': tmpAngleInPossDefGoal, 'distToPlayerWithBall': tmpDistToPlayerWithBall}
+	attributeLabel.update(attributeLabel_tmp)
+	altogether = pd.concat([rawDict,attributeDict], axis=1)
+	altogether.to_csv('D:\\KNVB\\test.csv')
 
 	return attributeDict,attributeLabel
 
+@timing
+def density(rawDict,attributeDict,attributeLabel,TeamAstring,TeamBstring):
 
 
 ## Of course, you can also create new modules (seperate files), to avoid having a very long file.
