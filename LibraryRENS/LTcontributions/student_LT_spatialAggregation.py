@@ -84,8 +84,11 @@ def process(rawDict,attributeDict,attributeLabel,TeamAstring,TeamBstring,skipSpa
 	# attributeDict,attributeLabel = \
 	# control(rawDict,attributeDict,attributeLabel,TeamAstring,TeamBstring)
 
+	# attributeDict,attributeLabel = \
+	# pressure(rawDict,attributeDict,attributeLabel,TeamAstring,TeamBstring)
+
 	attributeDict,attributeLabel = \
-	pressure(rawDict,attributeDict,attributeLabel,TeamAstring,TeamBstring)
+	density(rawDict,attributeDict,attributeLabel,TeamAstring,TeamBstring)
 
 	# NB: Centroid and distance to centroid are stored in example variables that are not exported
 	# when 'process' is finished, because these features are already embedded in the main pipeline.
@@ -441,9 +444,163 @@ def pressure(rawDict,attributeDict,attributeLabel,TeamAstring,TeamBstring):
 
 	return attributeDict,attributeLabel
 
+def determineZone(pointA,pointB,pointC,pointD,playersOpponent):
+	lineAB = [pointA,pointB]
+	lineBC = [pointB,pointC]
+	lineCD = [pointC,pointD]
+	lineDA = [pointD,pointA]
+
+	X_coords_AB, Y_coords_AB = zip(*lineAB)
+	X_coords_BC, Y_coords_BC = zip(*lineBC)
+	X_coords_CD, Y_coords_CD = zip(*lineCD)
+	X_coords_DA, Y_coords_DA = zip(*lineDA)
+
+	coefficientsAB = np.polyfit(X_coords_AB, Y_coords_AB, 1)
+	coefficientsBC = np.polyfit(X_coords_BC, Y_coords_BC, 1)
+	coefficientsCD = np.polyfit(X_coords_CD, Y_coords_CD, 1)
+	# coefficientsDA = (0,0)
+
+	pointE = (playersOpponent['X'],playersOpponent['Y'])
+
+	Y_AB = (coefficientsAB[0] * pointE[0]) + coefficientsAB[1]
+	X_BC = (pointE[1] - coefficientsBC[1]) / coefficientsBC[0]
+	Y_CD = (coefficientsCD[0] * pointE[0]) + coefficientsCD[1]
+	# if coefficientsDA[0] == 0:
+	X_DA = pointA[0] #X coordinate of goal
+	# else:
+	# 	X_DA = (pointE[1] - coefficientsDA[1]) / coefficientsDA[0]
+
+	if(pointA[0] < 0):
+		defenderInZone = playersOpponent[(pointE[1] < Y_AB) & (pointE[0] < X_BC) & (pointE[1] > Y_CD) & (pointE[0] > X_DA)]
+	else:
+		defenderInZone = playersOpponent[(pointE[1] < Y_AB) & (pointE[0] > X_BC) & (pointE[1] > Y_CD) & (pointE[0] < X_DA)]
+
+	return defenderInZone
+
 @timing
 def density(rawDict,attributeDict,attributeLabel,TeamAstring,TeamBstring):
+	def distance(X_1,Y_1,X_2,Y_2):
+		return np.sqrt((X_1 - X_2)**2 + (Y_1 - Y_2)**2)
 
+	#determining centrality
+	leftSide, goal_A_X, goal_B_X, goal_Y = determineSide(rawDict,attributeDict,attributeLabel,TeamAstring,TeamBstring)
+	goal_Y_Left = goal_Y + 10
+	goal_Y_Right = goal_Y - 10
+	distInPossessBZ = 2 #distance from player with ball for blocking zone in both sides
+	angleInPossessBZ = 90
+
+	#LT:how to determine this constant?
+	constantSD = 1
+
+	newAttributes = pd.DataFrame(index = attributeDict.index, columns = ['shotDensityForPlayerWithBall','shotDensityFromDefender','passDensityFromDefender','angleToGoal'])
+
+	#players in possession
+	inPossession = rawDict[attributeDict['inPossession'] == 1]
+
+	#all players
+	players = rawDict[(rawDict['PlayerID'] != 'ball') & (rawDict['PlayerID'] != 'groupRow')]
+
+	newAttributes['shotDensityFromDefender'] = 0
+	newAttributes['passDensityFromDefender'] = 0
+
+	for idx,i in enumerate(pd.unique(rawDict['Ts'])):
+		curTime = rawDict['Ts'][idx]
+		curPlayer = players[players['Ts'] == curTime]
+		curInPossession = inPossession[inPossession['Ts'] == curTime]
+		curInPossessionX = inPossession['X'][inPossession['Ts'] == curTime]
+		curInPossessionY = inPossession['Y'][inPossession['Ts'] == curTime]
+		curTeamInPossession = inPossession['TeamID'][inPossession['Ts'] == curTime]
+
+		if all(np.isnan(curInPossessionX)) or all(np.isnan(curInPossessionY)):
+		 	continue #LT: or break?
+		else:
+			curInPossessionX = float(curInPossessionX)
+			curInPossessionY = float(curInPossessionY)
+
+		#determine centrality
+		centrality = 1 - abs(curInPossessionY) / (fieldWidth/2)
+		# print(inPossession[inPossession['Ts'] == curTime],centrality)
+
+		if all(curTeamInPossession == TeamAstring):
+			playersOpponent = curPlayer[curPlayer['TeamID'] == TeamBstring]
+
+			#calculate angle to goal for player with ball
+			radiansToGoal = math.atan2(abs(curInPossessionY-goal_Y), abs(curInPossessionX-goal_B_X))
+			degreesToGoal = math.degrees(radiansToGoal)
+			newAttributes['angleToGoal'][curInPossession.index] = degreesToGoal
+
+			#############################SHOT DENSITY######################################
+
+			#https://math.stackexchange.com/questions/143932/calculate-point-given-x-y-angle-and-distance
+			leftBZ_X = curInPossessionX + distInPossessBZ * np.cos(np.radians(degreesToGoal - angleInPossessBZ))
+			leftBZ_Y = curInPossessionY + distInPossessBZ * np.sin(np.radians(degreesToGoal - angleInPossessBZ))
+			rightBZ_X = curInPossessionX + distInPossessBZ * np.cos(np.radians(degreesToGoal + angleInPossessBZ))
+			rightBZ_Y = curInPossessionY + distInPossessBZ * np.sin(np.radians(degreesToGoal + angleInPossessBZ))
+
+			#coordinates of Blocking Zone (BZ)
+			leftGoal_Coor = (goal_B_X, goal_Y_Left)
+			rightGoal_Coor = (goal_B_X, goal_Y_Right)
+			leftBZ_Coor = (leftBZ_X, leftBZ_Y)
+			rightBZ_Coor = (rightBZ_X, rightBZ_Y)
+
+			defenderInBZ = determineZone(leftGoal_Coor, rightBZ_Coor, leftBZ_Coor, rightGoal_Coor, playersOpponent)
+
+			distInPossessDefender = distance(curInPossessionX,curInPossessionY,defenderInBZ['X'],defenderInBZ['Y'])
+			distInPossessGoal = distance(curInPossessionX,curInPossessionY,goal_B_X,goal_Y)
+			distDefenderGoal = distance(defenderInBZ['X'],defenderInBZ['Y'],goal_B_X,goal_Y)
+
+		elif all(curTeamInPossession == TeamBstring):
+			playersOpponent = curPlayer[curPlayer['TeamID'] == TeamAstring]
+
+			#calculate angle to goal for player with ball
+			radiansToGoal = math.atan2(abs(curInPossessionY-goal_Y), abs(curInPossessionX-goal_A_X))
+			degreesToGoal = math.degrees(radiansToGoal)
+			newAttributes['angleToGoal'][curInPossession.index] = degreesToGoal
+
+			#############################SHOT DENSITY######################################
+
+			#https://math.stackexchange.com/questions/143932/calculate-point-given-x-y-angle-and-distance
+			leftBZ_X = curInPossessionX + distInPossessBZ * np.cos(np.radians(degreesToGoal - angleInPossessBZ))
+			leftBZ_Y = curInPossessionY + distInPossessBZ * np.sin(np.radians(degreesToGoal - angleInPossessBZ))
+			rightBZ_X = curInPossessionX + distInPossessBZ * np.cos(np.radians(degreesToGoal + angleInPossessBZ))
+			rightBZ_Y = curInPossessionY + distInPossessBZ * np.sin(np.radians(degreesToGoal + angleInPossessBZ))
+
+			#coordinates of Blocking Zone (BZ)
+			leftGoal_Coor = (goal_A_X, goal_Y_Left)
+			rightGoal_Coor = (goal_A_X, goal_Y_Right)
+			leftBZ_Coor = (leftBZ_X, leftBZ_Y)
+			rightBZ_Coor = (rightBZ_X, rightBZ_Y)
+
+			defenderInBZ = determineZone(leftGoal_Coor, rightBZ_Coor, leftBZ_Coor, rightGoal_Coor, playersOpponent)
+
+			distInPossessDefender = distance(curInPossessionX,curInPossessionY,defenderInBZ['X'],defenderInBZ['Y'])
+			distInPossessGoal = distance(curInPossessionX,curInPossessionY,goal_A_X,goal_Y)
+			distDefenderGoal = distance(defenderInBZ['X'],defenderInBZ['Y'],goal_A_X,goal_Y)
+
+		else:#nobody in possession
+			continue
+
+		shotDensity = 1 - (distInPossessDefender / distInPossessGoal)
+		newAttributes['shotDensityFromDefender'][defenderInBZ.index] = shotDensity[defenderInBZ.index]
+		newAttributes['shotDensityForPlayerWithBall'][curInPossession.index] = 1 - math.exp(-1 * constantSD * sum(shotDensity)) #newAttributes['shotDensityFromDefender'][defenderInBZ.index]))
+
+	attributeDict = pd.concat([attributeDict, newAttributes], axis=1)
+
+	##### THE STRINGS #####
+	tmpShotDensityForPlayerWithBall = 'Shot Density for player with ball.'
+	tmpShotDensityFromDefender = 'Shot Density from defender in the Blocking Zone on player with ball.'
+	tmpPassDensityFromDefender = 'Pass Density from defender in the Interception Zone on player with ball.'
+	tmpAngleToGoal = 'Angle to goal for player with ball.'
+
+
+	attributeLabel_tmp = {'shotDensityForPlayerWithBall': tmpShotDensityForPlayerWithBall, 'shotDensityFromDefender': tmpShotDensityFromDefender, 'passDensityFromDefender': tmpPassDensityFromDefender, 'angleToGoal': tmpAngleToGoal}
+	attributeLabel.update(attributeLabel_tmp)
+	altogether = pd.concat([rawDict,attributeDict], axis=1)
+	altogether.to_csv('D:\\KNVB\\test.csv')
+
+	# pdb.set_trace()
+
+	return attributeDict,attributeLabel
 
 ## Of course, you can also create new modules (seperate files), to avoid having a very long file.
 ## If you do, don't forget to import the module at the top of this file using <import newModule>.
