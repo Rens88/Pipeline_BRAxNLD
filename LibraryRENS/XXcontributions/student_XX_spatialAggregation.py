@@ -9,8 +9,15 @@
 import numpy as np
 import math
 import pandas as pd
+import os
+import time
+import matplotlib.pyplot as plt
 from warnings import warn
-import pdb; #pdb.set_trace()
+import pdb;
+
+#Standard KNVB settings
+fieldLength = 105
+fieldWidth = 68
 
 ## Here, you can clarify which functions exist in this module.
 if __name__ == '__main__':
@@ -51,31 +58,57 @@ if __name__ == '__main__':
 	process(rawDict,attributeDict,attributeLabel,TeamAstring,TeamBstring,skipSpatAgg)
 
 	# This is an example that can be used to see how you compute a group level variable.
-	teamCentroid_panda(rawDict,attributeDict,attributeLabel,TeamAstring,TeamBstring,skipSpatAgg)
+	teamCentroid_panda(rawDict,attributeDict,attributeLabel,TeamAstring,TeamBstring)
 	# This is an example that can be used to see how to compute an individual level variable.
 	distanceToCentroid(rawDict,attributeDict,attributeLabel,TeamAstring,TeamBstring)
-	# Calculates the distance from a player to the opponent
-	distanceToOpponent(rawDict,attributeDict,attributeLabel,TeamAstring,TeamBstring)
-	# Calculates the distance from a player to the team mate
-	distanceToOpponent(rawDict,attributeDict,attributeLabel,TeamAstring,TeamBstring)
 
-	ballPossession(rawDict,attributeDict,attributeLabel,TeamAstring,TeamBstring)
+def timing(f):
+    def wrap(*args):
+        time1 = time.time()
+        ret = f(*args)
+        time2 = time.time()
+        print('%s function took %0.3f s' % (f.__name__, (time2-time1)))
+        return ret
+    return wrap
 
 ## Here, you specifiy what each function does
 def process(rawDict,attributeDict,attributeLabel,TeamAstring,TeamBstring,skipSpatAgg):
 	# Use this is an example for a GROUP level aggregate
-	attributeDict_EXAMPLE,attributeLabel_EXAMPLE = \
-	teamCentroid_panda(rawDict,attributeDict,attributeLabel,TeamAstring,TeamBstring,skipSpatAgg)
+	# attributeDict_EXAMPLE,attributeLabel_EXAMPLE = \
+	# teamCentroid_panda(rawDict,attributeDict,attributeLabel,TeamAstring,TeamBstring)
 
-	# Use this is an example for a PLAYER level aggregate
-	attributeDict_EXAMPLE,attributeLabel_EXAMPLE = \
-	distanceToCentroid(rawDict,attributeDict,attributeLabel,TeamAstring,TeamBstring,skipSpatAgg)
+	# # Use this is an example for a PLAYER level aggregate
+	# attributeDict_EXAMPLE,attributeLabel_EXAMPLE = \
+	# distanceToCentroid(rawDict,attributeDict,attributeLabel,TeamAstring,TeamBstring)
 
-	attributeDict_EXAMPLE,attributeLabel_EXAMPLE = \
+	# attributeDict,attributeLabel = \
+	# heatMap(rawDict,attributeDict,attributeLabel,TeamAstring,TeamBstring)
+
+	attributeDict,attributeLabel = \
+	ballPossession(rawDict,attributeDict,attributeLabel,TeamAstring,TeamBstring)
+
+	attributeDict,attributeLabel = \
 	distanceToOpponent(rawDict,attributeDict,attributeLabel,TeamAstring,TeamBstring)
 
-	attributeDict_EXAMPLE,attributeLabel_EXAMPLE = \
-	ballPossession(rawDict,attributeDict,attributeLabel,TeamAstring,TeamBstring)
+
+	#attributeDict,attributeLabel = \
+	#zone(rawDict,attributeDict,attributeLabel,TeamAstring,TeamBstring)
+
+	#attributeDict,attributeLabel = \
+	#control(rawDict,attributeDict,attributeLabel,TeamAstring,TeamBstring)
+
+	#attributeDict,attributeLabel = \
+	#distanceToGoal(rawDict,attributeDict,attributeLabel,TeamAstring,TeamBstring)
+
+	#attributeDict,attributeLabel = \
+	#distanceInPossessionToPlayers(rawDict,attributeDict,attributeLabel,TeamAstring,TeamBstring)
+
+	#attributeDict,attributeLabel = \
+	#distanceToOpponent(rawDict,attributeDict,attributeLabel,TeamAstring,TeamBstring)
+
+	#attributeDict,attributeLabel = \
+	#angleOpponentToPassline(rawDict,attributeDict,attributeLabel,TeamAstring,TeamBstring)
+
 
 	# NB: Centroid and distance to centroid are stored in example variables that are not exported
 	# when 'process' is finished, because these features are already embedded in the main pipeline.
@@ -83,8 +116,6 @@ def process(rawDict,attributeDict,attributeLabel,TeamAstring,TeamBstring,skipSpa
 	# that this function returns (i.e., 'attributeDict' and 'attributeLabel').
 
 	return attributeDict,attributeLabel
-## Of course, you can also create new modules (seperate files), to avoid having a very long file.
-## If you do, don't forget to import the module at the top of this file using <import newModule>.
 
 #####################################################################
 def teamCentroid_panda(rawDict,attributeDict,attributeLabel,TeamAstring,TeamBstring,skipSpatAgg):
@@ -190,48 +221,289 @@ def teamCentroid_panda(rawDict,attributeDict,attributeLabel,TeamAstring,TeamBstr
 
 	return attributeDict,attributeLabel
 
+def distanceToOpponent(rawDict,attributeDict,attributeLabel,TeamAstring,TeamBstring):
+	def distance(X_1,Y_1,X_2,Y_2):
+		return np.sqrt((X_1 - X_2)**2 + (Y_1 - Y_2)**2)
+
+	#All the players
+	players = rawDict[(rawDict['PlayerID'] != 'ball') & (rawDict['PlayerID'] != 'groupRow')]
+
+	newAttributes = pd.DataFrame(index = attributeDict.index, columns = ['distanceToOpponent'])
+
+	for idx,i in enumerate(pd.unique(rawDict['PlayerID'])):
+		curPlayer = rawDict[rawDict['PlayerID'] == i]
+		curPlayerDict = curPlayer.set_index('Ts')
+		curTime = rawDict['Ts'][idx]
+		curPlayers = players[players['Ts'] == curTime]
+		curTeamA = curPlayers[curPlayers['TeamID'] == TeamAstring]
+		curTeamB = curPlayers[curPlayers['TeamID'] == TeamBstring]
+		lowestDistance = 99999
+
+		if all(curPlayer['PlayerID'] == 'groupRow'):
+			# It's actually not a player, but a group, so skip it.
+			continue # do nothing
+		elif all(curPlayer['PlayerID'] == 'ball'):
+			# It's actually not a player, but the ball, so skip it.
+			continue # do nothing
+		elif all(curPlayer['TeamID'] == TeamAstring):
+			# Compute the distance to the centroid, NB: team specific!!
+			for index,j in enumerate(curTeamB['PlayerID']):
+				curPlayerB = curTeamB[curTeamB['PlayerID'] == j]
+				curPlayerBDict = curPlayer.set_index('Ts')
+				tmpDistance = distance(curPlayerDict['X'], curPlayerDict['Y'], curPlayerBDict['X'], curPlayerBDict['Y'])
+				if all(tmpDistance < lowestDistance):
+					curPlayer_distToOpp = tmpDistance
+					lowestDistance = tmpDistance
+		elif all(curPlayer['TeamID'] == TeamBstring):
+			for index,k in enumerate(curTeamA['PlayerID']):
+				curPlayerA = curTeamA[curTeamA['PlayerID'] == k]
+				curPlayerADict = curPlayer.set_index('Ts')
+				print(curPlayerADict)
+				print('---------------')
+				tmpDistance = distance(curPlayerDict['X'], curPlayerDict['Y'], curPlayerADict['X'], curPlayerADict['Y'])
+				if all(tmpDistance < lowestDistance):
+					curPlayer_distToOpp = tmpDistance
+					lowestDistance = tmpDistance
+
+		# Put compute values in the right place in the dataFrame
+		newAttributes['distanceToOpponent'][curPlayer.index] = curPlayer_distToOpp[curPlayerDict.index]
+
+	# Combine the pre-existing attributes with the new attributes:
+	attributeDict = pd.concat([attributeDict, newAttributes], axis=1)
+
+	tmpdistanceToOpponent = 'Distance to nearest opponent'
+
+	##### THE STRINGS #####
+	# Export a string label of each new attribute in the labels dictionary (useful for plotting purposes)
+	attributeLabel_tmp = {'distanceToOpponent': tmpdistanceToOpponent}
+	attributeLabel.update(attributeLabel_tmp)
+	altogether = pd.concat([rawDict,attributeDict], axis=1)
+	altogether.to_csv('/Users/Victor/Desktop/Universiteit/AnalyseKNVB/test.csv')
+
+	return attributeDict,attributeLabel
+
 
 ############################################################################
-
 def ballPossession(rawDict,attributeDict,attributeLabel,TeamAstring,TeamBstring):
-	TeamVals = attributeDict[rawDict['PlayerID'] == 'groupRow'].set_index('Ts')
-	newAttributes = pd.DataFrame(index = attributeDict.index, columns = ['ballPosession'])
-	lowestDistance = 999999;
-	playerInPossession = 0;
+	#ball
+	ballComplete = rawDict[rawDict['PlayerID'] == 'ball']
 
-	#Search the ball in de DataFrame (Kan dit zonder for-loop)?
-	for idx,i in enumerate(pd.unique(rawDict['PlayerID'])):
-		ball = rawDict[rawDict['PlayerID'] == i]
-		ballDict = ball.set_index('Ts')
-		if all(ball['PlayerID'] == 'ball'):
-			for idx,j in enumerate(pd.unique(rawDict['PlayerID'])):
-				curPlayer = rawDict[rawDict['PlayerID'] == j]
-				curPlayerDict = curPlayer.set_index('Ts')
-				if all(ball['PlayerID'] == 'ball'):
-					continue
-				elif all(ball['PlayerID'] == 'groupRow'):
-					continue
-				else:
-					curPlayer_distToBall = np.sqrt((curPlayerDict['X'] - ballDict['X'])**2 + (curPlayerDict['Y'] - ballDict['Y'])**2)
-					if(curPlayer_distToBall < lowestDistance):
-						lowestDistance = curPlayer_distToBall
-						playerInPossession = curPlayer['PlayerID'];
+	#only players
+	tmp = rawDict[rawDict['PlayerID'] != 'ball']
+	players = tmp[tmp['PlayerID'] != 'groupRow']
 
-	for idx,k in enumerate(pd.unique(rawDict['PlayerID'])):
-		currentPlayer = rawDict[rawDict['PlayerID'] == k]
-		currentPlayer = currentPlayer.set_index('Ts')
-		if all(currentPlayer['PlayerID'] == playerInPossession):
-			newAttributes['ballPosession'][currentPlayer.index] = 1;
-		#elif all(currentPlayer['PlayerID'] != playerInPossession):
-			#newAttributes['ballPosession'][currentPlayer.index] = 0;
+	newAttributes = pd.DataFrame(index = attributeDict.index, columns = ['distToBall', 'inPossession'])
+	newAttributes['inPossession'] = 0
+
+	# For every ball
+	for idx,i in enumerate(ballComplete['Ts']):
+		curTime = ballComplete['Ts'][idx]
+
+		curBallX = ballComplete['X'][idx]
+		curBallY = ballComplete['Y'][idx]
+
+		# Take all corresponding Ts (for PlayerID != 'groupRow' and 'ball')
+		curPlayersX = players['X'][players['Ts'] == curTime]
+		curPlayersY = players['Y'][players['Ts'] == curTime]
+
+		curPlayersID = players['PlayerID'][players['Ts'] == curTime]
+
+		curPlayer_distToBall = np.sqrt((curPlayersX - curBallX)**2 + (curPlayersY - curBallY)**2)
+		newAttributes['distToBall'][curPlayer_distToBall.index] = curPlayer_distToBall
+		idxPossession = curPlayer_distToBall[curPlayer_distToBall == min(curPlayer_distToBall)].index
+		newAttributes['inPossession'][idxPossession] = 1
+		# IDEA??
+		# Duration threshold?
+
+		# absolute threshold (<3m?)
+
+		# velocity (same direction?)
+
+		# prioritization?
 
 	# Combine the pre-existing attributes with the new attributes:
 	attributeDict = pd.concat([attributeDict, newAttributes], axis=1)
 
 	##### THE STRINGS #####
 	# Export a string label of each new attribute in the labels dictionary (useful for plotting purposes)
-	tmpPossessionString = 'Bool Player in Possession (m)'
-	attributeLabel.update({'InPossession':tmpPossessionString})
+	tmpDistToBallString = 'Distance from player to ball.'
+	tmpInPossession = 'Boolean for player in possession of the ball.'
+	attributeLabel_tmp = {'distToBall':tmpDistToBallString,'inPossession':tmpInPossession}
+	attributeLabel.update(attributeLabel_tmp)
+
+	return attributeDict,attributeLabel
+
+def angleOpponentToPassline(rawDict,attributeDict,attributeLabel,TeamAstring,TeamBstring):
+	def distance(X_1,Y_1,X_2,Y_2):
+		return np.sqrt((X_1 - X_2)**2 + (Y_1 - Y_2)**2)
+
+	newAttributes = pd.DataFrame(index = attributeDict.index, columns = ['angleInPossDefGoal', 'distToPlayerWithBall'])
+
+	#Player in possession
+	inPossession = rawDict[attributeDict['inPossession'] == 1]
+
+	print(inPossession)
+
+	#All players
+	players = rawDict[(rawDict['PlayerID'] != 'ball') & (rawDict['PlayerID'] != 'groupRow')]
+
+	for idx,i in enumerate(pd.unique(rawDict['Ts'])):
+		curTime = rawDict['Ts'][idx]
+		curPlayer = players[players['Ts'] == curTime]
+		curInPossession = inPossession[inPossession['Ts'] == curTime]
+		curTeamInPossession = inPossession['TeamID'][inPossession['Ts'] == curTime]
+		curInPossessionX = inPossession['X'][inPossession['Ts'] == curTime]
+		curInPossessionY = inPossession['Y'][inPossession['Ts'] == curTime]
+
+		if all(np.isnan(curInPossessionX)) or all(np.isnan(curInPossessionY)):
+		 	continue #LT: or break?
+		else:
+			curInPossessionX = float(curInPossessionX)
+			curInPossessionY = float(curInPossessionY)
+
+		#calculate distances between player with ball, defender and goal
+		if all(curTeamInPossession == TeamAstring):
+			playersOpponent = curPlayer[curPlayer['TeamID'] == TeamBstring]
+			playersOwnTeam = curPlayer[curPlayer['TeamID'] == TeamAstring]
+
+			distInPossessDefender = distance(curInPossessionX,curInPossessionY,playersOpponent['X'],playersOpponent['Y'])
+			distInPossessOwnTeam = distance(curInPossessionX,curInPossessionY,playersOwnTeam['X'],playersOwnTeam['Y'])
+			distOwnTeamDefender = distance(playersOpponent['X'],playersOpponent['Y'],playersOwnTeam['X'],playersOwnTeam['Y'])
+
+		elif all(curTeamInPossession == TeamBstring):
+			playersOpponent = curPlayer[curPlayer['TeamID'] == TeamAstring]
+			playersOwnTeam = curPlayer[curPlayer['TeamID'] == TeamBstring]
+
+			distInPossessDefender = distance(curInPossessionX,curInPossessionY,playersOpponent['X'],playersOpponent['Y'])
+			distInPossessOwnTeam = distance(curInPossessionX,curInPossessionY,playersOwnTeam['X'],playersOwnTeam['Y'])
+			distOwnTeamDefender = distance(playersOpponent['X'],playersOpponent['Y'],playersOwnTeam['X'],playersOwnTeam['Y'])
+
+		else: #Nobody in possession
+			continue
+
+		newAttributes['distToPlayerWithBall'][playersOwnTeam.index] = distInPossessOwnTeam
+
+		angleInPossDefOwn = np.degrees(np.arccos((distInPossessDefender**2 + distInPossessOwnTeam**2 - distDefenderOwnTeam**2) / (2 * distInPossessDefender * distInPossessGoal)))
+
+		newAttributes['angleInPossDefGoal'] = angleInPossDefOwn
+		attributeDict = pd.concat([attributeDict, newAttributes], axis=1)
+
+	attributeDict = pd.concat([attributeDict, newAttributes], axis=1)
+
+	##### THE STRINGS #####
+	tmpAngleInPossDefOwn = 'Angle from defender to passline to teammate.'
+	tmpDistToPlayerWithBall = 'Distance to player with ball, only for defenders.'
+
+	attributeLabel_tmp = {'angleInPossDefGoal': tmpAngleInPossDefOwn, 'distToPlayerWithBall': tmpDistToPlayerWithBall}
+	attributeLabel.update(attributeLabel_tmp)
+	altogether = pd.concat([rawDict,attributeDict], axis=1)
+	altogether.to_csv('/Users/Victor/Desktop/Universiteit/AnalyseKNVB/test.csv')
+
+	return attributeDict,attributeLabel
+
+def distanceToOpponentOld(rawDict,attributeDict,attributeLabel,TeamAstring,TeamBstring):
+	def distance(X_1,Y_1,X_2,Y_2):
+		return np.sqrt((X_1 - X_2)**2 + (Y_1 - Y_2)**2)
+
+	tmp = rawDict[rawDict['PlayerID'] != 'ball']
+	players = tmp[tmp['PlayerID'] != 'groupRow']
+
+	#All the players on the field
+	playersTeamA = players[players['TeamID'] == TeamAstring]
+	playersTeamB = players[players['TeamID'] == TeamBstring]
+
+	#Create new attribute distanceToGoal
+	newAttributes = pd.DataFrame(index = attributeDict.index, columns = ['distToOpp'])
+
+	for idx,i in enumerate(pd.unique(rawDict['PlayerID'])):
+		curPlayer = rawDict[rawDict['PlayerID'] == i]
+		curTeamA = rawDict[rawDict['TeamID'] == TeamAstring]
+		curTeamB = rawDict[rawDict['TeamID'] == TeamBstring]
+		curPlayerDict = curPlayer.set_index('Ts')
+		curTeamADict = curTeamA.set_index('Ts')
+		curTeamBDict = curTeamB.set_index('Ts')
+
+		if all(curPlayer['PlayerID'] == 'groupRow'):
+			# It's actually not a player, but a group, so skip it.
+			continue # do nothing
+		elif all(curPlayer['PlayerID'] == 'ball'):
+			# It's actually not a player, but the ball, so skip it.
+			continue # do nothing
+		elif all(curPlayer['TeamID'] == TeamAstring):
+			curPlayer_distToOpp = min(distance(curPlayerDict['X'], curPlayerDict['Y'], curTeamADict['X'], curTeamADict['Y']))
+			print(curPlayer_distToOpp)
+		elif all(curPlayer['TeamID'] == TeamBstring):
+			# Compute the distance to the centroid, NB: team specific!!
+			curPlayer_distToOpp = min(distance(curPlayerDict['X'], curPlayerDict['Y'], curTeamADict['X'], curTeamADict['Y']))
+
+		# Put compute values in the right place in the dataFrame
+		newAttributes['distToOpp'][curPlayer.index] = curPlayer_distToOpp[curPlayerDict.index]
+
+	# Combine the pre-existing attributes with the new attributes:
+	attributeDict = pd.concat([attributeDict, newAttributes], axis=1)
+
+	tmpdistanceToOpponent = 'Distance to nearest opponent'
+
+		##### THE STRINGS #####
+	# Export a string label of each new attribute in the labels dictionary (useful for plotting purposes)
+	attributeLabel_tmp = {'distToOpp': tmpdistanceToOpponent}
+	attributeLabel.update(attributeLabel_tmp)
+	altogether = pd.concat([rawDict,attributeDict], axis=1)
+	altogether.to_csv('/Users/Victor/Desktop/Universiteit/AnalyseKNVB/test.csv')
+
+	return attributeDict,attributeLabel
+
+def distanceInPossessionToPlayers(rawDict,attributeDict,attributeLabel,TeamAstring,TeamBstring):
+	def distance(X_1,Y_1,X_2,Y_2):
+		return np.sqrt((X_1 - X_2)**2 + (Y_1 - Y_2)**2)
+
+	#All the players on the field
+	tmp = rawDict[rawDict['PlayerID'] != 'ball']
+	players = tmp[tmp['PlayerID'] != 'groupRow']
+
+	#Create new attribute distanceToGoal
+	newAttributes = pd.DataFrame(index = attributeDict.index, columns = ['distanceToInPossession'])
+
+	#Players in possession
+	inPossession = rawDict[attributeDict['inPossession'] == 1]
+
+	for idx,i in enumerate(inPossession['Ts']):
+		curPlayer = rawDict[rawDict['PlayerID'] == i]
+		curPlayerDict = curPlayer.set_index('Ts')
+
+		if all(curPlayer['PlayerID'] == 'groupRow'):
+			# It's actually not a player, but a group, so skip it.
+			continue # do nothing
+		elif all(curPlayer['PlayerID'] == 'ball'):
+			# It's actually not a player, but the ball, so skip it.
+			continue # do nothing
+		else:
+			# Compute the distance to the centroid, NB: team specific!!
+			curTime = inPossession['Ts'][idx]
+
+			curPossessionX = inPossession['X'][idx]
+			curPossessionY = inPossession['Y'][idx]
+
+			# Take all corresponding Ts (for PlayerID != 'groupRow' and 'ball')
+			curPlayersX = players['X'][players['Ts'] == curTime]
+			curPlayersY = players['Y'][players['Ts'] == curTime]
+
+			curPlayersID = players['PlayerID'][players['Ts'] == curTime]
+
+			curPlayer_distToPossession = distance(curPlayersX, curPlayersY, curPossessionX, curPossessionY)
+			newAttributes['distanceToInPossession'][curPlayer_distToBall.index] = curPlayer_distToPossession
+
+	# Combine the pre-existing attributes with the new attributes:
+	attributeDict = pd.concat([attributeDict, newAttributes], axis=1)
+
+	tmpdistanceToOpponentGoal = 'Distance to player in possession'
+
+	##### THE STRINGS #####
+	# Export a string label of each new attribute in the labels dictionary (useful for plotting purposes)
+	attributeLabel_tmp = {'distanceToOpponentGoal': tmpdistanceToOpponentGoal}
+	attributeLabel.update(attributeLabel_tmp)
+	altogether = pd.concat([rawDict,attributeDict], axis=1)
+	altogether.to_csv('/Users/Victor/Desktop/Universiteit/AnalyseKNVB/test.csv')
 
 	return attributeDict,attributeLabel
 
@@ -277,92 +549,85 @@ def distanceToCentroid(rawDict,attributeDict,attributeLabel,TeamAstring,TeamBstr
 
 	return attributeDict,attributeLabel
 
-def distanceToOpponent(rawDict,attributeDict,attributeLabel,TeamAstring,TeamBstring):
-	# Create empty DataFrame to store results, NB: columns need to be assigend beforehand.
-	TeamVals = attributeDict[rawDict['PlayerID'] == 'groupRow'].set_index('Ts')
-	# Create empty DataFrame to store results, NB: columns need to be assigend beforehand.
-	newAttributes = pd.DataFrame(index = attributeDict.index, columns = ['distToOpp'])
+def determineSide(rawDict,attributeDict,attributeLabel,TeamAstring,TeamBstring):
+	##############   DETERMINE SIDE   ###############
+	team_A = rawDict[rawDict['TeamID'] == TeamAstring]
+	team_B = rawDict[rawDict['TeamID'] == TeamBstring]
 
-	# For every player in the dataFrame
+	#only first timestamp
+	team_A_Begin = team_A[team_A['Ts'] == min(team_A['Ts'])]
+	team_B_Begin = team_B[team_B['Ts'] == min(team_B['Ts'])]
+
+	#sum of all X positions of the players per team at timestamp 0
+	team_A_Begin_X = sum(team_A_Begin['X'])
+	team_B_Begin_X = sum(team_B_Begin['X'])
+
+	#return team that is on the left side of the field, and location of the goals
+	if(team_A_Begin_X < 0 and team_B_Begin_X > 0):
+		goal_A_X = (fieldLength / 2) * -1
+		goal_B_X = (fieldLength / 2)
+		goal_Y = 0
+		return TeamAstring, goal_A_X, goal_B_X, goal_Y
+	elif(team_A_Begin_X > 0 and team_B_Begin_X < 0):
+		goal_A_X = (fieldLength / 2)
+		goal_B_X = (fieldLength / 2) * -1
+		goal_Y = 0
+		return TeamBstring, goal_A_X, goal_B_X, goal_Y
+	else:
+		warn('\nWARNING: Cannot determine the side, because the players of the teams are not on the same side at the first timestamp.\n')
+		return 'Err','Err','Err','Err'
+
+def distanceToGoal(rawDict,attributeDict,attributeLabel,TeamAstring,TeamBstring):
+	def distance(X_1,Y_1,X_2,Y_2):
+		return np.sqrt((X_1 - X_2)**2 + (Y_1 - Y_2)**2)
+
+	#All the players on the field
+	tmp = rawDict[rawDict['PlayerID'] != 'ball']
+	players = tmp[tmp['PlayerID'] != 'groupRow']
+
+	#Create new attribute distanceToGoal
+	newAttributes = pd.DataFrame(index = attributeDict.index, columns = ['distanceToOpponentGoal', 'distanceToOwnGoal'])
+
+	#players in possession
+	inPossession = rawDict[attributeDict['inPossession'] == 1]
+
+	#Set variables to appropriate values
+	leftSide, goal_A_X, goal_B_X, goal_Y = determineSide(rawDict,attributeDict,attributeLabel,TeamAstring,TeamBstring)
+
 	for idx,i in enumerate(pd.unique(rawDict['PlayerID'])):
 		curPlayer = rawDict[rawDict['PlayerID'] == i]
 		curPlayerDict = curPlayer.set_index('Ts')
-		lowestDistance = 9999999
 
-		for jdx,j in enumerate(pd.unique(rawDict['PlayerID'])):
-			oppPlayer = rawDict[rawDict['PlayerID'] == j]
-			oppPlayerDict = oppPlayer.set_index('Ts')
+		if all(curPlayer['PlayerID'] == 'groupRow'):
+			# It's actually not a player, but a group, so skip it.
+			continue # do nothing
+		elif all(curPlayer['PlayerID'] == 'ball'):
+			# It's actually not a player, but the ball, so skip it.
+			continue # do nothing
+		elif all(curPlayer['TeamID'] == TeamAstring):
+			# Compute the distance to the centroid, NB: team specific!!
+			curPlayer_distOwnGoal = distance(curPlayerDict['X'], curPlayerDict['Y'], goal_A_X, goal_Y)
+			curPlayer_distOppGoal = distance(curPlayerDict['X'], curPlayerDict['Y'], goal_B_X, goal_Y)
+		elif all(curPlayer['TeamID'] == TeamBstring):
+			# Compute the distance to the centroid, NB: team specific!!
+			curPlayer_distOwnGoal = distance(curPlayerDict['X'], curPlayerDict['Y'], goal_B_X, goal_Y)
+			curPlayer_distOppGoal = distance(curPlayerDict['X'], curPlayerDict['Y'], goal_A_X, goal_Y)
 
-			if all(curPlayer['PlayerID'] == 'groupRow'):
-				# It's actually not a player, but a group, so skip it.
-				continue # do nothing
-			elif (str(curPlayer['PlayerID']) == str(oppPlayer['PlayerID'])):
-				continue
-			elif all(curPlayer['PlayerID'] == 'ball'):
-				# It's actually not a player, but the ball, so skip it.
-				continue # do nothing
-			elif (str(curPlayer['TeamID']) == str(oppPlayer['TeamID'])):
-				continue # player is not part of opposition
-			elif (str(curPlayer['TeamID']) != str(oppPlayer['TeamID'])):
-				# Compute the distance to the centroid, NB: team specific!!
-				distanceCurPlayer_Opponent = np.sqrt((curPlayerDict['X'] - oppPlayerDict['X'])**2 + (curPlayerDict['Y'] - oppPlayerDict['Y'])**2)
-				if all(distanceCurPlayer_Opponent < lowestDistance):
-					lowestDistance = distanceCurPlayer_Opponent
 		# Put compute values in the right place in the dataFrame
-		newAttributes['distToOpp'][curPlayer.index] = lowestDistance
+		newAttributes['distanceToOpponentGoal'][curPlayer.index] = curPlayer_distOppGoal[curPlayerDict.index]
+		newAttributes['distanceToOwnGoal'][curPlayer.index] = curPlayer_distOwnGoal[curPlayerDict.index]
 
-		# Combine the pre-existing attributes with the new attributes:
-		attributeDict = pd.concat([attributeDict, newAttributes], axis=1)
+	# Combine the pre-existing attributes with the new attributes:
+	attributeDict = pd.concat([attributeDict, newAttributes], axis=1)
+
+	tmpdistanceToOpponentGoal = 'Distance to opponent\'s goal'
+	tmpdistanceToOwnGoal = 'Distance to own goal'
 
 		##### THE STRINGS #####
-		# Export a string label of each new attribute in the labels dictionary (useful for plotting purposes)
-		tmpDistToOpp= 'Player\'s distance to its nearest opponent (m)'
-		attributeLabel.update({'distToOpp':tmpDistToOpp})
-
-	return attributeDict,attributeLabel
-
-
-
-def distanceToTeamMate(rawDict,attributeDict,attributeLabel,TeamAstring,TeamBstring):
-	# Create empty DataFrame to store results, NB: columns need to be assigend beforehand.
-	TeamVals = attributeDict[rawDict['PlayerID'] == 'groupRow'].set_index('Ts')
-	# Create empty DataFrame to store results, NB: columns need to be assigend beforehand.
-	newAttributes = pd.DataFrame(index = attributeDict.index, columns = ['distToTeamMate'])
-
-	# For every player in the dataFrame
-	for idx,i in enumerate(pd.unique(rawDict['PlayerID'])):
-		curPlayer = rawDict[rawDict['PlayerID'] == i]
-		curPlayerDict = curPlayer.set_index('Ts')
-		lowestDistance = 9999999
-
-		for jdx,j in enumerate(pd.unique(rawDict['PlayerID'])):
-			teamPlayer = rawDict[rawDict['PlayerID'] == j]
-			teamPlayerDict = teamPlayer.set_index('Ts')
-
-			if all(curPlayer['PlayerID'] == 'groupRow'):
-				# It's actually not a player, but a group, so skip it.
-				continue # do nothing
-			elif (str(curPlayer['PlayerID']) == str(teamPlayer['PlayerID'])):
-				continue
-			elif all(curPlayer['PlayerID'] == 'ball'):
-				# It's actually not a player, but the ball, so skip it.
-				continue # do nothing
-			elif (str(curPlayer['TeamID']) != str(teamPlayer['TeamID'])):
-				continue # player is not part of opposition
-			elif (str(curPlayer['TeamID']) == str(teamPlayer['TeamID'])):
-				# Compute the distance to the centroid, NB: team specific!!
-				distanceCurPlayer_TeamMate = np.sqrt((curPlayerDict['X'] - teamPlayerDict['X'])**2 + (curPlayerDict['Y'] - teamPlayerDict['Y'])**2)
-				if all(distanceCurPlayer_TeamMate < lowestDistance):
-					lowestDistance = distanceCurPlayer_TeamMate
-		# Put compute values in the right place in the dataFrame
-		newAttributes['distToTeamMate'][curPlayer.index] = lowestDistance
-
-		# Combine the pre-existing attributes with the new attributes:
-		attributeDict = pd.concat([attributeDict, newAttributes], axis=1)
-
-		##### THE STRINGS #####
-		# Export a string label of each new attribute in the labels dictionary (useful for plotting purposes)
-		tmpDistToTeamMate= 'Player\'s distance to its nearest team mate (m)'
-		attributeLabel.update({'distToTeamMate':tmpDistToTeamMate})
+	# Export a string label of each new attribute in the labels dictionary (useful for plotting purposes)
+	attributeLabel_tmp = {'distanceToOpponentGoal': tmpdistanceToOpponentGoal, 'distanceToOwnGoal': tmpdistanceToOwnGoal}
+	attributeLabel.update(attributeLabel_tmp)
+	altogether = pd.concat([rawDict,attributeDict], axis=1)
+	altogether.to_csv('/Users/Victor/Desktop/Universiteit/AnalyseKNVB/test.csv')
 
 	return attributeDict,attributeLabel
