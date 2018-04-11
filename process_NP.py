@@ -53,7 +53,7 @@ debuggingMode = True # whether yo want to print the times that each script took
 dataType =  "NP" # "FPD" or or "NP" --> so far, only used to call the right cleanup script. Long term goal would be to have a generic cleanup script
 
 # This folder should contain a folder with 'Data'. The tabular output and figures will be stored in this folder as well.
-folder = 'C:\\Users\\rensm\\Documents\\PostdocLeiden\\NP repository\\'
+folder = 'C:\\Users\\rensm\\Documents\\SURFDRIVE\\Repositories\\NP repository\\'
 
 # String representing the different teams
 # NB: not necessary for FDP (and other datasets where teamstring can be read from the filename, should be done in discetFilename.py)
@@ -91,7 +91,7 @@ aggregateLag = 0 # in seconds
 # Parts of the pipeline can be skipped
 skipCleanup = True # Only works if cleaned file exists
 skipSpatAgg = True # Only works if spat agg export exists
-skipEventAgg = True # Only works if current file already exists in eventAgg
+skipEventAgg = False # Only works if current file already exists in eventAgg
 
 # This (simple) trialVisualization plots every outcome variable for the given window for the temporal aggregation
 includeTrialVisualization = False # True = includes trialVisualization, False = skips trialVisualization
@@ -161,7 +161,6 @@ rawHeaders = {'Ts': timestampString,\
 'TeamID': TeamIDstring,\
 'Location': (XPositionString,YPositionString) }
 
-xstring = 'Time (s)'
 #########################
 # ANALYSIS (file by file)
 #########################
@@ -230,13 +229,18 @@ for dirtyFname in DirtyDataFiles:
 	attrPanda,attrLabel = spatialAggregation.process(rawPanda,attrPanda,attrLabel,TeamAstring,TeamBstring,skipSpatAgg_curFile,debuggingMode)
 
 	###### Work in progress ##########
+	# NB: targetEVents is a dictionary with the key corresponding to the type of event.
+	# For each key, there is a tuple that contains (timeOfEvent,TeamID,..) 
+	# --> in some cases there is also a starting time of the event and other information 
+	# (for example, possession contains the starting time and the nubmer of passes made within that possession)
+	# NB2: Probably should change this to a panda / dictionary to avoid errors.
 	targetEvents = \
 	computeEvents.process(targetEventsImported,aggregateLevel,rawPanda,attrPanda,eventsPanda,TeamAstring,TeamBstring,debuggingMode)
 	###### \Work in progress #########
 
 	## Temporal aggregation
 	exportData,exportDataString,exportFullExplanation,eventExcerptPanda = \
-	temporalAggregation.process(targetEvents,aggregateLevel,rawPanda,attrPanda,exportData,exportDataString,exportDataFullExplanation,TeamAstring,TeamBstring,debuggingMode,spatAggFolder + spatAggFname,skipEventAgg_curFile)
+	temporalAggregation.process(targetEvents,aggregateLevel,rawPanda,attrPanda,exportData,exportDataString,exportDataFullExplanation,TeamAstring,TeamBstring,debuggingMode,spatAggFolder + spatAggFname,skipEventAgg_curFile,fileIdentifiers,attrLabel)
 
 	########################################################################################
 	####### EXPORT to CSV ##################################################################

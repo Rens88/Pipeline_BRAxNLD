@@ -32,7 +32,7 @@ def process(fname,dataType,TeamAstring,TeamBstring):
 		exportData, exportDataString, exportDataFullExplanation,cleanFname = \
 		student_XX_dissectFilename.process(fname,dataType,TeamAstring,TeamBstring)
 		# exportData, exportDataString, exportDataFullExplanation,cleanFname = default(fname)
-
+	
 	spatAggFname = 'TimeseriesAttributes_' + cleanFname
 
 	return exportData, exportDataString, exportDataFullExplanation,cleanFname,spatAggFname,TeamAstring,TeamBstring

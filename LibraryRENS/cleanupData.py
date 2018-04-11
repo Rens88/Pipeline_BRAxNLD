@@ -59,6 +59,8 @@ def process(dirtyFname,cleanFname,dataType,dataFolder,cleanedFolder,spatAggFname
 	# Clean up data, if necessary
 	cleanFnames = [f for f in listdir(cleanedFolder) if isfile(join(cleanedFolder, f)) if '.csv' in f]
 	spatAggFnames = [f for f in listdir(spatAggFolder) if isfile(join(spatAggFolder, f)) if '.csv' in f]
+	eventAggFnames = [f for f in listdir(eventAggFolder) if isfile(join(eventAggFolder, f)) if '.csv' in f]
+
 	if spatAggFname in spatAggFnames and skipSpatAgg == True:
 		warn('\nContinued with previously cleaned and spatially aggregated data.\nIf you want to add new spatial aggregates, change <skipSpatAgg> into <False>.\n')
 		# Spat agg files don't exist if there was a fatal error, so:
@@ -66,7 +68,7 @@ def process(dirtyFname,cleanFname,dataType,dataFolder,cleanedFolder,spatAggFname
 		loadFolder = spatAggFolder
 		loadFname = spatAggFname
 
-		if skipEventAgg:
+		if eventAggFname in eventAggFnames and skipEventAgg == True:
 		# If there is a spat agg file, AND if skipEventAgg == True,
 		# then, it needs to be verified whether there is a row with an event aggregate for the current file.
 			df = pd.read_csv(eventAggFolder+eventAggFname,usecols=(exportDataString),low_memory=False)
@@ -90,6 +92,8 @@ def process(dirtyFname,cleanFname,dataType,dataFolder,cleanedFolder,spatAggFname
 					print(exportData[i])
 					print('\nNB: In the past, this problem was related to the string input resembling a float input.\nFor example, <1E3>, which (with low_memory = True) is read as a float (1,000).\n')
 					exit()
+		else:
+			skipEventAgg = False
 			# print('testCount = <%s>' %testCount)
 			# if testCount != len(df.keys()) and skipEventAgg:
 			# 	print('wtf')

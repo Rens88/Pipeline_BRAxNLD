@@ -61,5 +61,8 @@ eventExcerptPanda["EventUID"] = tmp['UID'] + eventExcerptPanda['temporalAggregat
 # !!!!!!!!! THIS IS WHERE YOU LEFT IT !!!!!!!!
 # !!!!!!!!! THIS IS WHERE YOU LEFT IT !!!!!!!!
 
+# Plotting overall data now has basic functionality --> it can plot the A and B version against each other.
+# re-write it to plot different experiments against each other
+# also to plot the scoring and defending team against each other etc.
 pltFname = 'OVERALL PLOT_' + dataType
 datasetVisualization.process(plotTheseAttributes,aggregateLevel,eventExcerptPanda,attrLabel_asPanda,tmpFigFolder,pltFname,TeamAstring,TeamBstring,debuggingMode)

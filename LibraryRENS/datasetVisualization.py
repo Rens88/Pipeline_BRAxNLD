@@ -202,58 +202,71 @@ def plotPerTeamPerEvent(plotThisAttribute,eventExcerptPanda,rowswithinrangeTeam,
 	X1 = eventExcerptPanda.loc[rowswithinrangeTeam].pivot(columns='EventUID',values='eventTime')
 	X2 = X1#eventExcerptPanda.loc[rowswithinrangeTeam].pivot(columns='EventUID',values='eventTime')
 
-	X1.to_csv('C:\\Users\\rensm\\Documents\\PostdocLeiden\\NP repository\\test.csv')
-
-
-	# !!!!!!!!! THIS IS WHERE YOU LEFT IT !!!!!!!!
-	# !!!!!!!!! THIS IS WHERE YOU LEFT IT !!!!!!!!
-	# !!!!!!!!! THIS IS WHERE YOU LEFT IT !!!!!!!!
-	# !!!!!!!!! THIS IS WHERE YOU LEFT IT !!!!!!!!
-
-	# Team average
-	# Interpolate? Bin per 0.1s and take whichever lies closest? Re-index?
-	# NB: not all events have 10s of data before.
-	avgY1 = np.mean(Y1,axis = 1)
-
 	# interpolate events to have the same timestamp (necessary for averaging and comparisons)
 	# first, just do it in the plotting procedcure.
 	# Later, you could already interpolate before exporting the eventAggregate file.
 	
 	# The interpolated time
 	X_int = np.arange(round(min(eventExcerptPanda['eventTime']),1),max(eventExcerptPanda['eventTime'] +0.1),0.1)
-	# X_int = np.linspace(-10,0,0.1)
 	# print(X_int)
+	valColsA = pd.DataFrame([])
+	valColsB = pd.DataFrame([])
+
 	interpolatedVals = pd.DataFrame([])
 	for ix,event in enumerate(X1.keys()):
 		# interpolate the Y1 corresponding to X1
 		curIdx = np.where(pd.notnull(Y1[event]))
-		curX = X1[event].iloc[curIdx]
-		curY = Y1[event].iloc[curIdx]
+		curX1 = X1[event].iloc[curIdx]
+		curY1 = Y1[event].iloc[curIdx]
+		
+		curIdx = np.where(pd.notnull(Y2[event]))
+		curX2 = X2[event].iloc[curIdx]
+		curY2 = Y2[event].iloc[curIdx]
 
 		order = 3 # cubic spline
-		s = InterpolatedUnivariateSpline(curX, curY, k=order)
+		s = InterpolatedUnivariateSpline(curX1, curY1, k=order)
 		Y1_int = s(X_int)
+		s = InterpolatedUnivariateSpline(curX2, curY2, k=order)
+		Y2_int = s(X_int)
+
 		# Maybe take the first occurring time for this event as the start time to avoid interpolating beyond the data.
 		# replace with nans until the first occurring time?
 		# first occurring time:
-		firstIdx = np.where(abs(X_int - min(curX)) == min(abs(X_int - min(curX))))
+		firstIdx = np.where(abs(X_int - min(curX1)) == min(abs(X_int - min(curX1))))
 		# Replace any interpolated values from before the first time occurred (to avoid weird interpolations)
 		replaceThese = np.where(X_int < X_int[firstIdx])
 		Y1_int[replaceThese] = np.nan
 
-		curInterpolatedVals = pd.DataFrame(Y1_int,columns = [event], index = X_int)
-		interpolatedVals = interpolatedVals.append(curInterpolatedVals)
-	print(interpolatedVals)
-		# Store these in a new panda that is easy to average / compare and still has some relevant info (Team? Who scored? --> ID to orginal event)
-		# index-> X_int and Y1_int
+		# and the same for y2
+		firstIdx = np.where(abs(X_int - min(curX2)) == min(abs(X_int - min(curX2))))
+		replaceThese = np.where(X_int < X_int[firstIdx])
+		Y2_int[replaceThese] = np.nan
 
-	pdb.set_trace()	
+		# Either create a dataset with every event in a new column:
+		curVals_without_A = pd.DataFrame(Y1_int,columns = [event], index = X_int)
+		valColsA = pd.concat([valColsA,curVals_without_A], axis = 1)
+		
+		curVals_without_B = pd.DataFrame(Y2_int,columns = [event], index = X_int)
+		valColsB = pd.concat([valColsB,curVals_without_B], axis = 1)
+		
+		# Or create a dataset that has the column EventUID (and others, if necessary)
+		# --> allow you to add multiple characteristics that could be selected for plotting (Team / Goal scored / Experimental group etc..)
+		# --> but to plot, it will need to be pivotted (and it'll end up like < valColsA > )
+		ID = [event] * len(X_int)
+		cur_UID = pd.DataFrame(ID,columns = ['EventUID'], index = X_int)
+		cur_Y1 = pd.DataFrame(Y1_int,columns = ['Y1'], index = X_int)
+		cur_Y2 = pd.DataFrame(Y2_int,columns = ['Y2'], index = X_int)
 
-	# !!!!!!!!! THIS IS WHERE YOU LEFT IT !!!!!!!!
-	# !!!!!!!!! THIS IS WHERE YOU LEFT IT !!!!!!!!
-	# !!!!!!!!! THIS IS WHERE YOU LEFT IT !!!!!!!!
-	# !!!!!!!!! THIS IS WHERE YOU LEFT IT !!!!!!!!
+		curVals = pd.concat([cur_UID,cur_Y1,cur_Y2])
+		valRows = interpolatedVals.append(curVals)
+
+		# # why does this not work
+		# tmp = pd.DataFrame([ID, Y1_int.tolist()],columns = ['EventUID','Y1'], index = X_int)
+
 	
+	# avgY1 = valRows['Y1'].mean()
+	avgY1 = np.mean(valColsA, axis = 1)
+	avgY2 = np.mean(valColsB, axis = 1)
 
 	# # Sort colors by hue, saturation, value and name.
 	colors = dict(mcolors.BASE_COLORS, **mcolors.CSS4_COLORS)
@@ -273,10 +286,10 @@ def plotPerTeamPerEvent(plotThisAttribute,eventExcerptPanda,rowswithinrangeTeam,
 
 	# A little trick to make the colors - if there's only a few players - a bit more distinct
 	rangeMultiplier = .5
-	if Y1.shape[1] < 8:
+	if valColsA.shape[1] < 8:
 		rangeMultiplier = 2
 
-	indA = Y1.shape[1]
+	indA = valColsA.shape[1]
 	startColor = math.floor(refIndA[0] - rangeMultiplier * indA)
 	endColor = math.floor(refIndA[0] + rangeMultiplier * indA)
 	dC = round((endColor - startColor) / indA)
@@ -288,22 +301,32 @@ def plotPerTeamPerEvent(plotThisAttribute,eventExcerptPanda,rowswithinrangeTeam,
 	if refIndB == []:
 		warn('\nWARNING: Specified reference color not found.\nConsider specifying a different color.')
 
-	indB = Y2.shape[1]
+	indB = valColsB.shape[1]
 	startColor = math.floor(refIndB[0] - rangeMultiplier * indB)
 	endColor = math.floor(refIndB[0] + rangeMultiplier * indB)
 	dC = round((endColor - startColor) / indB)
 	colorPickerB = np.arange(startColor,endColor,dC)
 	colorPickerB[round(len(colorPickerB)/2)], colorPickerB[-1] = colorPickerB[-1], colorPickerB[round(len(colorPickerB)/2)]
 
-	for ix,player in enumerate(X1.keys()):
-		curColor = sorted_names[colorPickerA[ix]]
-		pltA = plt.plot(X1[player],Y1[player],color=curColor,linestyle='-') 
+	for ix,event in enumerate(valColsA.keys()):
+		curColorA = sorted_names[colorPickerA[ix]]
+		curColorB = sorted_names[colorPickerB[ix]]
 
-	for ix,player in enumerate(X2.keys()):
-		curColor = sorted_names[colorPickerB[ix]]
-		pltB = plt.plot(X2[player],Y2[player],color=curColor,linestyle='-')
+		pltA = plt.plot(X_int,valColsA[event],color=curColorA,linestyle='-') 
+		pltB = plt.plot(X_int,valColsB[event],color=curColorB,linestyle='--')
+
+	pltAvgA = plt.plot(X_int,avgY1, color = refColorA, linestyle = '-', linewidth = 4)
+	pltAvgB = plt.plot(X_int,avgY2, color = refColorB, linestyle = '--', linewidth = 4)
+	# for ix,player in enumerate(X1.keys()):
+	# 	curColor = sorted_names[colorPickerA[ix]]
+	# 	pltA = plt.plot(X_int[player],valColsA[player],color=curColor,linestyle='-') 
+
+	# for ix,player in enumerate(X2.keys()):
+	# 	curColor = sorted_names[colorPickerB[ix]]
+	# 	pltB = plt.plot(X_int[player],valColsB[player],color=curColor,linestyle='-')
 
 
+	# plt.legend([pltA[0], pltB[0]], [TeamAstring,TeamBstring])	
 	plt.legend([pltA[0], pltB[0]], [TeamAstring,TeamBstring])	
 
 

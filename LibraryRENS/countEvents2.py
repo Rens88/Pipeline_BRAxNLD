@@ -114,7 +114,7 @@ def possessions(window,aggregateEvent,targetEvents,TeamAstring,TeamBstring,expor
 	possessionCharacteristics = []
 	if targetEvents['Possession'] != []:
 		possessionCharacteristics = []
-		for eventInstantStart,eventInstantEnd,eventID in targetEvents['Possession']:
+		for eventInstantStart,eventID,eventInstantEnd in targetEvents['Possession']:
 			if eventInstantStart == None or eventInstantEnd == None:
 				# No possession window defined. Skip this event.
 				# NB: This might make all the 'None' possession statistics obsolete.

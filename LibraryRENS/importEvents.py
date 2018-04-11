@@ -1,10 +1,6 @@
 # 08-02-2018 Rens Meerhoff
 # Script can be generically used to import information from eventsPanda. If the data is not organized similarly, it will simply export empty targetEvents. In the future, we can include LMP-based import of these kinds of data (or perhaps standardize the format earlier in the pipeline).
-# Now, the script returns a dictionary of 'targetEvents' with the following format:
-# targetEvents['Goals'] = (instant (s) a goal was scored, team that scored)
-# targetEvents['Possession'] = (instant possession started (s), instant possession ended (s), team that had possession)
-# targetEvents['Turnovers'] = (instant (s) a turnover occurred, team that turned over the ball)
-# targetEvents['Passes'] = (instant(s) a pass occurred, team that made the pass, nth possession the pass belongs to)
+
 
 # 05-02-2018 Rens Meerhoff
 # Based on countExistingEvents.py:
@@ -29,10 +25,22 @@ import safetyWarning
 if __name__ == '__main__':
 	process(eventsPanda,TeamAstring,TeamBstring)
 
+	# 1 --> Time of event
+	# 2 --> Reference Team
+	# 3 --> varies per event:
+	
 	goals(eventsPanda,TeamAstring,TeamBstring,targetEvents)
+	# no 3
+
 	possession(eventsPanda,TeamAstring,TeamBstring,targetEvents)	
+	# 3 --> START time of the possession
+	
 	passes(eventsPanda,TeamAstring,TeamBstring,possessionCharacteristics,targetEvents)
+	# 3 --> nth possession this pass was apart of (to determine number of consqutive passes)
+
 	full(targetEvents)
+	# 3 --> START time of the possession
+
 
 def process(eventsPanda,TeamAstring,TeamBstring):
 	targetEvents = {}
@@ -56,7 +64,7 @@ def process(eventsPanda,TeamAstring,TeamBstring):
 def full(eventsPanda,targetEvents):
 	targetEvents = {**targetEvents,'Full':[]}
 	TsS = eventsPanda['Ts']
-	targetEvents['Full'] = (float(min(TsS)),float(max(TsS)))
+	targetEvents['Full'] = [(float(max(TsS)),None,float(min(TsS)))]
 	return targetEvents
 
 def goals(eventsPanda,TeamAstring,TeamBstring,targetEvents):
@@ -119,7 +127,7 @@ def runs(eventsPanda,TeamAstring,TeamBstring,targetEvents):
 				in2 = []
 			else:
 				# Found a start and an end
-				targetEvents['Run'].append((in1,in2))
+				targetEvents['Run'].append((in1,None,in2))
 				in1 = []
 				in2 = []
 
@@ -199,7 +207,7 @@ def possession(eventsPanda,TeamAstring,TeamBstring,targetEvents):
 			in2 = None
 		else:
 			in2 = float(eventsPanda['Ts'][endPossession])
-		targetEvents['Possession'].append((in1,in2,currentPossession))								
+		targetEvents['Possession'].append((in2,currentPossession,in1))								
 
 	if dt == []:
 		warn('\n!!!!\nExisting attributes seem to be missing.\nCouldnt find turnovers to estimate dt.\nOutput set as 999.')
@@ -246,8 +254,8 @@ def passes(eventsPanda,TeamAstring,TeamBstring,targetEvents):
 	ind = 0
 	if targetEvents['Possession'] != []:
 		for idx,i in enumerate(targetEvents['Possession']):
-			while targetEvents['Passes'][ind][0] >= i[0]: # after the start
-				if targetEvents['Passes'][ind][0] <= i[1]: # before the end
+			while targetEvents['Passes'][ind][0] >= i[2]: # after the start
+				if targetEvents['Passes'][ind][0] <= i[0]: # before the end
 					# Passing sequence is indicated by storing the nth possession per pass. This way, the number of consecutive passes can be easily deduced.
 					targetEvents['Passes'][ind] = (targetEvents['Passes'][ind][0],targetEvents['Passes'][ind][1],idx)
 					# current pass falls within current
