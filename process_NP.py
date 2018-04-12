@@ -262,7 +262,7 @@ for dirtyFname in DirtyDataFiles:
 	## Do something with attrLabel:
 	# attrLabel is currently constructed by going through the whole for-loop (which can be done whilst skipping many of the time consuming steps)
 	# when implementing skipEventAgg, the whole for-loop can be skipped, which means that attrLabel doesn't exist.
-	# Currently, this <	if skipEventAgg_curFile and not trialVisualization and t[1] != 1: > line makes sure the for loop is at least run once.
+	# currentlyrently, this <	if skipEventAgg_curFile and not trialVisualization and t[1] != 1: > line makes sure the for loop is at least run once.
 	# That already solves the problem of the missing attrLabel for the plotting procedures below.
 	# However, the code could also rely on saved attributLabels which can then be loaded separatetely before plotting:
 	if t[1] == 1: # only after the first file
