@@ -1,10 +1,5 @@
 import numpy as np
-tmp = []
-tmp.append(1.2)
-tmp.append(1.3)
-print(tmp)
-print(np.arange(2))
-
+print(np.arange(6))
 # import sys, inspect
 # library_folder = "C:\\Users\\rensm\\Documents\\GitHub\\Pipeline_BRAxNLD\\LibraryRENS\\"
 # sys.path.insert(0, library_folder) 

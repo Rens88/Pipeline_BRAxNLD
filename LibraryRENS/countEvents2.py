@@ -114,7 +114,7 @@ def possessions(window,aggregateEvent,targetEvents,TeamAstring,TeamBstring,expor
 	possessionCharacteristics = []
 	if targetEvents['Possession'] != []:
 		possessionCharacteristics = []
-		for eventInstantStart,eventID,eventInstantEnd in targetEvents['Possession']:
+		for eventInstantEnd,eventID,eventInstantStart in targetEvents['Possession']:
 			if eventInstantStart == None or eventInstantEnd == None:
 				# No possession window defined. Skip this event.
 				# NB: This might make all the 'None' possession statistics obsolete.
@@ -292,7 +292,7 @@ def passes(window,aggregateEvent,targetEvents,TeamAstring,TeamBstring,exportData
 		consecutivePassesPerPossession = []
 		consecutivePassesPerPossessionA = []
 		consecutivePassesPerPossessionB = []
-		tmp = 0
+		tmp = 1
 		for idx,val in enumerate(consecutivePasses):
 			consecutivePassesPerPossession.append(tmp)
 			if passes[idx] == TeamAstring:
@@ -305,7 +305,7 @@ def passes(window,aggregateEvent,targetEvents,TeamAstring,TeamBstring,exportData
 			if idx == len(consecutivePasses)-1: # last one
 				break
 			if val != consecutivePasses[idx+1]: # new possession
-				tmp = 0	
+				tmp = 1	
 			else:
 				tmp = tmp + 1
 

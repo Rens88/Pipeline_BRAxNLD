@@ -94,7 +94,7 @@ skipSpatAgg = True # Only works if spat agg export exists
 skipEventAgg = False # Only works if current file already exists in eventAgg
 
 # This (simple) trialVisualization plots every outcome variable for the given window for the temporal aggregation
-includeTrialVisualization = False # True = includes trialVisualization, False = skips trialVisualization
+includeTrialVisualization = True # True = includes trialVisualization, False = skips trialVisualization
 # This datasetVisualization compares all files in the dataset
 includeDatasetVisualization = False
 
@@ -109,7 +109,7 @@ datasetVisualization = True # could automate which variables are included etc.
 # Strings need to correspond to outcome variables (dict keys). 
 # Individual level variables ('vNorm') should be included as a list element.
 # Group level variables ('LengthA','LengthB') should be included as a tuple (and will be plotted in the same plot).
-plotTheseAttributes = ['vNorm',('SurfaceA','SurfaceB')]#,'LengthB',('LengthA','LengthB'),('SurfaceA','SurfaceB'),('SpreadA','SpreadB'),('WidthA','WidthB')] # [('LengthA','LengthB'),('WidthA','WidthB'),('SurfaceA','SurfaceB'),('SpreadA','SpreadB')] # teams that need to be compared as tuple
+plotTheseAttributes = ['vNorm',('Surface_ref','Surface_oth')]#,'LengthB',('LengthA','LengthB'),('SurfaceA','SurfaceB'),('SpreadA','SpreadB'),('WidthA','WidthB')] # [('LengthA','LengthB'),('WidthA','WidthB'),('SurfaceA','SurfaceB'),('SpreadA','SpreadB')] # teams that need to be compared as tuple
 
 #########################
 # END USER INPUT ########
@@ -182,7 +182,7 @@ for dirtyFname in DirtyDataFiles:
 	# Prepare metadata of aggregated data to be exported:
 	exportData, exportDataString, exportDataFullExplanation,cleanFname,spatAggFname,TeamAstring,TeamBstring = \
 	dissectFilename.process(dirtyFname,dataType,TeamAstring,TeamBstring)
-	fileIdentifiers = exportDataString.copy()
+	fileIdentifiers = exportData.copy()
 
 	# Clean cleanFname (it only cleans data if there is no existing cleaned file of the current (dirty)file )
 	loadFolder,loadFname,fatalTimeStampIssue,skipSpatAgg_curFile,skipEventAgg_curFile = \
@@ -196,6 +196,7 @@ for dirtyFname in DirtyDataFiles:
 		# The first loop has to be run to make sure the attribute labels are exported.
 		# The rest of the loop can be skipped, as there is no action to be taken in the rest of the for loop
 		continue
+
 	# From now onward, rawData contains:
 	#  'Ts' --> Timestamp
 	#  'X' --> X-position
@@ -239,13 +240,13 @@ for dirtyFname in DirtyDataFiles:
 	###### \Work in progress #########
 
 	## Temporal aggregation
-	exportData,exportDataString,exportFullExplanation,eventExcerptPanda = \
-	temporalAggregation.process(targetEvents,aggregateLevel,rawPanda,attrPanda,exportData,exportDataString,exportDataFullExplanation,TeamAstring,TeamBstring,debuggingMode,spatAggFolder + spatAggFname,skipEventAgg_curFile,fileIdentifiers,attrLabel)
+	exportData,exportDataString,exportFullExplanation,eventExcerptPanda,attrLabel = \
+	temporalAggregation.process(targetEvents,aggregateLevel,rawPanda,attrPanda,exportData,exportDataString,exportDataFullExplanation,TeamAstring,TeamBstring,debuggingMode,skipEventAgg_curFile,fileIdentifiers,attrLabel)
 
 	########################################################################################
 	####### EXPORT to CSV ##################################################################
 	########################################################################################
-	
+
 	# Temporally aggregated data
 	skippedData = False
 	exportCSV.newOrAdd(aggregatedOutputFilename,exportDataString,exportData,skippedData)	
@@ -258,7 +259,7 @@ for dirtyFname in DirtyDataFiles:
 	# Spatially aggregated data per event
 	# (with the specified window), added into one long file combining the whole database.
 	appendEventAggregate = 	exportCSV.eventAggregate(eventAggFolder,eventAggFname,appendEventAggregate,eventExcerptPanda,skipEventAgg_curFile)
-	
+
 	## Do something with attrLabel:
 	# attrLabel is currently constructed by going through the whole for-loop (which can be done whilst skipping many of the time consuming steps)
 	# when implementing skipEventAgg, the whole for-loop can be skipped, which means that attrLabel doesn't exist.
@@ -276,8 +277,12 @@ for dirtyFname in DirtyDataFiles:
 	####### trialVisualization  ############################################################
 	########################################################################################
 	
-	# It's not that elaborate, but functional enough to get an idea whether the computed outcome variables are correct
+	# This plotting procedure allows you to plot the events separately. 
+	# These plots can be used to (visually) assess whether the outcome measures had the expected values.
+	# To do: combine with plot of the football field ??? (or even a video)
 	trialVisualization.process(plotTheseAttributes,aggregateLevel,eventExcerptPanda,attrLabel,tmpFigFolder,cleanFname[:-4],TeamAstring,TeamBstring,debuggingMode)
+
+	pdb.set_trace()
 
 estimateRemainingTime.printDuration(t)
 
