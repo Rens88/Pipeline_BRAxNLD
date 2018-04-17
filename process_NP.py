@@ -85,7 +85,7 @@ aggregateLag = 0 # in seconds
 skipCleanup = True # Only works if cleaned file exists
 skipSpatAgg = True # Only works if spat agg export exists
 skipEventAgg = False # Only works if current file already exists in eventAgg
-skipToDataSetLevel = False
+skipToDataSetLevel = True
 
 # This (simple) trialVisualization plots every outcome variable for the given window for the temporal aggregation
 includeTrialVisualization = False # True = includes trialVisualization, False = skips trialVisualization
