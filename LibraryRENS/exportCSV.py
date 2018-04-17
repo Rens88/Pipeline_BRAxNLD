@@ -7,6 +7,7 @@ from warnings import warn
 # import numpy as np
 from os.path import isfile, join, exists#, isdir, exists
 from os import listdir, startfile
+import pandas as pd
 # import CSVexcerpt
 
 
@@ -28,14 +29,80 @@ def eventAggregate(eventAggFolder,eventAggFname,appendEventAggregate,eventExcerp
 		return appendEventAggregate
 		
 	if exists(eventAggFolder + eventAggFname) and appendEventAggregate:# and not stat(eventAggFolder + eventAggFname).st_size == 0: 
-		# print('2asdfasdf')
-		with open(eventAggFolder + eventAggFname,'a') as f:			
-			eventExcerptPanda.to_csv(f,header=False)
-		# print('!!!!!!!!!!!!')
-		# pdb.set_trace()
+		# Store the trial based index
+		eventExcerptPanda.index.name = 'TrialBasedIndex'
+		# Create a new index
+		eventExcerptPanda.reset_index()
+		eventExcerptPanda.index.name = 'DataSetIndex'
+
+
+		# Load the existing file
+		existingData = pd.read_csv(eventAggFolder + eventAggFname, low_memory = False, index_col = 'DataSetIndex')
+		# Concat with new eventExcerpt
+		try:
+			combinedData = pd.concat([existingData, eventExcerptPanda], axis = 0,ignore_index = True)
+			## This should also work:
+			#result = df1.append(dicts, ignore_index=True)
+
+		except:
+			print('****************************')
+			print('****************************')
+			print('\n************ WARNING *****************')
+			print('Had to drop a duplicate column. For some reason, one of the columns appeared twice.')
+			print('Original keys existing data:')
+			print(existingData.keys())
+			print('Length:')
+			print(len(existingData.keys()))
+			print('Original keys new data:')
+			print(eventExcerptPanda.keys())
+			print('Length:')
+			print(len(eventExcerptPanda.keys()))
+			print('maybe it\'s empty:')
+			print(eventExcerptPanda.empty)
+
+			eventExcerptPanda = eventExcerptPanda.drop_duplicates()
+			# combinedData = pd.concat([existingData, eventExcerptPanda], axis = 0)
+			combinedData = pd.concat([existingData, eventExcerptPanda], axis = 0,ignore_index = True)
+
+
+			print('New keys:')
+			print(eventExcerptPanda.keys())
+			print('Length:')
+			print(len(eventExcerptPanda.keys()))
+			print('\n************ WARNING *****************')
+			print('****************************')
+			print('****************************')
+			print('****************************')
+
+
+		# Save as new csv (overwrite)
+		combinedData.to_csv(eventAggFolder + eventAggFname, index_label = 'DataSetIndex')
+		# --> store current label as TrialBasedIndex
+
+		# tmp = np.arange(0,len(eventExcerptPanda['Ts']))
+		# eventExcerptPanda.reindex(tmp)
+
+		# eventExcerptPanda.reset_index()
+
+		# combinedData.to_csv(eventAggFolder + eventAggFname, index_label = 'TrialBasedIndex')
+		# --> create new index that starts at 0 and has unique values for each row in the aggregated file
+
+		# with open(eventAggFolder + eventAggFname,'a') as f:			
+		# 	eventExcerptPanda.to_csv(f,header=False)
+		# # match columns..
+		# # print('!!!!!!!!!!!!')
+		# # pdb.set_trace()
 	elif not eventExcerptPanda.empty:
-		
-		eventExcerptPanda.to_csv(eventAggFolder + eventAggFname)
+		# Store the trial based index
+		eventExcerptPanda.index.name = 'TrialBasedIndex'
+		print(eventExcerptPanda.keys())
+		# Create a new index
+		eventExcerptPanda.reset_index(drop=False)
+		eventExcerptPanda.index.name = 'DataSetIndex'
+		print(eventExcerptPanda.keys())
+		pdb.set_trace()
+		# Create a new file
+		eventExcerptPanda.to_csv(eventAggFolder + eventAggFname, index_label = 'DataSetIndex')
 		appendEventAggregate = True
 		
 	else: # apparently eventExcerptPanda was empty..

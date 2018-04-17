@@ -196,7 +196,10 @@ def pairwisePerTeam(plotThisAttribute,eventExcerptPanda,rowswithinrangeTeam,Team
 
 # def plotPerPlayerPerTeam(plotThisAttribute,eventExcerptPanda,rowswithinrangePlayerA,rowswithinrangePlayerB,TeamAstring,TeamBstring,rowswithinrangeTeam):
 def plotPerTeamPerEvent(plotThisAttribute,eventExcerptPanda,rowswithinrangeTeam,TeamAstring,TeamBstring):
-	
+	# eventExcerptPanda.set_index('eventTime', drop=True, append=False, inplace=True, verify_integrity=False)
+	# # eventExcerptPanda.set_index('eventTimeIndex', drop=True, append=False, inplace=True, verify_integrity=False)
+
+	# print(plotThisAttribute[0])
 	Y1 = eventExcerptPanda.loc[rowswithinrangeTeam].pivot(columns='EventUID',values=plotThisAttribute[0])
 	Y2 = eventExcerptPanda.loc[rowswithinrangeTeam].pivot(columns='EventUID',values=plotThisAttribute[1])
 	X1 = eventExcerptPanda.loc[rowswithinrangeTeam].pivot(columns='EventUID',values='eventTime')

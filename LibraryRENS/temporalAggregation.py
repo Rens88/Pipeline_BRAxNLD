@@ -66,13 +66,15 @@ def process(targetEvents,aggregateLevel,rawDict,attributeDict,exportData,exportD
 	# aggrMeth_playerLevel = ['avg', 'std', 'sumVal', 'minVal', 'maxVal', 'med', 'sem', 'kur', 'ske']
 	# aggrMeth_popLevel = ['avg', 'std', 'sumVal', 'minVal', 'maxVal', 'med', 'sem', 'kur', 'ske']
 
+	eventExcerptPanda = pd.DataFrame()
+	# To which UID and refTeam should be added
 	if aggregateLevel[0] == 'None':
 		warn('\nWARNING: No temporal aggregate level indicated. \nNo temporally aggregated data exported.\nChange aggregateEvent = <%s> in USER INPUT.\n' %aggregateLevel[0])
-		return exportData,exportDataString,exportFullExplanation,eventExcerptPanda
+		return exportData,exportDataString,exportFullExplanation,eventExcerptPanda,attrLabel
 
 	elif len(targetEvents[aggregateLevel[0]]) == 0:
 		warn('\nWARNING: No targetevents detected. \nCouldnt aggregate temporally. \nNo Data exported.\n')
-		return exportData,exportDataString,exportFullExplanation,eventExcerptPanda
+		return exportData,exportDataString,exportFullExplanation,eventExcerptPanda,attrLabel
 
 	# The export matrix includes a range of outcome measures that don't change per event (these are already in <exportData>)
 	# Most outcome variables will be added by simply going through all the spatially aggregated variables
@@ -97,9 +99,6 @@ def process(targetEvents,aggregateLevel,rawDict,attributeDict,exportData,exportD
 	# aggregateLevel[1] --> window (s)
 	# aggregateLevel[2] --> lag (s)
 	# Create an empty to export when there are no events??
-
-	eventExcerptPanda = pd.DataFrame()
-	# To which UID and refTeam should be added
 
 	if type(targetEvents[aggregateLevel[0]]) == tuple:
 		warn('\nWARNING: Make sure the format of the event fits in a list. \nIf not, the script will fail when there is only 1 event.\n')
@@ -310,11 +309,41 @@ def process(targetEvents,aggregateLevel,rawDict,attributeDict,exportData,exportD
 		exportMatrix.append(exportCurrentData)
 	# pdb.set_trace()
 
-	# RETURN NEW LABEL??
+	# ######################
+	# ###################### WORK IN PROGRESS
+	# 	# aggregateLevel[0] --> event ID
+	# # aggregateLevel[1] --> window (s)
+	# # aggregateLevel[2] --> lag (s)
+	# # Interpolate curEventExcerptPanda to have the same times for every event.
+	# ## Base this on the window (not on min max)
+	# X_int = np.arange(round(min(eventExcerptPanda['eventTime']),1),max(eventExcerptPanda['eventTime'] +0.1),0.1)
+	# # 
+	# # Do this for every existing key
+	# order = 3 # cubic spline
+	# s = InterpolatedUnivariateSpline(curX1, curY1, k=order)
+	# Y1_int = s(X_int)
+	# # Maybe take the first occurring time for this event as the start time to avoid interpolating beyond the data.
+	# # replace with nans until the first occurring time?
+	# # first occurring time:
+	# firstIdx = np.where(abs(X_int - min(curX1)) == min(abs(X_int - min(curX1))))
+	# # Replace any interpolated values from before the first time occurred (to avoid weird interpolations)
+	# replaceThese = np.where(X_int < X_int[firstIdx])
+	# Y1_int[replaceThese] = np.nan
+
+	# ######################
+	# ######################
+	
 	if debuggingMode:
 		elapsed = str(round(time.time() - tTempAgg, 2))
 		print('Time elapsed during temporalAggregation: %ss' %elapsed)
 	return exportMatrix,overallString,overallExplanation,eventExcerptPanda,attrLabel
+
+def resampleData(x,y,xnew,order): # order 1) = linear, 2) = quadratic, 3) = cubic
+	f = InterpolatedUnivariateSpline(x, y, k=order)
+	ynew = f(xnew)   # use interpolation function returned by `interp1d`
+	# limit ynew to values around original x
+	# next(x[0] for x in enumerate(L) if x[1] > 0.7)
+	return[ynew]
 
 def aggregateTemporallyINCEPTION(population,aggregationOrder,aggrMeth_popLevel,aggrMeth_playerLevel,curEventExcerptPanda,key,refTeam,othTeam,attrLabel,eventDescrString, exportCurrentData, overallString, overallExplanation):
 	

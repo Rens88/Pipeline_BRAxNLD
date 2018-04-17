@@ -140,9 +140,6 @@ def	plotSnapshot(outputFilename,currentEvent,rowswithinrangePlayerA,rowswithinra
 	plt.xlabel('X-position (m)')
 	plt.ylabel('Y-position (m)')
 
-	plt.savefig(outputFilename[:-4] + 'bef.jpg', figsize=(1,1), dpi = 300, bbox_inches='tight')
-
-
 	# Field parameters
 	# For FDP, use these
 	FDP = False
@@ -177,6 +174,10 @@ def	plotSnapshot(outputFilename,currentEvent,rowswithinrangePlayerA,rowswithinra
 	y1 = min(currentEvent['Y'])
 	y2 = max(currentEvent['Y'])
 	y0 = (y2 - y1) / 2 + y1
+
+	x1,y2 = 145467.5435,	11546224.98
+	x2,y2 = 145492.8546,	11546267.51
+
 	plt.plot([x1, x2, x2, x1, x1], [y1, y1, y2, y2, y1], color='k', linestyle='-', linewidth=1) # Field outline
 
 	warn('\nWARNING: Using an estimate as the field dimensions.\n\nUPDATE REQUIRED.\n************\n************\n************\n')

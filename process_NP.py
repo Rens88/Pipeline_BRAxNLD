@@ -22,15 +22,8 @@
 # To do:
 # - Verify outcomes (by looking at counts)
 # - Double check all warnings
-# - Adapt code for easy manual incorporation of targetEvents
 # - Run code for LPM data
-# - Clean script (and go through to dos, ideas)
-# - Make folder string indepedent of location
-#
 # - re-incorporate create excerpt
-
-# 26-01-2018, Rens Meerhoff
-# This template can be copied to use the BRAxNLD pipeline.
 
 # Look for the lines starting with 
 # '## CHANGE THIS'
@@ -92,24 +85,25 @@ aggregateLag = 0 # in seconds
 skipCleanup = True # Only works if cleaned file exists
 skipSpatAgg = True # Only works if spat agg export exists
 skipEventAgg = False # Only works if current file already exists in eventAgg
+skipToDataSetLevel = False
 
 # This (simple) trialVisualization plots every outcome variable for the given window for the temporal aggregation
-includeTrialVisualization = True # True = includes trialVisualization, False = skips trialVisualization
+includeTrialVisualization = False # True = includes trialVisualization, False = skips trialVisualization
 # This datasetVisualization compares all files in the dataset
-includeDatasetVisualization = False
+includeDatasetVisualization = True
 
 # Choose between append (= True) or overwrite (= False) (the first time around only of course) the existing (if any) eventAggregate CSV.
 # NB: This could risk in adding duplicate data. There is no warning for that at the moment (could use code from cleanupData that checks if current file already exist in eventAggregate)
-appendEventAggregate = False 
+appendEventAggregate = False # seems like a useless parameter.. 
 
-## -- work in progress -- 
-datasetVisualization = True # could automate which variables are included etc.
-## -- \work in progress -- 
+# ## -- work in progress -- 
+# datasetVisualization = True # could automate which variables are included etc.
+# ## -- \work in progress -- 
 
 # Strings need to correspond to outcome variables (dict keys). 
 # Individual level variables ('vNorm') should be included as a list element.
 # Group level variables ('LengthA','LengthB') should be included as a tuple (and will be plotted in the same plot).
-plotTheseAttributes = ['vNorm',('Surface_ref','Surface_oth')]#,'LengthB',('LengthA','LengthB'),('SurfaceA','SurfaceB'),('SpreadA','SpreadB'),('WidthA','WidthB')] # [('LengthA','LengthB'),('WidthA','WidthB'),('SurfaceA','SurfaceB'),('SpreadA','SpreadB')] # teams that need to be compared as tuple
+plotTheseAttributes = [('Surface_ref','Surface_oth'),('Spread_ref','Spread_oth'),('stdSpread_ref','stdSpread_oth'),'vNorm']#,'LengthB',('LengthA','LengthB'),('SurfaceA','SurfaceB'),('SpreadA','SpreadB'),('WidthA','WidthB')] # [('LengthA','LengthB'),('WidthA','WidthB'),('SurfaceA','SurfaceB'),('SpreadA','SpreadB')] # teams that need to be compared as tuple
 
 #########################
 # END USER INPUT ########
@@ -130,7 +124,7 @@ import initialization
 # If you add new subfolders in the library, they need to be added in addLibary (in initialization.py) as well.
 initialization.addLibrary(studentFolder)
 aggregateLevel = (aggregateEvent,aggregateWindow,aggregateLag)
-dataFolder,tmpFigFolder,outputFolder,cleanedFolder,spatAggFolder,eventAggFolder,aggregatedOutputFilename,outputDescriptionFilename,eventAggFname =\
+dataFolder,tmpFigFolder,outputFolder,cleanedFolder,spatAggFolder,eventAggFolder,aggregatedOutputFilename,outputDescriptionFilename,eventAggFname,backupEventAggFname =\
 initialization.checkFolders(folder,aggregateLevel)
 
 import pdb; #pdb.set_trace()
@@ -146,13 +140,11 @@ import dissectFilename
 import importTimeseries_aspanda
 import cleanupData
 import pandas as pd
+import numpy as np
 import exportCSV
 import estimateRemainingTime
 import trialVisualization
 import computeEvents
-#  Unused modules: 
-# CSVexcerpt CSVimportAsColumns identifyDuplHeader LoadOrCreateCSVexcerpt individualAttributes plotTimeseries dataToDict 
-# dataToDict2 safetyWarning countExistingEvents exportCSV importTimeseriesData csv importEvents CSVtoDF plotSnapshot
 
 ## These lines should be embedded elsewhere in the future.
 # Preparing the dictionary of the raw data (NB: With the use of Pandas, this is a bit redundant)
@@ -165,11 +157,36 @@ rawHeaders = {'Ts': timestampString,\
 # ANALYSIS (file by file)
 #########################
 
-# Load all (not yet cleaned) files
 DirtyDataFiles = [f for f in listdir(dataFolder) if isfile(join(dataFolder, f)) if '.csv' in f]
 t = ([],0,len(DirtyDataFiles))#(time started,nth file,total number of files)
 
+# Load all (not yet cleaned) files
 for dirtyFname in DirtyDataFiles:
+	if skipToDataSetLevel: # This allows you to quickly skip the analysis section, if you've already created a backup of a fully analyzed dataset
+		if isfile(backupEventAggFname):
+			warn('\n********\nWARNING: Skipped analyzing the database and jumped straight to DataSet-level comparisons.\nAny new files, spatial aggregates, temporal aggregates, windows, lags etc. ARE NOT INCLUDED.\nTo re-analyze the database, change <skipToDataSetLevel> to False. (and re-analyzing MANUALLY copy a \'BACKUP\'.)\n')
+
+
+			eventExcerptPanda = pd.read_csv(backupEventAggFname, low_memory = False, index_col = 'Unnamed: 0')
+			# eventExcerptPanda.rename(columns = {'Unnamed: 0' : 'TrialBasedIndex'})
+			# # THIS IS WHERE YOU LEFT IT
+			# # Muddling around with indeces and a crashing python!
+			# #########
+			# ##########
+			# tmp = np.arange(0,len(eventExcerptPanda['Ts']))
+			# eventExcerptPanda.reindex(tmp)
+			# eventExcerptPanda = pd.concat([tmp, eventExcerptPanda],axis = 1)
+			# eventExcerptPanda.set_index('newIdx', drop=True, append=False, inplace=True, verify_integrity=False)
+			# eventExcerptPanda.set_index('Unnamed: 0', drop=True, append=False, inplace=True, verify_integrity=False)
+			
+			attrLabel_asPanda = pd.read_csv(outputFolder+'attributeLabel.csv',low_memory=False)
+			attrLabel_asPanda.set_index('Unnamed: 0', drop=True, append=False, inplace=True, verify_integrity=False)
+
+			t = (t[0],t[2],t[2])
+			break
+		else:
+			warn('\nWARNING: Tried to <skipToDataSetLevel>, but could not find corresponding data backup:\n%s\n\n*********' %backupEventAggFname)
+
 	print(	'\nFILE: << %s >>' %dirtyFname[:-4])
 	t = estimateRemainingTime.printProgress(t)
 
@@ -218,8 +235,6 @@ for dirtyFname in DirtyDataFiles:
 
 	###### Work in progress ##########
 	# Currently code is not very generic. It should work for NP though..
-	# if t[1] == 1:
-	# 	eventsPanda = eventsPanda.drop('Goal', axis = 1)
 	targetEventsImported = importEvents.process(eventsPanda,TeamAstring,TeamBstring)
 	###### \Work in progress #########
 
@@ -260,12 +275,7 @@ for dirtyFname in DirtyDataFiles:
 	# (with the specified window), added into one long file combining the whole database.
 	appendEventAggregate = 	exportCSV.eventAggregate(eventAggFolder,eventAggFname,appendEventAggregate,eventExcerptPanda,skipEventAgg_curFile)
 
-	## Do something with attrLabel:
-	# attrLabel is currently constructed by going through the whole for-loop (which can be done whilst skipping many of the time consuming steps)
-	# when implementing skipEventAgg, the whole for-loop can be skipped, which means that attrLabel doesn't exist.
-	# currentlyrently, this <	if skipEventAgg_curFile and not trialVisualization and t[1] != 1: > line makes sure the for loop is at least run once.
-	# That already solves the problem of the missing attrLabel for the plotting procedures below.
-	# However, the code could also rely on saved attributLabels which can then be loaded separatetely before plotting:
+	## Export attribute label for skip skipToDataSetLevel
 	if t[1] == 1: # only after the first file
 		attrLabel_asPanda = pd.DataFrame.from_dict([attrLabel],orient='columns')
 		attrLabel_asPanda.to_csv(outputFolder + 'attributeLabel.csv') 
@@ -282,9 +292,10 @@ for dirtyFname in DirtyDataFiles:
 	# To do: combine with plot of the football field ??? (or even a video)
 	trialVisualization.process(plotTheseAttributes,aggregateLevel,eventExcerptPanda,attrLabel,tmpFigFolder,cleanFname[:-4],TeamAstring,TeamBstring,debuggingMode)
 
-	pdb.set_trace()
-
 estimateRemainingTime.printDuration(t)
+################################
+# End of file by file analysis #
+################################
 
 ########################################################################################
 ####### datasetVisualization  ##########################################################
@@ -293,30 +304,20 @@ estimateRemainingTime.printDuration(t)
 if not includeDatasetVisualization:
 	print('No datasetVisualization requested.\n')
 else:
-
-	# !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-	# !!!!! THIS IS WHERE YOU LEFT IT!!!
-	# And then: create overall plot.
-	# !!!!! THIS IS WHERE YOU LEFT IT!!!
-	# !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-	if attrLabel == {}:
-		attrLabel_asPanda = pd.read_csv(outputFolder+attrLabelFname,low_memory=False)
-	else:
+	if attrLabel != {}:
 		attrLabel_asPanda = pd.DataFrame.from_dict([attrLabel],orient='columns')
 
-	eventExcerptPanda = pd.read_csv(eventAggFolder+eventAggFname,low_memory=False)
+	# # In attrLabel_asPanda, create a column that identifies each event by combining
+	# tmp = pd.DataFrame([], index = eventExcerptPanda.index, columns = ['UID'])
+	# # eventExcerptPanda["EventUID"] = eventExcerptPanda[0] + eventExcerptPanda['temporalAggregate']
+	# for idx,val in enumerate(fileIdentifiers):
+	# 	if idx == 0:
+	# 		tmp['UID'] = eventExcerptPanda[val]
+	# 	else:
+	# 		tmp['UID'] = tmp['UID'] + eventExcerptPanda[val]
 
-	# In attrLabel_asPanda, create a column that identifies each event by combining
-	tmp = pd.DataFrame([], index = eventExcerptPanda.index, columns = ['UID'])
-	# eventExcerptPanda["EventUID"] = eventExcerptPanda[0] + eventExcerptPanda['temporalAggregate']
-	for idx,val in enumerate(fileIdentifiers):
-		if idx == 0:
-			tmp['UID'] = eventExcerptPanda[val]
-		else:
-			tmp['UID'] = tmp['UID'] + eventExcerptPanda[val]
-
-	# Unless the filename was already similar before, this should create unique identifiers per event
-	eventExcerptPanda["EventUID"] = tmp['UID'] + eventExcerptPanda['temporalAggregate']
+	# # Unless the filename was already similar before, this should create unique identifiers per event
+	# eventExcerptPanda["EventUID"] = tmp['UID'] + eventExcerptPanda['temporalAggregate']
 	# TO DO:
 	# Write a check to verify that the fileidentifiers combine into a unique ID...
 	# If not, this would be very problematic!!
@@ -327,7 +328,12 @@ else:
 	# !!!!!!!!! THIS IS WHERE YOU LEFT IT !!!!!!!!
 	# !!!!!!!!! THIS IS WHERE YOU LEFT IT !!!!!!!!
 	# !!!!!!!!! THIS IS WHERE YOU LEFT IT !!!!!!!!
-
+	print(len(eventExcerptPanda.keys()))
+	print(eventExcerptPanda.keys())
+	# print('--')
+	# eventExcerptPanda = eventExcerptPanda.drop_duplicates()
+	# print(len(eventExcerptPanda.keys()))
+	# pdb.set_trace()
 	pltFname = 'OVERALL PLOT_' + dataType
 	datasetVisualization.process(plotTheseAttributes,aggregateLevel,eventExcerptPanda,attrLabel_asPanda,tmpFigFolder,pltFname,TeamAstring,TeamBstring,debuggingMode)
 

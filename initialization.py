@@ -64,5 +64,7 @@ def checkFolders(folder,aggregateLevel):
 	outputFilename = outputFolder + 'output_' + aggregateLevel[0] + '_' + timeString +  '.csv'
 	outputDescriptionFilename = outputFolder + 'output_Description_' + aggregateLevel[0] + '.txt'
 	eventAggFname = 'eventExcerpt_' + aggregateLevel[0] + '_window(' + str(aggregateLevel[1]) + ')_lag(' + str(aggregateLevel[2]) + ').csv'
+	backupEventAggFname = eventAggFolder + 'eventExcerpt_' + aggregateLevel[0] + '_window(' + str(aggregateLevel[1]) + ')_lag(' + str(aggregateLevel[2]) + ') - BACKUP.csv'
 
-	return dataFolder,tmpFigFolder,outputFolder,cleanedFolder,spatAggFolder,eventAggFolder, outputFilename,outputDescriptionFilename,eventAggFname
+
+	return dataFolder,tmpFigFolder,outputFolder,cleanedFolder,spatAggFolder,eventAggFolder, outputFilename,outputDescriptionFilename,eventAggFname,backupEventAggFname
