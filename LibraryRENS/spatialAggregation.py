@@ -11,13 +11,9 @@ import math
 import plotSnapshot
 import safetyWarning
 import pandas as pd
-<<<<<<< HEAD
 
 import student_LT_spatialAggregation
-=======
 import time
-import student_XX_spatialAggregation
->>>>>>> master
 
 if __name__ == '__main__':
 	process(rawDict,attributeDict,attributeLabel,TeamAstring,TeamBstring)
@@ -65,11 +61,7 @@ def process(rawDict,attributeDict,attributeLabel,TeamAstring,TeamBstring,skipSpa
 	vNorm(rawDict,attributeDict,attributeLabel,TeamAstring,TeamBstring,skipSpatAgg)
 
 	attributeDict,attributeLabel = \
-<<<<<<< HEAD
-	student_LT_spatialAggregation.process(rawDict,attributeDict,attributeLabel,TeamAstring,TeamBstring)
-=======
-	student_XX_spatialAggregation.process(rawDict,attributeDict,attributeLabel,TeamAstring,TeamBstring,skipSpatAgg)
->>>>>>> master
+	student_LT_spatialAggregation.process(rawDict,attributeDict,attributeLabel,TeamAstring,TeamBstring,skipSpatAgg)
 	
 	## debugging only
 	# allesBijElkaar = pd.concat([rawDict, attributeDict], axis=1) # debugging only
@@ -79,7 +71,7 @@ def process(rawDict,attributeDict,attributeLabel,TeamAstring,TeamBstring,skipSpa
 	if debuggingMode:
 		elapsed = str(round(time.time() - tSpatAgg, 2))
 		print('Time elapsed during spatialAggregation: %ss' %elapsed)
-	
+		
 	return attributeDict, attributeLabel
 
 ############################################################
@@ -117,12 +109,15 @@ def teamCentroid_panda(rawDict,attributeDict,attributeLabel,TeamAstring,TeamBstr
 	# Separate the raw values per team
 	dfA = rawDict[rawDict['TeamID'] == TeamAstring]
 	dfB = rawDict[rawDict['TeamID'] == TeamBstring]
+
 	# Pivot X and Y dataframes for Team A
 	Team_A_X = dfA.pivot(columns='Ts', values='X')
 	Team_A_Y = dfA.pivot(columns='Ts', values='Y')
 	# Pivot X and Y dataframes for Team B
 	Team_B_X = dfB.pivot(columns='Ts', values='X')
 	Team_B_Y = dfB.pivot(columns='Ts', values='Y')   
+
+
 
 	# The warnings below were included to debug problems with different lengths per team and/or group row
 	if len(ind_groupRows) != Team_A_X.shape[1]:
@@ -176,6 +171,9 @@ def teamCentroid_panda(rawDict,attributeDict,attributeLabel,TeamAstring,TeamBstr
 	pd.options.mode.chained_assignment = None  # default='warn' # NB: The code below gives a warning because it may be uncertain whether the right ind_groupRows are called. If you know a work-around, let me know.
 		
 	# For team A
+
+	if Team_A_X.shape == (0,0):
+		exit('\nFATAL WARNING: No data in TeamA\'s X positions.\nThis is likely because the TeamAstring and TeamBstring do not correspond with the strings in the dataset.\nThis may be because the user input is incorrect OR, because the Team strings are unsuccesfully derived from the filename (especialy when using dataType FDP for a new dataset):\nConsider writing a specific function in dissectFilename.py.\n')
 	newAttributesA['TeamCentXA'][ind_groupRowsA] = Team_A_X.mean(axis=0, skipna=True)
 	newAttributesA['TeamCentYA'][ind_groupRowsA] = Team_A_Y.mean(axis=0, skipna=True)
 	newAttributesA['LengthA'][ind_groupRowsA] = Team_A_X.max(axis=0, skipna=True) - Team_A_X.min(axis=0, skipna=True)

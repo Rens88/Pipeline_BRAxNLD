@@ -133,7 +133,7 @@ def process(dirtyFname,cleanFname,dataType,dataFolder,cleanedFolder,spatAggFname
 
 		if exists(cleanedFolder + cleanFname):
 			warn('\nOverwriting file <%s> \nin cleanedFolder <%s>.\n' %(cleanFname,cleanedFolder))
-
+			
 		# Export cleaned data to CSV
 		if fatalTeamIDissue:
 			df_Fatal = pd.DataFrame([],columns=['fatalIssue'])
@@ -179,7 +179,13 @@ def FDP(fname,cleanFname,dataFolder,cleanedFolder,headers,readAttributeCols,debu
 	ts = headers['Ts']
 	x,y = headers['Location']
 	ID = headers['PlayerID']
+
 	colHeaders = [ts,x,y,ID] + readAttributeCols + readEventColumns
+	if headers['TeamID'] != None:
+		# If there is a header for 'TeamID', then include it as the colHeaders that will be read from the CSV file.
+		Tid = headers['TeamID']
+		colHeaders = [ts,x,y,ID,Tid] + readAttributeCols + readEventColumns
+		
 	newPlayerIDstring = 'Player'
 	newTeamIDstring = 'Team'
 
@@ -203,6 +209,13 @@ def FDP(fname,cleanFname,dataFolder,cleanedFolder,headers,readAttributeCols,debu
 			del df[ID]
 			# del df_omitted[ID]		
 		ID = headers['PlayerID']
+	#LT: added!
+	else:
+		fatalTeamIDissue = False
+
+
+	print(headers)
+	print(ID)
 
 	df_cropped01,df_omitted01 = omitXandY_equals0(df,x,y,ID)
 	df_cropped02,df_omitted02 = omitRowsWithout_XandY(df_cropped01,x,y)	
@@ -213,7 +226,8 @@ def FDP(fname,cleanFname,dataFolder,cleanedFolder,headers,readAttributeCols,debu
 	## End cleanup for BRAxNLD
 
 	df_cleaned = df_cropped03
-
+	print(df_cleaned.keys())
+	# pdb.set_trace()
 	return df_cleaned, df_omitted,fatalTeamIDissue
 
 def NP(fname,newfname,folder,cleanedFolder,headers,readAttributeCols,debugOmittedRows,readEventColumns,TeamAstring,TeamBstring):
@@ -410,7 +424,12 @@ def verifyGroupRows(df_cleaned):
 	
 	# Grouprows - at this stage - are characterized by:
 	# 1) a 'TeamID' that isnull()
-	groupRows = (df_cleaned['TeamID'].isnull()) & (df_cleaned['Ts'].notnull()) 
+
+	#LT: added!
+	try:
+		groupRows = (df_cleaned['TeamID'].isnull()) & (df_cleaned['Ts'].notnull()) 
+	except:
+		return df_cleaned
 
 	# 2) a 'PlayerID' that is not a 'ball'	
 	if df_cleaned['PlayerID'].dtype != float:
@@ -428,10 +447,10 @@ def verifyGroupRows(df_cleaned):
 		# Create groupIndex by adding to highest existing index
 		firstGroupIndex = df_cleaned.index[-1] + 1
 		groupIndex = firstGroupIndex + range(len(groupPlayerID))
-
+		# print(type(groupIndex.tolist()))
+		# pdb.set_trace()
 		# Put these in a DataFrame with the same column headers
-		df_group = pd.DataFrame({'Ts':uniqueTs,'PlayerID':groupPlayerID},index = [groupIndex])# possibly add the index ? index = []
-		
+		df_group = pd.DataFrame({'Ts':uniqueTs,'PlayerID':groupPlayerID},index = groupIndex)# possibly add the index ? index = []
 		# Append them to the existing dataframe
 		df_cleaned = df_cleaned.append(df_group)
 
