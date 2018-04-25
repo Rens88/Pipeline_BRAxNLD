@@ -26,8 +26,10 @@ if __name__ == '__main__':
 def process(fname,dataType,TeamAstring,TeamBstring):
 	if dataType == "NP":
 		exportData, exportDataString, exportDataFullExplanation,cleanFname = NP(fname)
+
 	elif dataType == "FDP":
 		exportData, exportDataString, exportDataFullExplanation,cleanFname,TeamAstring,TeamBstring = FDP(fname)
+
 	else:
 		exportData, exportDataString, exportDataFullExplanation,cleanFname = \
 		student_XX_dissectFilename.process(fname,dataType,TeamAstring,TeamBstring)
@@ -134,7 +136,7 @@ def NP(fname):
 
 	cleanFname = School + '_' + Class + '_' + Group + '_' + Test + '_' + Exp + '.csv'
 
-	exportData = [School, Class, Group, Test, Exp]
+	exportData = [str(School), str(Class), str(Group), str(Test), str(Exp)]
 	exportDataString = ['School', 'Class', 'Group', 'Test', 'Exp']
 	exportDataFullExplanation = ['School experiment was held at','Class the participants were from','Identifier groups that played each other','Name of the type of trial (PRE = pre-test, POS = post-test, TRA = transfer test, RET = retention test)', 'Experimental group (LP = Linear Pedagogy, NP = Nonlinear Pedgagogy)']
 

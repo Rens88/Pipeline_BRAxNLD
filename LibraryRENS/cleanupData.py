@@ -28,6 +28,7 @@ import re
 import pandas as pd
 import student_XX_cleanUp
 import time
+import FillGaps_and_Filter
 
 if __name__ == '__main__':
 
@@ -71,7 +72,7 @@ def process(dirtyFname,cleanFname,dataType,dataFolder,cleanedFolder,spatAggFname
 		if eventAggFname in eventAggFnames and skipEventAgg == True:
 		# If there is a spat agg file, AND if skipEventAgg == True,
 		# then, it needs to be verified whether there is a row with an event aggregate for the current file.
-			df = pd.read_csv(eventAggFolder+eventAggFname,usecols=(exportDataString),low_memory=False)
+			df = pd.read_csv(eventAggFolder+eventAggFname,usecols=(exportDataString),low_memory=True) # NB: low_memory MUST be True, otherwise it results in problems later on.
 			# testCount = 0
 			for i in np.arange(len(df.keys())):
 				# testCount = testCount + 1
@@ -91,14 +92,13 @@ def process(dirtyFname,cleanFname,dataType,dataFolder,cleanedFolder,spatAggFname
 					print('\nFile identifiers contents:')
 					print(exportData[i])
 					print('\nNB: In the past, this problem was related to the string input resembling a float input.\nFor example, <1E3>, which (with low_memory = True) is read as a float (1,000).\n')
-					exit()
+					if not exportData[i] in exportDataString[i]:
+						skipEventAgg = False
+						break
+					else:
+						raise Exception ('exit')
 		else:
 			skipEventAgg = False
-			# print('testCount = <%s>' %testCount)
-			# if testCount != len(df.keys()) and skipEventAgg:
-			# 	print('wtf')
-			# 	print('skipevent should be negative, but it''s not')
-			# 	pdb.set_trace()
 		if debuggingMode:
 			elapsed = str(round(time.time() - tCleanup, 2))
 			print('Time elapsed during cleanupData: %ss' %elapsed)
@@ -125,6 +125,7 @@ def process(dirtyFname,cleanFname,dataType,dataFolder,cleanedFolder,spatAggFname
 		return loadFolder,loadFname,fatalIssue,skipSpatAgg,skipEventAgg#, readAttributeCols#, attrLabel
 	else: # create a new clean Fname
 		print('\nCleaning up file...')
+
 		if dataType == "NP":
 			# NB: cleanupData currently dataset specific (NP or FDP). Fixes are quite specific and may not easily transfer to different datasets.
 			# df_cleaned,df_omitted,headers,readAttributeCols,readEventColumns = \
@@ -179,6 +180,7 @@ def process(dirtyFname,cleanFname,dataType,dataFolder,cleanedFolder,spatAggFname
 			df_Fatal.to_csv(cleanedFolder + cleanFname)
 			fatalIssue = True
 		else:
+			df_cleaned = FillGaps_and_Filter.process(df_cleaned)
 			df_cleaned.to_csv(cleanedFolder + cleanFname)
 	
 		# Optional: Export data that has been omitted, in case you suspect that relevent rows were omitted.
@@ -214,23 +216,31 @@ def FDP(fname,cleanFname,dataFolder,cleanedFolder,headers,readAttributeCols,debu
 	ts = headers['Ts']
 	x,y = headers['Location']
 	ID = headers['PlayerID']
+
 	colHeaders = [ts,x,y,ID] + readAttributeCols + readEventColumns
+	if headers['TeamID'] != None:
+	 # If there is a header for 'TeamID', then include it as the colHeaders that will be read from the CSV file.
+	 # Mede mogelijk gemaakt door: Lars
+	 Tid = headers['TeamID']
+	 colHeaders = [ts,x,y,ID,Tid] + readAttributeCols + readEventColumns
+	 
 	newPlayerIDstring = 'Player'
 	newTeamIDstring = 'Team'
 
 	# Only read the headers as a check-up:
 	with open(dataFolder+fname, 'r') as f:
-		reader = csv.reader(f)
-		fileHeaders = list(next(reader))
+	 reader = csv.reader(f)
+	 fileHeaders = list(next(reader))
 
 	for i in colHeaders:
-		if not i in fileHeaders:
-			exit('EXIT: Column header <%s> not in column headers of the file:\n%s\n\nSOLUTION: Change the user input in \'process\' \n' %(i,fileHeaders))
-  
+	 if not i in fileHeaders:
+	  exit('EXIT: Column header <%s> not in column headers of the file:\n%s\n\nSOLUTION: Change the user input in \'process\' \n' %(i,fileHeaders))
+	 
 	df = pd.read_csv(dataFolder+fname,usecols=(colHeaders),low_memory=False)
 	df[ts] = df[ts]*conversion_to_S # Convert from ms to s.
-	
+
 	## Cleanup for BRAxNLD
+	fatalTeamIDissue = False
 	if headers['TeamID'] == None:
 		df,headers,fatalTeamIDissue = splitName_and_Team(df,headers,ID,newPlayerIDstring,newTeamIDstring,TeamAstring,TeamBstring)
 		# Delete the original ID, but only if the string is not the same as the new Dict.Keys
@@ -465,7 +475,7 @@ def verifyGroupRows(df_cleaned):
 		groupIndex = firstGroupIndex + range(len(groupPlayerID))
 
 		# Put these in a DataFrame with the same column headers
-		df_group = pd.DataFrame({'Ts':uniqueTs,'PlayerID':groupPlayerID},index = [groupIndex])# possibly add the index ? index = []
+		df_group = pd.DataFrame({'Ts':uniqueTs,'PlayerID':groupPlayerID},index = groupIndex)# possibly add the index ? index = []
 		
 		# Append them to the existing dataframe
 		df_cleaned = df_cleaned.append(df_group)

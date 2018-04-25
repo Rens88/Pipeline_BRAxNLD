@@ -1,6 +1,6 @@
 import matplotlib.pyplot as plt
 import numpy as np
-from scipy.interpolate import InterpolatedUnivariateSpline
+from scipy.interpolate import InterpolatedUnivariateSpline,interp1d
 
 # given values
 xi = np.array([0.2, 0.5, 0.7, 0.9])

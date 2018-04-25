@@ -73,7 +73,7 @@ conversionToMeter = 111111 # https://gis.stackexchange.com/questions/8650/measur
 ## -- work in progress -- 
 # Indicate some parameters for temporal aggregation: 'Full' aggregates over the whole file, any other event needs to be specified with the same string as in the header of the CSV file.
 aggregateEvent = 'Goal' # Event that will be used to aggregate over ('full' denotes aggregating over the whole file. 'None' denotes skipping the temporal aggregation)
-aggregateWindow = 10 # in seconds #NB: still need to write warning in temporal aggregation in case you have Goals in combination with None.
+aggregateWindow = 15 # in seconds #NB: still need to write warning in temporal aggregation in case you have Goals in combination with None.
 aggregateLag = 0 # in seconds
 
 # Key events (TO DO)
@@ -81,29 +81,25 @@ aggregateLag = 0 # in seconds
 # - Include modules to compute events
 ## -- \work in progress -- 
 
-# Parts of the pipeline can be skipped
-skipCleanup = True # Only works if cleaned file exists
-skipSpatAgg = True # Only works if spat agg export exists
-skipEventAgg = False # Only works if current file already exists in eventAgg
-skipToDataSetLevel = True
+# Strings need to correspond to outcome variables (dict keys). 
+# Individual level variables ('vNorm') should be included as a list element.
+# Group level variables ('LengthA','LengthB') should be included as a tuple (and will be plotted in the same plot).
+plotTheseAttributes = ['vNorm',('Surface_ref','Surface_oth')]#,('Spread_ref','Spread_oth'),('stdSpread_ref','stdSpread_oth'),'vNorm']#,'LengthB',('LengthA','LengthB'),('SurfaceA','SurfaceB'),('SpreadA','SpreadB'),('WidthA','WidthB')] # [('LengthA','LengthB'),('WidthA','WidthB'),('SurfaceA','SurfaceB'),('SpreadA','SpreadB')] # teams that need to be compared as tuple
 
-# This (simple) trialVisualization plots every outcome variable for the given window for the temporal aggregation
-includeTrialVisualization = False # True = includes trialVisualization, False = skips trialVisualization
-# This datasetVisualization compares all files in the dataset
+# Parts of the pipeline can be skipped
+skipCleanup = False # Only works if cleaned file exists. NB: if False, all other skips become ineffective.
+skipSpatAgg = True # Only works if spat agg export exists. NB: if False, skipEventAgg and skipToDataSetLevel become ineffective.
+skipEventAgg = False # Only works if current file already exists in eventAgg. NB: if False, skipToDataSetLevel becomes ineffective.
+skipToDataSetLevel = False # Only works if corresponding AUTOMATIC BACKUP exists. NB: Does not check if all raw data files are in automatic backup. NB2: does not include any changes in cleanup, spatagg, or eventagg
+
+# This trialVisualization plots the selected outcome variables variable for the given window for the temporal aggregation. Useful to verify if your variables are as excpected.
+includeTrialVisualization = False
+# This datasetVisualization compares all events of all files in the dataset. Useful for datasetlevel comparisons
 includeDatasetVisualization = True
 
 # Choose between append (= True) or overwrite (= False) (the first time around only of course) the existing (if any) eventAggregate CSV.
 # NB: This could risk in adding duplicate data. There is no warning for that at the moment (could use code from cleanupData that checks if current file already exist in eventAggregate)
-appendEventAggregate = False # seems like a useless parameter.. 
-
-# ## -- work in progress -- 
-# datasetVisualization = True # could automate which variables are included etc.
-# ## -- \work in progress -- 
-
-# Strings need to correspond to outcome variables (dict keys). 
-# Individual level variables ('vNorm') should be included as a list element.
-# Group level variables ('LengthA','LengthB') should be included as a tuple (and will be plotted in the same plot).
-plotTheseAttributes = [('Surface_ref','Surface_oth'),('Spread_ref','Spread_oth'),('stdSpread_ref','stdSpread_oth'),'vNorm']#,'LengthB',('LengthA','LengthB'),('SurfaceA','SurfaceB'),('SpreadA','SpreadB'),('WidthA','WidthB')] # [('LengthA','LengthB'),('WidthA','WidthB'),('SurfaceA','SurfaceB'),('SpreadA','SpreadB')] # teams that need to be compared as tuple
+appendEventAggregate = False
 
 #########################
 # END USER INPUT ########
@@ -124,8 +120,8 @@ import initialization
 # If you add new subfolders in the library, they need to be added in addLibary (in initialization.py) as well.
 initialization.addLibrary(studentFolder)
 aggregateLevel = (aggregateEvent,aggregateWindow,aggregateLag)
-dataFolder,tmpFigFolder,outputFolder,cleanedFolder,spatAggFolder,eventAggFolder,aggregatedOutputFilename,outputDescriptionFilename,eventAggFname,backupEventAggFname =\
-initialization.checkFolders(folder,aggregateLevel)
+dataFolder,tmpFigFolder,outputFolder,cleanedFolder,spatAggFolder,eventAggFolder,aggregatedOutputFilename,outputDescriptionFilename,eventAggFname,backupEventAggFname,DirtyDataFiles,t,skipToDataSetLevel,skipCleanup,skipSpatAgg,skipEventAgg,includeTrialVisualization =\
+initialization.checkFolders(folder,aggregateLevel,skipToDataSetLevel,skipCleanup,skipSpatAgg,skipEventAgg,includeTrialVisualization)
 
 import pdb; #pdb.set_trace()
 from os.path import isfile, join, exists#, isdir, exists
@@ -145,6 +141,9 @@ import exportCSV
 import estimateRemainingTime
 import trialVisualization
 import computeEvents
+import copy
+from shutil import copyfile
+import importFieldDimensions
 
 ## These lines should be embedded elsewhere in the future.
 # Preparing the dictionary of the raw data (NB: With the use of Pandas, this is a bit redundant)
@@ -157,36 +156,8 @@ rawHeaders = {'Ts': timestampString,\
 # ANALYSIS (file by file)
 #########################
 
-DirtyDataFiles = [f for f in listdir(dataFolder) if isfile(join(dataFolder, f)) if '.csv' in f]
-t = ([],0,len(DirtyDataFiles))#(time started,nth file,total number of files)
-
-# Load all (not yet cleaned) files
-for dirtyFname in DirtyDataFiles:
-	if skipToDataSetLevel: # This allows you to quickly skip the analysis section, if you've already created a backup of a fully analyzed dataset
-		if isfile(backupEventAggFname):
-			warn('\n********\nWARNING: Skipped analyzing the database and jumped straight to DataSet-level comparisons.\nAny new files, spatial aggregates, temporal aggregates, windows, lags etc. ARE NOT INCLUDED.\nTo re-analyze the database, change <skipToDataSetLevel> to False. (and re-analyzing MANUALLY copy a \'BACKUP\'.)\n')
-
-
-			eventExcerptPanda = pd.read_csv(backupEventAggFname, low_memory = False, index_col = 'Unnamed: 0')
-			# eventExcerptPanda.rename(columns = {'Unnamed: 0' : 'TrialBasedIndex'})
-			# # THIS IS WHERE YOU LEFT IT
-			# # Muddling around with indeces and a crashing python!
-			# #########
-			# ##########
-			# tmp = np.arange(0,len(eventExcerptPanda['Ts']))
-			# eventExcerptPanda.reindex(tmp)
-			# eventExcerptPanda = pd.concat([tmp, eventExcerptPanda],axis = 1)
-			# eventExcerptPanda.set_index('newIdx', drop=True, append=False, inplace=True, verify_integrity=False)
-			# eventExcerptPanda.set_index('Unnamed: 0', drop=True, append=False, inplace=True, verify_integrity=False)
-			
-			attrLabel_asPanda = pd.read_csv(outputFolder+'attributeLabel.csv',low_memory=False)
-			attrLabel_asPanda.set_index('Unnamed: 0', drop=True, append=False, inplace=True, verify_integrity=False)
-
-			t = (t[0],t[2],t[2])
-			break
-		else:
-			warn('\nWARNING: Tried to <skipToDataSetLevel>, but could not find corresponding data backup:\n%s\n\n*********' %backupEventAggFname)
-
+for dirtyFname in DirtyDataFiles[:10]:
+	# dirtyFname = 'data_JYSS_1E1_T1_Gp 3 v 4_oneSheet_inColumns.csv'
 	print(	'\nFILE: << %s >>' %dirtyFname[:-4])
 	t = estimateRemainingTime.printProgress(t)
 
@@ -199,7 +170,7 @@ for dirtyFname in DirtyDataFiles:
 	# Prepare metadata of aggregated data to be exported:
 	exportData, exportDataString, exportDataFullExplanation,cleanFname,spatAggFname,TeamAstring,TeamBstring = \
 	dissectFilename.process(dirtyFname,dataType,TeamAstring,TeamBstring)
-	fileIdentifiers = exportData.copy()
+	fileIdentifiers = copy.copy(exportData)
 
 	# Clean cleanFname (it only cleans data if there is no existing cleaned file of the current (dirty)file )
 	loadFolder,loadFname,fatalTimeStampIssue,skipSpatAgg_curFile,skipEventAgg_curFile = \
@@ -230,6 +201,12 @@ for dirtyFname in DirtyDataFiles:
 	####### Import existing data ###########################################################
 	########################################################################################
 	
+	# This can be used to import specific field dimensions.
+	# By default, it takes the field dimensions that should be typical with football data.
+	# This is the first example of using metadata. Probably will end up formalizing this in a 'importMetaData' module.
+	fieldDimensions = importFieldDimensions.process(dataFolder,dirtyFname,exportData,exportDataString)
+	# TO DO: add code to rotate based on fieldDimensions !!!!!!!!!!!!!!!!
+	# TO DO: add filtering here. !!!!!!!!!1 THIS IS WHERE YOU SHOULD CONTINE
 	rawPanda,attrPanda,attrLabel,eventsPanda,eventsLabel = \
 	importTimeseries_aspanda.process(loadFname,loadFolder,skipSpatAgg_curFile,readAttributeCols,readEventColumns,attrLabel,outputFolder,debuggingMode)
 
@@ -255,30 +232,24 @@ for dirtyFname in DirtyDataFiles:
 	###### \Work in progress #########
 
 	## Temporal aggregation
-	exportData,exportDataString,exportFullExplanation,eventExcerptPanda,attrLabel = \
+	# TO DO: add interpolation here !!!!!!!!!1 THIS IS WHERE YOU SHOULD CONTINE
+	exportData,exportDataString,exportFullExplanation,trialEventsSpatAggExcerpt,attrLabel = \
 	temporalAggregation.process(targetEvents,aggregateLevel,rawPanda,attrPanda,exportData,exportDataString,exportDataFullExplanation,TeamAstring,TeamBstring,debuggingMode,skipEventAgg_curFile,fileIdentifiers,attrLabel)
 
 	########################################################################################
 	####### EXPORT to CSV ##################################################################
 	########################################################################################
 
-	# Temporally aggregated data
-	skippedData = False
-	exportCSV.newOrAdd(aggregatedOutputFilename,exportDataString,exportData,skippedData)	
-	exportCSV.varDescription(outputDescriptionFilename,exportDataString,exportFullExplanation)
-
-	# Spatially aggregated data
-	spatAggPanda = pd.concat([rawPanda, eventsPanda.loc[:, eventsPanda.columns != 'Ts'], attrPanda.loc[:, attrPanda.columns != 'Ts']], axis=1) # Skip the duplicate 'Ts' columns
-	spatAggPanda.to_csv(spatAggFolder + spatAggFname) # debugging only		
-
-	# Spatially aggregated data per event
-	# (with the specified window), added into one long file combining the whole database.
-	appendEventAggregate = 	exportCSV.eventAggregate(eventAggFolder,eventAggFname,appendEventAggregate,eventExcerptPanda,skipEventAgg_curFile)
-
-	## Export attribute label for skip skipToDataSetLevel
-	if t[1] == 1: # only after the first file
-		attrLabel_asPanda = pd.DataFrame.from_dict([attrLabel],orient='columns')
-		attrLabel_asPanda.to_csv(outputFolder + 'attributeLabel.csv') 
+	if not all([skipEventAgg, skipSpatAgg, skipCleanup]): # and not skip to dataset level (if statement occurs at initialization)
+		appendEventAggregate = \
+		exportCSV.process(trialEventsSpatAggExcerpt,exportData,exportDataString,exportFullExplanation,readEventColumns,readAttributeCols,aggregatedOutputFilename,outputDescriptionFilename,rawPanda,eventsPanda,attrPanda,spatAggFolder,spatAggFname,eventAggFolder,eventAggFname,appendEventAggregate,skipEventAgg_curFile,fileIdentifiers,t,attrLabel,outputFolder,debuggingMode)
+	else:
+		# Load previously created excerpt
+		datasetEventsSpatAggExcerpt = pd.read_csv(eventAggFolder + eventAggFname, low_memory = False, index_col = 'DataSetIndex')
+		FileID = "_".join(fileIdentifiers)
+		# Select events related to current file only --> realistically, this is only used for trialVisualization
+		trialEventsSpatAggExcerpt = datasetEventsSpatAggExcerpt.loc[datasetEventsSpatAggExcerpt['EventUID'].str.contains(FileID)]
+	pdb.set_trace()
 
 	if not includeTrialVisualization: # stop early if trialVisualization is FALSE
 		continue
@@ -286,13 +257,25 @@ for dirtyFname in DirtyDataFiles:
 	########################################################################################
 	####### trialVisualization  ############################################################
 	########################################################################################
-	
+			
 	# This plotting procedure allows you to plot the events separately. 
 	# These plots can be used to (visually) assess whether the outcome measures had the expected values.
-	# To do: combine with plot of the football field ??? (or even a video)
-	trialVisualization.process(plotTheseAttributes,aggregateLevel,eventExcerptPanda,attrLabel,tmpFigFolder,cleanFname[:-4],TeamAstring,TeamBstring,debuggingMode)
-
+	trialVisualization.process(plotTheseAttributes,aggregateLevel,trialEventsSpatAggExcerpt,attrLabel,tmpFigFolder,cleanFname[:-4],TeamAstring,TeamBstring,debuggingMode,dataType,fieldDimensions)
 estimateRemainingTime.printDuration(t)
+
+if not skipToDataSetLevel: # i.e., did the whole file-by-file analysis
+	# Store an automatic back-up if the file-by-file analysis has been completed without skipping the data.
+	copyfile(eventAggFolder + eventAggFname, backupEventAggFname)
+
+# Load the datasetEventsSpatAggExcerpt
+datasetEventsSpatAggExcerpt = pd.read_csv(backupEventAggFname, low_memory = False, index_col = 'DataSetIndex')
+# if attrLabel != {}:
+# 	attrLabel_asPanda = pd.DataFrame.from_dict([attrLabel],orient='columns')
+# else:
+# Load the saved attribute labels
+attrLabel_asPanda = pd.read_csv(outputFolder+'attributeLabel.csv',low_memory=False, index_col = 'Unnamed: 0') # index_col added last. Should work. Otherwise use the next line
+# attrLabel_asPanda.set_index('Unnamed: 0', drop=True, append=False, inplace=True, verify_integrity=False)
+
 ################################
 # End of file by file analysis #
 ################################
@@ -304,8 +287,6 @@ estimateRemainingTime.printDuration(t)
 if not includeDatasetVisualization:
 	print('No datasetVisualization requested.\n')
 else:
-	if attrLabel != {}:
-		attrLabel_asPanda = pd.DataFrame.from_dict([attrLabel],orient='columns')
 
 	# # In attrLabel_asPanda, create a column that identifies each event by combining
 	# tmp = pd.DataFrame([], index = eventExcerptPanda.index, columns = ['UID'])
@@ -328,14 +309,15 @@ else:
 	# !!!!!!!!! THIS IS WHERE YOU LEFT IT !!!!!!!!
 	# !!!!!!!!! THIS IS WHERE YOU LEFT IT !!!!!!!!
 	# !!!!!!!!! THIS IS WHERE YOU LEFT IT !!!!!!!!
-	print(len(eventExcerptPanda.keys()))
-	print(eventExcerptPanda.keys())
+	# print(len(eventExcerptPanda.keys()))
+	# print(eventExcerptPanda.keys())
+	# pdb.set_trace()
 	# print('--')
 	# eventExcerptPanda = eventExcerptPanda.drop_duplicates()
 	# print(len(eventExcerptPanda.keys()))
 	# pdb.set_trace()
 	pltFname = 'OVERALL PLOT_' + dataType
-	datasetVisualization.process(plotTheseAttributes,aggregateLevel,eventExcerptPanda,attrLabel_asPanda,tmpFigFolder,pltFname,TeamAstring,TeamBstring,debuggingMode)
+	datasetVisualization.process(plotTheseAttributes,aggregateLevel,datasetEventsSpatAggExcerpt,attrLabel_asPanda,tmpFigFolder,pltFname,TeamAstring,TeamBstring,debuggingMode)
 
 
 ########################################################################################
@@ -346,10 +328,20 @@ else:
 ########################################################################################
 ####### THE END ########################################################################
 ########################################################################################
-print('	      -')
-print('	     ---')
-print('	    -----')	
+print('       -')
+print('      ---')
+print('     -----') 
+print('    -------') 
+print('   ---------')
+print('  -----------')
+print(' -------------')
+print('---------------')
 print('---- THE END ----')
-print('	    -----')	
-print('	     ---')
-exit('	      -')
+print('---------------')
+print(' -------------')
+print('  -----------')
+print('   ---------')
+print('    -------')
+print('     -----') 
+print('      ---')
+exit('       -')

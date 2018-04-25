@@ -73,9 +73,10 @@ def process(plotTheseAttributes,aggregateLevel,eventExcerptPanda,attributeLabel,
 
 	fileAggregateID = 'window(' + str(aggregateLevel[1]) + ')_lag(' + str(aggregateLevel[2]) + ')'
 	
-	
-	for plotThisAttribute in plotTheseAttributes:
+	# print(plotTheseAttributes)
 
+	for plotThisAttribute in plotTheseAttributes:
+		# print(plotThisAttribute)
 		plt.figure(num=None, figsize=(3.8*5,3*5), dpi=300, facecolor='w', edgecolor='k')
 
 
@@ -89,13 +90,15 @@ def process(plotTheseAttributes,aggregateLevel,eventExcerptPanda,attributeLabel,
 			varName = plotThisAttribute[0]
 			if plotThisAttribute[0][-1] == 'A' or plotThisAttribute[0][-1] == 'B':
 				varName = varName[:-1]
+			if plotThisAttribute[0][-4:] == '_oth' or plotThisAttribute[0][-4:] == '_ref':
+				varName = varName[:-4]
 			outputFilename = tmpFigFolder + fname + '_' + varName + '_' + fileAggregateID + '.jpg'
 		else:
-			# Plot it
+			# # Plot it
 			# plotPerPlayerPerTeam(plotThisAttribute,currentEvent,rowswithinrangePlayerA,rowswithinrangePlayerB,TeamAstring,TeamBstring)
 			labelProvided = [True for j in attributeLabel.keys() if plotThisAttribute == j]
 			if labelProvided:
-				yLabel = attributeLabel[plotThisAttribute]
+				yLabel = attributeLabel[plotThisAttribute][0] # because here it's a pandaaaa
 			else:
 				yLabel = 'Unknown'
 
@@ -107,7 +110,7 @@ def process(plotTheseAttributes,aggregateLevel,eventExcerptPanda,attributeLabel,
 		plt.savefig(outputFilename, figsize=(1,1), dpi = 300, bbox_inches='tight')
 		print('EXPORTED: <%s>' %outputFilename)
 		plt.close()
-		pdb.set_trace()
+		# pdb.set_trace()
 		# if specialCase:
 		# 	break
 	if debuggingMode:
@@ -154,45 +157,45 @@ def findYlabel(plotThisAttribute,attributeLabel,TeamAstring,TeamBstring):
 		
 	return yLabel
 
-def pairwisePerTeam(plotThisAttribute,eventExcerptPanda,rowswithinrangeTeam,TeamAstring,TeamBstring):
-	Y1 = eventExcerptPanda[plotThisAttribute[0]][rowswithinrangeTeam]
-	Y2 = eventExcerptPanda[plotThisAttribute[1]][rowswithinrangeTeam]
+# def pairwisePerTeam(plotThisAttribute,eventExcerptPanda,rowswithinrangeTeam,TeamAstring,TeamBstring):
+# 	Y1 = eventExcerptPanda[plotThisAttribute[0]][rowswithinrangeTeam]
+# 	Y2 = eventExcerptPanda[plotThisAttribute[1]][rowswithinrangeTeam]
 
-	X1 = eventExcerptPanda['eventTime'][rowswithinrangeTeam]
-	X2 = eventExcerptPanda['eventTime'][rowswithinrangeTeam]
+# 	X1 = eventExcerptPanda['eventTime'][rowswithinrangeTeam]
+# 	X2 = eventExcerptPanda['eventTime'][rowswithinrangeTeam]
 	
-	# Look for gaps in time:
-	# Idea: could separate this per team. But with the current definitions, Values for one team should occur equally often as for any other team
-	t0 = X1[:-1].reset_index(level=None, drop=False, inplace=False)
-	t1 = X1[1:].reset_index(level=None, drop=False, inplace=False)
+# 	# Look for gaps in time:
+# 	# Idea: could separate this per team. But with the current definitions, Values for one team should occur equally often as for any other team
+# 	t0 = X1[:-1].reset_index(level=None, drop=False, inplace=False)
+# 	t1 = X1[1:].reset_index(level=None, drop=False, inplace=False)
 
-	dt = t1-t0
+# 	dt = t1-t0
 
-	# Find the dt where it is more than 1.5 times the median
-	print(max(dt['eventTime']))
-	jumps = dt['eventTime'][dt['eventTime']>(np.median(dt['eventTime'])*1.5)]
-	jumpStarts = t0['eventTime'][dt['eventTime']>(np.median(dt['eventTime'])*1.5)]
+# 	# Find the dt where it is more than 1.5 times the median
+# 	# print(max(dt['eventTime']))
+# 	jumps = dt['eventTime'][dt['eventTime']>(np.median(dt['eventTime'])*1.5)]
+# 	jumpStarts = t0['eventTime'][dt['eventTime']>(np.median(dt['eventTime'])*1.5)]
 
 
-	if jumps.empty:
-		print('empty')
-		# no jumps detected, plot as normal
-		pltA = plt.plot(X1,Y1,color='red',linestyle='-',label = TeamAstring) ##### I should use code below to make it stick to the window
-		pltB = plt.plot(X2,Y2,color='blue',linestyle='--',label= TeamBstring)
-		plt.legend()
-	else:
-		print('jumps')
-		# Special case, don't connect the line where there are jumps
-		nextStart = int(X1.index[0])
-		for jumpStart in jumpStarts:
-			curStart = nextStart
-			curEnd = int(X1[X1 == jumpStart].index[0])
+# 	if jumps.empty:
+# 		print('empty')
+# 		# no jumps detected, plot as normal
+# 		pltA = plt.plot(X1,Y1,color='red',linestyle='-',label = TeamAstring) ##### I should use code below to make it stick to the window
+# 		pltB = plt.plot(X2,Y2,color='blue',linestyle='--',label= TeamBstring)
+# 		plt.legend()
+# 	else:
+# 		# print('jumps')
+# 		# Special case, don't connect the line where there are jumps
+# 		nextStart = int(X1.index[0])
+# 		for jumpStart in jumpStarts:
+# 			curStart = nextStart
+# 			curEnd = int(X1[X1 == jumpStart].index[0])
 
-			pltA = plt.plot(X1.loc[curStart:curEnd],Y1.loc[curStart:curEnd],color='red', linestyle='-') ##### I should use code below to make it stick to the window
-			pltB = plt.plot(X2.loc[curStart:curEnd],Y2.loc[curStart:curEnd],color='blue',linestyle='--')
+# 			pltA = plt.plot(X1.loc[curStart:curEnd],Y1.loc[curStart:curEnd],color='red', linestyle='-') ##### I should use code below to make it stick to the window
+# 			pltB = plt.plot(X2.loc[curStart:curEnd],Y2.loc[curStart:curEnd],color='blue',linestyle='--')
 
-			nextStart = curEnd + 2
-		plt.legend([pltA[0], pltB[0]], [TeamAstring,TeamBstring])
+# 			nextStart = curEnd + 2
+# 		plt.legend([pltA[0], pltB[0]], [TeamAstring,TeamBstring])
 
 # def plotPerPlayerPerTeam(plotThisAttribute,eventExcerptPanda,rowswithinrangePlayerA,rowswithinrangePlayerB,TeamAstring,TeamBstring,rowswithinrangeTeam):
 def plotPerTeamPerEvent(plotThisAttribute,eventExcerptPanda,rowswithinrangeTeam,TeamAstring,TeamBstring):
@@ -216,7 +219,7 @@ def plotPerTeamPerEvent(plotThisAttribute,eventExcerptPanda,rowswithinrangeTeam,
 	valColsB = pd.DataFrame([])
 
 	interpolatedVals = pd.DataFrame([])
-	for ix,event in enumerate(X1.keys()):
+	for ix,event in enumerate(X1.keys()): # per player/ball/groupRow
 		# interpolate the Y1 corresponding to X1
 		curIdx = np.where(pd.notnull(Y1[event]))
 		curX1 = X1[event].iloc[curIdx]

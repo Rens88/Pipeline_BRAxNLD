@@ -8,6 +8,8 @@ from warnings import warn
 from os.path import isfile, join, exists#, isdir, exists
 from os import listdir, startfile
 import pandas as pd
+import time
+
 # import CSVexcerpt
 
 
@@ -23,24 +25,93 @@ if __name__ == '__main__':
 	debugPrint(filename,varToPrint,winopen)
 #########################################################################
 
-def eventAggregate(eventAggFolder,eventAggFname,appendEventAggregate,eventExcerptPanda,skipEventAgg_curFile):
+def process(trialEventsSpatAggExcerpt,exportData,exportDataString,exportFullExplanation,readEventColumns,readAttributeCols,aggregatedOutputFilename,outputDescriptionFilename,rawPanda,eventsPanda,attrPanda,spatAggFolder,spatAggFname,eventAggFolder,eventAggFname,appendEventAggregate,skipEventAgg_curFile,fileIdentifiers,t,attrLabel,outputFolder,debuggingMode):
+	tExportCSV = time.time()
+
+	# Determine standardized column order, with all identifier columns at the start, the remaining columns witll be alphabetical
+	firstColumns = ['TrialBasedIndex','eventTimeIndex','eventTime','Ts','X','Y','TeamID','PlayerID','EventUID']
+	secondColumns = []
+	thirdColumns = []
+	laterColumns = []
+	for ikey in trialEventsSpatAggExcerpt.keys():
+		if ikey in firstColumns:
+			# skip it, as it was already predefined
+			continue
+		if ikey in exportDataString:
+			# File and event identifiers
+			firstColumns.append(ikey)
+		elif ikey in readEventColumns:
+			# Pre existing event columns
+			secondColumns.append(ikey) 				
+		elif ikey in readAttributeCols:
+			# Pre existing attribute columns
+			thirdColumns.append(ikey) 
+		else:
+			laterColumns.append(ikey)
+	columnOrder = firstColumns + secondColumns + thirdColumns + laterColumns
+
+	# Temporally aggregated data
+	skippedData = False
+	newOrAdd(aggregatedOutputFilename,exportDataString,exportData,skippedData)	
+	varDescription(outputDescriptionFilename,exportDataString,exportFullExplanation)
+
+	# Spatially aggregated data
+	spatAggPanda = pd.concat([rawPanda, eventsPanda.loc[:, eventsPanda.columns != 'Ts'], attrPanda.loc[:, attrPanda.columns != 'Ts']], axis=1) # Skip the duplicate 'Ts' columns
+	spatAggPanda.to_csv(spatAggFolder + spatAggFname)
+
+	# Spatially aggregated data per event
+	# (with the specified window), added into one long file combining the whole database.
+	appendEventAggregate = eventAggregate(eventAggFolder,eventAggFname,appendEventAggregate,trialEventsSpatAggExcerpt,skipEventAgg_curFile,fileIdentifiers,columnOrder)
+
+	## Export attribute label for skip skipToDataSetLevel
+	if t[1] == 1: # only after the first file (attribute label won't change in the next iterations of the file by file analysis)
+		attrLabel_asPanda = pd.DataFrame.from_dict([attrLabel],orient='columns')
+		attrLabel_asPanda.to_csv(outputFolder + 'attributeLabel.csv') 
+
+	if debuggingMode:
+		elapsed = str(round(time.time() - tExportCSV, 2))
+		print('Time elapsed during exportCSV: %ss' %elapsed)
+	return appendEventAggregate
+
+######################################################################################################################################################	
+######################################################################################################################################################
+
+def eventAggregate(eventAggFolder,eventAggFname,appendEventAggregate,trialEventsSpatAggExcerpt,skipEventAgg_curFile,fileIdentifiers,columnOrder):
 	if skipEventAgg_curFile:
 		warn('\nDid not export any new eventAggregate data.\nIf you want to add new (or revised) spatial aggregates, change <skipEventAgg> into <False>.\n')
 		return appendEventAggregate
-		
-	if exists(eventAggFolder + eventAggFname) and appendEventAggregate:# and not stat(eventAggFolder + eventAggFname).st_size == 0: 
-		# Store the trial based index
-		eventExcerptPanda.index.name = 'TrialBasedIndex'
-		# Create a new index
-		eventExcerptPanda.reset_index()
-		eventExcerptPanda.index.name = 'DataSetIndex'
 
+	# Give the trial based index a name
+	trialEventsSpatAggExcerpt.index.name = 'TrialBasedIndex'
+	# Create a new index
+	trialEventsSpatAggExcerpt.reset_index(inplace=True)
+	# Give the new index a name
+	trialEventsSpatAggExcerpt.index.name = 'DataSetIndex'
+
+	if exists(eventAggFolder + eventAggFname) and appendEventAggregate:# and not stat(eventAggFolder + eventAggFname).st_size == 0: 
+		# Append to existing file
+
+		# # Store the trial based index
+		# trialEventsSpatAggExcerpt.index.name = 'TrialBasedIndex'
+		# # Create a new index
+		# trialEventsSpatAggExcerpt.reset_index()
+		# trialEventsSpatAggExcerpt.index.name = 'DataSetIndex'
 
 		# Load the existing file
-		existingData = pd.read_csv(eventAggFolder + eventAggFname, low_memory = False, index_col = 'DataSetIndex')
+		datasetEventsSpatAggExcerpt = pd.read_csv(eventAggFolder + eventAggFname, low_memory = False, index_col = 'DataSetIndex')
+
+		# Check if current event already exists in datasetEventsSpatAggExcerpt
+		FileID = "_".join(fileIdentifiers)
+		if any(datasetEventsSpatAggExcerpt['EventUID'].str.contains(FileID)):
+			warn('\nWARNING: current trialEventsSpatAggExcerpt already existed in datasetEventsSpatAggExcerpt.\nFileID = <%s>\nDropped it from the previously stored datasetEventsSpatAggExcerpt.\nIF THIS WAS UNINTENTIONAL, change appendEventAggregate to False (which creates an entirely new datasetEventsSpatAggExcerpt.' %FileID)
+			## Drop previous version of the current trial
+			datasetEventsSpatAggExcerpt.drop(datasetEventsSpatAggExcerpt['EventUID'].str.contains(FileID).index, inplace = True)
+			## Only select trials that do not correspond with the current trial (does the same as dropping it..)
+			# datasetEventsSpatAggExcerpt = datasetEventsSpatAggExcerpt.loc[datasetEventsSpatAggExcerpt['EventUID'].str.contains(FileID) == False]
+
 		# Concat with new eventExcerpt
 		try:
-			combinedData = pd.concat([existingData, eventExcerptPanda], axis = 0,ignore_index = True)
+			combinedData = pd.concat([datasetEventsSpatAggExcerpt, trialEventsSpatAggExcerpt], axis = 0,ignore_index = True)
 			## This should also work:
 			#result = df1.append(dicts, ignore_index=True)
 
@@ -50,64 +121,62 @@ def eventAggregate(eventAggFolder,eventAggFname,appendEventAggregate,eventExcerp
 			print('\n************ WARNING *****************')
 			print('Had to drop a duplicate column. For some reason, one of the columns appeared twice.')
 			print('Original keys existing data:')
-			print(existingData.keys())
+			print(datasetEventsSpatAggExcerpt.keys())
 			print('Length:')
-			print(len(existingData.keys()))
+			print(len(datasetEventsSpatAggExcerpt.keys()))
 			print('Original keys new data:')
-			print(eventExcerptPanda.keys())
+			print(trialEventsSpatAggExcerpt.keys())
 			print('Length:')
-			print(len(eventExcerptPanda.keys()))
+			print(len(trialEventsSpatAggExcerpt.keys()))
 			print('maybe it\'s empty:')
-			print(eventExcerptPanda.empty)
+			print(trialEventsSpatAggExcerpt.empty)
 
-			eventExcerptPanda = eventExcerptPanda.drop_duplicates()
-			# combinedData = pd.concat([existingData, eventExcerptPanda], axis = 0)
-			combinedData = pd.concat([existingData, eventExcerptPanda], axis = 0,ignore_index = True)
-
+			trialEventsSpatAggExcerpt = trialEventsSpatAggExcerpt.drop_duplicates()
+			# combinedData = pd.concat([datasetEventsSpatAggExcerpt, trialEventsSpatAggExcerpt], axis = 0)
+			combinedData = pd.concat([datasetEventsSpatAggExcerpt, trialEventsSpatAggExcerpt], axis = 0,ignore_index = True)
 
 			print('New keys:')
-			print(eventExcerptPanda.keys())
+			print(trialEventsSpatAggExcerpt.keys())
 			print('Length:')
-			print(len(eventExcerptPanda.keys()))
+			print(len(trialEventsSpatAggExcerpt.keys()))
 			print('\n************ WARNING *****************')
 			print('****************************')
 			print('****************************')
 			print('****************************')
 
-
-		# Save as new csv (overwrite)
-		combinedData.to_csv(eventAggFolder + eventAggFname, index_label = 'DataSetIndex')
-		# --> store current label as TrialBasedIndex
-
-		# tmp = np.arange(0,len(eventExcerptPanda['Ts']))
-		# eventExcerptPanda.reindex(tmp)
-
-		# eventExcerptPanda.reset_index()
-
-		# combinedData.to_csv(eventAggFolder + eventAggFname, index_label = 'TrialBasedIndex')
-		# --> create new index that starts at 0 and has unique values for each row in the aggregated file
-
-		# with open(eventAggFolder + eventAggFname,'a') as f:			
-		# 	eventExcerptPanda.to_csv(f,header=False)
-		# # match columns..
-		# # print('!!!!!!!!!!!!')
-		# # pdb.set_trace()
-	elif not eventExcerptPanda.empty:
-		# Store the trial based index
-		eventExcerptPanda.index.name = 'TrialBasedIndex'
-		print(eventExcerptPanda.keys())
-		# Create a new index
-		eventExcerptPanda.reset_index(drop=False)
-		eventExcerptPanda.index.name = 'DataSetIndex'
-		print(eventExcerptPanda.keys())
-		pdb.set_trace()
+	elif not trialEventsSpatAggExcerpt.empty:
+		# # Give the trial based index a name
+		# trialEventsSpatAggExcerpt.index.name = 'TrialBasedIndex'
+		# # Create a new index
+		# trialEventsSpatAggExcerpt.reset_index(inplace=True)
+		# # Give the new index a name
+		# trialEventsSpatAggExcerpt.index.name = 'DataSetIndex'
 		# Create a new file
-		eventExcerptPanda.to_csv(eventAggFolder + eventAggFname, index_label = 'DataSetIndex')
+		# trialEventsSpatAggExcerpt.to_csv(eventAggFolder + eventAggFname, index_label = 'DataSetIndex')
+		combinedData = trialEventsSpatAggExcerpt
+		# From now onward, append to existing eventAgg
 		appendEventAggregate = True
 		
-	else: # apparently eventExcerptPanda was empty..
+	else: # apparently trialEventsSpatAggExcerpt was empty..
 		warn('\nWARNING: Targetevents were empty. \nNo Data exported.\n')
-	
+		return appendEventAggregate
+
+
+	# double check if all columns exist
+	for ikey in combinedData.keys():
+		if not ikey in columnOrder:
+			# ikey wasnt in columnOrder, add it to the end
+			warn('\nWARNING: <%s> existed in the data, but was not given in columnOrder.\nTherefore, it was added to the end of columnOrder.' %ikey)
+			columnOrder = columnOrder + ikey
+	for ikey in columnOrder:
+		if not ikey in combinedData:
+			# ikey wasnt in columnOrder, remove it
+			warn('\nWARNING: <%s> existed in the columnOrder, but not in the data.\nTherefore, it was omitted from the columnOrder.' %ikey)
+			columnOrder.remove(ikey)
+
+	# Save as new csv (overwrite)
+	combinedData.to_csv(eventAggFolder + eventAggFname, index_label = 'DataSetIndex', columns = columnOrder)	
+
 	return appendEventAggregate
 
 def debugPrint(filename,varToPrint,winopen):

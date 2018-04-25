@@ -72,5 +72,8 @@ def addRandomEvents(rawPanda,targetEvents,TeamAstring,TeamBstring):
 			randomEvents.append((rawPanda['Ts'][idxEqual],teamStrings[randomTeam]))	
 
 	targetEvents = {**targetEvents,'Random':randomEvents}
+	# If an error occurs here, then this may be a problem with Linux.
+	# Replace with: (and an if statement to check if targetEvents isempty)
+	# targetEvents = targetEvents.update({'Random':randomEvents})
 
 	return targetEvents

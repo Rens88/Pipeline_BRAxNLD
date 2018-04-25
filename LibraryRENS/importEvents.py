@@ -63,13 +63,18 @@ def process(eventsPanda,TeamAstring,TeamBstring):
 
 def full(eventsPanda,targetEvents):
 	targetEvents = {**targetEvents,'Full':[]}
+	# If an error occurs here, then this may be a problem with Linux.
+	# Replace with: (and an if statement to check if targetEvents isempty)
+	# targetEvents = targetEvents.update({'Full':[]})
 	TsS = eventsPanda['Ts']
 	targetEvents['Full'] = [(float(max(TsS)),None,float(min(TsS)))]
 	return targetEvents
 
 def goals(eventsPanda,TeamAstring,TeamBstring,targetEvents):
 	targetEvents = {**targetEvents,'Goal':[]}
-
+	# If an error occurs here, then this may be a problem with Linux.
+	# Replace with: (and an if statement to check if targetEvents isempty)
+	# targetEvents = targetEvents.update({'Goal':[]})
 	if not 'Goal' in eventsPanda.keys():
 		# No Goal information, so return immediately
 		return targetEvents
@@ -100,7 +105,9 @@ def goals(eventsPanda,TeamAstring,TeamBstring,targetEvents):
 
 def runs(eventsPanda,TeamAstring,TeamBstring,targetEvents):
 	targetEvents = {**targetEvents,'Run':[]} 
-
+	# If an error occurs here, then this may be a problem with Linux.
+	# Replace with: (and an if statement to check if targetEvents isempty)
+	# targetEvents = targetEvents.update({'Run':[]})
 	if not 'Run' in eventsPanda.keys():
 		# No Run information, so return immediately
 		return targetEvents
@@ -135,7 +142,9 @@ def runs(eventsPanda,TeamAstring,TeamBstring,targetEvents):
 
 def possession(eventsPanda,TeamAstring,TeamBstring,targetEvents):
 	targetEvents = {**targetEvents,'Possession':[],'Turnovers':[]} 
-
+	# If an error occurs here, then this may be a problem with Linux.
+	# Replace with: (and an if statement to check if targetEvents isempty)
+	# targetEvents = targetEvents.update({'Possession':[],'Turnovers':[]})
 	if not 'Possession/Turnover' in eventsPanda.keys():
 		# No Possession/Turnover information, so return immediately
 		return targetEvents
@@ -228,7 +237,9 @@ def possession(eventsPanda,TeamAstring,TeamBstring,targetEvents):
 
 def passes(eventsPanda,TeamAstring,TeamBstring,targetEvents):
 	targetEvents = {**targetEvents,'Passes':[]}
-
+	# If an error occurs here, then this may be a problem with Linux.
+	# Replace with: (and an if statement to check if targetEvents isempty)
+	# targetEvents = targetEvents.update({'Passes':[]})
 	if not 'Pass' in eventsPanda.keys():
 		# No Pass information, so return immediately
 		return targetEvents

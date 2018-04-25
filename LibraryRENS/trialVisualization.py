@@ -1,11 +1,4 @@
 # 09-02-2018 Rens Meerhoff
-# In process. Continue with PairwisePerTeam2() 
-# --> which will be edited to automatically identify whether a variable is a team or individual variable.
-#
-# 30-11-2017 Rens Meerhoff
-# Function to plot timeseries variables.
-#
-# vNorm => normalized velocity
 
 import pylab
 import pdb; #pdb.set_trace()
@@ -30,26 +23,18 @@ if __name__ == '__main__':
 	# The plot new style
 	process(plotTheseAttributes,aggregateLevel,rawDict,attributeDict,attributeLabel,tmpFigFolder,fname,TeamAstring,TeamBstring)
 
-def process(plotTheseAttributes,aggregateLevel,eventExcerptPanda,attributeLabel,tmpFigFolder,fname,TeamAstring,TeamBstring,debuggingMode):
-	# process(plotTheseAttributes,aggregateLevel,targetEvents,rawDict,attributeDict,attributeLabel,tmpFigFolder,fname,TeamAstring,TeamBstring,debuggingMode):
+def process(plotTheseAttributes,aggregateLevel,eventExcerptPanda,attributeLabel,tmpFigFolder,fname,TeamAstring,TeamBstring,debuggingMode,dataType,fieldDimensions):
 	
-	# Idea: add overview of positions on the court
 	tPlot = time.time()	# do stuff
 	
 	xLabel = attributeLabel['Ts']
-	
-	# # Put TeamID and PlayerID in attributeDict for pivoting
-	# if 'PlayerID' not in attributeDict.keys():
-	# 	attributeDict = pd.concat([attributeDict, rawDict['PlayerID']], axis = 1) # Skip the duplicate 'Ts' columns
-	# if 'TeamID' not in attributeDict.keys():
-	# 	attributeDict = pd.concat([attributeDict, rawDict['TeamID']], axis = 1) # Skip the duplicate 'Ts' columns		
-	# attributeDict.drop('Ts', axis = 1, inplace = True)
 	
 	if not 'temporalAggregate' in eventExcerptPanda.keys():
 		# No events detected
 		warn('\nWARNING: No temporalAggregate detected. \nCouldnt plot any data.\nUse <Random> to create random events, or <full> to plot the whole file.\nOr change <skipEventAgg> to True to run it at the trial level.')
 		return
-	# for idx,currentEvent in enumerate(targetEvents[aggregateLevel[0]]):
+
+	# For every unique event
 	for i in pd.unique(eventExcerptPanda['temporalAggregate']):
 
 		# Find rows
@@ -64,6 +49,7 @@ def process(plotTheseAttributes,aggregateLevel,eventExcerptPanda,attributeLabel,
 		# A bit of an elaborate way of finding the rows, but that's a leftover of converting an old script that was based on rawDict and attributeDict
 		currentEvent = eventExcerptPanda.loc[eventExcerptPanda['temporalAggregate'] == i]
 		currentEvent = currentEvent.reset_index()
+		# currentEvent.set_index('eventTimeIndex', drop=True, append=False, inplace=True, verify_integrity=False)
 
 		tmp = currentEvent.loc[currentEvent['PlayerID'] == 'groupRow']
 		rowswithinrangeTeam = tmp.index
@@ -110,10 +96,9 @@ def process(plotTheseAttributes,aggregateLevel,eventExcerptPanda,attributeLabel,
 			if debuggingMode:
 				print('EXPORTED: <%s>' %outputFilename)
 			plt.close()
-
 		# Plot a snapshot of the positions
 		outputFilename = tmpFigFolder + fname + '_Snapshot_' + fileAggregateID + '.jpg'
-		plotSnapshot(outputFilename,currentEvent,rowswithinrangePlayerA,rowswithinrangePlayerB,teamStrings,fileAggregateID)
+		plotSnapshot(outputFilename,currentEvent,rowswithinrangePlayerA,rowswithinrangePlayerB,teamStrings,fileAggregateID,dataType,fieldDimensions)
 		if debuggingMode:
 			print('EXPORTED: <%s>' %outputFilename)
 
@@ -123,7 +108,7 @@ def process(plotTheseAttributes,aggregateLevel,eventExcerptPanda,attributeLabel,
 		elapsed = str(round(time.time() - tPlot, 2))
 		print('Time elapsed during plotTimeseries: %ss' %elapsed)
 
-def	plotSnapshot(outputFilename,currentEvent,rowswithinrangePlayerA,rowswithinrangePlayerB,teamStrings,fileAggregateID):
+def	plotSnapshot(outputFilename,currentEvent,rowswithinrangePlayerA,rowswithinrangePlayerB,teamStrings,fileAggregateID,dataType,fieldDimensions):
 	
 	# # Use this to only plot the last frame
 	# tmp = currentEvent.loc[currentEvent['TeamID'] == TeamAstring]#.index
@@ -140,21 +125,55 @@ def	plotSnapshot(outputFilename,currentEvent,rowswithinrangePlayerA,rowswithinra
 	plt.xlabel('X-position (m)')
 	plt.ylabel('Y-position (m)')
 
-	# Field parameters
-	# For FDP, use these
-	FDP = False
-	if FDP == True:
-		x0 = 0
-		x1 = -50 
-		x2 = 50
+	borderColor = 'k'
 
-		y0 = 0.1
-		y1 = -32.5
-		y2 = 32.7
-		# Plot the field
-		plt.plot([x1, x2, x2, x1, x1], [y1, y1, y2, y2, y1], color='k', linestyle='-', linewidth=1) # Field outline
-		plt.plot([x0, x0],[y1, y2], color='k', linestyle='-', linewidth=1) # middle line
-		MidCircle = plt.Circle((x0,y0), 9.15, color='k', fill=False, linewidth=1) # middle circle
+	if not fieldDimensions['foundIt']:
+		borderColor = 'r'
+		# Come up with the best values possible
+		if dataType == 'FDP':
+			fieldDimensions.update({'X_bot_left': -50,'X_top_left': -50,'X_bot_right': 50,'X_top_right': 50,'Y_bot_left': -32.5,'Y_bot_right': -32.5,'Y_top_left': 32.7,'Y_top_right': 32.7}) # Values are given in meters
+			warn('\nWARNING: no field dimensions found. If plot looks weird, include field dimensions (see importFieldDimensions.py).\nPlotted the borders in red to indicate they are estimations.')
+		elif dataType == 'NP':
+			# create data based field parameters...
+			fieldDimensions.update({'X_bot_left': min(currentEvent['X']),'X_top_left': min(currentEvent['X']),'X_bot_right': max(currentEvent['X']),'X_top_right': max(currentEvent['X']),'Y_bot_left': min(currentEvent['Y']),'Y_bot_right': min(currentEvent['Y']),'Y_top_left': max(currentEvent['Y']),'Y_top_right': max(currentEvent['Y'])}) # Values are given in meters			
+			warn('\nWARNING: no field dimensions found. If plot looks weird, include field dimensions (see importFieldDimensions.py).\nPlotted the borders in red to indicate they are estimations.')
+		else:
+			fieldDimensions.update({'X_bot_left': -50,'X_top_left': -50,'X_bot_right': 50,'X_top_right': 50,'Y_bot_left': -32.5,'Y_bot_right': -32.5,'Y_top_left': 32.7,'Y_top_right': 32.7}) # Values are given in meters
+			warn('\nWARNING: no field dimensions found. If plot looks weird, include field dimensions (see importFieldDimensions.py).\nPlotted the borders in red to indicate they are estimations.')
+
+	XBL = fieldDimensions['X_bot_left']
+	XBR = fieldDimensions['X_bot_right']
+	XTR = fieldDimensions['X_top_right']
+	XTL = fieldDimensions['X_top_left']
+
+	YBL = fieldDimensions['Y_bot_left']
+	YBR = fieldDimensions['Y_bot_right']
+	YTR = fieldDimensions['Y_top_right']
+	YTL = fieldDimensions['Y_top_left']
+
+	X_mid_bot = ( (XBR - XBL) / 2 ) + XBL
+	X_mid_top = ( (XTR - XTL) / 2 ) + XTL
+	
+	Y_mid_bot = ( (YBR - YBL) / 2 ) + YBL
+	Y_mid_top = ( (YTR - YTL) / 2 ) + YTL
+
+	X_mid_mid = ( (X_mid_top - X_mid_bot) / 2 ) + X_mid_bot
+	Y_mid_mid = ( (Y_mid_top - Y_mid_bot) / 2 ) + Y_mid_bot
+
+	widthOfField = np.sqrt( (XBR - XTR)**2 + (YBR - YTR)**2 )
+	lengthOfField = np.sqrt( (XBR - XBL)**2 + (YBR - YBL)**2 )
+	MidCircleRadius = lengthOfField * 9.15/100
+
+	# Plot the basic field
+	plt.plot([XBL, XBR, XTR, XTL, XBL], [YBL, YBR, YTR, YTL, YBL], color=borderColor, linestyle='-', linewidth=1) # Field outline
+	plt.plot([X_mid_bot, X_mid_top],[Y_mid_bot, Y_mid_top], color=borderColor, linestyle='-', linewidth=1) # middle line
+	plt.plot(X_mid_mid,Y_mid_mid,".", color = borderColor, markersize=3) # centre spot
+	MidCircle = plt.Circle((X_mid_mid,Y_mid_mid), MidCircleRadius, color=borderColor, fill=False, linewidth=1) # middle circle
+	ax.add_artist(MidCircle)
+
+	# For FDP, plot the full field (could be rotated as well?)
+	if dataType == 'FDP':
+		# Plot the whole field (including penalty box etc.)
 		plt.plot([x1,x1+16.5,x1+16.5,x1], [y0-20,y0-20,y0+20,y0+20], color='k', linestyle='-', linewidth=1) # penalty box
 		plt.plot([x2,x2-16.5,x2-16.5,x2], [y0-20,y0-20,y0+20,y0+20], color='k', linestyle='-', linewidth=1) # penalty box
 		plt.plot([x1+11,x2-11],[y0,y0],".", color = 'k', markersize=2) # penalty mark
@@ -164,23 +183,7 @@ def	plotSnapshot(outputFilename,currentEvent,rowswithinrangePlayerA,rowswithinra
 		ax.add_patch(patches.Arc((x2-11,y0), 9.15*2,9.15*2, 0,127,233)) # stupid semi-circle
 		plt.plot([x1,x1-.5,x1-.5,x1], [y0-3.62,y0-3.62,y0+3.62,y0+3.62], color='k', linestyle='-', linewidth=1) # goal
 		plt.plot([x2,x2+.5,x2+.5,x2], [y0-3.62,y0-3.62,y0+3.62,y0+3.62], color='k', linestyle='-', linewidth=1) # goal
-		ax.add_artist(MidCircle)
-		plt.plot(x0,y0,".", color = 'k', markersize=3) # centre spot
 
-	# Dirty way to estimate outline
-	x1 = min(currentEvent['X'])
-	x2 = max(currentEvent['X'])
-	x0 = (x2 - x1) / 2 + x1
-	y1 = min(currentEvent['Y'])
-	y2 = max(currentEvent['Y'])
-	y0 = (y2 - y1) / 2 + y1
-
-	x1,y2 = 145467.5435,	11546224.98
-	x2,y2 = 145492.8546,	11546267.51
-
-	plt.plot([x1, x2, x2, x1, x1], [y1, y1, y2, y2, y1], color='k', linestyle='-', linewidth=1) # Field outline
-
-	warn('\nWARNING: Using an estimate as the field dimensions.\n\nUPDATE REQUIRED.\n************\n************\n************\n')
 	plt.title(fileAggregateID)
 	plt.savefig(outputFilename, figsize=(1,1), dpi = 300, bbox_inches='tight')
 	# IDEA: could plot dotted line as representing speed
@@ -289,11 +292,24 @@ def plotPerPlayerPerTeam(plotThisAttribute,eventExcerptPanda,rowswithinrangePlay
 	x_attribute = 'Ts'
 	if 'x_value' in keyword_param:
 		x_attribute = keyword_param['x_value']
-			
-	# draw_field = False
-	# if 'draw_field' in keyword_param:
-	# 	draw_field = keyword_param['draw_field']
-	# Team_AX = dfA.pivot(columns='Ts', values='X')
+	
+	## made a start with plotting dotted line as representing velocity
+	# timeWithinRange = ( min(eventExcerptPanda['Ts'][rowswithinrangePlayerA]),max(eventExcerptPanda['Ts'][rowswithinrangePlayerA]) )
+	
+	# # select 0.5s periods
+	# # take the min value
+	# tmin = min(eventExcerptPanda['Ts'][rowswithinrangePlayerA])
+	# tmax = max(eventExcerptPanda['Ts'][rowswithinrangePlayerA])
+	# tnow = tmin
+	# while tmin < tmax:
+	# 	tnow = tnow + 0.5 # results in a sampling rate of about 0.5s
+
+	# # find the first value larger than min + 0.5
+	# # until you reach the max value
+	# print(timeWithinRange)
+	# rowswithinrangePlayerA_sparse 
+	# Y1_sparse
+
 	Y1 = eventExcerptPanda.loc[rowswithinrangePlayerA].pivot(columns='PlayerID',values=plotThisAttribute)
 	Y2 = eventExcerptPanda.loc[rowswithinrangePlayerB].pivot(columns='PlayerID',values=plotThisAttribute)
 	X1 = eventExcerptPanda.loc[rowswithinrangePlayerA].pivot(columns='PlayerID',values=x_attribute)
@@ -341,20 +357,29 @@ def plotPerPlayerPerTeam(plotThisAttribute,eventExcerptPanda,rowswithinrangePlay
 
 	for ix,player in enumerate(X1.keys()):
 		curColor = sorted_names[colorPickerA[ix]]
-		pltA = plt.plot(X1[player],Y1[player],color=curColor,linestyle='-') 
-		if x_attribute == 'X':
+		if x_attribute == 'X': # cheeky way to find plotSnapshot
 			# Highlight the last point as the current position
 			# print(X1[player].notnull()[::-1].idxmax())
 			# print(X1[player][X1[player] == max(X1[player])].index)
+			plt.plot(X1[player],Y1[player],'s',markersize = 2,color=curColor) 
+
 			tmp = X1[player].notnull()[::-1].idxmax()
-			plt.plot(X1[player].loc[tmp],Y1[player].loc[tmp],'s',color=curColor) 
+			pltA = plt.plot(X1[player].loc[tmp],Y1[player].loc[tmp],'s',color=curColor) 
+		else:
+			pltA = plt.plot(X1[player],Y1[player],color=curColor,linestyle='-') 
+
 
 	for ix,player in enumerate(X2.keys()):
 		curColor = sorted_names[colorPickerB[ix]]
-		pltB = plt.plot(X2[player],Y2[player],color=curColor,linestyle='-')
 		if x_attribute == 'X':
 			# Highlight the last point as the current position
+			# tmp = X2[player].notnull()[::-1].idxmax()
+			# tmp = 
+			plt.plot(X2[player],Y2[player],'o', markersize = 2, color=curColor)
+
 			tmp = X2[player].notnull()[::-1].idxmax()
-			plt.plot(X2[player].loc[tmp],Y2[player].loc[tmp],'o',color=curColor) 
+			pltB = plt.plot(X2[player].loc[tmp],Y2[player].loc[tmp],'o',color=curColor) 
+		else:
+			pltB = plt.plot(X2[player],Y2[player],color=curColor,linestyle='--')
 
 	plt.legend([pltA[0], pltB[0]], [TeamAstring,TeamBstring])	

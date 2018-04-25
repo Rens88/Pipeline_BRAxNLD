@@ -41,6 +41,10 @@ import safetyWarning
 import countEvents2
 from scipy import stats
 import scipy
+import math
+from scipy.interpolate import InterpolatedUnivariateSpline, interp1d
+import matplotlib.pyplot as plt
+
 
 if __name__ == '__main__':
 
@@ -53,7 +57,10 @@ def process(targetEvents,aggregateLevel,rawDict,attributeDict,exportData,exportD
 	tTempAgg = time.time()
 	FileID = "_".join(fileIdentifiers)
 
-	## Specify which aggregates are taken. Could easily lift this out of the function and use it as user input..
+	## user inputs, could easily lift this out of function
+	freqInterpolatedData = 10 # in Hz
+
+	## Specify which aggregates are taken.
 	aggregationOrder = ['perTimePerPlayer'] 
 
 	populations = ['allTeam','refTeam','othTeam']
@@ -66,6 +73,8 @@ def process(targetEvents,aggregateLevel,rawDict,attributeDict,exportData,exportD
 	# aggrMeth_playerLevel = ['avg', 'std', 'sumVal', 'minVal', 'maxVal', 'med', 'sem', 'kur', 'ske']
 	# aggrMeth_popLevel = ['avg', 'std', 'sumVal', 'minVal', 'maxVal', 'med', 'sem', 'kur', 'ske']
 
+	
+	# Create an empty dataFrame where the eventExcerpt will be stored.
 	eventExcerptPanda = pd.DataFrame()
 	# To which UID and refTeam should be added
 	if aggregateLevel[0] == 'None':
@@ -79,7 +88,7 @@ def process(targetEvents,aggregateLevel,rawDict,attributeDict,exportData,exportD
 	# The export matrix includes a range of outcome measures that don't change per event (these are already in <exportData>)
 	# Most outcome variables will be added by simply going through all the spatially aggregated variables
 	# Some other outcome measures describe the current event and can also be created here:
-	exportMatrix = []
+	exportMatrix = [] # in which you can combine the exported data of each event in this trial / file
 	fileIdentifiers = exportDataString.copy()
 	exportDataString.append('temporalAggregate') # output string that identifies the current event
 	exportFullExplanation.append('Level of temporal aggregation, based on <<%s>> event and counted chronologically' %aggregateLevel[0])
@@ -152,7 +161,7 @@ def process(targetEvents,aggregateLevel,rawDict,attributeDict,exportData,exportD
 		exportCurrentData.append(aggregateString) # NB: String and explanation are defined before the for loop
 		
 		## Create unique event identifier 
-		EventUID = FileID + aggregateString
+		EventUID = FileID + '_' + aggregateString
 		exportCurrentData.append(EventUID) # NB: String and explanation are defined before the for loop
 
 		## Assign refTeam
@@ -217,10 +226,26 @@ def process(targetEvents,aggregateLevel,rawDict,attributeDict,exportData,exportD
 		# curEventExcerptPanda = curEventExcerptPanda.set_index('eventTimeIndex', drop=True, append=False, inplace=False, verify_integrity=False)
 		# # !!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
+		# Skip this step for Full?
+		# For everything with a t_end --> add normalized time?
+		# Interpolate data to allow for direct comparisons between events (also at dataset level)
+		interpolatedCurEventExcerptPanda = \
+		interpolateEventExcerpt(curEventExcerptPanda,freqInterpolatedData,tStart,tEnd,aggregateLevel)
+		
+		interpolatedCurEventExcerptPanda.to_csv('C:\\Users\\rensm\\Documents\\SURFDRIVE\\Repositories\\NP repository\\test.csv')
+		# store interpolatedVals instead of curEventExcerptPanda..
+		curEventExcerptPanda.to_csv('C:\\Users\\rensm\\Documents\\SURFDRIVE\\Repositories\\NP repository\\test2.csv')
+
+
+		# Create a panda where all events are stored (before temporal aggregation)
+		eventExcerptPanda = eventExcerptPanda.append(interpolatedCurEventExcerptPanda)
+		print('Im heeeeeeeeeeeere')
+		pdb.set_trace()
+
 		#######################
 		## End of prepration ##
 		#######################
-
+				
 		###################################
 		## Start of temporal aggregation ##
 		###################################
@@ -303,47 +328,194 @@ def process(targetEvents,aggregateLevel,rawDict,attributeDict,exportData,exportD
 					exportCurrentData, overallString, overallExplanation = \
 					aggregateTemporallyINCEPTION(population,aggregationOrder,aggrMeth_popLevel,aggrMeth_playerLevel,curEventExcerptPanda,key,refTeam,othTeam,attrLabel,eventDescrString, exportCurrentData, overallString, overallExplanation)
 
-		# Create a panda where all events are stored (before temporal aggregation)
-		eventExcerptPanda = eventExcerptPanda.append(curEventExcerptPanda)
+
+
 		# Create a matrix where all temporally aggregated data of each event are stored
 		exportMatrix.append(exportCurrentData)
-	# pdb.set_trace()
 
-	# ######################
-	# ###################### WORK IN PROGRESS
-	# 	# aggregateLevel[0] --> event ID
-	# # aggregateLevel[1] --> window (s)
-	# # aggregateLevel[2] --> lag (s)
-	# # Interpolate curEventExcerptPanda to have the same times for every event.
-	# ## Base this on the window (not on min max)
-	# X_int = np.arange(round(min(eventExcerptPanda['eventTime']),1),max(eventExcerptPanda['eventTime'] +0.1),0.1)
-	# # 
-	# # Do this for every existing key
-	# order = 3 # cubic spline
-	# s = InterpolatedUnivariateSpline(curX1, curY1, k=order)
-	# Y1_int = s(X_int)
-	# # Maybe take the first occurring time for this event as the start time to avoid interpolating beyond the data.
-	# # replace with nans until the first occurring time?
-	# # first occurring time:
-	# firstIdx = np.where(abs(X_int - min(curX1)) == min(abs(X_int - min(curX1))))
-	# # Replace any interpolated values from before the first time occurred (to avoid weird interpolations)
-	# replaceThese = np.where(X_int < X_int[firstIdx])
-	# Y1_int[replaceThese] = np.nan
-
-	# ######################
-	# ######################
-	
 	if debuggingMode:
 		elapsed = str(round(time.time() - tTempAgg, 2))
 		print('Time elapsed during temporalAggregation: %ss' %elapsed)
 	return exportMatrix,overallString,overallExplanation,eventExcerptPanda,attrLabel
 
-def resampleData(x,y,xnew,order): # order 1) = linear, 2) = quadratic, 3) = cubic
-	f = InterpolatedUnivariateSpline(x, y, k=order)
-	ynew = f(xnew)   # use interpolation function returned by `interp1d`
-	# limit ynew to values around original x
-	# next(x[0] for x in enumerate(L) if x[1] > 0.7)
-	return[ynew]
+# def resampleData(x,y,xnew,order): # order 1) = linear, 2) = quadratic, 3) = cubic
+# 	f = InterpolatedUnivariateSpline(x, y, k=order)
+# 	f = interp1d(x, y)
+
+# 	ynew = f(xnew)   # use interpolation function returned by `interp1d`
+# 	# limit ynew to values around original x
+# 	# next(x[0] for x in enumerate(L) if x[1] > 0.7)
+# 	return[ynew]
+
+def interpolateEventExcerpt(curEventExcerptPanda,freqInterpolatedData,tStart,tEnd,aggregateLevel):
+	#####################################
+	## Create a version of curEventExcerptPanda with interpolated values (to have the same EXACT timestamps for all events)
+	# replace 'eventTimeIndex'
+
+	## INCLUDE it in the key level loop. Separately add all columns that are not in attributDictCols (which may not need to be interpolated??)
+	# eventLevelInterpolation (for the purpose of aligning the various timeseries --> averaging, plotting, etc.)
+	
+	everyPlayerIDs = pd.unique(curEventExcerptPanda['PlayerID'])	
+	# Create the time (X) that can be used for interpolation
+	###### this one worked
+	# tmp = np.arange(tStart,tEnd + 1/freqInterpolatedData, 1/freqInterpolatedData) # referring to eventTime
+	tStartRound = np.round(tStart,math.ceil(math.log(freqInterpolatedData,10)))
+	tEndRound = np.round(tEnd,math.ceil(math.log(freqInterpolatedData,10)))
+	tmp = np.arange(tStartRound,tEndRound + 1/freqInterpolatedData, 1/freqInterpolatedData) # referring to eventTime
+
+	X_int = np.round(tmp,math.ceil(math.log(freqInterpolatedData,10))) # automatically rounds it to the required number of significant numbers (decimal points) for the given sampling frequency (to avoid '0' being stored as 1.474746 E16 AND 1.374750987 E16)
+	
+	# Create an array that is empty and has the same size as the interpoloated values will have.
+	newIndex = np.arange(0,len(everyPlayerIDs) * len(X_int))
+	# interpolatedVals = pd.DataFrame(np.nan, index=newIndex, columns=[key])			
+	interpolatedVals = pd.DataFrame(index=newIndex)			
+
+	## admittedly not the prettiest way....
+	# It requires a for loop per key, then a for loop per unique playerID....
+	#
+	# Interpolate each key separately
+	for key in curEventExcerptPanda.keys():
+	# Only interpolate numerical keys.
+	# The other keys should be treated differently
+	# Do the interpolation separately for every player
+
+		# print('key = <%s>, dtype = <%s>' %(key,type(curEventExcerptPanda[key].iloc[0])))
+		isString = [str_ix for str_ix,q in enumerate(curEventExcerptPanda[key]) if type(q) == str] 					# Search for rows where the cell has content
+		# isString = [q.index for q in curEventExcerptPanda[key] if type(q) == str]
+		if key == 'eventTimeIndex'or key == 'Ts' or key == 'eventTime' :
+			continue
+			##########
+			# why does it give this error 'value below interpolation range??'
+
+		mustBeTeamLevelKey = False
+		for nthPlayer, everyPlayerID in enumerate(everyPlayerIDs):
+
+			# Prepare indices to Store it in the panda
+			start_ix = (1 + nthPlayer) * len(X_int) - len(X_int) 
+			end_ix = (1 + nthPlayer) * len(X_int) -1
+			interpolatedVals.loc[start_ix : end_ix,'Ts'] = X_int # The same every time, only needs to be done once. Could use it as a check though, as they should always be the same
+			interpolatedVals.loc[start_ix : end_ix,'EventTime'] = X_int - X_int[-1] # The same every time, only needs to be done once. Could use it as a check though, as they should always be the same
+			interpolatedVals.loc[start_ix : end_ix,'EventIndex'] = np.arange(-len(X_int)+1,0+1) # The same every time, only needs to be done once. Could use it as a check though, as they should always be the same
+			# Select the current rows (should capture one timeseries)
+			# curRows = curEventExcerptPanda.loc[curEventExcerptPanda['PlayerID'] == everyPlayerID]['Ts'].index
+			curRows = curEventExcerptPanda.loc[curEventExcerptPanda['PlayerID'] == everyPlayerID].index
+
+			# Take only the indices that are notnull
+			curIdx = curRows[np.where(pd.notnull(curEventExcerptPanda.loc[curRows][key]))]
+
+			if len(curIdx) == 0:
+				# Do nothing for this player
+				# print('no data')
+				mustBeTeamLevelKey = True
+				continue
+
+			curX = curEventExcerptPanda.loc[curIdx]['Ts']
+			curY = curEventExcerptPanda.loc[curIdx][key]
+
+			if any(isString):
+				# If they current key contains a string, it's not possible to interpolate.
+				# In some cases, it concerns:
+				# - event identifiers
+				# - player level identifiers
+				# - OR string events
+				# Event identifiers and player level identifiers can simply be copied:
+				if all(curEventExcerptPanda[key] == curEventExcerptPanda[key].iloc[0]):
+					# If they're all the same (i.e., event identifiers)
+					interpolatedVals.loc[:,key] = curEventExcerptPanda[key].iloc[0]
+					if not key in ['temporalAggregate','RefTeam','EventUID','School','Class','Group', 'Test', 'Exp']:
+						warn('\nWARNING: Key <%s> was identified as an event identifier.\nTherefore, no data was interpolated, instead, the same value was copied for all cells.\n' %key)
+					break
+				elif all(curY == curY.iloc[0]) and not mustBeTeamLevelKey:
+					# If they're all the same for the current player (player level identifier)
+					interpolatedVals.loc[start_ix : end_ix,key] = curY.iloc[0]
+					if not key in ['TeamID','PlayerID']:
+						warn('\nWARNING: Key <%s> was identified as a player level identifier.\nTherefore, no data was interpolated, instead, the same value was copied for all cells of the current player.\n' %key)
+					continue
+				else:
+					if not key in ['Run','Possession/Turnover','Pass']:
+						warn('\nWARNING: Key <%s> was identified as a string event.\nTherefore, no data was interpolated, instead, the same value was copied to the cell with the interpolated time index closest to the original time index.\n' %key)
+
+					# Check whether there are less cells with content than cells in X_int AND the original X
+					if len(isString) >= len(X_int) or len(isString) >= len(curRows):
+						warn('\nWARNING: Identified key <%s> as a column with string events.\n(String events have a string in the row where the event happens, the remaining rows are empty.)\nBut this seems unlikely, as there were more events than time indices.\nThis may result in an error, is there are no cells to interpolate the string events to (they\'re currently transferred to the interpolated time value that lies closest to the original time value, i.e., 1 on 1)\n' %key)
+						# (if there are more, it can't have been a string event)
+	
+					for stringEvent in isString:
+						timeOfEvent = curEventExcerptPanda['Ts'].iloc[stringEvent]
+						# Find time in X_int that is closest to timeOfEvent
+						# nearestTimeOfEvent = [abs(X_int - timeOfEvent) == min(abs(X_int - timeOfEvent))].index
+						nearestTimeOfEvent = np.where(abs(X_int - timeOfEvent) == min(abs(X_int - timeOfEvent)))
+						# Currently, it's possible that a time index is chosen that has no corresponding positional data. (it may be the one frame before, or the one frame after)
+
+						# Put the stringEvent there, and leave the rest as an empty string i.e., '' 
+						ix_event = start_ix + nearestTimeOfEvent[0]
+						interpolatedVals.loc[ix_event,key] = curEventExcerptPanda[key].iloc[stringEvent]
+
+					continue
+
+
+			# Check if 'jumps' exist, because it should crop the window selected
+			# A jump is based on the median of the framerates per frame. To be presize, a deviation 1.5 times the median
+			t0 = curX[:-1].reset_index(level=None, drop=False, inplace=False)
+			t1 = curX[1:].reset_index(level=None, drop=False, inplace=False)
+
+			dt = t1-t0
+			jumps = dt['Ts'][dt['Ts']>(np.median(dt['Ts'])*1.5)]
+
+			if jumps.empty:
+				# No jumps
+				## Using interp1d here to avoid (for example) negative values where they can't exist.
+				## Spline interpolation can be used on the raw data. Not on the aggregated data.
+				s = interp1d(curX, curY)		
+				
+				# try:
+				Y_int = s(X_int)				
+				# except:
+				# 	print(min(curX[1:-1]),min(X_int))		
+				# 	print(max(curX[1:-1]),max(X_int))		
+				# 	print('---')
+				# 	print(curX)
+				# 	print('----')
+				# 	print(X_int)
+				# 	pdb.set_trace()
+				# 104.11 96.8
+				# 111.81 111.8
+
+				# 70.41 70.3
+				# 85.32 85.3
+			else:
+								
+				# Adjust for jumps in time.
+				jumpStarts = t0['Ts'][dt['Ts']>(np.median(dt['Ts'])*1.5)]
+				jumpEnds = t1['Ts'][dt['Ts']>(np.median(dt['Ts'])*1.5)]
+				endOfLastJump = jumpEnds.iloc[-1]
+
+				curX_cropped = curX[curX >= endOfLastJump]
+				curY_cropped = curY[curX >= endOfLastJump]
+								
+				# It excludes the X_int preceding endOfLastJump
+				X_int_cropped = X_int[X_int >= endOfLastJump]
+				### This also works; The last value in tmp is the X_int value prior to where the data restarts (BUT NOT WITH interp1d)
+				# # Find all times in X_int before endOfLastJump
+				# tmp = [i for i, x in enumerate(X_int) if x < endOfLastJump]
+				# X_int_cropped = X_int[tmp[-1]:]
+				# start_ix = start_ix + tmp[-1] +1
+
+				windowWithoutJumps = max(curX_cropped) - endOfLastJump
+				warn('\nWARNING: Could not use the whole window leading up to this event due to temporal jumps in the data.\nThe intended window was <%ss>, whereas the window from the last jump until the event was <%ss>.\n\n**********\n**********\n**********\nSTILL TO DO: Write an exception for <full> and for other events with a start AND an end.\n**********\n**********\n**********\n' %(aggregateLevel[1],windowWithoutJumps))
+
+				## Using interp1d here to avoid (for example) negative values where they can't exist.
+				## Spline interpolation can be used on the raw data. Not on the aggregated data.
+				s = interp1d(curX_cropped, curY_cropped)
+				Y_int = s(X_int_cropped)
+								
+				tmp = next(i for i, x in enumerate(X_int) if x > endOfLastJump)
+				start_ix = start_ix + tmp
+
+			# Store in panda
+			interpolatedVals.loc[start_ix : end_ix,key] = Y_int
+
+	return interpolatedVals
 
 def aggregateTemporallyINCEPTION(population,aggregationOrder,aggrMeth_popLevel,aggrMeth_playerLevel,curEventExcerptPanda,key,refTeam,othTeam,attrLabel,eventDescrString, exportCurrentData, overallString, overallExplanation):
 	
