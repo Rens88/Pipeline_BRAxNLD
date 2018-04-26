@@ -85,17 +85,16 @@ aggregateLag = 0 # in seconds
 # Individual level variables ('vNorm') should be included as a list element.
 # Group level variables ('LengthA','LengthB') should be included as a tuple (and will be plotted in the same plot).
 plotTheseAttributes = ['vNorm',('Surface_ref','Surface_oth')]#,('Spread_ref','Spread_oth'),('stdSpread_ref','stdSpread_oth'),'vNorm']#,'LengthB',('LengthA','LengthB'),('SurfaceA','SurfaceB'),('SpreadA','SpreadB'),('WidthA','WidthB')] # [('LengthA','LengthB'),('WidthA','WidthB'),('SurfaceA','SurfaceB'),('SpreadA','SpreadB')] # teams that need to be compared as tuple
+# This trialVisualization plots the selected outcome variables variable for the given window for the temporal aggregation. Useful to verify if your variables are as excpected.
+includeTrialVisualization = True
+# This datasetVisualization compares all events of all files in the dataset. Useful for datasetlevel comparisons
+includeDatasetVisualization = True
 
 # Parts of the pipeline can be skipped
-skipCleanup = False # Only works if cleaned file exists. NB: if False, all other skips become ineffective.
+skipCleanup = True # Only works if cleaned file exists. NB: if False, all other skips become ineffective.
 skipSpatAgg = True # Only works if spat agg export exists. NB: if False, skipEventAgg and skipToDataSetLevel become ineffective.
 skipEventAgg = False # Only works if current file already exists in eventAgg. NB: if False, skipToDataSetLevel becomes ineffective.
 skipToDataSetLevel = False # Only works if corresponding AUTOMATIC BACKUP exists. NB: Does not check if all raw data files are in automatic backup. NB2: does not include any changes in cleanup, spatagg, or eventagg
-
-# This trialVisualization plots the selected outcome variables variable for the given window for the temporal aggregation. Useful to verify if your variables are as excpected.
-includeTrialVisualization = False
-# This datasetVisualization compares all events of all files in the dataset. Useful for datasetlevel comparisons
-includeDatasetVisualization = True
 
 # Choose between append (= True) or overwrite (= False) (the first time around only of course) the existing (if any) eventAggregate CSV.
 # NB: This could risk in adding duplicate data. There is no warning for that at the moment (could use code from cleanupData that checks if current file already exist in eventAggregate)
@@ -249,7 +248,6 @@ for dirtyFname in DirtyDataFiles[:10]:
 		FileID = "_".join(fileIdentifiers)
 		# Select events related to current file only --> realistically, this is only used for trialVisualization
 		trialEventsSpatAggExcerpt = datasetEventsSpatAggExcerpt.loc[datasetEventsSpatAggExcerpt['EventUID'].str.contains(FileID)]
-	pdb.set_trace()
 
 	if not includeTrialVisualization: # stop early if trialVisualization is FALSE
 		continue

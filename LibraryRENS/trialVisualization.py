@@ -198,7 +198,10 @@ def findTeamString(currentEvent,TeamAstring,TeamBstring):
 		oth = TeamAstring + (' (othTeam)')
 	else:
 		warn('\nFATAL WARNING: Could not identify who was the reference team for this event..\n')
-	
+		warn('\nWARNING: refTeam <%s> did not correspond with TeamAstring <%s> or TeamBstring <%s>.\nCould not establish who the refernce team was.\nContinued with <%s> as refTeam.\n' %(refTeam,TeamAstring,TeamBstring,TeamAstring))
+		ref = TeamAstring + (' (refTeam)')
+		oth = TeamBstring + (' (othTeam)')
+
 	teamStrings = (ref,oth)
 
 	return teamStrings

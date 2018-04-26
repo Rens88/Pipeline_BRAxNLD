@@ -26,7 +26,7 @@
 # Instead, use targetEvents in the main process file where you can include the characteristics of the event either
 # automatically, or manually (and always make the same format)
 
-
+import FillGaps_and_Filter
 import csv
 import pdb; #pdb.set_trace()
 import numpy as np
@@ -208,7 +208,7 @@ def process(targetEvents,aggregateLevel,rawDict,attributeDict,exportData,exportD
 		## Create an index that restarts per event
 		times = rawDict.loc[rowswithinrange]['Ts'].unique()
 		timesSorted = np.sort(times)
-		curEventTime = pd.DataFrame([], columns = ['eventTimeIndex', 'eventTime'])
+		curEventTime = pd.DataFrame([], columns = ['eventTimeIndex', 'eventTime'],dtype = np.float64)
 		for i,val in np.ndenumerate(timesSorted):
 			oldIndex = rawDict.loc[rowswithinrange][rawDict.loc[rowswithinrange]['Ts'] == val].index
 			eventTime = val - max(times)
@@ -232,15 +232,13 @@ def process(targetEvents,aggregateLevel,rawDict,attributeDict,exportData,exportD
 		interpolatedCurEventExcerptPanda = \
 		interpolateEventExcerpt(curEventExcerptPanda,freqInterpolatedData,tStart,tEnd,aggregateLevel)
 		
-		interpolatedCurEventExcerptPanda.to_csv('C:\\Users\\rensm\\Documents\\SURFDRIVE\\Repositories\\NP repository\\test.csv')
-		# store interpolatedVals instead of curEventExcerptPanda..
-		curEventExcerptPanda.to_csv('C:\\Users\\rensm\\Documents\\SURFDRIVE\\Repositories\\NP repository\\test2.csv')
+		# interpolatedCurEventExcerptPanda.to_csv('C:\\Users\\rensm\\Documents\\SURFDRIVE\\Repositories\\NP repository\\test.csv')
+		# # store interpolatedVals instead of curEventExcerptPanda..
+		# curEventExcerptPanda.to_csv('C:\\Users\\rensm\\Documents\\SURFDRIVE\\Repositories\\NP repository\\test2.csv')
 
 
 		# Create a panda where all events are stored (before temporal aggregation)
 		eventExcerptPanda = eventExcerptPanda.append(interpolatedCurEventExcerptPanda)
-		print('Im heeeeeeeeeeeere')
-		pdb.set_trace()
 
 		#######################
 		## End of prepration ##
@@ -271,12 +269,12 @@ def process(targetEvents,aggregateLevel,rawDict,attributeDict,exportData,exportD
 
 			# Include the current content
 			# A silly work-around in case the data is not in np.float
-			tmp = curEventExcerptPanda[key].index
-			if type(curEventExcerptPanda[key][tmp[0]]) == float:
-				curEventExcerptPanda[key] = curEventExcerptPanda[key].astype(np.float64)
-			curContent = np.isnan(curEventExcerptPanda[key]) == False			
-			tmpPlayerID = curEventExcerptPanda['PlayerID'][curContent]
-			tmpTeampID = curEventExcerptPanda['TeamID'][curContent]
+			tmp = interpolatedCurEventExcerptPanda[key].index
+			if type(interpolatedCurEventExcerptPanda[key][tmp[0]]) == float:
+				interpolatedCurEventExcerptPanda[key] = interpolatedCurEventExcerptPanda[key].astype(np.float64)
+			curContent = np.isnan(interpolatedCurEventExcerptPanda[key]) == False			
+			tmpPlayerID = interpolatedCurEventExcerptPanda['PlayerID'][curContent]
+			tmpTeampID = interpolatedCurEventExcerptPanda['TeamID'][curContent]
 
 			## Make outcome variable dependent on current event's refTeam
 			# NB: attrLabel is already changed earlier.			
@@ -286,15 +284,15 @@ def process(targetEvents,aggregateLevel,rawDict,attributeDict,exportData,exportD
 				if key[-1] == ref:
 					# Ref team
 					newKey = key[:-1] + '_ref'
-					curEventExcerptPanda[newKey] = curEventExcerptPanda[key]
-					curEventExcerptPanda.drop(key, axis=1, inplace=True)
+					interpolatedCurEventExcerptPanda[newKey] = interpolatedCurEventExcerptPanda[key]
+					interpolatedCurEventExcerptPanda.drop(key, axis=1, inplace=True)
 					key = newKey
 
 				elif key[-1] == oth:
 					# Other
 					newKey = key[:-1] + '_oth'
-					curEventExcerptPanda[newKey] = curEventExcerptPanda[key]
-					curEventExcerptPanda.drop(key, axis=1, inplace=True)
+					interpolatedCurEventExcerptPanda[newKey] = interpolatedCurEventExcerptPanda[key]
+					interpolatedCurEventExcerptPanda.drop(key, axis=1, inplace=True)
 					key = newKey
 				else:
 					# No reference assigend
@@ -304,18 +302,23 @@ def process(targetEvents,aggregateLevel,rawDict,attributeDict,exportData,exportD
 				if targetGroup == []:				
 					targetGroup = 'ballRows'
 				else:
-					exit('\nFATAL ERROR: A variable seemed to be covering multiple sets (groupRows and ballRows).\nThis should be avoided or accounted for in the code.\n')
+					print(targetGroup)
+					print('---')
+					print(tmpPlayerID)
+					warn('\nFATAL ERROR: A variable seemed to be covering multiple sets (groupRows and ballRows).\nThis should be avoided or accounted for in the code.\n')
+					exit()
 					# To avoid errors: either separate variables covering multiple sets, or add code here that joins targetGroups..
 			
 			if (all(tmpPlayerID != 'groupRow') and all(tmpPlayerID != 'ball')) and all(tmpTeampID != ''): # i.e., not group, nor ball, but with values in TeamID
 				if targetGroup == []:
 					targetGroup = 'playerRows'
 				else:
-					exit('\FATAL ERROR: A variable seemed to be covering multiple sets (playerRows and [groupRows and/or ballRows]).\nThis should be avoided or accounted for in the code.\n')
+					warn('\FATAL ERROR: A variable seemed to be covering multiple sets (playerRows and [groupRows and/or ballRows]).\nThis should be avoided or accounted for in the code.\n')
+					exit()
 					# To avoid errors: either separate variables covering multiple sets, or add code here that joins targetGroups..
 			
 			# Temporal aggregation (across ALL player vals and/or team vals and/or ball vals)
-			data = curEventExcerptPanda[key][curContent]
+			data = interpolatedCurEventExcerptPanda[key][curContent]
 			exportCurrentData, overallString, overallExplanation = \
 			aggregateTemporally(data,exportCurrentData,targetGroup,key,attrLabel[key],eventDescrString, overallString, overallExplanation,aggrMethods = aggrMeth_popLevel)
 
@@ -326,7 +329,7 @@ def process(targetEvents,aggregateLevel,rawDict,attributeDict,exportData,exportD
 					aggregationOrder = aggregationOrders[i]
 					population = populations[i]
 					exportCurrentData, overallString, overallExplanation = \
-					aggregateTemporallyINCEPTION(population,aggregationOrder,aggrMeth_popLevel,aggrMeth_playerLevel,curEventExcerptPanda,key,refTeam,othTeam,attrLabel,eventDescrString, exportCurrentData, overallString, overallExplanation)
+					aggregateTemporallyINCEPTION(population,aggregationOrder,aggrMeth_popLevel,aggrMeth_playerLevel,interpolatedCurEventExcerptPanda,key,refTeam,othTeam,attrLabel,eventDescrString, exportCurrentData, overallString, overallExplanation)
 
 
 
@@ -368,7 +371,32 @@ def interpolateEventExcerpt(curEventExcerptPanda,freqInterpolatedData,tStart,tEn
 	# Create an array that is empty and has the same size as the interpoloated values will have.
 	newIndex = np.arange(0,len(everyPlayerIDs) * len(X_int))
 	# interpolatedVals = pd.DataFrame(np.nan, index=newIndex, columns=[key])			
-	interpolatedVals = pd.DataFrame(index=newIndex)			
+	
+
+
+	# interpolatedVals = pd.DataFrame(index=newIndex)			
+
+
+
+
+	# use FillGaps_and_Filter instead??
+
+	interpolatedVals = FillGaps_and_Filter.fillGaps(curEventExcerptPanda, checkForJumps = True)
+	# np.sort(interpolatedVals['Ts'].unique())
+	
+	for ix,q in enumerate(np.sort(interpolatedVals['Ts'].unique())):
+		interpolatedVals.loc[interpolatedVals['Ts'] == q  ,'eventTimeIndex'] = ix - len(np.sort(interpolatedVals['Ts'].unique())) + 1
+
+	return interpolatedVals
+	# curEventExcerptPanda.to_csv('C:\\Users\\rensm\\Documents\\SURFDRIVE\\Repositories\\NP repository\\test_pre.csv')
+
+	# df_filled.to_csv('C:\\Users\\rensm\\Documents\\SURFDRIVE\\Repositories\\NP repository\\test.csv')
+	# warn('\nWARNING: Could not use the whole window leading up to this event due to temporal jumps in the data.\nThe intended window was <%ss>, whereas the window from the last jump until the event was <%ss>.\n\n**********\n**********\n**********\nSTILL TO DO: Write an exception for <full> and for other events with a start AND an end.\n**********\n**********\n**********\n' %(aggregateLevel[1],windowWithoutJumps))
+	# continue
+	pdb.set_trace()
+
+
+
 
 	## admittedly not the prettiest way....
 	# It requires a for loop per key, then a for loop per unique playerID....
@@ -422,7 +450,7 @@ def interpolateEventExcerpt(curEventExcerptPanda,freqInterpolatedData,tStart,tEn
 				if all(curEventExcerptPanda[key] == curEventExcerptPanda[key].iloc[0]):
 					# If they're all the same (i.e., event identifiers)
 					interpolatedVals.loc[:,key] = curEventExcerptPanda[key].iloc[0]
-					if not key in ['temporalAggregate','RefTeam','EventUID','School','Class','Group', 'Test', 'Exp']:
+					if not key in ['temporalAggregate','RefTeam','EventUID','School','Class','Group', 'Test', 'Exp','MatchContinent','MatchCountry','MatchID','HomeTeamContinent','HomeTeamCountry','HomeTeamAgeGroup','HomeTeamID','AwayTeamContinent','AwayTeamCountry','AwayTeamAgeGroup','AwayTeamID' ]:
 						warn('\nWARNING: Key <%s> was identified as an event identifier.\nTherefore, no data was interpolated, instead, the same value was copied for all cells.\n' %key)
 					break
 				elif all(curY == curY.iloc[0]) and not mustBeTeamLevelKey:
@@ -468,16 +496,16 @@ def interpolateEventExcerpt(curEventExcerptPanda,freqInterpolatedData,tStart,tEn
 				## Spline interpolation can be used on the raw data. Not on the aggregated data.
 				s = interp1d(curX, curY)		
 				
-				# try:
-				Y_int = s(X_int)				
-				# except:
-				# 	print(min(curX[1:-1]),min(X_int))		
-				# 	print(max(curX[1:-1]),max(X_int))		
-				# 	print('---')
-				# 	print(curX)
-				# 	print('----')
-				# 	print(X_int)
-				# 	pdb.set_trace()
+				try:
+					Y_int = s(X_int)				
+				except:
+					print(min(curX[1:-1]),min(X_int))		
+					print(max(curX[1:-1]),max(X_int))		
+					print('---')
+					print(curX)
+					print('----')
+					print(X_int)
+					pdb.set_trace()
 				# 104.11 96.8
 				# 111.81 111.8
 
@@ -510,10 +538,22 @@ def interpolateEventExcerpt(curEventExcerptPanda,freqInterpolatedData,tStart,tEn
 				Y_int = s(X_int_cropped)
 								
 				tmp = next(i for i, x in enumerate(X_int) if x > endOfLastJump)
-				start_ix = start_ix + tmp
+				print(start_ix)
+				start_ix = start_ix + tmp -1
+				print(start_ix)
+				print('im croooooooooooped')
 
 			# Store in panda
-			interpolatedVals.loc[start_ix : end_ix,key] = Y_int
+			try:
+				interpolatedVals.loc[start_ix : end_ix,key] = Y_int
+			except:
+				print(start_ix)
+				print(end_ix)
+				print(len(Y_int))
+				print(key)
+				interpolatedVals.loc[start_ix : end_ix,key] = Y_int
+
+
 
 	return interpolatedVals
 

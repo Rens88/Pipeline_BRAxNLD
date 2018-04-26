@@ -206,7 +206,7 @@ def distanceToCentroid(rawDict,attributeDict,attributeLabel,TeamAstring,TeamBstr
 	# In this case, the new attribute will be computed based on a group (i.e., team) value
 	TeamVals = attributeDict[rawDict['PlayerID'] == 'groupRow'].set_index('Ts')
 	# Create empty DataFrame to store results, NB: columns need to be assigend beforehand.
-	newAttributes = pd.DataFrame(index = attributeDict.index, columns = ['distToCent'])
+	newAttributes = pd.DataFrame(index = attributeDict.index, columns = ['distToCent'], dtype = np.float64)
 	
 	# For every player in the dataFrame
 	for idx,i in enumerate(pd.unique(rawDict['PlayerID'])):
@@ -347,7 +347,7 @@ def teamSurface_asPanda(rawDict,attributeDict,attributeLabel,TeamAstring,TeamBst
 	ShapeRatioB = []
 
 	# For every time point in the dataFrame
-	for idx,i in enumerate(pd.unique(rawDict['Ts'])):
+	for idx,i in enumerate(pd.unique(rawDict.loc[ind_groupRows,'Ts'])):
 		skipA = False
 		skipB = False
 		if np.isin(i,uniqueTs_TeamA_Rows):
@@ -367,7 +367,6 @@ def teamSurface_asPanda(rawDict,attributeDict,attributeLabel,TeamAstring,TeamBst
 			SumVerticesB.append(np.nan)
 			ShapeRatioB.append(np.nan)
 			skipB = True
-
 		# WARNING: groupSurface not equipped to deal with None and np.nan values.
 		# UPDATE: See stopping condition above (using skipA and skipB). It works when simple adding a nan to the array, rather than having it run through the functions.
 		# NB: Simply skipping it using an if-loop will be problematic with the current indexing method:
@@ -388,7 +387,7 @@ def teamSurface_asPanda(rawDict,attributeDict,attributeLabel,TeamAstring,TeamBst
 			SurfaceB.append(curSurfaceB)
 			SumVerticesB.append(curSumVerticesB)
 			ShapeRatioB.append(curShapeRatioB)
-	
+
 	## NB, using an old script for groupSurface(). So awkward way to re-convert to pandas
 	dfSurfaceA = pd.DataFrame(data = SurfaceA,index = ind_groupRowsA,columns = ['SurfaceA'])
 	dfSumVerticesA = pd.DataFrame(data = SumVerticesA,index = ind_groupRowsA,columns = ['SumVerticesA'])
@@ -420,7 +419,7 @@ def vNorm(rawDict,attributeDict,attributeLabel,TeamAstring,TeamBstring,skipSpatA
 	# In this case, the new attribute will be computed based on a group (i.e., team) value
 	TeamVals = attributeDict[rawDict['PlayerID'] == 'groupRow'].set_index('Ts')
 	# Create empty DataFrame to store results, NB: columns need to be assigend beforehand.
-	newAttributes = pd.DataFrame(index = attributeDict.index, columns = ['vNorm','distFrame'])
+	newAttributes = pd.DataFrame(index = attributeDict.index, columns = ['vNorm','distFrame'],dtype = np.float64)
 	
 	# For every player in the dataFrame
 	for idx,i in enumerate(pd.unique(rawDict['PlayerID'])):
