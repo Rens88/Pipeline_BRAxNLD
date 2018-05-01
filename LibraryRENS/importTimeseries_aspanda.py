@@ -9,6 +9,7 @@ import numpy as np
 from os.path import isfile, join, isdir
 from os import listdir, path
 from warnings import warn
+import time
 
 # From my own library:
 import plotSnapshot
@@ -25,8 +26,24 @@ import safetyWarning
 import pandas as pd
 
 if __name__ == '__main__':
+	
+	process(loadFname,loadFolder,skipSpatAgg_curFile,readAttributeCols,readEventColumns,attrLabel,outputFolder,debuggingMode)
 	rawData(filename,folder)
 	existingAttributes(filename,folder,rawHeaders)
+
+def process(loadFname,loadFolder,skipSpatAgg_curFile,readAttributeCols,readEventColumns,attrLabel,outputFolder,debuggingMode):
+
+	tImport = time.time()	# do stuff
+
+	rawPanda = rawData(loadFname,loadFolder)
+	attrPanda,attrLabel = existingAttributes(loadFname,loadFolder,skipSpatAgg_curFile,readAttributeCols,attrLabel,outputFolder)
+	eventsPanda,eventsLabel = existingAttributes(loadFname,loadFolder,False,readEventColumns,attrLabel,outputFolder)
+
+	if debuggingMode:
+		elapsed = str(round(time.time() - tImport, 2))
+		print('***** Time elapsed during imporTimeseries: %ss' %elapsed)
+
+	return rawPanda,attrPanda,attrLabel,eventsPanda,eventsLabel
 
 def existingAttributes(filename,folder,skipSpatAgg,headers,attrLabel,outputFolder):
 		

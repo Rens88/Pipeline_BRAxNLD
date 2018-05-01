@@ -1,43 +1,5 @@
 # If you want to edit something in the code and you're not sure where it is, 
 # just ask. l.a.meerhoff@liacs.leidenuniv.nl
-# Also, if you want to add something to the code and you're not sure where, 
-# it's probably going to be somewhere in spatialAggregation. But you can always ask.
-
-# 02-03-2018 Rens Meerhoff
-# Updated the code to now have relative folders to load the library.
-# Working on incorporating panda dataframes instead of lists of lists.
-# - left it at 'cleanupData' where I'm splitting 'Naam'
-# on 05-03 I will continue with further incorporating pandas.
-
-# 08-02-2018 Rens Meerhoff
-# Updated code to be able to indicate the window for temporal aggregation.
-# It currently uses some attributes from the data (if available).
-# It should always be able to do 'full' (aggregates whole trial)
-# The information is imported in << targetEvents >>
-# targetEvents can hold information about 'Goals', 'Passes', and 'Possession' in a dictionary with the same names.
-# One could add events to this variable manually, most goals has the format (<time of event>,<team>), 
-# passes (<time of event>,<team>,<nth possession it occurs in>) and for possession (<tstart>,<tEnd>,<team>)
-#
-#
-# To do:
-# - Verify outcomes (by looking at counts)
-# - Double check all warnings
-# - Adapt code for easy manual incorporation of targetEvents
-# - Run code for LPM data
-# - Clean script (and go through to dos, ideas)
-# - Make folder string indepedent of location
-#
-# - re-incorporate create excerpt
-
-# 26-01-2018, Rens Meerhoff
-# This template can be copied to use the BRAxNLD pipeline.
-
-# Look for the lines starting with 
-# '## CHANGE THIS'
-# '## TO DO'
-# '## Idea'
-# to see which lines of code need to be amended to use the code locally
-
 
 #########################
 # USER INPUT ############
@@ -53,7 +15,7 @@ debuggingMode = True # whether yo want to print the times that each script took
 dataType =  "FDP" # "FDP" or or "NP" --> so far, only used to call the right cleanup script. Long term goal would be to have a generic cleanup script
 
 # This folder should contain a folder with 'Data'. The tabular output and figures will be stored in this folder as well.
-folder = 'C:\\Users\\rensm\\Documents\\PostdocLeiden\\BRAxNLD repository\\'
+folder = 'C:\\Users\\rensm\\Documents\\SURFDRIVE\\Repositories\\BRAxNLD repository\\'
 
 # String representing the different teams
 # NB: not necessary for FDP (and other datasets where teamstring can be read from the filename, should be done in discetFilename.py)
@@ -77,35 +39,45 @@ readEventColumns = []
 # If the raw data is not given in meters, provide the conversion.
 conversionToMeter = 1 #111111 # https://gis.stackexchange.com/questions/8650/measuring-accuracy-of-latitude-and-longitude/8674#8674
 
-## -- work in progress --  ##
-## For inomtio data, aggregateEvent can either be 'Full' or 'Random'
-## Other levels of temporal aggregation to be added soon.
-# Indicate some parameters for temporal aggregation: 'Full' aggregates over the whole file, any other event needs to be specified with the same string as in the header of the CSV file.
+# Here you can determine which event is aggregated before. 
+# 'Full' and 'Random' always work. 
+# 'Regular' works as long as you don't choose a window larger than your file.
+# Other keywords depend on which events you import and/or compute.
 aggregateEvent = 'Random' # Event that will be used to aggregate over (verified for 'Goals' and for 'Possession')
-aggregateWindow = 10 # in seconds #NB: still need to write warning in temporal aggregation in case you have Goals in combination with None.
+aggregateWindow = 7 # in seconds #NB: still need to write warning in temporal aggregation in case you have Goals in combination with None.
 aggregateLag = 0 # in seconds
-
-# Key events (TO DO)
-# - Load existing events
-# - Include modules to compute events
-## -- \work in progress -- 
-
-# Parts of the pipeline can be skipped
-skipCleanup = True # Only works if cleaned file exists
-skipSpatAgg = True # Only works if spat agg export exists
-
-# This (simple) visualization plots every outcome variable for the given window for the temporal aggregation
-Visualization = True # True = includes visualization, False = skips visualization
+aggregatePerPlayer = [] # a list of outcome variables that you want to aggregated per player. For example: ['vNorm','distFrame']
 
 # Strings need to correspond to outcome variables (dict keys). 
 # Individual level variables ('vNorm') should be included as a list element.
 # Group level variables ('LengthA','LengthB') should be included as a tuple (and will be plotted in the same plot).
-plotTheseAttributes = ['vNorm',('SurfaceA','SurfaceB')]#,'LengthB',('LengthA','LengthB'),('SurfaceA','SurfaceB'),('SpreadA','SpreadB'),('WidthA','WidthB')] # [('LengthA','LengthB'),('WidthA','WidthB'),('SurfaceA','SurfaceB'),('SpreadA','SpreadB')] # teams that need to be compared as tuple
+# plotTheseAttributes = ['vNorm',('Surface_ref','Surface_oth')]#,('Spread_ref','Spread_oth'),('stdSpread_ref','stdSpread_oth'),'vNorm']#,'LengthB',('LengthA','LengthB'),('SurfaceA','SurfaceB'),('SpreadA','SpreadB'),('WidthA','WidthB')] # [('LengthA','LengthB'),('WidthA','WidthB'),('SurfaceA','SurfaceB'),('SpreadA','SpreadB')] # teams that need to be compared as tuple
+# This trialVisualization plots the selected outcome variables variable for the given window for the temporal aggregation. Useful to verify if your variables are as excpected.
+includeTrialVisualization = True
+plotTheseAttributes_atTrialLevel = [] #
+# This datasetVisualization compares all events of all files in the dataset. Useful for datasetlevel comparisons
+includeDatasetVisualization = True
+plotTheseAttributes_atDatasetLevel = ['vNorm',('Surface_ref','Surface_oth'),('Spread_ref','Spread_oth')]
+
+# Parts of the pipeline can be skipped
+skipCleanup = False # Only works if cleaned file exists. NB: if False, all other skips become ineffective.
+skipSpatAgg = False # Only works if spat agg export exists. NB: if False, skipEventAgg and skipToDataSetLevel become ineffective.
+skipEventAgg = False # Only works if current file already exists in eventAgg. NB: if False, skipToDataSetLevel becomes ineffective.
+skipToDataSetLevel = False # Only works if corresponding AUTOMATIC BACKUP exists. NB: Does not check if all raw data files are in automatic backup. NB2: does not include any changes in cleanup, spatagg, or eventagg
+
+# Choose between append (= True) or overwrite (= False) (the first time around only of course) the existing (if any) eventAggregate CSV.
+# NB: This could risk in adding duplicate data. There is no warning for that at the moment (could use code from cleanupData that checks if current file already exist in eventAggregate)
+appendEventAggregate = False
 
 #########################
 # END USER INPUT ########
 #########################
 
+## Advanced user input (i.e., it might not work if you change it):
+# Currently, it's possible to turn off interpolation (saves time), but it may cause other parts of the pipeline to malfunction
+includeEventInterpolation = False # may cause problems at the plotting level, 
+includeCleanupInterpolation = True # When not interpolating at all, plotting procedure becomes less reliable as it uses an un-aligned index (and it may even fail)
+datasetFramerate = 10 # (Hz) This is the framerate with which the whole dataset will be aggregated.
 
 #########################
 # INITIALIZATION ########
@@ -120,14 +92,16 @@ import initialization
 # This allows Python to import the custom modules in our library. 
 # If you add new subfolders in the library, they need to be added in addLibary (in initialization.py) as well.
 initialization.addLibrary(studentFolder)
-dataFolder,tmpFigFolder,outputFolder,cleanedFolder,spatAggFolder,aggregatedOutputFilename,outputDescriptionFilename =\
-initialization.checkFolders(folder,aggregateEvent)
+aggregateLevel = (aggregateEvent,aggregateWindow,aggregateLag)
+dataFolder,tmpFigFolder,outputFolder,cleanedFolder,spatAggFolder,eventAggFolder,aggregatedOutputFilename,outputDescriptionFilename,eventAggFname,backupEventAggFname,DirtyDataFiles,t,skipToDataSetLevel,skipCleanup,skipSpatAgg,skipEventAgg,includeTrialVisualization =\
+initialization.checkFolders(folder,aggregateLevel,skipToDataSetLevel,skipCleanup,skipSpatAgg,skipEventAgg,includeTrialVisualization)
 
 import pdb; #pdb.set_trace()
-from os.path import isfile, join#, isdir, exists
-from os import listdir#, path, makedirs
+from os.path import isfile, join, exists#, isdir, exists
+from os import listdir, stat#, path, makedirs
 from warnings import warn
 # Custom modules (from LibrarRENS)
+import datasetVisualization
 import spatialAggregation
 import temporalAggregation
 import importEvents
@@ -135,13 +109,15 @@ import dissectFilename
 import importTimeseries_aspanda
 import cleanupData
 import pandas as pd
+import numpy as np
 import exportCSV
 import estimateRemainingTime
-import plotTimeseries
+import trialVisualization
 import computeEvents
-#  Unused modules: 
-# CSVexcerpt CSVimportAsColumns identifyDuplHeader LoadOrCreateCSVexcerpt individualAttributes plotTimeseries dataToDict 
-# dataToDict2 safetyWarning countExistingEvents exportCSV importTimeseriesData csv importEvents CSVtoDF plotSnapshot
+import copy
+from shutil import copyfile
+import importFieldDimensions
+import gc
 
 ## These lines should be embedded elsewhere in the future.
 # Preparing the dictionary of the raw data (NB: With the use of Pandas, this is a bit redundant)
@@ -149,20 +125,15 @@ rawHeaders = {'Ts': timestampString,\
 'PlayerID': PlayerIDstring,\
 'TeamID': TeamIDstring,\
 'Location': (XPositionString,YPositionString) }
-
-xstring = 'Time (s)'
-aggregateLevel = (aggregateEvent,aggregateWindow,aggregateLag)
-
 #########################
 # ANALYSIS (file by file)
 #########################
-# Load all (not yet cleaned) files
-DirtyDataFiles = [f for f in listdir(dataFolder) if isfile(join(dataFolder, f)) if '.csv' in f]
-t = ([],0,len(DirtyDataFiles))#(time started,nth file,total number of files)
 
 for dirtyFname in DirtyDataFiles:
+	# dirtyFname = 'data_JYSS_1E1_Pre test_Soccer_Gp 3 v 4_onesheet_inColumns.csv'
 	print(	'\nFILE: << %s >>' %dirtyFname[:-4])
 	t = estimateRemainingTime.printProgress(t)
+	gc.collect() # not entirey sure what this does, but it's my attempt to avoid a MemoryError
 
 	#########################
 	# PREPARATION ###########
@@ -172,16 +143,22 @@ for dirtyFname in DirtyDataFiles:
 		
 	# Prepare metadata of aggregated data to be exported:
 	exportData, exportDataString, exportDataFullExplanation,cleanFname,spatAggFname,TeamAstring,TeamBstring = \
-	dissectFilename.process(dirtyFname,dataType,TeamAstring,TeamBstring)
+	dissectFilename.process(dirtyFname,dataType,TeamAstring,TeamBstring,debuggingMode)
+	fileIdentifiers = copy.copy(exportData)
 
 	# Clean cleanFname (it only cleans data if there is no existing cleaned file of the current (dirty)file )
-	loadFolder,loadFname,fatalTimeStampIssue,skipSpatAgg_curFile = \
-	cleanupData.process(dirtyFname,cleanFname,dataType,dataFolder,cleanedFolder,spatAggFname,spatAggFolder,TeamAstring,TeamBstring,rawHeaders,readAttributeCols,timestampString,readEventColumns,conversionToMeter,skipCleanup,skipSpatAgg,debuggingMode)
+	loadFolder,loadFname,fatalTimeStampIssue,skipSpatAgg_curFile,skipEventAgg_curFile = \
+	cleanupData.process(dirtyFname,cleanFname,dataType,dataFolder,cleanedFolder,spatAggFname,spatAggFolder,eventAggFolder,eventAggFname,TeamAstring,TeamBstring,rawHeaders,readAttributeCols,timestampString,readEventColumns,conversionToMeter,skipCleanup,skipSpatAgg,skipEventAgg,exportData, exportDataString,includeCleanupInterpolation,datasetFramerate,debuggingMode)
 
 	if fatalTimeStampIssue:
 		skippedData = True
 		exportCSV.newOrAdd(aggregatedOutputFilename,exportDataString,exportData,skippedData)	
 		continue
+	if skipEventAgg_curFile and not includeTrialVisualization and t[1] != 1:
+		# The first loop has to be run to make sure the attribute labels are exported.
+		# The rest of the loop can be skipped, as there is no action to be taken in the rest of the for loop
+		continue
+
 	# From now onward, rawData contains:
 	#  'Ts' --> Timestamp
 	#  'X' --> X-position
@@ -189,23 +166,25 @@ for dirtyFname in DirtyDataFiles:
 	#  'PlayerID' --> Player identification. NB: Ball-rows should be 'ball' and Match-rows should be 'groupRow' (to indicate CentroidTeamA)
 	#  'TeamID' --> Team idenfitification
 
-	###### Work in progress ##########
-	# clean target events ('StringEvent', tStart, tEnd)
-	# cleanupEvents.process()
-	###### \Work in progress #########
-
 	########################################################################################
 	####### Import existing data ###########################################################
 	########################################################################################
 	
-	rawPanda = importTimeseries_aspanda.rawData(loadFname,loadFolder)
-	attrPanda,attrLabel = importTimeseries_aspanda.existingAttributes(loadFname,loadFolder,skipSpatAgg_curFile,readAttributeCols,attrLabel,outputFolder)
-	eventsPanda,eventsLabel = importTimeseries_aspanda.existingAttributes(loadFname,loadFolder,False,readEventColumns,attrLabel,outputFolder)
+	# This can be used to import specific field dimensions.
+	# By default, it takes the field dimensions that should be typical with football data.
+	# This is the first example of using metadata. Probably will end up formalizing this in a 'importMetaData' module.
+	fieldDimensions = importFieldDimensions.process(dataFolder,dirtyFname,exportData,exportDataString,debuggingMode)
+	# TO DO: add code to rotate based on fieldDimensions !!!!!!!!!!!!!!!!
+	# TO DO: add filtering here. !!!!!!!!! THIS IS WHERE YOU SHOULD CONTINE
+	rawPanda,attrPanda,attrLabel,eventsPanda,eventsLabel = \
+	importTimeseries_aspanda.process(loadFname,loadFolder,skipSpatAgg_curFile,readAttributeCols,readEventColumns,attrLabel,outputFolder,debuggingMode)
 
-	###### Work in progress ##########
-	# Currently code is not very generic. It should work for NP though..
-	targetEventsImported = importEvents.process(eventsPanda,TeamAstring,TeamBstring)
-	###### \Work in progress #########
+	# Here you can write the code to import targetEvents. 
+	# Events can be imported from columns in the rawPanda.
+	# Or, events can be imported from a separate file (metadata)
+	# Eventually, this separate file should be in a generic format. (using a cleanup module)
+	# This is the second example of using metadata. Probably will end up formalizing this in a 'importMetaData' module.
+	targetEventsImported = importEvents.process(eventsPanda,TeamAstring,TeamBstring,cleanFname,dataFolder,debuggingMode)
 
 	########################################################################################
 	####### Compute new attributes #########################################################
@@ -213,41 +192,98 @@ for dirtyFname in DirtyDataFiles:
 
 	attrPanda,attrLabel = spatialAggregation.process(rawPanda,attrPanda,attrLabel,TeamAstring,TeamBstring,skipSpatAgg_curFile,debuggingMode)
 
-	###### Work in progress ##########
+	# NB: targetEVents is a dictionary with the key corresponding to the type of event.
+	# For each key, there is a tuple that contains (timeOfEvent,TeamID,..) 
+	# --> in some cases there is also a starting time of the event and other information 
+	# (for example, possession contains the starting time and the nubmer of passes made within that possession)
+	# NB2: For attack - events, use the 4th place in the tuple for the label (e.g., 1 = no shot, 2 = shot off target, 3 = shot on target, 4 = goals)
 	targetEvents = \
 	computeEvents.process(targetEventsImported,aggregateLevel,rawPanda,attrPanda,eventsPanda,TeamAstring,TeamBstring,debuggingMode)
-	###### \Work in progress #########
 
 	## Temporal aggregation
-	exportData,exportDataString,exportFullExplanation = \
-	temporalAggregation.process(targetEvents,aggregateLevel,rawPanda,attrPanda,exportData,exportDataString,exportDataFullExplanation,TeamAstring,TeamBstring,debuggingMode)
+	exportData,exportDataString,exportFullExplanation,trialEventsSpatAggExcerpt,attrLabel = \
+	temporalAggregation.process(targetEvents,aggregateLevel,rawPanda,attrPanda,exportData,exportDataString,exportDataFullExplanation,TeamAstring,TeamBstring,debuggingMode,skipEventAgg_curFile,fileIdentifiers,attrLabel,aggregatePerPlayer,includeEventInterpolation,datasetFramerate)
 
 	########################################################################################
 	####### EXPORT to CSV ##################################################################
 	########################################################################################
-	
-	# Temporally aggregated data
-	skippedData = False
-	exportCSV.newOrAdd(aggregatedOutputFilename,exportDataString,exportData,skippedData)	
-	exportCSV.varDescription(outputDescriptionFilename,exportDataString,exportFullExplanation)
 
-	# Spatially aggregated data
-	spatAggPanda = pd.concat([rawPanda, eventsPanda.loc[:, eventsPanda.columns != 'Ts'], attrPanda.loc[:, attrPanda.columns != 'Ts']], axis=1) # Skip the duplicate 'Ts' columns
-	spatAggPanda.to_csv(spatAggFolder + spatAggFname) # debugging only		
+	if not all([skipEventAgg, skipSpatAgg, skipCleanup]): # and not skip to dataset level (if statement occurs at initialization)
+		appendEventAggregate = \
+		exportCSV.process(trialEventsSpatAggExcerpt,exportData,exportDataString,exportFullExplanation,readEventColumns,readAttributeCols,aggregatedOutputFilename,outputDescriptionFilename,rawPanda,eventsPanda,attrPanda,spatAggFolder,spatAggFname,eventAggFolder,eventAggFname,appendEventAggregate,skipEventAgg_curFile,fileIdentifiers,t,attrLabel,outputFolder,debuggingMode)
+	else:
+		# Load previously created excerpt
+		datasetEventsSpatAggExcerpt = pd.read_csv(eventAggFolder + eventAggFname, low_memory = False, index_col = 'DataSetIndex')
+		FileID = "_".join(fileIdentifiers)
+		# Select events related to current file only --> realistically, this is only used for trialVisualization
+		trialEventsSpatAggExcerpt = datasetEventsSpatAggExcerpt.loc[datasetEventsSpatAggExcerpt['EventUID'].str.contains(FileID)]
 
-	## EDIT: Instead of exporting the attributes labels, 
-	## it's easier to create the attribute lables, 
-	## EVEN if spatAgg is being skipped.
-	# # Need to save the attribute labels for when skipping spatAgg
-	# if t[1] == 1: # only after the first file
-	# 	attrLabel_asPanda = pd.DataFrame.from_dict([attrLabel],orient='columns')
-	# 	attrLabel_asPanda.to_csv(outputFolder + 'attributeLabel.csv') 
-
-	if not Visualization: # stop early if visualization is FALSE
+	if not includeTrialVisualization: # stop early if trialVisualization is FALSE
 		continue
+
 	########################################################################################
-	####### Visualization  #################################################################
+	####### trialVisualization  ############################################################
 	########################################################################################
-	
-	# It's not that elaborate, but functional enough to get an idea whether the computed outcome variables are correct
-	plotTimeseries.process(plotTheseAttributes,aggregateLevel,targetEvents,rawPanda,attrPanda,attrLabel,tmpFigFolder,cleanFname[:-4],TeamAstring,TeamBstring,debuggingMode)
+			
+	# This plotting procedure allows you to plot the events separately. 
+	# These plots can be used to (visually) assess whether the outcome measures had the expected values.
+	trialVisualization.process(plotTheseAttributes_atTrialLevel,aggregateLevel,trialEventsSpatAggExcerpt,attrLabel,tmpFigFolder,cleanFname[:-4],TeamAstring,TeamBstring,debuggingMode,dataType,fieldDimensions)
+
+estimateRemainingTime.printDuration(t)
+
+if not skipToDataSetLevel: # i.e., did the whole file-by-file analysis
+	# Store an automatic back-up if the file-by-file analysis has been completed without skipping the data.
+	copyfile(eventAggFolder + eventAggFname, backupEventAggFname)
+
+# Load the datasetEventsSpatAggExcerpt
+datasetEventsSpatAggExcerpt = pd.read_csv(backupEventAggFname, low_memory = True, index_col = 'DataSetIndex')
+attrLabel_asPanda = pd.read_csv(outputFolder+'attributeLabel.csv',low_memory=True, index_col = 'Unnamed: 0') # index_col added last. Should work. Otherwise use the next line
+
+################################
+# End of file by file analysis #
+################################
+
+########################################################################################
+####### datasetVisualization  ##########################################################
+########################################################################################
+
+if not includeDatasetVisualization:
+	print('No datasetVisualization requested.\n')
+else:
+
+	pltFname = 'OVERALL PLOT_' + dataType
+	datasetVisualization.process(plotTheseAttributes_atDatasetLevel,aggregateLevel,datasetEventsSpatAggExcerpt,attrLabel_asPanda,tmpFigFolder,pltFname,debuggingMode)
+
+	# When comparing events with a particular ID versus other events with that particular ID
+	# It's a work in progress
+	if dataType == 'NP':
+		pltFname = 'OVERALL PLOT_' + dataType
+		datasetVisualization.process(plotTheseAttributes_atDatasetLevel,aggregateLevel,datasetEventsSpatAggExcerpt,attrLabel_asPanda,tmpFigFolder,pltFname,debuggingMode,LPvsNP = True)
+
+########################################################################################
+####### statisticalComparison / DATA MINING ############################################
+########################################################################################
+
+# Work in progress
+# Connect to Cortana for data mining
+
+########################################################################################
+####### THE END ########################################################################
+########################################################################################
+print('       -')
+print('      ---')
+print('     -----') 
+print('    -------') 
+print('   ---------')
+print('  -----------')
+print(' -------------')
+print('---------------')
+print('---- THE END ----')
+print('---------------')
+print(' -------------')
+print('  -----------')
+print('   ---------')
+print('    -------')
+print('     -----') 
+print('      ---')
+exit('       -')

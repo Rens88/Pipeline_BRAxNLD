@@ -28,6 +28,7 @@ import re
 import pandas as pd
 import student_XX_cleanUp
 import time
+import FillGaps_and_Filter
 
 if __name__ == '__main__':
 
@@ -48,7 +49,7 @@ if __name__ == '__main__':
 	NP(dataFiles,cleanFname,folder,cleanedFolder,TeamAstring,TeamBstring)
 
 #########################################################################
-def process(dirtyFname,cleanFname,dataType,dataFolder,cleanedFolder,spatAggFname,spatAggFolder,TeamAstring,TeamBstring,headers,readAttributeCols,timestampString,readEventColumns,conversionToMeter,skipCleanup,skipSpatAgg,debuggingMode):
+def process(dirtyFname,cleanFname,dataType,dataFolder,cleanedFolder,spatAggFname,spatAggFolder,eventAggFolder,eventAggFname,TeamAstring,TeamBstring,headers,readAttributeCols,timestampString,readEventColumns,conversionToMeter,skipCleanup,skipSpatAgg,skipEventAgg,exportData, exportDataString,includeCleanupInterpolation,datasetFramerate,debuggingMode):
 	tCleanup = time.time()	# do stuff
 
 	debugOmittedRows = False # Optional export of data that was omitted in the cleaning process
@@ -59,17 +60,51 @@ def process(dirtyFname,cleanFname,dataType,dataFolder,cleanedFolder,spatAggFname
 	# Clean up data, if necessary
 	cleanFnames = [f for f in listdir(cleanedFolder) if isfile(join(cleanedFolder, f)) if '.csv' in f]
 	spatAggFnames = [f for f in listdir(spatAggFolder) if isfile(join(spatAggFolder, f)) if '.csv' in f]
+	eventAggFnames = [f for f in listdir(eventAggFolder) if isfile(join(eventAggFolder, f)) if '.csv' in f]
+
 	if spatAggFname in spatAggFnames and skipSpatAgg == True:
 		warn('\nContinued with previously cleaned and spatially aggregated data.\nIf you want to add new spatial aggregates, change <skipSpatAgg> into <False>.\n')
 		# Spat agg files don't exist if there was a fatal error, so:
 		fatalIssue = False
 		loadFolder = spatAggFolder
 		loadFname = spatAggFname
+
+		if eventAggFname in eventAggFnames and skipEventAgg == True:
+		# If there is a spat agg file, AND if skipEventAgg == True,
+		# then, it needs to be verified whether there is a row with an event aggregate for the current file.
+			df = pd.read_csv(eventAggFolder+eventAggFname,usecols=(exportDataString),low_memory=True) # NB: low_memory MUST be True, otherwise it results in problems later on.
+			# testCount = 0
+			for i in np.arange(len(df.keys())):
+				# testCount = testCount + 1
+
+				try:
+					if not any(df[exportDataString[i]] == exportData[i]):
+						skipEventAgg = False
+						break
+				except: # this error occurred a couple of times. Not sure why... something with an invalid comparison, so presumably one of the inputs wasnt a string??
+					print('DataFrame type:')
+					print(type(df[exportDataString[i]]))
+					print('\nDataFrame contents:')
+					print(df[exportDataString[i]])
+					print('\n----------\n')
+					print('File identifiers type:')
+					print(type(exportData[i]))
+					print('\nFile identifiers contents:')
+					print(exportData[i])
+					print('\nNB: In the past, this problem was related to the string input resembling a float input.\nFor example, <1E3>, which (with low_memory = True) is read as a float (1,000).\n')
+					if not exportData[i] in exportDataString[i]:
+						skipEventAgg = False
+						break
+					else:
+						raise Exception ('exit')
+		else:
+			skipEventAgg = False
 		if debuggingMode:
 			elapsed = str(round(time.time() - tCleanup, 2))
-			print('Time elapsed during cleanupData: %ss' %elapsed)
-		return loadFolder,loadFname,fatalIssue,skipSpatAgg
+			print('***** Time elapsed during cleanupData: %ss' %elapsed)
+		return loadFolder,loadFname,fatalIssue,skipSpatAgg,skipEventAgg
 
+	skipEventAgg = False
 	skipSpatAgg = False # over-rule skipSpatAgg as the corresponding spatAgg output file could not be found
 	if cleanFname in cleanFnames and skipCleanup:
 		with open(cleanedFolder+cleanFname, 'r') as f:
@@ -86,10 +121,11 @@ def process(dirtyFname,cleanFname,dataType,dataFolder,cleanedFolder,spatAggFname
 		
 		if debuggingMode:
 			elapsed = str(round(time.time() - tCleanup, 2))
-			print('Time elapsed during cleanupData: %ss' %elapsed)
-		return loadFolder,loadFname,fatalIssue,skipSpatAgg#, readAttributeCols#, attrLabel
+			print('***** Time elapsed during cleanupData: %ss' %elapsed)
+		return loadFolder,loadFname,fatalIssue,skipSpatAgg,skipEventAgg#, readAttributeCols#, attrLabel
 	else: # create a new clean Fname
 		print('\nCleaning up file...')
+
 		if dataType == "NP":
 			# NB: cleanupData currently dataset specific (NP or FDP). Fixes are quite specific and may not easily transfer to different datasets.
 			# df_cleaned,df_omitted,headers,readAttributeCols,readEventColumns = \
@@ -105,8 +141,8 @@ def process(dirtyFname,cleanFname,dataType,dataFolder,cleanedFolder,spatAggFname
 
 			if debuggingMode:
 				elapsed = str(round(time.time() - tCleanup, 2))
-				print('Time elapsed during cleanupData: %ss' %elapsed)
-			return loadFolder,loadFname,fatalIssue,skipSpatAgg
+				print('***** Time elapsed during cleanupData: %ss' %elapsed)
+			return loadFolder,loadFname,fatalIssue,skipSpatAgg,skipEventAgg
 
 		## Genereic clean up function (for all datasets)
 		# First: Rename columns to be standardized.
@@ -120,11 +156,14 @@ def process(dirtyFname,cleanFname,dataType,dataFolder,cleanedFolder,spatAggFname
 		# df_cleaned.to_csv('C:\\Users\\rensm\\Documents\\PostdocLeiden\\NP repository\\Output\\test.csv')
 		df_cleaned = verifyGroupRows(df_cleaned)
 
+		## OLD BUT USEFUL
 		# Confirm whether Every timestamp occurs equally often, to enable indexing based on timestamp
-		tsConsistent = verifyTimestampConsistency(df_cleaned,TeamAstring,TeamBstring)
-		if not tsConsistent:
-			warn('\nTO DO: Timestamp is not consistent: \nWrite the code to smooth out timestamp.')
-		
+		# tsConsistent = verifyTimestampConsistency(df_cleaned,TeamAstring,TeamBstring)
+			## you could omit interpolation to save time. But 
+			# if not tsConsistent:
+				# --> interpolation highly recommended
+		## \OLD BUT USEFUL
+
 		# The first fatal error. Skip file and continue.
 		fatalTimeStampIssue = checkForFatalTimestampIssue(df_cleaned)
 		
@@ -144,6 +183,8 @@ def process(dirtyFname,cleanFname,dataType,dataFolder,cleanedFolder,spatAggFname
 			df_Fatal.to_csv(cleanedFolder + cleanFname)
 			fatalIssue = True
 		else:
+			if includeCleanupInterpolation:
+				df_cleaned = FillGaps_and_Filter.process(df_cleaned,datasetFramerate = datasetFramerate)
 			df_cleaned.to_csv(cleanedFolder + cleanFname)
 	
 		# Optional: Export data that has been omitted, in case you suspect that relevent rows were omitted.
@@ -167,9 +208,9 @@ def process(dirtyFname,cleanFname,dataType,dataFolder,cleanedFolder,spatAggFname
 
 	if debuggingMode:
 		elapsed = str(round(time.time() - tCleanup, 2))
-		print('Time elapsed during cleanupData: %ss' %elapsed)
+		print('***** Time elapsed during cleanupData: %ss' %elapsed)
 
-	return loadFolder,loadFname,fatalIssue,skipSpatAgg#, readAttributeCols#, attrLabel
+	return loadFolder,loadFname,fatalIssue,skipSpatAgg,skipEventAgg#, readAttributeCols#, attrLabel
 
 def FDP(fname,cleanFname,dataFolder,cleanedFolder,headers,readAttributeCols,debugOmittedRows,readEventColumns,TeamAstring,TeamBstring):
 
@@ -179,23 +220,31 @@ def FDP(fname,cleanFname,dataFolder,cleanedFolder,headers,readAttributeCols,debu
 	ts = headers['Ts']
 	x,y = headers['Location']
 	ID = headers['PlayerID']
+
 	colHeaders = [ts,x,y,ID] + readAttributeCols + readEventColumns
+	if headers['TeamID'] != None:
+	 # If there is a header for 'TeamID', then include it as the colHeaders that will be read from the CSV file.
+	 # Mede mogelijk gemaakt door: Lars
+	 Tid = headers['TeamID']
+	 colHeaders = [ts,x,y,ID,Tid] + readAttributeCols + readEventColumns
+	 
 	newPlayerIDstring = 'Player'
 	newTeamIDstring = 'Team'
 
 	# Only read the headers as a check-up:
 	with open(dataFolder+fname, 'r') as f:
-		reader = csv.reader(f)
-		fileHeaders = list(next(reader))
+	 reader = csv.reader(f)
+	 fileHeaders = list(next(reader))
 
 	for i in colHeaders:
-		if not i in fileHeaders:
-			exit('EXIT: Column header <%s> not in column headers of the file:\n%s\n\nSOLUTION: Change the user input in \'process\' \n' %(i,fileHeaders))
-  
+	 if not i in fileHeaders:
+	  exit('EXIT: Column header <%s> not in column headers of the file:\n%s\n\nSOLUTION: Change the user input in \'process\' \n' %(i,fileHeaders))
+	 
 	df = pd.read_csv(dataFolder+fname,usecols=(colHeaders),low_memory=False)
 	df[ts] = df[ts]*conversion_to_S # Convert from ms to s.
-	
+
 	## Cleanup for BRAxNLD
+	fatalTeamIDissue = False
 	if headers['TeamID'] == None:
 		df,headers,fatalTeamIDissue = splitName_and_Team(df,headers,ID,newPlayerIDstring,newTeamIDstring,TeamAstring,TeamBstring)
 		# Delete the original ID, but only if the string is not the same as the new Dict.Keys
@@ -419,6 +468,16 @@ def verifyGroupRows(df_cleaned):
 	uniqueTs = pd.unique(df_cleaned['Ts'])
 	uniqueTs = np.sort(uniqueTs)	
 	
+	# if not any(groupRows):
+	# 	# groupRows don't exist. Let's see if there are any rows without PlayerID
+	# 	everyPlayerIDs = df_cleaned['PlayerID'].unique()
+	# 	everyPlayerIDs = pd.DataFrame(everyPlayerIDs,columns = ['everyPlayerIDs'])
+	# 	if any(everyPlayerIDs[everyPlayerIDs['everyPlayerIDs'].isnull()]):
+	# 		warn('\nWARNING: Found rows without a PlayerID.\nThe pipeline assumes these rows are groupRows.\n')
+	# 		groupRows = df_cleaned['PlayerID'].isnull().index
+	# 		df_cleaned.loc[groupRows,'PlayerID'] = 'groupRow'
+
+
 	# When there are no group rows, they need to be created for every unique timestamp.
 	if df_cleaned['Ts'][(groupRows)].empty:# and not any(df_cleaned['PlayerID'] == 'groupRow'):
 		# If groupRows don't exist, then create them
@@ -430,7 +489,7 @@ def verifyGroupRows(df_cleaned):
 		groupIndex = firstGroupIndex + range(len(groupPlayerID))
 
 		# Put these in a DataFrame with the same column headers
-		df_group = pd.DataFrame({'Ts':uniqueTs,'PlayerID':groupPlayerID},index = [groupIndex])# possibly add the index ? index = []
+		df_group = pd.DataFrame({'Ts':uniqueTs,'PlayerID':groupPlayerID},index = groupIndex)# possibly add the index ? index = []
 		
 		# Append them to the existing dataframe
 		df_cleaned = df_cleaned.append(df_group)

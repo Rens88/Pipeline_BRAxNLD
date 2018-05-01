@@ -69,7 +69,7 @@ def process(rawDict,attributeDict,attributeLabel,TeamAstring,TeamBstring,skipSpa
 	
 	if debuggingMode:
 		elapsed = str(round(time.time() - tSpatAgg, 2))
-		print('Time elapsed during spatialAggregation: %ss' %elapsed)
+		print('***** Time elapsed during spatialAggregation: %ss' %elapsed)
 	
 	return attributeDict, attributeLabel
 
@@ -109,10 +109,28 @@ def teamCentroid_panda(rawDict,attributeDict,attributeLabel,TeamAstring,TeamBstr
 	dfA = rawDict[rawDict['TeamID'] == TeamAstring]
 	dfB = rawDict[rawDict['TeamID'] == TeamBstring]
 	# Pivot X and Y dataframes for Team A
-	Team_A_X = dfA.pivot(columns='Ts', values='X')
-	Team_A_Y = dfA.pivot(columns='Ts', values='Y')
+	try:
+		Team_A_X = dfA.pivot(columns='Ts', values='X')		
+	except:
+		Team_A_X = np.nanmean(dfA['X'])
+		print(Team_A_X.shape)
+		print(dfA['X'].shape)
+		print(len(ind_groupRows))
+		pdb.set_trace()
+
+	try:
+		Team_A_Y = dfA.pivot(columns='Ts', values='Y')
+	except:
+		Team_A_Y = np.nanmean(dfA['Y'])
+		print(dfA.shape)
+		pdb.set_trace()
+
 	# Pivot X and Y dataframes for Team B
-	Team_B_X = dfB.pivot(columns='Ts', values='X')
+	try:
+		Team_B_X = dfB.pivot(columns='Ts', values='X')
+	except:
+		print(dfB.shape)
+		pdb.set_trace()
 	Team_B_Y = dfB.pivot(columns='Ts', values='Y')   
 
 	# The warnings below were included to debug problems with different lengths per team and/or group row
@@ -167,11 +185,17 @@ def teamCentroid_panda(rawDict,attributeDict,attributeLabel,TeamAstring,TeamBstr
 	pd.options.mode.chained_assignment = None  # default='warn' # NB: The code below gives a warning because it may be uncertain whether the right ind_groupRows are called. If you know a work-around, let me know.
 		
 	# For team A
+	if Team_A_X.shape == (0,0):
+	  exit('\nFATAL WARNING: No data in TeamA\'s X positions.\nThis is likely because the TeamAstring and TeamBstring do not correspond with the strings in the dataset.\nThis may be because the user input is incorrect OR, because the Team strings are unsuccesfully derived from the filename (especialy when using dataType FDP for a new dataset):\nConsider writing a specific function in dissectFilename.py.\n')
+	print(Team_A_X.shape)
+	print(ind_groupRowsA.shape)
 	newAttributesA['TeamCentXA'][ind_groupRowsA] = Team_A_X.mean(axis=0, skipna=True)
 	newAttributesA['TeamCentYA'][ind_groupRowsA] = Team_A_Y.mean(axis=0, skipna=True)
 	newAttributesA['LengthA'][ind_groupRowsA] = Team_A_X.max(axis=0, skipna=True) - Team_A_X.min(axis=0, skipna=True)
 	newAttributesA['WidthA'][ind_groupRowsA] = Team_A_Y.max(axis=0, skipna=True) - Team_A_Y.min(axis=0, skipna=True)
 	# And for team B
+	if Team_B_X.shape == (0,0):
+	  exit('\nFATAL WARNING: No data in TeamA\'s X positions.\nThis is likely because the TeamAstring and TeamBstring do not correspond with the strings in the dataset.\nThis may be because the user input is incorrect OR, because the Team strings are unsuccesfully derived from the filename (especialy when using dataType FDP for a new dataset):\nConsider writing a specific function in dissectFilename.py.\n')
 	newAttributesB['TeamCentXB'][ind_groupRowsB] = Team_B_X.mean(axis=0, skipna=True)
 	newAttributesB['TeamCentYB'][ind_groupRowsB] = Team_B_Y.mean(axis=0, skipna=True)
 	newAttributesB['LengthB'][ind_groupRowsB] = Team_B_X.max(axis=0, skipna=True) - Team_B_X.min(axis=0, skipna=True)
@@ -202,7 +226,7 @@ def distanceToCentroid(rawDict,attributeDict,attributeLabel,TeamAstring,TeamBstr
 	# In this case, the new attribute will be computed based on a group (i.e., team) value
 	TeamVals = attributeDict[rawDict['PlayerID'] == 'groupRow'].set_index('Ts')
 	# Create empty DataFrame to store results, NB: columns need to be assigend beforehand.
-	newAttributes = pd.DataFrame(index = attributeDict.index, columns = ['distToCent'])
+	newAttributes = pd.DataFrame(index = attributeDict.index, columns = ['distToCent'], dtype = np.float64)
 	
 	# For every player in the dataFrame
 	for idx,i in enumerate(pd.unique(rawDict['PlayerID'])):
@@ -301,7 +325,7 @@ def teamSurface_asPanda(rawDict,attributeDict,attributeLabel,TeamAstring,TeamBst
 	tmpShapeRatioBString = 'Uniformity of surface area of %s (1 = uniform, closer to 0 = elongated)' %TeamBstring
 
 	tmpAtLa3 = {'SurfaceA': tmpSurfaceAString, 'SurfaceB': tmpSurfaceBString, \
-	'sumVerticesA': tmpsumVerticesAString,'sumVerticesB': tmpsumVerticesBString, \
+	'SumVerticesA': tmpsumVerticesAString,'SumVerticesB': tmpsumVerticesBString, \
 	'ShapeRatioA': tmpShapeRatioAString,'ShapeRatioB': tmpShapeRatioBString}	
 
 	attributeLabel.update(tmpAtLa3)
@@ -343,7 +367,7 @@ def teamSurface_asPanda(rawDict,attributeDict,attributeLabel,TeamAstring,TeamBst
 	ShapeRatioB = []
 
 	# For every time point in the dataFrame
-	for idx,i in enumerate(pd.unique(rawDict['Ts'])):
+	for idx,i in enumerate(pd.unique(rawDict.loc[ind_groupRows,'Ts'])):
 		skipA = False
 		skipB = False
 		if np.isin(i,uniqueTs_TeamA_Rows):
@@ -363,7 +387,6 @@ def teamSurface_asPanda(rawDict,attributeDict,attributeLabel,TeamAstring,TeamBst
 			SumVerticesB.append(np.nan)
 			ShapeRatioB.append(np.nan)
 			skipB = True
-
 		# WARNING: groupSurface not equipped to deal with None and np.nan values.
 		# UPDATE: See stopping condition above (using skipA and skipB). It works when simple adding a nan to the array, rather than having it run through the functions.
 		# NB: Simply skipping it using an if-loop will be problematic with the current indexing method:
@@ -384,7 +407,7 @@ def teamSurface_asPanda(rawDict,attributeDict,attributeLabel,TeamAstring,TeamBst
 			SurfaceB.append(curSurfaceB)
 			SumVerticesB.append(curSumVerticesB)
 			ShapeRatioB.append(curShapeRatioB)
-	
+
 	## NB, using an old script for groupSurface(). So awkward way to re-convert to pandas
 	dfSurfaceA = pd.DataFrame(data = SurfaceA,index = ind_groupRowsA,columns = ['SurfaceA'])
 	dfSumVerticesA = pd.DataFrame(data = SumVerticesA,index = ind_groupRowsA,columns = ['SumVerticesA'])
@@ -416,7 +439,7 @@ def vNorm(rawDict,attributeDict,attributeLabel,TeamAstring,TeamBstring,skipSpatA
 	# In this case, the new attribute will be computed based on a group (i.e., team) value
 	TeamVals = attributeDict[rawDict['PlayerID'] == 'groupRow'].set_index('Ts')
 	# Create empty DataFrame to store results, NB: columns need to be assigend beforehand.
-	newAttributes = pd.DataFrame(index = attributeDict.index, columns = ['vNorm','distFrame'])
+	newAttributes = pd.DataFrame(index = attributeDict.index, columns = ['vNorm','distFrame'],dtype = np.float64)
 	
 	# For every player in the dataFrame
 	for idx,i in enumerate(pd.unique(rawDict['PlayerID'])):

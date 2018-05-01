@@ -13,6 +13,8 @@ from os import listdir, path, makedirs
 import re
 import pandas as pd
 import student_XX_dissectFilename
+import time
+
 
 if __name__ == '__main__':
 	
@@ -23,18 +25,26 @@ if __name__ == '__main__':
 
 
 #########################################################################
-def process(fname,dataType,TeamAstring,TeamBstring):
+def process(fname,dataType,TeamAstring,TeamBstring,debuggingMode):
+
+	tDissectFilename = time.time()	# do stuff
+
 	if dataType == "NP":
 		exportData, exportDataString, exportDataFullExplanation,cleanFname = NP(fname)
+
 	elif dataType == "FDP":
 		exportData, exportDataString, exportDataFullExplanation,cleanFname,TeamAstring,TeamBstring = FDP(fname)
+
 	else:
 		exportData, exportDataString, exportDataFullExplanation,cleanFname = \
 		student_XX_dissectFilename.process(fname,dataType,TeamAstring,TeamBstring)
 		# exportData, exportDataString, exportDataFullExplanation,cleanFname = default(fname)
-
+	
 	spatAggFname = 'TimeseriesAttributes_' + cleanFname
 
+	if debuggingMode:
+		elapsed = str(round(time.time() - tDissectFilename, 2))
+		print('***** Time elapsed during dissectFilename: %ss' %elapsed)
 	return exportData, exportDataString, exportDataFullExplanation,cleanFname,spatAggFname,TeamAstring,TeamBstring
 
 def FDP(fname):	
@@ -92,10 +102,10 @@ def NP(fname):
 			elif Class in ['1E1', '1E2']:
 				Exp = 'LP'
 			else:
-				warn('\nCould not identify experimental gruop: <%s>' %fname)				
+				warn('\nWARNING: Could not identify experimental gruop: <%s>' %fname)				
 
 		else:
-			warn('\nCould not identify class: <%s>' %fname)
+			warn('\nWARNING: Could not identify class: <%s>' %fname)
 	elif 'St Pat' in fname:
 		School = 'StPt'
 		
@@ -109,10 +119,10 @@ def NP(fname):
 		elif Class in ['X1E', 'X12']:
 			Exp = 'LP'
 		else:
-			warn('\nCould not identify experimental gruop: <%s>' %fname)
+			warn('\nWARNING: Could not identify experimental gruop: <%s>' %fname)
 
 	else:
-		warn('\nCould not identify School: <%s>' %fname)
+		warn('\nWARNING: Could not identify School: <%s>' %fname)
 	
 	# Test
 	if re.search('ret',fname, re.IGNORECASE):
@@ -124,17 +134,17 @@ def NP(fname):
 	elif re.search('pos',fname, re.IGNORECASE):
 		Test = 'POS'
 	else:
-		warn('\nCould not identify Test: <%s>' %fname)
+		warn('\nWARNING: Could not identify Test: <%s>' %fname)
 
 	if ' v ' in fname:
 		grInd = fname.find(' v ')
 		Group = (fname[grInd-1] +  'v' + fname[grInd + 3])
 	else:
-		warn('\nCould not identify group: <%s>' %fname)
+		warn('\nWARNING: Could not identify group: <%s>' %fname)
 
 	cleanFname = School + '_' + Class + '_' + Group + '_' + Test + '_' + Exp + '.csv'
 
-	exportData = [School, Class, Group, Test, Exp]
+	exportData = [str(School), str(Class), str(Group), str(Test), str(Exp)]
 	exportDataString = ['School', 'Class', 'Group', 'Test', 'Exp']
 	exportDataFullExplanation = ['School experiment was held at','Class the participants were from','Identifier groups that played each other','Name of the type of trial (PRE = pre-test, POS = post-test, TRA = transfer test, RET = retention test)', 'Experimental group (LP = Linear Pedagogy, NP = Nonlinear Pedgagogy)']
 

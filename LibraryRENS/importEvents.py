@@ -1,10 +1,6 @@
 # 08-02-2018 Rens Meerhoff
 # Script can be generically used to import information from eventsPanda. If the data is not organized similarly, it will simply export empty targetEvents. In the future, we can include LMP-based import of these kinds of data (or perhaps standardize the format earlier in the pipeline).
-# Now, the script returns a dictionary of 'targetEvents' with the following format:
-# targetEvents['Goals'] = (instant (s) a goal was scored, team that scored)
-# targetEvents['Possession'] = (instant possession started (s), instant possession ended (s), team that had possession)
-# targetEvents['Turnovers'] = (instant (s) a turnover occurred, team that turned over the ball)
-# targetEvents['Passes'] = (instant(s) a pass occurred, team that made the pass, nth possession the pass belongs to)
+
 
 # 05-02-2018 Rens Meerhoff
 # Based on countExistingEvents.py:
@@ -25,16 +21,31 @@ import pandas as pd
 # import exportCSV
 
 import safetyWarning
-
+import student_XX_importEvents
+import time
 if __name__ == '__main__':
 	process(eventsPanda,TeamAstring,TeamBstring)
 
+	# 1 --> Time of event
+	# 2 --> Reference Team
+	# 3 --> varies per event:
+	
 	goals(eventsPanda,TeamAstring,TeamBstring,targetEvents)
-	possession(eventsPanda,TeamAstring,TeamBstring,targetEvents)	
-	passes(eventsPanda,TeamAstring,TeamBstring,possessionCharacteristics,targetEvents)
-	full(targetEvents)
+	# no 3
 
-def process(eventsPanda,TeamAstring,TeamBstring):
+	possession(eventsPanda,TeamAstring,TeamBstring,targetEvents)	
+	# 3 --> START time of the possession
+	
+	passes(eventsPanda,TeamAstring,TeamBstring,possessionCharacteristics,targetEvents)
+	# 3 --> nth possession this pass was apart of (to determine number of consqutive passes)
+
+	full(targetEvents)
+	# 3 --> START time of the possession
+
+
+def process(eventsPanda,TeamAstring,TeamBstring,cleanFname,dataFolder,debuggingMode):
+	tImportEvents = time.time()
+	
 	targetEvents = {}
 	########################################################################################
 	####### Import existing events ######################################################
@@ -50,18 +61,31 @@ def process(eventsPanda,TeamAstring,TeamBstring):
 	# NB: If available, possession should be computed before passes to incorporate number of consecutive passes
 	# Could implement a safer procedure by starting with an empty dictionary and then adding the eventspecific dictionary after it's done the module (exporting an empty dictionary if info not available), then, the possession dictionary HAS to exist before going through
 	targetEvents = passes(eventsPanda,TeamAstring,TeamBstring,targetEvents)
-	targetEvents = full(eventsPanda,targetEvents)
+	targetEvents = full(eventsPanda,targetEvents,TeamAstring)
+
+	targetEvents = \
+	student_XX_importEvents.process(targetEvents,cleanFname,TeamAstring,TeamBstring,dataFolder)
+
+	if debuggingMode:
+		elapsed = str(round(time.time() - tImportEvents, 2))
+		print('***** Time elapsed during importEvents: %ss' %elapsed)
+
 	return targetEvents
 
-def full(eventsPanda,targetEvents):
+def full(eventsPanda,targetEvents,TeamAstring):
 	targetEvents = {**targetEvents,'Full':[]}
+	# If an error occurs here, then this may be a problem with Linux.
+	# Replace with: (and an if statement to check if targetEvents isempty)
+	# targetEvents = targetEvents.update({'Full':[]})
 	TsS = eventsPanda['Ts']
-	targetEvents['Full'] = (float(min(TsS)),float(max(TsS)))
+	targetEvents['Full'] = [(float(max(TsS)),None,float(min(TsS)))]
 	return targetEvents
 
 def goals(eventsPanda,TeamAstring,TeamBstring,targetEvents):
-	targetEvents = {**targetEvents,'Goals':[]}
-
+	targetEvents = {**targetEvents,'Goal':[]}
+	# If an error occurs here, then this may be a problem with Linux.
+	# Replace with: (and an if statement to check if targetEvents isempty)
+	# targetEvents = targetEvents.update({'Goal':[]})
 	if not 'Goal' in eventsPanda.keys():
 		# No Goal information, so return immediately
 		return targetEvents
@@ -77,10 +101,10 @@ def goals(eventsPanda,TeamAstring,TeamBstring,targetEvents):
 
 			if TeamAstring in i:
 				goalsOut[count,0] = 0
-				targetEvents['Goals'].append((float(eventsPanda['Ts'][idx]),TeamAstring))
+				targetEvents['Goal'].append((float(eventsPanda['Ts'][idx]),TeamAstring))
 			elif TeamBstring in i:
 				goalsOut[count,0] = 1
-				targetEvents['Goals'].append((float(eventsPanda['Ts'][idx]),TeamBstring))
+				targetEvents['Goal'].append((float(eventsPanda['Ts'][idx]),TeamBstring))
 			else:
 				warn('\n\nCould not recognize team:\n<<%s>>' %i)
 			count = count + 1
@@ -92,7 +116,9 @@ def goals(eventsPanda,TeamAstring,TeamBstring,targetEvents):
 
 def runs(eventsPanda,TeamAstring,TeamBstring,targetEvents):
 	targetEvents = {**targetEvents,'Run':[]} 
-
+	# If an error occurs here, then this may be a problem with Linux.
+	# Replace with: (and an if statement to check if targetEvents isempty)
+	# targetEvents = targetEvents.update({'Run':[]})
 	if not 'Run' in eventsPanda.keys():
 		# No Run information, so return immediately
 		return targetEvents
@@ -119,7 +145,7 @@ def runs(eventsPanda,TeamAstring,TeamBstring,targetEvents):
 				in2 = []
 			else:
 				# Found a start and an end
-				targetEvents['Run'].append((in1,in2))
+				targetEvents['Run'].append((in1,None,in2))
 				in1 = []
 				in2 = []
 
@@ -127,7 +153,9 @@ def runs(eventsPanda,TeamAstring,TeamBstring,targetEvents):
 
 def possession(eventsPanda,TeamAstring,TeamBstring,targetEvents):
 	targetEvents = {**targetEvents,'Possession':[],'Turnovers':[]} 
-
+	# If an error occurs here, then this may be a problem with Linux.
+	# Replace with: (and an if statement to check if targetEvents isempty)
+	# targetEvents = targetEvents.update({'Possession':[],'Turnovers':[]})
 	if not 'Possession/Turnover' in eventsPanda.keys():
 		# No Possession/Turnover information, so return immediately
 		return targetEvents
@@ -199,7 +227,7 @@ def possession(eventsPanda,TeamAstring,TeamBstring,targetEvents):
 			in2 = None
 		else:
 			in2 = float(eventsPanda['Ts'][endPossession])
-		targetEvents['Possession'].append((in1,in2,currentPossession))								
+		targetEvents['Possession'].append((in2,currentPossession,in1))								
 
 	if dt == []:
 		warn('\n!!!!\nExisting attributes seem to be missing.\nCouldnt find turnovers to estimate dt.\nOutput set as 999.')
@@ -220,7 +248,9 @@ def possession(eventsPanda,TeamAstring,TeamBstring,targetEvents):
 
 def passes(eventsPanda,TeamAstring,TeamBstring,targetEvents):
 	targetEvents = {**targetEvents,'Passes':[]}
-
+	# If an error occurs here, then this may be a problem with Linux.
+	# Replace with: (and an if statement to check if targetEvents isempty)
+	# targetEvents = targetEvents.update({'Passes':[]})
 	if not 'Pass' in eventsPanda.keys():
 		# No Pass information, so return immediately
 		return targetEvents
@@ -246,8 +276,8 @@ def passes(eventsPanda,TeamAstring,TeamBstring,targetEvents):
 	ind = 0
 	if targetEvents['Possession'] != []:
 		for idx,i in enumerate(targetEvents['Possession']):
-			while targetEvents['Passes'][ind][0] >= i[0]: # after the start
-				if targetEvents['Passes'][ind][0] <= i[1]: # before the end
+			while targetEvents['Passes'][ind][0] >= i[2]: # after the start
+				if targetEvents['Passes'][ind][0] <= i[0]: # before the end
 					# Passing sequence is indicated by storing the nth possession per pass. This way, the number of consecutive passes can be easily deduced.
 					targetEvents['Passes'][ind] = (targetEvents['Passes'][ind][0],targetEvents['Passes'][ind][1],idx)
 					# current pass falls within current
