@@ -240,7 +240,10 @@ def fillGaps(df,**kwargs):
 			# 	pdb.set_trace()
 		else:
 			X_int = determineX_int(curTs,frameRateForInterpolation)
-
+		
+		if len(X_int) != len(np.unique(X_int)):
+			warn('\nWARNING: For some reason, the to be interpolated time had duplicate values.\nRemoved them, not sure about consequences.\nMight have something to do with jumps close together.\nCould avoid by making the threshold for jumps larger.\n')
+			X_int = np.unique(X_int)
 
 		# print(X_int)
 		# np.savetxt("C:\\Users\\rensm\\Documents\\SURFDRIVE\\Repositories\\NP repository\\X_int.csv", X_int, delimiter=",")

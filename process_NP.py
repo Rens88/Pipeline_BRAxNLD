@@ -129,8 +129,8 @@ rawHeaders = {'Ts': timestampString,\
 # ANALYSIS (file by file)
 #########################
 
-for dirtyFname in DirtyDataFiles[15:]:
-	# dirtyFname = 'data_JYSS_1E2_Pre test_Soccer_Gp 3 v 4_onesheet_inColumns.csv'
+for dirtyFname in DirtyDataFiles[25:]:
+	# dirtyFname = 'data_JYSS_1E3_Post test_Gp 5 v 6_onesheet_inColumns.csv'
 	print(	'\nFILE: << %s >>' %dirtyFname[:-4])
 	t = estimateRemainingTime.printProgress(t)
 	gc.collect()
@@ -191,6 +191,7 @@ for dirtyFname in DirtyDataFiles[15:]:
 	########################################################################################
 
 	attrPanda,attrLabel = spatialAggregation.process(rawPanda,attrPanda,attrLabel,TeamAstring,TeamBstring,skipSpatAgg_curFile,debuggingMode)
+	pdb.set_trace()
 
 	# NB: targetEVents is a dictionary with the key corresponding to the type of event.
 	# For each key, there is a tuple that contains (timeOfEvent,TeamID,..) 
