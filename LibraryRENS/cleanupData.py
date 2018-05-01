@@ -49,7 +49,7 @@ if __name__ == '__main__':
 	NP(dataFiles,cleanFname,folder,cleanedFolder,TeamAstring,TeamBstring)
 
 #########################################################################
-def process(dirtyFname,cleanFname,dataType,dataFolder,cleanedFolder,spatAggFname,spatAggFolder,eventAggFolder,eventAggFname,TeamAstring,TeamBstring,headers,readAttributeCols,timestampString,readEventColumns,conversionToMeter,skipCleanup,skipSpatAgg,skipEventAgg,exportData, exportDataString,debuggingMode):
+def process(dirtyFname,cleanFname,dataType,dataFolder,cleanedFolder,spatAggFname,spatAggFolder,eventAggFolder,eventAggFname,TeamAstring,TeamBstring,headers,readAttributeCols,timestampString,readEventColumns,conversionToMeter,skipCleanup,skipSpatAgg,skipEventAgg,exportData, exportDataString,includeCleanupInterpolation,datasetFramerate,debuggingMode):
 	tCleanup = time.time()	# do stuff
 
 	debugOmittedRows = False # Optional export of data that was omitted in the cleaning process
@@ -101,7 +101,7 @@ def process(dirtyFname,cleanFname,dataType,dataFolder,cleanedFolder,spatAggFname
 			skipEventAgg = False
 		if debuggingMode:
 			elapsed = str(round(time.time() - tCleanup, 2))
-			print('Time elapsed during cleanupData: %ss' %elapsed)
+			print('***** Time elapsed during cleanupData: %ss' %elapsed)
 		return loadFolder,loadFname,fatalIssue,skipSpatAgg,skipEventAgg
 
 	skipEventAgg = False
@@ -121,7 +121,7 @@ def process(dirtyFname,cleanFname,dataType,dataFolder,cleanedFolder,spatAggFname
 		
 		if debuggingMode:
 			elapsed = str(round(time.time() - tCleanup, 2))
-			print('Time elapsed during cleanupData: %ss' %elapsed)
+			print('***** Time elapsed during cleanupData: %ss' %elapsed)
 		return loadFolder,loadFname,fatalIssue,skipSpatAgg,skipEventAgg#, readAttributeCols#, attrLabel
 	else: # create a new clean Fname
 		print('\nCleaning up file...')
@@ -141,7 +141,7 @@ def process(dirtyFname,cleanFname,dataType,dataFolder,cleanedFolder,spatAggFname
 
 			if debuggingMode:
 				elapsed = str(round(time.time() - tCleanup, 2))
-				print('Time elapsed during cleanupData: %ss' %elapsed)
+				print('***** Time elapsed during cleanupData: %ss' %elapsed)
 			return loadFolder,loadFname,fatalIssue,skipSpatAgg,skipEventAgg
 
 		## Genereic clean up function (for all datasets)
@@ -156,11 +156,14 @@ def process(dirtyFname,cleanFname,dataType,dataFolder,cleanedFolder,spatAggFname
 		# df_cleaned.to_csv('C:\\Users\\rensm\\Documents\\PostdocLeiden\\NP repository\\Output\\test.csv')
 		df_cleaned = verifyGroupRows(df_cleaned)
 
+		## OLD BUT USEFUL
 		# Confirm whether Every timestamp occurs equally often, to enable indexing based on timestamp
-		tsConsistent = verifyTimestampConsistency(df_cleaned,TeamAstring,TeamBstring)
-		if not tsConsistent:
-			warn('\nTO DO: Timestamp is not consistent: \nWrite the code to smooth out timestamp.')
-		
+		# tsConsistent = verifyTimestampConsistency(df_cleaned,TeamAstring,TeamBstring)
+			## you could omit interpolation to save time. But 
+			# if not tsConsistent:
+				# --> interpolation highly recommended
+		## \OLD BUT USEFUL
+
 		# The first fatal error. Skip file and continue.
 		fatalTimeStampIssue = checkForFatalTimestampIssue(df_cleaned)
 		
@@ -180,7 +183,8 @@ def process(dirtyFname,cleanFname,dataType,dataFolder,cleanedFolder,spatAggFname
 			df_Fatal.to_csv(cleanedFolder + cleanFname)
 			fatalIssue = True
 		else:
-			df_cleaned = FillGaps_and_Filter.process(df_cleaned)
+			if includeCleanupInterpolation:
+				df_cleaned = FillGaps_and_Filter.process(df_cleaned,datasetFramerate = datasetFramerate)
 			df_cleaned.to_csv(cleanedFolder + cleanFname)
 	
 		# Optional: Export data that has been omitted, in case you suspect that relevent rows were omitted.
@@ -204,7 +208,7 @@ def process(dirtyFname,cleanFname,dataType,dataFolder,cleanedFolder,spatAggFname
 
 	if debuggingMode:
 		elapsed = str(round(time.time() - tCleanup, 2))
-		print('Time elapsed during cleanupData: %ss' %elapsed)
+		print('***** Time elapsed during cleanupData: %ss' %elapsed)
 
 	return loadFolder,loadFname,fatalIssue,skipSpatAgg,skipEventAgg#, readAttributeCols#, attrLabel
 
@@ -464,6 +468,16 @@ def verifyGroupRows(df_cleaned):
 	uniqueTs = pd.unique(df_cleaned['Ts'])
 	uniqueTs = np.sort(uniqueTs)	
 	
+	# if not any(groupRows):
+	# 	# groupRows don't exist. Let's see if there are any rows without PlayerID
+	# 	everyPlayerIDs = df_cleaned['PlayerID'].unique()
+	# 	everyPlayerIDs = pd.DataFrame(everyPlayerIDs,columns = ['everyPlayerIDs'])
+	# 	if any(everyPlayerIDs[everyPlayerIDs['everyPlayerIDs'].isnull()]):
+	# 		warn('\nWARNING: Found rows without a PlayerID.\nThe pipeline assumes these rows are groupRows.\n')
+	# 		groupRows = df_cleaned['PlayerID'].isnull().index
+	# 		df_cleaned.loc[groupRows,'PlayerID'] = 'groupRow'
+
+
 	# When there are no group rows, they need to be created for every unique timestamp.
 	if df_cleaned['Ts'][(groupRows)].empty:# and not any(df_cleaned['PlayerID'] == 'groupRow'):
 		# If groupRows don't exist, then create them

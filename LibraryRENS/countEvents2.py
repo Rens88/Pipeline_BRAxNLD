@@ -39,10 +39,12 @@ def goals(window,aggregateEvent,targetEvents,TeamAstring,TeamBstring,exportData,
 		goalsDelta = float(abs(goalCountA - goalCountB))
 
 	else: # no 'goals' information
-		goalCount = None
-		goalCountA = None
-		goalCountB = None
-		goalsDelta = None
+		# goalCount = None
+		# goalCountA = None
+		# goalCountB = None
+		# goalsDelta = None
+		return exportData,exportDataString,exportFullExplanation
+
 	# To export:
 	exportDataString.append('goalCount')
 	exportData.append(goalCount)
@@ -82,10 +84,12 @@ def turnovers(window,aggregateEvent,targetEvents,TeamAstring,TeamBstring,exportD
 		turnoverCountB = len([i for i in turnoverCharacteristics if TeamBstring in i])
 		turnoverDelta = abs(turnoverCountA - turnoverCountB)
 	else: # no 'possession' information, outcome should be missing
-		turnoverCount = None
-		turnoverCountA = None
-		turnoverCountB = None
-		turnoverDelta = None
+		# turnoverCount = None
+		# turnoverCountA = None
+		# turnoverCountB = None
+		# turnoverDelta = None
+		return exportData,exportDataString,exportFullExplanation
+
 
 	# # To export:'
 	exportDataString.append('turnoverCount')
@@ -165,26 +169,28 @@ def possessions(window,aggregateEvent,targetEvents,TeamAstring,TeamBstring,expor
 
 	else: # no 'possession' information
 		# define missing outcome variables here
-		possessionCount = None
-		possessionCountA = None
-		possessionCountB = None
-		possessionCountDelta = None
-		possessionCountNone = None
+		# possessionCount = None
+		# possessionCountA = None
+		# possessionCountB = None
+		# possessionCountDelta = None
+		# possessionCountNone = None
 
-		possessionDurationSum = None
-		possessionDurationSumA = None
-		possessionDurationSumB = None
-		possessionDurationSumNone = None
+		# possessionDurationSum = None
+		# possessionDurationSumA = None
+		# possessionDurationSumB = None
+		# possessionDurationSumNone = None
 
-		possessionDurationAvg = None
-		possessionDurationAvgA = None
-		possessionDurationAvgB = None
-		possessionDurationAvgNone = None
+		# possessionDurationAvg = None
+		# possessionDurationAvgA = None
+		# possessionDurationAvgB = None
+		# possessionDurationAvgNone = None
 
-		possessionDurationStd = None
-		possessionDurationStdA = None
-		possessionDurationStdB = None
-		possessionDurationStdNone = None
+		# possessionDurationStd = None
+		# possessionDurationStdA = None
+		# possessionDurationStdB = None
+		# possessionDurationStdNone = None
+		return exportData,exportDataString,exportFullExplanation
+
 
 	# # To export:'
 	# possessionCount in occurence (or frequency) in the whole trial
@@ -283,10 +289,11 @@ def passes(window,aggregateEvent,targetEvents,TeamAstring,TeamBstring,exportData
 		passDelta = float(abs(passCountA - passCountB))
 
 	else: # no 'passes' information
-		passCount = None
-		passCountA = None
-		passCountB = None
-		passDelta = None
+		# passCount = None
+		# passCountA = None
+		# passCountB = None
+		# passDelta = None
+		return exportData,exportDataString,exportFullExplanation
 
 	if targetEvents['Passes'] != [] and targetEvents['Possession'] != []:
 		consecutivePassesPerPossession = []
@@ -408,124 +415,124 @@ def passes(window,aggregateEvent,targetEvents,TeamAstring,TeamBstring,exportData
 	safetyWarning.checkLengthExport(exportData,exportDataString,exportFullExplanation)
 	return exportData,exportDataString,exportFullExplanation
 
-def passes2(rowswithinrange,aggregateEvent,possessionCharacteristics,rawDict,attributeDict,TeamAstring,TeamBstring,exportData,exportDataString,exportFullExplanation):
+# def passes2(rowswithinrange,aggregateEvent,possessionCharacteristics,rawDict,attributeDict,TeamAstring,TeamBstring,exportData,exportDataString,exportFullExplanation):
 	
-	i = [idx for idx,val in enumerate(exportDataString) if val == 'possessionCount']
-	possessionCount = exportData[i[0]]
-	i = [idx for idx,val in enumerate(exportDataString) if val == 'possessionCountA']
-	possessionCountA = exportData[i[0]]
-	i = [idx for idx,val in enumerate(exportDataString) if val == 'possessionCountB']
-	possessionCountB = exportData[i[0]]
+# 	i = [idx for idx,val in enumerate(exportDataString) if val == 'possessionCount']
+# 	possessionCount = exportData[i[0]]
+# 	i = [idx for idx,val in enumerate(exportDataString) if val == 'possessionCountA']
+# 	possessionCountA = exportData[i[0]]
+# 	i = [idx for idx,val in enumerate(exportDataString) if val == 'possessionCountB']
+# 	possessionCountB = exportData[i[0]]
 
 
-	## TO DO: CHANGE this to not use attributeDict['Pass']
-	passInfo = [attributeDict['Pass'][j] for j in rowswithinrange]
-	passes = [i for i in passInfo if i != '']
+# 	## TO DO: CHANGE this to not use attributeDict['Pass']
+# 	passInfo = [attributeDict['Pass'][j] for j in rowswithinrange]
+# 	passes = [i for i in passInfo if i != '']
 
-	passOut = np.ones((len(passes),2),dtype='int')*-1
-	count = 0
-	for idx,i in enumerate(passInfo):
-		if not i == '':
-			passOut[count,1] = idx
-			if TeamAstring in i:
-				passOut[count,0] = 0
-			elif TeamBstring in i:
-				passOut[count,0] = 1
-			else:
-				warn('\n\nCould not recognize team:\n<<%s>>' %i)
-			if 'oal' in i:
-				# ITS A GOAL NOT A PASS, so skip this file
-				warn('\n!!!!!!!!!!!\nInconsistent data input: Goal was found in the passing column:\nEither improve code or clean up data.\n!!!!!!!!!!!')
-				overwriteOutput = True
-				break
-			count = count + 1
+# 	passOut = np.ones((len(passes),2),dtype='int')*-1
+# 	count = 0
+# 	for idx,i in enumerate(passInfo):
+# 		if not i == '':
+# 			passOut[count,1] = idx
+# 			if TeamAstring in i:
+# 				passOut[count,0] = 0
+# 			elif TeamBstring in i:
+# 				passOut[count,0] = 1
+# 			else:
+# 				warn('\n\nCould not recognize team:\n<<%s>>' %i)
+# 			if 'oal' in i:
+# 				# ITS A GOAL NOT A PASS, so skip this file
+# 				warn('\n!!!!!!!!!!!\nInconsistent data input: Goal was found in the passing column:\nEither improve code or clean up data.\n!!!!!!!!!!!')
+# 				overwriteOutput = True
+# 				break
+# 			count = count + 1
 
-	# To export:
-	exportDataString.append('passCount')
-	exportData.append(float(len(passes)))
-	passCountA = sum([TeamAstring in i for i in passes])
-	exportFullExplanation.append('Number of passes per %s.' %aggregateEvent)
+# 	# To export:
+# 	exportDataString.append('passCount')
+# 	exportData.append(float(len(passes)))
+# 	passCountA = sum([TeamAstring in i for i in passes])
+# 	exportFullExplanation.append('Number of passes per %s.' %aggregateEvent)
 
-	exportDataString.append('passCountA')
-	exportData.append(float(passCountA))
-	passCountB = sum([TeamBstring in i for i in passes])
-	exportFullExplanation.append('Number of passes by %s per %s.' %(TeamAstring,aggregateEvent))
+# 	exportDataString.append('passCountA')
+# 	exportData.append(float(passCountA))
+# 	passCountB = sum([TeamBstring in i for i in passes])
+# 	exportFullExplanation.append('Number of passes by %s per %s.' %(TeamAstring,aggregateEvent))
 	
-	exportDataString.append('passCountB')
-	exportData.append(float(passCountB))
-	exportFullExplanation.append('Number of passes by %s per %s.' %(TeamBstring,aggregateEvent))
+# 	exportDataString.append('passCountB')
+# 	exportData.append(float(passCountB))
+# 	exportFullExplanation.append('Number of passes by %s per %s.' %(TeamBstring,aggregateEvent))
 	
-	exportDataString.append('passDelta')
-	exportData.append(float(abs(passCountA - passCountB)))
-	exportFullExplanation.append('Absolute difference between number of passes scored by %s and %s.' %(TeamAstring,TeamBstring))
+# 	exportDataString.append('passDelta')
+# 	exportData.append(float(abs(passCountA - passCountB)))
+# 	exportFullExplanation.append('Absolute difference between number of passes scored by %s and %s.' %(TeamAstring,TeamBstring))
 
-	ind = 0
-	ConsecutivePasses = []
-	PassessPossession = []
+# 	ind = 0
+# 	ConsecutivePasses = []
+# 	PassessPossession = []
 
-	for idx,i in enumerate(possessionCharacteristics):
-		tmp = 0		
-		if len(passOut) != 0: # Skip this if there were no passess during the current possession
-			while passOut[ind][1] >= i[0]: # after the start
-				if passOut[ind][1] <= i[4]: # before the end
-					tmp = tmp + 1
-					# current pass falls within current
-					if len(passOut) > ind+1:
-						ind = ind + 1
-					else:
-						break
-				else:
-					# pass belongs in next section
-					break
-		ConsecutivePasses.append(tmp)
-		PassessPossession.append(i[2])
+# 	for idx,i in enumerate(possessionCharacteristics):
+# 		tmp = 0		
+# 		if len(passOut) != 0: # Skip this if there were no passess during the current possession
+# 			while passOut[ind][1] >= i[0]: # after the start
+# 				if passOut[ind][1] <= i[4]: # before the end
+# 					tmp = tmp + 1
+# 					# current pass falls within current
+# 					if len(passOut) > ind+1:
+# 						ind = ind + 1
+# 					else:
+# 						break
+# 				else:
+# 					# pass belongs in next section
+# 					break
+# 		ConsecutivePasses.append(tmp)
+# 		PassessPossession.append(i[2])
 
-	if ConsecutivePasses == [] or ConsecutivePasses == [0] or possessionCount == 0: # no passes detected, overwrite output
-		ConsecutivePassesAvg = None
-		overwriteOutput = True # might be obsolete
-		PassessPossession = [TeamAstring,TeamBstring] # might be obsolete
-	else:
-		ConsecutivePassesAvg = float(sum(ConsecutivePasses) / possessionCount)
+# 	if ConsecutivePasses == [] or ConsecutivePasses == [0] or possessionCount == 0: # no passes detected, overwrite output
+# 		ConsecutivePassesAvg = None
+# 		overwriteOutput = True # might be obsolete
+# 		PassessPossession = [TeamAstring,TeamBstring] # might be obsolete
+# 	else:
+# 		ConsecutivePassesAvg = float(sum(ConsecutivePasses) / possessionCount)
 
-	exportDataString.append('ConsecutivePassesMax')
-	exportData.append(float(max(ConsecutivePasses)))
-	exportFullExplanation.append('Maximum number of consecutive passes during one possession per %s.' %aggregateEvent)
+# 	exportDataString.append('ConsecutivePassesMax')
+# 	exportData.append(float(max(ConsecutivePasses)))
+# 	exportFullExplanation.append('Maximum number of consecutive passes during one possession per %s.' %aggregateEvent)
 
-	exportDataString.append('ConsecutivePassesMaxA')
-	consPassesA = [val for idx,val in enumerate(ConsecutivePasses) if PassessPossession[idx] == TeamAstring]
-	if consPassesA == [] or possessionCountA == 0:
-		consPassesA = [0]
-		ConsecutivePassesAvgA = None
-	else:
-		ConsecutivePassesAvgA = float(sum([val for idx,val in enumerate(ConsecutivePasses) if PassessPossession[idx] == TeamAstring]) / possessionCountA)
-	exportData.append(float(max(consPassesA)))
-	exportFullExplanation.append('Maximum number of consecutive passes during one possession by %s per %s.' %(TeamAstring,aggregateEvent))
+# 	exportDataString.append('ConsecutivePassesMaxA')
+# 	consPassesA = [val for idx,val in enumerate(ConsecutivePasses) if PassessPossession[idx] == TeamAstring]
+# 	if consPassesA == [] or possessionCountA == 0:
+# 		consPassesA = [0]
+# 		ConsecutivePassesAvgA = None
+# 	else:
+# 		ConsecutivePassesAvgA = float(sum([val for idx,val in enumerate(ConsecutivePasses) if PassessPossession[idx] == TeamAstring]) / possessionCountA)
+# 	exportData.append(float(max(consPassesA)))
+# 	exportFullExplanation.append('Maximum number of consecutive passes during one possession by %s per %s.' %(TeamAstring,aggregateEvent))
 
-	exportDataString.append('ConsecutivePassesMaxB')
-	consPassesB = [val for idx,val in enumerate(ConsecutivePasses) if PassessPossession[idx] == TeamBstring]
-	if consPassesB == [] or possessionCountB == 0:
-		consPassesB = [0]
-		ConsecutivePassesAvgB = None
-	else:
-		ConsecutivePassesAvgB = float(sum([val for idx,val in enumerate(ConsecutivePasses) if PassessPossession[idx] == TeamBstring]) / possessionCountB)
-	exportData.append(float(max(consPassesB)))
-	exportFullExplanation.append('Maximum number of consecutive passes during one possession by %s per %s.' %(TeamBstring,aggregateEvent))
+# 	exportDataString.append('ConsecutivePassesMaxB')
+# 	consPassesB = [val for idx,val in enumerate(ConsecutivePasses) if PassessPossession[idx] == TeamBstring]
+# 	if consPassesB == [] or possessionCountB == 0:
+# 		consPassesB = [0]
+# 		ConsecutivePassesAvgB = None
+# 	else:
+# 		ConsecutivePassesAvgB = float(sum([val for idx,val in enumerate(ConsecutivePasses) if PassessPossession[idx] == TeamBstring]) / possessionCountB)
+# 	exportData.append(float(max(consPassesB)))
+# 	exportFullExplanation.append('Maximum number of consecutive passes during one possession by %s per %s.' %(TeamBstring,aggregateEvent))
 
-	# Average per possession
-	exportDataString.append('ConsecutivePassesAvg')
-	exportData.append(ConsecutivePassesAvg)
-	exportFullExplanation.append('Average number of consecutive passes during one possession by %s per %s.' %(TeamAstring,aggregateEvent))
+# 	# Average per possession
+# 	exportDataString.append('ConsecutivePassesAvg')
+# 	exportData.append(ConsecutivePassesAvg)
+# 	exportFullExplanation.append('Average number of consecutive passes during one possession by %s per %s.' %(TeamAstring,aggregateEvent))
 
-	exportDataString.append('ConsecutivePassesAvgA')
-	exportData.append(ConsecutivePassesAvgA)
-	exportFullExplanation.append('Average number of consecutive passes during one possession by %s per %s.' %(TeamAstring,aggregateEvent))
+# 	exportDataString.append('ConsecutivePassesAvgA')
+# 	exportData.append(ConsecutivePassesAvgA)
+# 	exportFullExplanation.append('Average number of consecutive passes during one possession by %s per %s.' %(TeamAstring,aggregateEvent))
 
-	exportDataString.append('ConsecutivePassesAvgB')
-	exportData.append(ConsecutivePassesAvgB)
-	exportFullExplanation.append('Average number of consecutive passes during one possession by %s per %s.' %(TeamBstring,aggregateEvent))
+# 	exportDataString.append('ConsecutivePassesAvgB')
+# 	exportData.append(ConsecutivePassesAvgB)
+# 	exportFullExplanation.append('Average number of consecutive passes during one possession by %s per %s.' %(TeamBstring,aggregateEvent))
 
-	safetyWarning.checkLengthExport(exportData,exportDataString,exportFullExplanation)
+# 	safetyWarning.checkLengthExport(exportData,exportDataString,exportFullExplanation)
 
-	return exportData,exportDataString,exportFullExplanation
-#################################################################
-#################################################################
+# 	return exportData,exportDataString,exportFullExplanation
+# #################################################################
+# #################################################################

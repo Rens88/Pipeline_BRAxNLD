@@ -41,7 +41,7 @@ def process(loadFname,loadFolder,skipSpatAgg_curFile,readAttributeCols,readEvent
 
 	if debuggingMode:
 		elapsed = str(round(time.time() - tImport, 2))
-		print('Time elapsed during imporTimeseries: %ss' %elapsed)
+		print('***** Time elapsed during imporTimeseries: %ss' %elapsed)
 
 	return rawPanda,attrPanda,attrLabel,eventsPanda,eventsLabel
 

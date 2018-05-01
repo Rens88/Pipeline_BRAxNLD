@@ -47,12 +47,14 @@ def checkFolders(folder,aggregateLevel,skipToDataSetLevel,skipCleanup,skipSpatAg
 
 	# Verify if folders exists
 	if not exists(dataFolder):
-		warn('\nWARNING: dataFolder not found.\nMake sure that you put your data in the folder <%s>\n' %dataFolder)
+		warn('\nFATAL WARNING: dataFolder not found.\nMake sure that you put your data in the folder <%s>\n' %dataFolder)
 		exit()
 	if not exists(outputFolder):
 		makedirs(outputFolder)
 	if not exists(tmpFigFolder):
 		makedirs(tmpFigFolder)
+	if not exists(tmpFigFolder + 'trialVisualization' + sep):
+		makedirs(tmpFigFolder + 'trialVisualization' + sep)
 	if not exists(cleanedFolder):
 		makedirs(cleanedFolder)
 	if not exists(spatAggFolder):

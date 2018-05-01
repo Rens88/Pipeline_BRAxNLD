@@ -33,7 +33,7 @@ import numpy as np
 import pandas as pd
 from os.path import isfile, join, isdir
 from os import listdir, path
-from warnings import warn
+from warnings import warn, filterwarnings
 import time
 # From my own library:
 import plotSnapshot
@@ -52,8 +52,7 @@ if __name__ == '__main__':
 	# Aggregates a range of pre-defined features over a specific window:
 	specific(rowswithinrange,aggregateString,rawDict,attributeDict,exportData,exportDataString,exportFullExplanation,TeamAstring,TeamBstring)	
 
-def process(targetEvents,aggregateLevel,rawDict,attributeDict,exportData,exportDataString,exportFullExplanation,TeamAstring,TeamBstring,debuggingMode,skipEventAgg_curFile,fileIdentifiers,attrLabel):
-
+def process(targetEvents,aggregateLevel,rawDict,attributeDict,exportData,exportDataString,exportFullExplanation,TeamAstring,TeamBstring,debuggingMode,skipEventAgg_curFile,fileIdentifiers,attrLabel,aggregatePerPlayer,includeEventInterpolation,datasetFramerate):
 	tTempAgg = time.time()
 	FileID = "_".join(fileIdentifiers)
 
@@ -67,22 +66,28 @@ def process(targetEvents,aggregateLevel,rawDict,attributeDict,exportData,exportD
 	aggregationOrders = aggregationOrder*len(populations)
 	aggrMeth_playerLevel = ['avg', 'std'] # specifically for pertime perplayer
 	aggrMeth_popLevel = ['avg', 'std','cnt']
+
 	## If you want a combination of all possible methods, then use these strings: (NB, this explodes the number of features)
 	# aggregationOrders = ['perTimePerPlayer','perTimePerPlayer','perTimePerPlayer','perPlayerPerTime','perPlayerPerTime','perPlayerPerTime']
 	# populations = ['allTeam','refTeam','othTeam','allTeam','refTeam','othTeam']
 	# aggrMeth_playerLevel = ['avg', 'std', 'sumVal', 'minVal', 'maxVal', 'med', 'sem', 'kur', 'ske']
 	# aggrMeth_popLevel = ['avg', 'std', 'sumVal', 'minVal', 'maxVal', 'med', 'sem', 'kur', 'ske']
-
 	
 	# Create an empty dataFrame where the eventExcerpt will be stored.
 	eventExcerptPanda = pd.DataFrame()
 	# To which UID and refTeam should be added
 	if aggregateLevel[0] == 'None':
 		warn('\nWARNING: No temporal aggregate level indicated. \nNo temporally aggregated data exported.\nChange aggregateEvent = <%s> in USER INPUT.\n' %aggregateLevel[0])
+		if debuggingMode:
+			elapsed = str(round(time.time() - tTempAgg, 2))
+			print('***** Time elapsed during temporalAggregation: %ss' %elapsed)
 		return exportData,exportDataString,exportFullExplanation,eventExcerptPanda,attrLabel
 
 	elif len(targetEvents[aggregateLevel[0]]) == 0:
 		warn('\nWARNING: No targetevents detected. \nCouldnt aggregate temporally. \nNo Data exported.\n')
+		if debuggingMode:
+			elapsed = str(round(time.time() - tTempAgg, 2))
+			print('***** Time elapsed during temporalAggregation: %ss' %elapsed)
 		return exportData,exportDataString,exportFullExplanation,eventExcerptPanda,attrLabel
 
 	# The export matrix includes a range of outcome measures that don't change per event (these are already in <exportData>)
@@ -96,6 +101,8 @@ def process(targetEvents,aggregateLevel,rawDict,attributeDict,exportData,exportD
 	exportFullExplanation.append('Unique identifier of the <<%s>> events.' %aggregateLevel[0])
 	exportDataString.append('RefTeam')
 	exportFullExplanation.append('Teamstring of the reference team the <<%s>> events refer to.' %aggregateLevel[0])
+	exportDataString.append('OthTeam')
+	exportFullExplanation.append('Teamstring of the other team (i.e., not reference) the <<%s>> events refer to.' %aggregateLevel[0])
 
 	# All the outcome measures that exist
 	attrDictCols = [i for i in attributeDict.columns if not i in ['Ts','TeamID','PlayerID','X','Y']]
@@ -114,7 +121,6 @@ def process(targetEvents,aggregateLevel,rawDict,attributeDict,exportData,exportD
 
 	## Loop over every event
 	for idx,currentEvent in enumerate(targetEvents[aggregateLevel[0]]):
-		
 		#####################################
 		## Prepare export of current event ##
 		#####################################
@@ -166,7 +172,6 @@ def process(targetEvents,aggregateLevel,rawDict,attributeDict,exportData,exportD
 
 		## Assign refTeam
 		refTeam = currentEvent[1]
-		exportCurrentData.append(refTeam) # NB: String and explanation are defined before the for loop	
 		if refTeam == TeamAstring:
 			# Team A becomes ref and team B becomes other
 			ref = 'A'
@@ -178,17 +183,32 @@ def process(targetEvents,aggregateLevel,rawDict,attributeDict,exportData,exportD
 			oth = 'A'
 			othTeam = TeamAstring
 		else:
-			warn('\nWARNING: refTeam <%s> did not correspond with TeamAstring <%s> or TeamBstring <%s>.\nCould not establish who the refernce team was.\nContinued with <%s> as refTeam.\n' %(refTeam,TeamAstring,TeamBstring,TeamAstring))
+			warn('\nWARNING: refTeam <%s> did not correspond with TeamAstring <%s> or TeamBstring <%s>.\nCould not establish who the reference team was.\nContinued with <%s> as refTeam.\n' %(refTeam,TeamAstring,TeamBstring,TeamAstring))
 			ref = 'A'
 			oth = 'B'
 			refTeam = TeamAstring
 			othTeam = TeamBstring
+		exportCurrentData.append(refTeam) # NB: String and explanation are defined before the for loop	
+		exportCurrentData.append(othTeam) # NB: String and explanation are defined before the for loop	
 
 		## Change attribute keys to refer to refTeam and othTeam		
 		# WEAKNESS: relies on attribute keys to end with 'A' or 'B' in team scenarios.
 		keyAttr = attrLabel.keys()
 		copyTheseKeys_A = [ikey for ikey in keyAttr if ikey[-1] == 'A']
 		copyTheseKeys_B = [ikey for ikey in keyAttr if ikey[-1] == 'B']
+
+		# Write a warning: If a gropuRow that doesn't end in A or B, warn about the weakness
+		groupRowsInds = rawDict[rawDict['PlayerID'] == 'groupRow'].index
+		for attrKey in attributeDict.keys():
+			if attrKey in ['PlayerID','TeamID','Ts','X','Y']:
+				continue
+			if all(attributeDict.loc[groupRowsInds,attrKey].notnull()):
+				if not (attrKey[-1] == 'A' or attrKey[-1] == 'B'):
+					warn('\nWARNING: The pipeline recognizes team spatial aggregates based on whether they end with <A> or <B> (case-sensitive).\nIt seems that a team spatial aggregate <%s> did not end with A or B.\nIf you want the spatial aggregate to be split based on the reference team, change the name of the outcome variable to end with A or B.\n' %attrKey)
+			else:
+				if attrKey[-1] == 'A' or attrKey[-1] == 'B':
+					warn('\nWARNING: The pipeline recognizes team spatial aggregates based on whether they end with <A> or <B> (case-sensitive).\nIt seems that a player spatial aggregate <%s> ended with A or B.\nThis may cause problems. Avoid using A or B as the last string of any player level outcome variables.\n' %attrKey)
+
 		for ikey in copyTheseKeys_A:
 			attrLabel.update({ikey[:-1] + '_ref': attrLabel[ikey].replace(TeamAstring,'refTeam')})
 		for ikey in copyTheseKeys_B:
@@ -226,19 +246,13 @@ def process(targetEvents,aggregateLevel,rawDict,attributeDict,exportData,exportD
 		# curEventExcerptPanda = curEventExcerptPanda.set_index('eventTimeIndex', drop=True, append=False, inplace=False, verify_integrity=False)
 		# # !!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
-		# Skip this step for Full?
-		# For everything with a t_end --> add normalized time?
-		# Interpolate data to allow for direct comparisons between events (also at dataset level)
-		interpolatedCurEventExcerptPanda = \
-		interpolateEventExcerpt(curEventExcerptPanda,freqInterpolatedData,tStart,tEnd,aggregateLevel)
-		
-		# interpolatedCurEventExcerptPanda.to_csv('C:\\Users\\rensm\\Documents\\SURFDRIVE\\Repositories\\NP repository\\test.csv')
-		# # store interpolatedVals instead of curEventExcerptPanda..
-		# curEventExcerptPanda.to_csv('C:\\Users\\rensm\\Documents\\SURFDRIVE\\Repositories\\NP repository\\test2.csv')
-
-
-		# Create a panda where all events are stored (before temporal aggregation)
-		eventExcerptPanda = eventExcerptPanda.append(interpolatedCurEventExcerptPanda)
+		# This interpolation step makes sure the timestamps of all events (across the dataset) are identical.
+		# NB: whenever interpolation happened at cleanupData, then it's not necessary here anymore.
+		if includeEventInterpolation:
+			interpolatedCurEventExcerptPanda = \
+			interpolateEventExcerpt(curEventExcerptPanda,freqInterpolatedData,tStart,tEnd,aggregateLevel,refTeam,datasetFramerate)
+		else:
+			interpolatedCurEventExcerptPanda = curEventExcerptPanda
 
 		#######################
 		## End of prepration ##
@@ -275,6 +289,8 @@ def process(targetEvents,aggregateLevel,rawDict,attributeDict,exportData,exportD
 			curContent = np.isnan(interpolatedCurEventExcerptPanda[key]) == False			
 			tmpPlayerID = interpolatedCurEventExcerptPanda['PlayerID'][curContent]
 			tmpTeampID = interpolatedCurEventExcerptPanda['TeamID'][curContent]
+			
+			players = np.sort(interpolatedCurEventExcerptPanda.loc[curContent,'PlayerID'].unique())		# THIS IS THE SAME, regardless of which key is used. So, only once, export player IDs			
 
 			## Make outcome variable dependent on current event's refTeam
 			# NB: attrLabel is already changed earlier.			
@@ -316,7 +332,7 @@ def process(targetEvents,aggregateLevel,rawDict,attributeDict,exportData,exportD
 					warn('\FATAL ERROR: A variable seemed to be covering multiple sets (playerRows and [groupRows and/or ballRows]).\nThis should be avoided or accounted for in the code.\n')
 					exit()
 					# To avoid errors: either separate variables covering multiple sets, or add code here that joins targetGroups..
-			
+
 			# Temporal aggregation (across ALL player vals and/or team vals and/or ball vals)
 			data = interpolatedCurEventExcerptPanda[key][curContent]
 			exportCurrentData, overallString, overallExplanation = \
@@ -330,230 +346,76 @@ def process(targetEvents,aggregateLevel,rawDict,attributeDict,exportData,exportD
 					population = populations[i]
 					exportCurrentData, overallString, overallExplanation = \
 					aggregateTemporallyINCEPTION(population,aggregationOrder,aggrMeth_popLevel,aggrMeth_playerLevel,interpolatedCurEventExcerptPanda,key,refTeam,othTeam,attrLabel,eventDescrString, exportCurrentData, overallString, overallExplanation)
+				if key in aggregatePerPlayer:
+					
+					# Create the attrlabel for 22 players (that may remain empty)
+					for i in np.arange(0,22):
 
+						newKey = '%s_%02d' %(key,i+1)
+						attrLabel[newKey] = attrLabel[key]# + 'Of the %sth player (see PlayerID_XX).' %i+1
 
+						if len(players) >= i + 1:
+							curPlayerData = interpolatedCurEventExcerptPanda.loc[interpolatedCurEventExcerptPanda['PlayerID'] == players[i],key]
+							curPlayerData = curPlayerData[np.isnan(curPlayerData) == False]
+
+							data = curPlayerData
+							targetGroup = '%sth player' %(i+1)
+
+							# there are still players, so continue to put players in the aggreagte
+							exportCurrentData, overallString, overallExplanation = \
+							aggregateTemporally(data,exportCurrentData,targetGroup,newKey,attrLabel[newKey],eventDescrString, overallString, overallExplanation,aggrMethods = aggrMeth_popLevel)
+
+						else:
+							# Less than 22 players, for the remaining players, export NaN
+							data = pd.DataFrame([])
+							exportCurrentData, overallString, overallExplanation = \
+							aggregateTemporally(data,exportCurrentData,targetGroup,newKey,attrLabel[newKey],eventDescrString, overallString, overallExplanation,aggrMethods = aggrMeth_popLevel,exportNans = True)
+
+		# Create a panda where all events are stored (before temporal aggregation)
+		# This includes the ref_team edits.
+		eventExcerptPanda = eventExcerptPanda.append(interpolatedCurEventExcerptPanda)
+
+		# Here, add the player IDs for player levels vars that were aggregated at the player level
+		if not aggregatePerPlayer == []:
+			for i in np.arange(0,22):
+				overallString.append('Player_%02d' %(i+1))
+				overallExplanation.append('The PlayerID of the <%sth> player as represented in the individually aggregated variables for the current event.' %i)
+				
+				if len(players) >= i + 1:
+					exportCurrentData.append(players[i])				
+				else:
+					exportCurrentData.append(np.nan)
 
 		# Create a matrix where all temporally aggregated data of each event are stored
 		exportMatrix.append(exportCurrentData)
 
 	if debuggingMode:
 		elapsed = str(round(time.time() - tTempAgg, 2))
-		print('Time elapsed during temporalAggregation: %ss' %elapsed)
+		print('***** Time elapsed during temporalAggregation: %ss' %elapsed)
 	return exportMatrix,overallString,overallExplanation,eventExcerptPanda,attrLabel
 
-# def resampleData(x,y,xnew,order): # order 1) = linear, 2) = quadratic, 3) = cubic
-# 	f = InterpolatedUnivariateSpline(x, y, k=order)
-# 	f = interp1d(x, y)
-
-# 	ynew = f(xnew)   # use interpolation function returned by `interp1d`
-# 	# limit ynew to values around original x
-# 	# next(x[0] for x in enumerate(L) if x[1] > 0.7)
-# 	return[ynew]
-
-def interpolateEventExcerpt(curEventExcerptPanda,freqInterpolatedData,tStart,tEnd,aggregateLevel):
+def interpolateEventExcerpt(curEventExcerptPanda,freqInterpolatedData,tStart,tEnd,aggregateLevel,refTeam,datasetFramerate):
 	#####################################
 	## Create a version of curEventExcerptPanda with interpolated values (to have the same EXACT timestamps for all events)
 	# replace 'eventTimeIndex'
 
-	## INCLUDE it in the key level loop. Separately add all columns that are not in attributDictCols (which may not need to be interpolated??)
-	# eventLevelInterpolation (for the purpose of aligning the various timeseries --> averaging, plotting, etc.)
-	
-	everyPlayerIDs = pd.unique(curEventExcerptPanda['PlayerID'])	
-	# Create the time (X) that can be used for interpolation
-	###### this one worked
-	# tmp = np.arange(tStart,tEnd + 1/freqInterpolatedData, 1/freqInterpolatedData) # referring to eventTime
+	# Create the time (X) that can be used for interpolation (X_int)
 	tStartRound = np.round(tStart,math.ceil(math.log(freqInterpolatedData,10)))
 	tEndRound = np.round(tEnd,math.ceil(math.log(freqInterpolatedData,10)))
 	tmp = np.arange(tStartRound,tEndRound + 1/freqInterpolatedData, 1/freqInterpolatedData) # referring to eventTime
-
 	X_int = np.round(tmp,math.ceil(math.log(freqInterpolatedData,10))) # automatically rounds it to the required number of significant numbers (decimal points) for the given sampling frequency (to avoid '0' being stored as 1.474746 E16 AND 1.374750987 E16)
-	
-	# Create an array that is empty and has the same size as the interpoloated values will have.
-	newIndex = np.arange(0,len(everyPlayerIDs) * len(X_int))
-	# interpolatedVals = pd.DataFrame(np.nan, index=newIndex, columns=[key])			
-	
 
+	interpolatedVals = FillGaps_and_Filter.fillGaps(curEventExcerptPanda,eventInterpolation = True,fixed_X_int = X_int,aggregateLevel = aggregateLevel,datasetFramerate = datasetFramerate)
 
-	# interpolatedVals = pd.DataFrame(index=newIndex)			
+	# interpolatedVals.to_csv('C:\\Users\\rensm\\Documents\\SURFDRIVE\\Repositories\\NP repository\\test.csv')
 
-
-
-
-	# use FillGaps_and_Filter instead??
-
-	interpolatedVals = FillGaps_and_Filter.fillGaps(curEventExcerptPanda, checkForJumps = True)
-	# np.sort(interpolatedVals['Ts'].unique())
-	
-	for ix,q in enumerate(np.sort(interpolatedVals['Ts'].unique())):
-		interpolatedVals.loc[interpolatedVals['Ts'] == q  ,'eventTimeIndex'] = ix - len(np.sort(interpolatedVals['Ts'].unique())) + 1
-
-	return interpolatedVals
-	# curEventExcerptPanda.to_csv('C:\\Users\\rensm\\Documents\\SURFDRIVE\\Repositories\\NP repository\\test_pre.csv')
-
-	# df_filled.to_csv('C:\\Users\\rensm\\Documents\\SURFDRIVE\\Repositories\\NP repository\\test.csv')
-	# warn('\nWARNING: Could not use the whole window leading up to this event due to temporal jumps in the data.\nThe intended window was <%ss>, whereas the window from the last jump until the event was <%ss>.\n\n**********\n**********\n**********\nSTILL TO DO: Write an exception for <full> and for other events with a start AND an end.\n**********\n**********\n**********\n' %(aggregateLevel[1],windowWithoutJumps))
-	# continue
-	pdb.set_trace()
-
-
-
-
-	## admittedly not the prettiest way....
-	# It requires a for loop per key, then a for loop per unique playerID....
+	##### This WORKED as well:
+	# interpolatedVals = FillGaps_and_Filter.fillGapsConsistentTimestamps(curEventExcerptPanda,X_int,aggregateLevel,refTeam)
 	#
-	# Interpolate each key separately
-	for key in curEventExcerptPanda.keys():
-	# Only interpolate numerical keys.
-	# The other keys should be treated differently
-	# Do the interpolation separately for every player
-
-		# print('key = <%s>, dtype = <%s>' %(key,type(curEventExcerptPanda[key].iloc[0])))
-		isString = [str_ix for str_ix,q in enumerate(curEventExcerptPanda[key]) if type(q) == str] 					# Search for rows where the cell has content
-		# isString = [q.index for q in curEventExcerptPanda[key] if type(q) == str]
-		if key == 'eventTimeIndex'or key == 'Ts' or key == 'eventTime' :
-			continue
-			##########
-			# why does it give this error 'value below interpolation range??'
-
-		mustBeTeamLevelKey = False
-		for nthPlayer, everyPlayerID in enumerate(everyPlayerIDs):
-
-			# Prepare indices to Store it in the panda
-			start_ix = (1 + nthPlayer) * len(X_int) - len(X_int) 
-			end_ix = (1 + nthPlayer) * len(X_int) -1
-			interpolatedVals.loc[start_ix : end_ix,'Ts'] = X_int # The same every time, only needs to be done once. Could use it as a check though, as they should always be the same
-			interpolatedVals.loc[start_ix : end_ix,'EventTime'] = X_int - X_int[-1] # The same every time, only needs to be done once. Could use it as a check though, as they should always be the same
-			interpolatedVals.loc[start_ix : end_ix,'EventIndex'] = np.arange(-len(X_int)+1,0+1) # The same every time, only needs to be done once. Could use it as a check though, as they should always be the same
-			# Select the current rows (should capture one timeseries)
-			# curRows = curEventExcerptPanda.loc[curEventExcerptPanda['PlayerID'] == everyPlayerID]['Ts'].index
-			curRows = curEventExcerptPanda.loc[curEventExcerptPanda['PlayerID'] == everyPlayerID].index
-
-			# Take only the indices that are notnull
-			curIdx = curRows[np.where(pd.notnull(curEventExcerptPanda.loc[curRows][key]))]
-
-			if len(curIdx) == 0:
-				# Do nothing for this player
-				# print('no data')
-				mustBeTeamLevelKey = True
-				continue
-
-			curX = curEventExcerptPanda.loc[curIdx]['Ts']
-			curY = curEventExcerptPanda.loc[curIdx][key]
-
-			if any(isString):
-				# If they current key contains a string, it's not possible to interpolate.
-				# In some cases, it concerns:
-				# - event identifiers
-				# - player level identifiers
-				# - OR string events
-				# Event identifiers and player level identifiers can simply be copied:
-				if all(curEventExcerptPanda[key] == curEventExcerptPanda[key].iloc[0]):
-					# If they're all the same (i.e., event identifiers)
-					interpolatedVals.loc[:,key] = curEventExcerptPanda[key].iloc[0]
-					if not key in ['temporalAggregate','RefTeam','EventUID','School','Class','Group', 'Test', 'Exp','MatchContinent','MatchCountry','MatchID','HomeTeamContinent','HomeTeamCountry','HomeTeamAgeGroup','HomeTeamID','AwayTeamContinent','AwayTeamCountry','AwayTeamAgeGroup','AwayTeamID' ]:
-						warn('\nWARNING: Key <%s> was identified as an event identifier.\nTherefore, no data was interpolated, instead, the same value was copied for all cells.\n' %key)
-					break
-				elif all(curY == curY.iloc[0]) and not mustBeTeamLevelKey:
-					# If they're all the same for the current player (player level identifier)
-					interpolatedVals.loc[start_ix : end_ix,key] = curY.iloc[0]
-					if not key in ['TeamID','PlayerID']:
-						warn('\nWARNING: Key <%s> was identified as a player level identifier.\nTherefore, no data was interpolated, instead, the same value was copied for all cells of the current player.\n' %key)
-					continue
-				else:
-					if not key in ['Run','Possession/Turnover','Pass']:
-						warn('\nWARNING: Key <%s> was identified as a string event.\nTherefore, no data was interpolated, instead, the same value was copied to the cell with the interpolated time index closest to the original time index.\n' %key)
-
-					# Check whether there are less cells with content than cells in X_int AND the original X
-					if len(isString) >= len(X_int) or len(isString) >= len(curRows):
-						warn('\nWARNING: Identified key <%s> as a column with string events.\n(String events have a string in the row where the event happens, the remaining rows are empty.)\nBut this seems unlikely, as there were more events than time indices.\nThis may result in an error, is there are no cells to interpolate the string events to (they\'re currently transferred to the interpolated time value that lies closest to the original time value, i.e., 1 on 1)\n' %key)
-						# (if there are more, it can't have been a string event)
-	
-					for stringEvent in isString:
-						timeOfEvent = curEventExcerptPanda['Ts'].iloc[stringEvent]
-						# Find time in X_int that is closest to timeOfEvent
-						# nearestTimeOfEvent = [abs(X_int - timeOfEvent) == min(abs(X_int - timeOfEvent))].index
-						nearestTimeOfEvent = np.where(abs(X_int - timeOfEvent) == min(abs(X_int - timeOfEvent)))
-						# Currently, it's possible that a time index is chosen that has no corresponding positional data. (it may be the one frame before, or the one frame after)
-
-						# Put the stringEvent there, and leave the rest as an empty string i.e., '' 
-						ix_event = start_ix + nearestTimeOfEvent[0]
-						interpolatedVals.loc[ix_event,key] = curEventExcerptPanda[key].iloc[stringEvent]
-
-					continue
-
-
-			# Check if 'jumps' exist, because it should crop the window selected
-			# A jump is based on the median of the framerates per frame. To be presize, a deviation 1.5 times the median
-			t0 = curX[:-1].reset_index(level=None, drop=False, inplace=False)
-			t1 = curX[1:].reset_index(level=None, drop=False, inplace=False)
-
-			dt = t1-t0
-			jumps = dt['Ts'][dt['Ts']>(np.median(dt['Ts'])*1.5)]
-
-			if jumps.empty:
-				# No jumps
-				## Using interp1d here to avoid (for example) negative values where they can't exist.
-				## Spline interpolation can be used on the raw data. Not on the aggregated data.
-				s = interp1d(curX, curY)		
-				
-				try:
-					Y_int = s(X_int)				
-				except:
-					print(min(curX[1:-1]),min(X_int))		
-					print(max(curX[1:-1]),max(X_int))		
-					print('---')
-					print(curX)
-					print('----')
-					print(X_int)
-					pdb.set_trace()
-				# 104.11 96.8
-				# 111.81 111.8
-
-				# 70.41 70.3
-				# 85.32 85.3
-			else:
-								
-				# Adjust for jumps in time.
-				jumpStarts = t0['Ts'][dt['Ts']>(np.median(dt['Ts'])*1.5)]
-				jumpEnds = t1['Ts'][dt['Ts']>(np.median(dt['Ts'])*1.5)]
-				endOfLastJump = jumpEnds.iloc[-1]
-
-				curX_cropped = curX[curX >= endOfLastJump]
-				curY_cropped = curY[curX >= endOfLastJump]
-								
-				# It excludes the X_int preceding endOfLastJump
-				X_int_cropped = X_int[X_int >= endOfLastJump]
-				### This also works; The last value in tmp is the X_int value prior to where the data restarts (BUT NOT WITH interp1d)
-				# # Find all times in X_int before endOfLastJump
-				# tmp = [i for i, x in enumerate(X_int) if x < endOfLastJump]
-				# X_int_cropped = X_int[tmp[-1]:]
-				# start_ix = start_ix + tmp[-1] +1
-
-				windowWithoutJumps = max(curX_cropped) - endOfLastJump
-				warn('\nWARNING: Could not use the whole window leading up to this event due to temporal jumps in the data.\nThe intended window was <%ss>, whereas the window from the last jump until the event was <%ss>.\n\n**********\n**********\n**********\nSTILL TO DO: Write an exception for <full> and for other events with a start AND an end.\n**********\n**********\n**********\n' %(aggregateLevel[1],windowWithoutJumps))
-
-				## Using interp1d here to avoid (for example) negative values where they can't exist.
-				## Spline interpolation can be used on the raw data. Not on the aggregated data.
-				s = interp1d(curX_cropped, curY_cropped)
-				Y_int = s(X_int_cropped)
-								
-				tmp = next(i for i, x in enumerate(X_int) if x > endOfLastJump)
-				print(start_ix)
-				start_ix = start_ix + tmp -1
-				print(start_ix)
-				print('im croooooooooooped')
-
-			# Store in panda
-			try:
-				interpolatedVals.loc[start_ix : end_ix,key] = Y_int
-			except:
-				print(start_ix)
-				print(end_ix)
-				print(len(Y_int))
-				print(key)
-				interpolatedVals.loc[start_ix : end_ix,key] = Y_int
-
-
+	##### This works as well:
+	### interpolatedVals = FillGaps_and_Filter.fillGaps(curEventExcerptPanda, checkForJumps = True)
+	### for ix,q in enumerate(np.sort(interpolatedVals['Ts'].unique())):
+	### 	interpolatedVals.loc[interpolatedVals['Ts'] == q  ,'eventTimeIndex'] = ix - len(np.sort(interpolatedVals['Ts'].unique())) + 1
 
 	return interpolatedVals
 
@@ -634,7 +496,6 @@ def aggregateTemporallyINCEPTION(population,aggregationOrder,aggrMeth_popLevel,a
 			warn('\nFATAL WARNING: Could not identify aggregation method <%s>.' %meth)
 		
 		curKeyString = key + '_' + meth + '_' + aggregationOrder + '_' + popString
-
 		exportCurrentData, overallString, overallExplanation = \
 		aggregateTemporally(data,exportCurrentData,population,curKeyString,attrLabel[key],eventDescrString, overallString, overallExplanation, aggrMethods = aggrMeth_popLevel)
 
@@ -652,16 +513,38 @@ def aggregateTemporally(data,*positional_parameters,**keyword_parameters):
 	if 'no_export' in keyword_parameters:
 		no_export = keyword_parameters['no_export']
 	
-	count = np.count_nonzero(~np.isnan(data), axis = axis)
-	avg = np.nanmean(data, axis = axis)
-	std = np.nanstd(data, axis = axis)
-	sumVal = np.sum(data, axis = axis)
-	minVal = np.min(data, axis = axis)
-	maxVal = np.max(data, axis = axis)
-	med = np.median(data, axis = axis)
-	sem = stats.sem(data, axis = axis)
-	kur = stats.kurtosis(data, axis = axis)
-	ske = stats.skew(data, axis = axis)
+	exportNans = False
+	if 'exportNans' in keyword_parameters:
+		exportNans = keyword_parameters['exportNans']
+
+	if not exportNans:
+		count = np.count_nonzero(~np.isnan(data), axis = axis)
+		avg = np.nanmean(data, axis = axis)
+		std = np.nanstd(data, axis = axis)
+		sumVal = np.sum(data, axis = axis)
+		minVal = np.min(data, axis = axis)
+		maxVal = np.max(data, axis = axis)
+		# filterwarnings('error')
+		# try:
+		med = np.nanmedian(data, axis = axis)
+		# except:
+		# 	print(data)
+		# 	print('HERES A PROBLEM AFTER A MEDIAN')
+		# 	pdb.set_trace()
+		sem = stats.sem(data, axis = axis)
+		kur = stats.kurtosis(data, axis = axis)
+		ske = stats.skew(data, axis = axis)
+	else:
+		count = np.nan
+		avg = np.nan
+		std = np.nan
+		sumVal = np.nan
+		minVal = np.nan
+		maxVal = np.nan
+		med = np.nan
+		sem = np.nan
+		kur = np.nan
+		ske = np.nan		
 
 	if no_export:
 		return count, avg, std, sumVal, minVal, maxVal, med, sem, kur, ske

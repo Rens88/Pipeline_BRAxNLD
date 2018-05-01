@@ -1,6 +1,8 @@
 # 06-12-2017 Rens Meerhoff
 # Script to export a CSV. Check whether the file already exists and then adds it.
 
+import numpy as np
+import pandas as pd
 import pdb; #pdb.set_trace()
 import csv
 from warnings import warn
@@ -50,6 +52,16 @@ def process(trialEventsSpatAggExcerpt,exportData,exportDataString,exportFullExpl
 			laterColumns.append(ikey)
 	columnOrder = firstColumns + secondColumns + thirdColumns + laterColumns
 
+	if len(exportData[0]) <= len(firstColumns):
+		skippedData = True
+		newOrAdd(aggregatedOutputFilename,exportDataString,exportData,skippedData)	
+		warn('\nWARNING: No Data exported.\nProbably because there were no targetevents detected.\nCheck if this was warned for in temporalAggregation.\n')
+
+		if debuggingMode:
+			elapsed = str(round(time.time() - tExportCSV, 2))
+			print('***** Time elapsed during exportCSV: %ss' %elapsed)
+		return appendEventAggregate	
+
 	# Temporally aggregated data
 	skippedData = False
 	newOrAdd(aggregatedOutputFilename,exportDataString,exportData,skippedData)	
@@ -70,7 +82,7 @@ def process(trialEventsSpatAggExcerpt,exportData,exportDataString,exportFullExpl
 
 	if debuggingMode:
 		elapsed = str(round(time.time() - tExportCSV, 2))
-		print('Time elapsed during exportCSV: %ss' %elapsed)
+		print('***** Time elapsed during exportCSV: %ss' %elapsed)
 	return appendEventAggregate
 
 ######################################################################################################################################################	
@@ -167,7 +179,8 @@ def eventAggregate(eventAggFolder,eventAggFname,appendEventAggregate,trialEvents
 		if not ikey in columnOrder:
 			# ikey wasnt in columnOrder, add it to the end
 			warn('\nWARNING: <%s> existed in the data, but was not given in columnOrder.\nTherefore, it was added to the end of columnOrder.' %ikey)
-			columnOrder = columnOrder + ikey
+			# columnOrder = columnOrder + ikey
+			columnOrder.append(ikey)
 	for ikey in columnOrder:
 		if not ikey in combinedData:
 			# ikey wasnt in columnOrder, remove it
@@ -236,19 +249,19 @@ def newOrAdd(fname,header,data,skippedData):
 
 		if len(existingHeaders) != len(header):
 			if skippedData:
-				newData = [999]*len(existingHeaders)
+				newData = pd.DataFrame([np.nan]*len(existingHeaders),columns = ['newData'])
 				for idx,val in enumerate(existingHeaders):
 
 					tmp = [data[i] for i,s in enumerate(header) if val == s] # if the new header corresponds to the old header
 					if len(tmp) != 0:
-						newData[idx] = tmp[0]
+						newData.loc[idx,'newData'] = tmp[0]
 					else:
-						newData[idx] = None
+						newData.loc[idx,'newData'] = None
 					# if idx in header:
 					# 	index = [i for i, s in enumerate(header) if val == s]
 					# 	newData[idx] = data[index]
 				# print(data)
-				data = newData
+				data = newData['newData'].values.tolist()
 				# print(data)
 			else:
 				warn('\nWARNING: original file did not have the same number of columns as the newly exported data.\nConsider creating a new file or at least edit the existingHeaders.')	    

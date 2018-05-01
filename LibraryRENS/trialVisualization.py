@@ -5,7 +5,7 @@ import pdb; #pdb.set_trace()
 from warnings import warn
 import numpy as np
 from os.path import isfile, join, isdir, exists
-from os import listdir, makedirs
+from os import listdir, path, makedirs, sep
 # import CSVexcerpt
 import matplotlib.pyplot as plt
 from matplotlib import colors as mcolors
@@ -15,6 +15,7 @@ import matplotlib.lines as mlines
 import time
 import math
 import pandas as pd
+import time
 # import plotSnapshot
 
 if __name__ == '__main__':		
@@ -24,14 +25,18 @@ if __name__ == '__main__':
 	process(plotTheseAttributes,aggregateLevel,rawDict,attributeDict,attributeLabel,tmpFigFolder,fname,TeamAstring,TeamBstring)
 
 def process(plotTheseAttributes,aggregateLevel,eventExcerptPanda,attributeLabel,tmpFigFolder,fname,TeamAstring,TeamBstring,debuggingMode,dataType,fieldDimensions):
-	
-	tPlot = time.time()	# do stuff
-	
+	tmpFigFolder = tmpFigFolder + 'trialVisualization' + sep
+	tTrialVisualization = time.time()
+
 	xLabel = attributeLabel['Ts']
 	
 	if not 'temporalAggregate' in eventExcerptPanda.keys():
 		# No events detected
 		warn('\nWARNING: No temporalAggregate detected. \nCouldnt plot any data.\nUse <Random> to create random events, or <full> to plot the whole file.\nOr change <skipEventAgg> to True to run it at the trial level.')
+
+		if debuggingMode:
+			elapsed = str(round(time.time() - tTrialVisualization, 2))
+			print('***** Time elapsed during trialVisualization: %ss' %elapsed)
 		return
 
 	# For every unique event
@@ -105,8 +110,9 @@ def process(plotTheseAttributes,aggregateLevel,eventExcerptPanda,attributeLabel,
 		# if specialCase:
 		# 	break
 	if debuggingMode:
-		elapsed = str(round(time.time() - tPlot, 2))
-		print('Time elapsed during plotTimeseries: %ss' %elapsed)
+		elapsed = str(round(time.time() - tTrialVisualization, 2))
+		print('***** Time elapsed during trialVisualization: %ss' %elapsed)
+	return
 
 def	plotSnapshot(outputFilename,currentEvent,rowswithinrangePlayerA,rowswithinrangePlayerB,teamStrings,fileAggregateID,dataType,fieldDimensions):
 	
@@ -154,11 +160,11 @@ def	plotSnapshot(outputFilename,currentEvent,rowswithinrangePlayerA,rowswithinra
 	X_mid_bot = ( (XBR - XBL) / 2 ) + XBL
 	X_mid_top = ( (XTR - XTL) / 2 ) + XTL
 	
-	Y_mid_bot = ( (YBR - YBL) / 2 ) + YBL
-	Y_mid_top = ( (YTR - YTL) / 2 ) + YTL
+	Y_mid_left = ( (YBR - YBL) / 2 ) + YBL
+	Y_mid_right = ( (YTR - YTL) / 2 ) + YTL
 
 	X_mid_mid = ( (X_mid_top - X_mid_bot) / 2 ) + X_mid_bot
-	Y_mid_mid = ( (Y_mid_top - Y_mid_bot) / 2 ) + Y_mid_bot
+	Y_mid_mid = ( (Y_mid_right - Y_mid_left) / 2 ) + Y_mid_left
 
 	widthOfField = np.sqrt( (XBR - XTR)**2 + (YBR - YTR)**2 )
 	lengthOfField = np.sqrt( (XBR - XBL)**2 + (YBR - YBL)**2 )
@@ -166,13 +172,19 @@ def	plotSnapshot(outputFilename,currentEvent,rowswithinrangePlayerA,rowswithinra
 
 	# Plot the basic field
 	plt.plot([XBL, XBR, XTR, XTL, XBL], [YBL, YBR, YTR, YTL, YBL], color=borderColor, linestyle='-', linewidth=1) # Field outline
-	plt.plot([X_mid_bot, X_mid_top],[Y_mid_bot, Y_mid_top], color=borderColor, linestyle='-', linewidth=1) # middle line
+	plt.plot([X_mid_bot, X_mid_top],[Y_mid_left, Y_mid_right], color=borderColor, linestyle='-', linewidth=1) # middle line
 	plt.plot(X_mid_mid,Y_mid_mid,".", color = borderColor, markersize=3) # centre spot
 	MidCircle = plt.Circle((X_mid_mid,Y_mid_mid), MidCircleRadius, color=borderColor, fill=False, linewidth=1) # middle circle
 	ax.add_artist(MidCircle)
 
 	# For FDP, plot the full field (could be rotated as well?)
 	if dataType == 'FDP':
+		x1 = XBL
+		x2 = XBR
+		x0 = X_mid_bot
+		y1 = YBL
+		y2 = YTL
+		y0 = Y_mid_mid
 		# Plot the whole field (including penalty box etc.)
 		plt.plot([x1,x1+16.5,x1+16.5,x1], [y0-20,y0-20,y0+20,y0+20], color='k', linestyle='-', linewidth=1) # penalty box
 		plt.plot([x2,x2-16.5,x2-16.5,x2], [y0-20,y0-20,y0+20,y0+20], color='k', linestyle='-', linewidth=1) # penalty box
@@ -256,6 +268,9 @@ def findYlabel(plotThisAttribute,attributeLabel,TeamAstring,TeamBstring):
 	return yLabel
 
 def pairwisePerTeam(plotThisAttribute,eventExcerptPanda,rowswithinrangeTeam,teamStrings):
+	
+	# if not plotThisAttribute[0] in eventExcerptPanda.keys():
+
 	Y1 = eventExcerptPanda[plotThisAttribute[0]][rowswithinrangeTeam]
 	Y2 = eventExcerptPanda[plotThisAttribute[1]][rowswithinrangeTeam]
 

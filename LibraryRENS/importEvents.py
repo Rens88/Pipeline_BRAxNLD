@@ -21,7 +21,8 @@ import pandas as pd
 # import exportCSV
 
 import safetyWarning
-
+import student_XX_importEvents
+import time
 if __name__ == '__main__':
 	process(eventsPanda,TeamAstring,TeamBstring)
 
@@ -42,7 +43,9 @@ if __name__ == '__main__':
 	# 3 --> START time of the possession
 
 
-def process(eventsPanda,TeamAstring,TeamBstring):
+def process(eventsPanda,TeamAstring,TeamBstring,cleanFname,dataFolder,debuggingMode):
+	tImportEvents = time.time()
+	
 	targetEvents = {}
 	########################################################################################
 	####### Import existing events ######################################################
@@ -58,10 +61,18 @@ def process(eventsPanda,TeamAstring,TeamBstring):
 	# NB: If available, possession should be computed before passes to incorporate number of consecutive passes
 	# Could implement a safer procedure by starting with an empty dictionary and then adding the eventspecific dictionary after it's done the module (exporting an empty dictionary if info not available), then, the possession dictionary HAS to exist before going through
 	targetEvents = passes(eventsPanda,TeamAstring,TeamBstring,targetEvents)
-	targetEvents = full(eventsPanda,targetEvents)
+	targetEvents = full(eventsPanda,targetEvents,TeamAstring)
+
+	targetEvents = \
+	student_XX_importEvents.process(targetEvents,cleanFname,TeamAstring,TeamBstring,dataFolder)
+
+	if debuggingMode:
+		elapsed = str(round(time.time() - tImportEvents, 2))
+		print('***** Time elapsed during importEvents: %ss' %elapsed)
+
 	return targetEvents
 
-def full(eventsPanda,targetEvents):
+def full(eventsPanda,targetEvents,TeamAstring):
 	targetEvents = {**targetEvents,'Full':[]}
 	# If an error occurs here, then this may be a problem with Linux.
 	# Replace with: (and an if statement to check if targetEvents isempty)

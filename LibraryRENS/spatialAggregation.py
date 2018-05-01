@@ -69,7 +69,7 @@ def process(rawDict,attributeDict,attributeLabel,TeamAstring,TeamBstring,skipSpa
 	
 	if debuggingMode:
 		elapsed = str(round(time.time() - tSpatAgg, 2))
-		print('Time elapsed during spatialAggregation: %ss' %elapsed)
+		print('***** Time elapsed during spatialAggregation: %ss' %elapsed)
 	
 	return attributeDict, attributeLabel
 
@@ -109,10 +109,28 @@ def teamCentroid_panda(rawDict,attributeDict,attributeLabel,TeamAstring,TeamBstr
 	dfA = rawDict[rawDict['TeamID'] == TeamAstring]
 	dfB = rawDict[rawDict['TeamID'] == TeamBstring]
 	# Pivot X and Y dataframes for Team A
-	Team_A_X = dfA.pivot(columns='Ts', values='X')
-	Team_A_Y = dfA.pivot(columns='Ts', values='Y')
+	try:
+		Team_A_X = dfA.pivot(columns='Ts', values='X')		
+	except:
+		Team_A_X = np.nanmean(dfA['X'])
+		print(Team_A_X.shape)
+		print(dfA['X'].shape)
+		print(len(ind_groupRows))
+		pdb.set_trace()
+
+	try:
+		Team_A_Y = dfA.pivot(columns='Ts', values='Y')
+	except:
+		Team_A_Y = np.nanmean(dfA['Y'])
+		print(dfA.shape)
+		pdb.set_trace()
+
 	# Pivot X and Y dataframes for Team B
-	Team_B_X = dfB.pivot(columns='Ts', values='X')
+	try:
+		Team_B_X = dfB.pivot(columns='Ts', values='X')
+	except:
+		print(dfB.shape)
+		pdb.set_trace()
 	Team_B_Y = dfB.pivot(columns='Ts', values='Y')   
 
 	# The warnings below were included to debug problems with different lengths per team and/or group row
