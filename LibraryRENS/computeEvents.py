@@ -32,12 +32,16 @@ def process(targetEvents,aggregateLevel,rawPanda,attrPanda,eventsPanda,TeamAstri
 		targetEvents = \
 		addRandomEvents(rawPanda,targetEvents,TeamAstring,TeamBstring)	
 
+	if aggregateLevel[0].lower() == 'regular':
+		targetEvents = \
+		addRegularEvents(rawPanda,targetEvents,TeamAstring,TeamBstring,aggregateLevel)	
+
 	targetEvents = \
 	student_XX_computeEvents.process(targetEvents,aggregateLevel,rawPanda,attrPanda,eventsPanda,TeamAstring,TeamBstring)
 	
 	if debuggingMode:
 		elapsed = str(round(time.time() - tComputeEvents, 2))
-		print('Time elapsed during computeEvents: %ss' %elapsed)
+		print('***** Time elapsed during computeEvents: %ss' %elapsed)
 	
 	return targetEvents
 
@@ -48,8 +52,8 @@ def addRandomEvents(rawPanda,targetEvents,TeamAstring,TeamBstring):
 
 	# Number of random events
 	nRandom = 5
-	tStart = math.ceil(targetEvents['Full'][0])
-	tEnd = math.floor(targetEvents['Full'][1])
+	tStart = math.ceil(targetEvents['Full'][0][2])
+	tEnd = math.floor(targetEvents['Full'][0][0])
 
 	timeRange = range(tStart,tEnd)
 	
@@ -72,5 +76,46 @@ def addRandomEvents(rawPanda,targetEvents,TeamAstring,TeamBstring):
 			randomEvents.append((rawPanda['Ts'][idxEqual],teamStrings[randomTeam]))	
 
 	targetEvents = {**targetEvents,'Random':randomEvents}
+	# If an error occurs here, then this may be a problem with Linux.
+	# Replace with: (and an if statement to check if targetEvents isempty)
+	# targetEvents = targetEvents.update({'Random':randomEvents})
+
+	return targetEvents
+
+def addRegularEvents(rawPanda,targetEvents,TeamAstring,TeamBstring,aggregateLevel):
+
+	# aggregateLevel[0] --> event ID
+	# aggregateLevel[1] --> window (s)
+	# aggregateLevel[2] --> lag (s)
+
+
+	tStart = math.ceil(targetEvents['Full'][0][2])
+	tEnd = math.floor(targetEvents['Full'][0][0])
+
+
+	# Number of random events
+	nRandom = 5
+	timeRange = range(tStart,tEnd)
+	# From end to start, to make sure that the end is included	
+	regularTimes = np.arange(tEnd,tStart,-aggregateLevel[1])
+	regularTimes = np.sort(regularTimes)
+
+	regularEvents = []
+	# teamStrings = (TeamAstring,TeamBstring)
+
+	for regularTime in regularTimes:
+		diff = abs(rawPanda['Ts'] - regularTime)
+		idxEqual = diff[diff == min(diff)].index
+		# randomTeam = random.randint(0,1)
+
+		if not type(idxEqual) == np.int64:
+			regularEvents.append((rawPanda['Ts'][idxEqual[0]],TeamAstring))	
+		else:
+			regularEvents.append((rawPanda['Ts'][idxEqual],TeamAstring))	
+
+	targetEvents = {**targetEvents,'Regular':regularEvents}
+	# If an error occurs here, then this may be a problem with Linux.
+	# Replace with: (and an if statement to check if targetEvents isempty)
+	# targetEvents = targetEvents.update({'Regular':regularEvents})
 
 	return targetEvents
