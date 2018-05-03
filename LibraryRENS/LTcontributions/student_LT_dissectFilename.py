@@ -14,11 +14,11 @@ from warnings import warn
 import pdb; #pdb.set_trace()
 
 ## Here, you can clarify which functions exist in this module.
-if __name__ == '__main__': 
-	
+if __name__ == '__main__':
+
 	# -- fname --
 	# Contains the filename string
-	
+
 	# -- dataType --
 	# Contains the code that you can use to make the analysis specific to your dataType
 
@@ -26,7 +26,7 @@ if __name__ == '__main__':
 	# Contains the strings of the Team A as they should be in the dataset.
 
 	# -- TeamAstring --
-	# Contains the strings of the Team B as they should be in the dataset.	
+	# Contains the strings of the Team B as they should be in the dataset.
 	process(fname,dataType,TeamAstring,TeamBstring)
 
 	default(fname)
@@ -43,8 +43,13 @@ def process(fname,dataType,TeamAstring,TeamBstring):
 
 	return exportData, exportDataString, exportDataFullExplanation,cleanFname,TeamAstring,TeamBstring
 
+<<<<<<< HEAD:LibraryRENS/LTcontributions/student_LT_dissectFilename.py
 def KNVB(fname):	
 	# Using regular expression to extract info from filename		
+=======
+def KNVB(fname):
+	# Using regular expression to extract info from filename
+>>>>>>> origin/VP:LibraryRENS/XXcontributions/student_XX_dissectFilename.py
 	regex = r'(\d{8})_([a-zA-Z\s\d]*)_([a-zA-Z\s\d]*)'
 	match = re.search(regex,fname)
 	if match:

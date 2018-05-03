@@ -12,26 +12,41 @@ from os.path import isfile, join, isdir, exists
 from os import listdir, path, makedirs
 import re
 import pandas as pd
+<<<<<<< HEAD
 import student_LT_dissectFilename
+=======
+import student_XX_dissectFilename
+import time
+
+>>>>>>> origin/VP
 
 if __name__ == '__main__':
-	
+
 	process(fname,dataType,TeamAstring,TeamBstring)
 	FDP(fname)
 	NP(fname)
+	KNVB(fname)
 	default(fname)
 
 
 #########################################################################
-def process(fname,dataType,TeamAstring,TeamBstring):
+def process(fname,dataType,TeamAstring,TeamBstring,debuggingMode):
+
+	tDissectFilename = time.time()	# do stuff
+
 	if dataType == "NP":
 		exportData, exportDataString, exportDataFullExplanation,cleanFname = NP(fname)
+
 	elif dataType == "FDP":
 		exportData, exportDataString, exportDataFullExplanation,cleanFname,TeamAstring,TeamBstring = FDP(fname)
 	elif dataType == "KNVB":
 		exportData, exportDataString, exportDataFullExplanation,cleanFname,TeamAstring,TeamBstring = \
+<<<<<<< HEAD
 		student_LT_dissectFilename.process(fname,dataType,TeamAstring,TeamBstring)
 		# exportData, exportDataString, exportDataFullExplanation,cleanFname = default(fname)
+=======
+		student_XX_dissectFilename.KNVB(fname)
+>>>>>>> origin/VP
 	else:
 		exportData, exportDataString, exportDataFullExplanation,cleanFname = \
 		student_LT_dissectFilename.process(fname,dataType,TeamAstring,TeamBstring)
@@ -39,10 +54,13 @@ def process(fname,dataType,TeamAstring,TeamBstring):
 
 	spatAggFname = 'TimeseriesAttributes_' + cleanFname
 
+	if debuggingMode:
+		elapsed = str(round(time.time() - tDissectFilename, 2))
+		print('***** Time elapsed during dissectFilename: %ss' %elapsed)
 	return exportData, exportDataString, exportDataFullExplanation,cleanFname,spatAggFname,TeamAstring,TeamBstring
 
-def FDP(fname):	
-	# Using regular expression to extract info from filename		
+def FDP(fname):
+	# Using regular expression to extract info from filename
 	regex = r'([a-zA-Z]{1})([a-zA-Z]{1})(\d+)_([a-zA-Z]{1})([a-zA-Z]{1})(\d{1})(\d{3})_v_([a-zA-Z]{1})([a-zA-Z]{1})(\d{1})(\d{3})'
 	match = re.search(regex,fname)
 	if match:
@@ -96,28 +114,28 @@ def NP(fname):
 			elif Class in ['1E1', '1E2']:
 				Exp = 'LP'
 			else:
-				warn('\nCould not identify experimental gruop: <%s>' %fname)				
+				warn('\nWARNING: Could not identify experimental gruop: <%s>' %fname)
 
 		else:
-			warn('\nCould not identify class: <%s>' %fname)
+			warn('\nWARNING: Could not identify class: <%s>' %fname)
 	elif 'St Pat' in fname:
 		School = 'StPt'
-		
+
 		classStrings = ['1A','1E','12','13']
 		Class = ['X' + i for i in classStrings if i in fname]
 		if Class == [] or len(Class) > 1:
-			warn('\nCould not identify class: <%s>' %fname)				
+			warn('\nCould not identify class: <%s>' %fname)
 		Class = Class[0]
 		if Class in ['X1A', 'X13']:
 			Exp = 'NP'
 		elif Class in ['X1E', 'X12']:
 			Exp = 'LP'
 		else:
-			warn('\nCould not identify experimental gruop: <%s>' %fname)
+			warn('\nWARNING: Could not identify experimental gruop: <%s>' %fname)
 
 	else:
-		warn('\nCould not identify School: <%s>' %fname)
-	
+		warn('\nWARNING: Could not identify School: <%s>' %fname)
+
 	# Test
 	if re.search('ret',fname, re.IGNORECASE):
 		Test = 'RET'
@@ -128,17 +146,17 @@ def NP(fname):
 	elif re.search('pos',fname, re.IGNORECASE):
 		Test = 'POS'
 	else:
-		warn('\nCould not identify Test: <%s>' %fname)
+		warn('\nWARNING: Could not identify Test: <%s>' %fname)
 
 	if ' v ' in fname:
 		grInd = fname.find(' v ')
 		Group = (fname[grInd-1] +  'v' + fname[grInd + 3])
 	else:
-		warn('\nCould not identify group: <%s>' %fname)
+		warn('\nWARNING: Could not identify group: <%s>' %fname)
 
 	cleanFname = School + '_' + Class + '_' + Group + '_' + Test + '_' + Exp + '.csv'
 
-	exportData = [School, Class, Group, Test, Exp]
+	exportData = [str(School), str(Class), str(Group), str(Test), str(Exp)]
 	exportDataString = ['School', 'Class', 'Group', 'Test', 'Exp']
 	exportDataFullExplanation = ['School experiment was held at','Class the participants were from','Identifier groups that played each other','Name of the type of trial (PRE = pre-test, POS = post-test, TRA = transfer test, RET = retention test)', 'Experimental group (LP = Linear Pedagogy, NP = Nonlinear Pedgagogy)']
 

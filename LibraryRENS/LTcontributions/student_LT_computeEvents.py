@@ -82,8 +82,8 @@ def addRandomEvents(rawPanda,targetEvents,TeamAstring,TeamBstring):
 
 	# Number of random events
 	nRandom = 5
-	tStart = math.ceil(targetEvents['Full'][0])
-	tEnd = math.floor(targetEvents['Full'][1])
+	tStart = math.ceil(targetEvents['Full'][0][2])
+	tEnd = math.floor(targetEvents['Full'][0][0])
 
 	timeRange = range(tStart,tEnd)
 	
