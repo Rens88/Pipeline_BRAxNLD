@@ -42,23 +42,23 @@ def process(rawDict,attributeDict,attributeLabel,TeamAstring,TeamBstring,skipSpa
 	# Per Team and for both teams
 
 	# Use this is an example for a GROUP level aggregate
-	attributeDict,attributeLabel = \
-	teamCentroid_panda(rawDict,attributeDict,attributeLabel,TeamAstring,TeamBstring,skipSpatAgg)
+	# attributeDict,attributeLabel = \
+	# teamCentroid_panda(rawDict,attributeDict,attributeLabel,TeamAstring,TeamBstring,skipSpatAgg)
 
-	# Use this is an example for a PLAYER level aggregate
-	attributeDict,attributeLabel = \
-	distanceToCentroid(rawDict,attributeDict,attributeLabel,TeamAstring,TeamBstring,skipSpatAgg)
+	# # Use this is an example for a PLAYER level aggregate
+	# attributeDict,attributeLabel = \
+	# distanceToCentroid(rawDict,attributeDict,attributeLabel,TeamAstring,TeamBstring,skipSpatAgg)
 
-	attributeDict,attributeLabel = \
-	teamSpread_asPanda(rawDict,attributeDict,attributeLabel,TeamAstring,TeamBstring,skipSpatAgg)
+	# attributeDict,attributeLabel = \
+	# teamSpread_asPanda(rawDict,attributeDict,attributeLabel,TeamAstring,TeamBstring,skipSpatAgg)
 
-	attributeDict,attributeLabel = \
-	teamSurface_asPanda(rawDict,attributeDict,attributeLabel,TeamAstring,TeamBstring,skipSpatAgg)
+	# attributeDict,attributeLabel = \
+	# teamSurface_asPanda(rawDict,attributeDict,attributeLabel,TeamAstring,TeamBstring,skipSpatAgg)
 
-	# Computing vNorm, technically requires some form of temporalAggregation. 
-	# This is permitted ONLY if the compute variable returns a value for every timeframe.
-	attributeDict,attributeLabel = \
-	vNorm(rawDict,attributeDict,attributeLabel,TeamAstring,TeamBstring,skipSpatAgg)
+	# # Computing vNorm, technically requires some form of temporalAggregation. 
+	# # This is permitted ONLY if the compute variable returns a value for every timeframe.
+	# attributeDict,attributeLabel = \
+	# vNorm(rawDict,attributeDict,attributeLabel,TeamAstring,TeamBstring,skipSpatAgg)
 
 	attributeDict,attributeLabel = \
 	student_LT_spatialAggregation.process(rawDict,attributeDict,attributeLabel,TeamAstring,TeamBstring,skipSpatAgg)

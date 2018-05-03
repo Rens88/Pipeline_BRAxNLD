@@ -13,7 +13,7 @@ import plotSnapshot
 import safetyWarning
 import pandas as pd
 import time
-import student_XX_computeEvents
+import student_LT_computeEvents
 
 if __name__ == '__main__':
 
@@ -33,7 +33,7 @@ def process(targetEvents,aggregateLevel,rawPanda,attrPanda,eventsPanda,TeamAstri
 		addRandomEvents(rawPanda,targetEvents,TeamAstring,TeamBstring)	
 
 	targetEvents = \
-	student_XX_computeEvents.process(targetEvents,aggregateLevel,rawPanda,attrPanda,eventsPanda,TeamAstring,TeamBstring)
+	student_LT_computeEvents.process(targetEvents,aggregateLevel,rawPanda,attrPanda,eventsPanda,TeamAstring,TeamBstring)
 	
 	if debuggingMode:
 		elapsed = str(round(time.time() - tComputeEvents, 2))

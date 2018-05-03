@@ -29,7 +29,7 @@ def process(fname,dataType,TeamAstring,TeamBstring):
 	elif dataType == "FDP":
 		exportData, exportDataString, exportDataFullExplanation,cleanFname,TeamAstring,TeamBstring = FDP(fname)
 	elif dataType == "KNVB":
-		exportData, exportDataString, exportDataFullExplanation,cleanFname = \
+		exportData, exportDataString, exportDataFullExplanation,cleanFname,TeamAstring,TeamBstring = \
 		student_LT_dissectFilename.process(fname,dataType,TeamAstring,TeamBstring)
 		# exportData, exportDataString, exportDataFullExplanation,cleanFname = default(fname)
 	else:

@@ -71,6 +71,8 @@ def process(dirtyFname,cleanFname,dataType,dataFolder,cleanedFolder,spatAggFname
 		return loadFolder,loadFname,fatalIssue,skipSpatAgg
 
 	skipSpatAgg = False # over-rule skipSpatAgg as the corresponding spatAgg output file could not be found
+	halfTime = -1 #LT: added!
+	secondHalfTime = -1 #LT: added!
 	if cleanFname in cleanFnames and skipCleanup:
 		with open(cleanedFolder+cleanFname, 'r') as f:
 			reader = csv.reader(f)
@@ -97,6 +99,9 @@ def process(dirtyFname,cleanFname,dataType,dataFolder,cleanedFolder,spatAggFname
 			NP(dirtyFname,cleanFname,dataFolder,cleanedFolder,headers,readAttributeCols,debugOmittedRows,readEventColumns,TeamAstring,TeamBstring)
 		elif dataType == "FDP":
 			df_cleaned,df_omitted,fatalTeamIDissue = FDP(dirtyFname,cleanFname,dataFolder,cleanedFolder,headers,readAttributeCols,debugOmittedRows,readEventColumns,TeamAstring,TeamBstring)
+		elif dataType == "KNVB":#LT: added!
+			df_cleaned,df_omitted,fatalTeamIDissue = \
+			student_LT_cleanUp.process(dirtyFname,cleanFname,dataFolder,cleanedFolder,headers,readAttributeCols,debugOmittedRows,readEventColumns,TeamAstring,TeamBstring)
 		else:
 			# overwrite cleanedFolder and add a warning that no cleanup had taken place
 			loadFolder = dataFolder
@@ -127,9 +132,6 @@ def process(dirtyFname,cleanFname,dataType,dataFolder,cleanedFolder,spatAggFname
 		
 		# The first fatal error. Skip file and continue.
 		fatalTimeStampIssue = checkForFatalTimestampIssue(df_cleaned)
-		
-		df_cleaned,df_omitted = \
-		student_LT_cleanUp.process(df_cleaned,df_omitted,TeamAstring,TeamBstring,headers,readAttributeCols,readEventColumns)
 
 		if exists(cleanedFolder + cleanFname):
 			warn('\nOverwriting file <%s> \nin cleanedFolder <%s>.\n' %(cleanFname,cleanedFolder))
@@ -169,7 +171,7 @@ def process(dirtyFname,cleanFname,dataType,dataFolder,cleanedFolder,spatAggFname
 		elapsed = str(round(time.time() - tCleanup, 2))
 		print('Time elapsed during cleanupData: %ss' %elapsed)
 
-	return loadFolder,loadFname,fatalIssue,skipSpatAgg#, readAttributeCols#, attrLabel
+	return loadFolder,loadFname,fatalIssue,skipSpatAgg#,halfTime,secondHalfTime #, readAttributeCols#, attrLabel
 
 def FDP(fname,cleanFname,dataFolder,cleanedFolder,headers,readAttributeCols,debugOmittedRows,readEventColumns,TeamAstring,TeamBstring):
 
@@ -213,10 +215,6 @@ def FDP(fname,cleanFname,dataFolder,cleanedFolder,headers,readAttributeCols,debu
 	else:
 		fatalTeamIDissue = False
 
-
-	print(headers)
-	print(ID)
-
 	df_cropped01,df_omitted01 = omitXandY_equals0(df,x,y,ID)
 	df_cropped02,df_omitted02 = omitRowsWithout_XandY(df_cropped01,x,y)	
 	df_cropped03,df_omitted03 =	omitRowsWithExtreme_XandY(df_cropped02,x,y,expectedVals)	
@@ -226,8 +224,7 @@ def FDP(fname,cleanFname,dataFolder,cleanedFolder,headers,readAttributeCols,debu
 	## End cleanup for BRAxNLD
 
 	df_cleaned = df_cropped03
-	print(df_cleaned.keys())
-	# pdb.set_trace()
+
 	return df_cleaned, df_omitted,fatalTeamIDissue
 
 def NP(fname,newfname,folder,cleanedFolder,headers,readAttributeCols,debugOmittedRows,readEventColumns,TeamAstring,TeamBstring):

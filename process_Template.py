@@ -44,7 +44,7 @@
 #########################
 ## CHANGE THIS all these variables until 'END USER INPUT'
 # Here, you provide the string name of the student folder that you want to include.
-studentFolder = 'XXcontributions' 
+studentFolder = 'LTcontributions' 
 
 # Temporary inputs (whilst updating to using pandas)
 debuggingMode = True # whether yo want to print the times that each script took
@@ -53,7 +53,7 @@ debuggingMode = True # whether yo want to print the times that each script took
 dataType =  "FDP" # "FDP" or or "NP" --> so far, only used to call the right cleanup script. Long term goal would be to have a generic cleanup script
 
 # This folder should contain a folder with 'Data'. The tabular output and figures will be stored in this folder as well.
-folder = 'C:\\Users\\rensm\\Documents\\PostdocLeiden\\BRAxNLD repository\\'
+folder = 'C:\\Users\\Lars\\Documents\\GitHub\\Pipeline_BRAxNLD\\Analyse\\'
 
 # String representing the different teams
 # NB: not necessary for FDP (and other datasets where teamstring can be read from the filename, should be done in discetFilename.py)
@@ -63,7 +63,7 @@ TeamBstring = 'Provide the string that represents the other team'
 # Input of raw data, indicate at least timestamp, entity and Location info
 timestampString = 'Timestamp' 						#'enter the string in the header of the column that represents TIMESTAMP' 	# 'Video time (s)'
 PlayerIDstring = 'Naam' 							#'enter the string in the header of the column that represents PLAYERID' 	# 'jersey n.'
-TeamIDstring = None 								#'enter the string in the header of the column that represents TEAMID' 			# Optional
+TeamIDstring = None									#'enter the string in the header of the column that represents TEAMID' 			# Optional
 XPositionString = 'X' 								#'enter the string in the header of the column that represents X-POSITION'			# 'x'
 YPositionString = 'Y' 								#'enter the string in the header of the column that represents Y-POSITION'			# 'y'
 
@@ -92,7 +92,7 @@ aggregateLag = 0 # in seconds
 
 # Parts of the pipeline can be skipped
 skipCleanup = True # Only works if cleaned file exists
-skipSpatAgg = True # Only works if spat agg export exists
+skipSpatAgg = False # Only works if spat agg export exists
 
 # This (simple) visualization plots every outcome variable for the given window for the temporal aggregation
 Visualization = True # True = includes visualization, False = skips visualization
@@ -100,7 +100,7 @@ Visualization = True # True = includes visualization, False = skips visualizatio
 # Strings need to correspond to outcome variables (dict keys). 
 # Individual level variables ('vNorm') should be included as a list element.
 # Group level variables ('LengthA','LengthB') should be included as a tuple (and will be plotted in the same plot).
-plotTheseAttributes = ['vNorm',('SurfaceA','SurfaceB')]#,'LengthB',('LengthA','LengthB'),('SurfaceA','SurfaceB'),('SpreadA','SpreadB'),('WidthA','WidthB')] # [('LengthA','LengthB'),('WidthA','WidthB'),('SurfaceA','SurfaceB'),('SpreadA','SpreadB')] # teams that need to be compared as tuple
+plotTheseAttributes = ['distToBall','control']#,'LengthB',('LengthA','LengthB'),('SurfaceA','SurfaceB'),('SpreadA','SpreadB'),('WidthA','WidthB')] # [('LengthA','LengthB'),('WidthA','WidthB'),('SurfaceA','SurfaceB'),('SpreadA','SpreadB')] # teams that need to be compared as tuple
 
 #########################
 # END USER INPUT ########
@@ -197,7 +197,6 @@ for dirtyFname in DirtyDataFiles:
 	########################################################################################
 	####### Import existing data ###########################################################
 	########################################################################################
-	
 	rawPanda = importTimeseries_aspanda.rawData(loadFname,loadFolder)
 	attrPanda,attrLabel = importTimeseries_aspanda.existingAttributes(loadFname,loadFolder,skipSpatAgg_curFile,readAttributeCols,attrLabel,outputFolder)
 	eventsPanda,eventsLabel = importTimeseries_aspanda.existingAttributes(loadFname,loadFolder,False,readEventColumns,attrLabel,outputFolder)
@@ -212,11 +211,14 @@ for dirtyFname in DirtyDataFiles:
 	########################################################################################
 
 	attrPanda,attrLabel = spatialAggregation.process(rawPanda,attrPanda,attrLabel,TeamAstring,TeamBstring,skipSpatAgg_curFile,debuggingMode)
-
 	###### Work in progress ##########
 	targetEvents = \
 	computeEvents.process(targetEventsImported,aggregateLevel,rawPanda,attrPanda,eventsPanda,TeamAstring,TeamBstring,debuggingMode)
 	###### \Work in progress #########
+
+
+	#LT: DELETE
+	pdb.set_trace()
 
 	## Temporal aggregation
 	exportData,exportDataString,exportFullExplanation = \
