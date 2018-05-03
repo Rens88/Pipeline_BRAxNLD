@@ -25,6 +25,56 @@ if __name__ == '__main__':
 def process(targetEvents,aggregateLevel,rawPanda,attrPanda,eventsPanda,TeamAstring,TeamBstring):
 	
 	targetEvents = addRandomEvents(rawPanda,targetEvents,TeamAstring,TeamBstring)
+	targetEvents = attackEvents(rawPanda,attrPanda,targetEvents,TeamAstring,TeamBstring)
+	print('################')
+	print(targetEvents)
+
+	return targetEvents
+
+#LT: afronden nodig?
+def attackEvents(rawPanda,attrPanda,targetEvents,TeamAstring,TeamBstring):
+	consecutiveTs = 5 #consecutive timestamps to call it an attack
+	timeCount = 0
+	timeFrequenty = 0.1 #in seconds
+	beginTime = 0
+	endTime = 0
+	secondsForHalfTime = 60 # 1 minute, seconds to determine if it is half time
+
+	inZone = rawPanda[attrPanda['inZone'] == 1]
+
+	attackEvents = []
+
+	previousTime = 0
+	for idx,i in enumerate(pd.unique(inZone['Ts'])):
+		curTime = round(i,1)
+		curTeamInZone = inZone['TeamID'][inZone['Ts'] == i]
+
+		#determine current team
+		if all(curTeamInZone == TeamAstring):
+			curTeam = TeamAstring
+		elif all(curTeamInZone == TeamBstring):
+			curTeam = TeamBstring
+
+		#determine beginTime of attack
+		if round(curTime - previousTime,1) == timeFrequenty:
+			timeCount = timeCount + 1
+		else:
+			timeCount = 0
+
+		if timeCount == (consecutiveTs - 1):
+			beginTime = round(curTime - (consecutiveTs - 1) * timeFrequenty,1)
+
+		#determine endTime of attack, also if match ends during attack
+		if (curTime - previousTime) > (consecutiveTs - 1) * timeFrequenty or (curTime - previousTime) > secondsForHalfTime or curTime == max(inZone['Ts']):
+			endTime = previousTime
+
+		if endTime > 0:
+			attackEvents.append((beginTime,curTeam,endTime))
+
+		previousTime = curTime
+		endTime = 0
+
+	targetEvents = {**targetEvents,'attack': attackEvents}
 
 	return targetEvents
 

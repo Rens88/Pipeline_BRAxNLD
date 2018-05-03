@@ -77,22 +77,26 @@ def process(rawDict,attributeDict,attributeLabel,TeamAstring,TeamBstring,skipSpa
 
 	# pd.options.mode.chained_assignment = None  # default='warn' --> to disable SettingWithCopyWarning
 
-	# halfTime, secondHalfTime = determineHalfTime(rawDict,attributeDict,attributeLabel,TeamAstring,TeamBstring)
+	halfTime, secondHalfTime = determineHalfTime(rawDict,attributeDict,attributeLabel,TeamAstring,TeamBstring)
+
+	print("halftime: ", halfTime)
+	print("secondhalf: ", secondHalfTime)
+	# pdb.set_trace()
 
 	attributeDict,attributeLabel = \
 	ballPossession(rawDict,attributeDict,attributeLabel,TeamAstring,TeamBstring)
 
 	attributeDict,attributeLabel = \
-	zone(rawDict,attributeDict,attributeLabel,TeamAstring,TeamBstring)
+	zone(rawDict,attributeDict,attributeLabel,TeamAstring,TeamBstring,secondHalfTime)
 
 	attributeDict,attributeLabel = \
 	control(rawDict,attributeDict,attributeLabel,TeamAstring,TeamBstring)
 
 	attributeDict,attributeLabel = \
-	pressure(rawDict,attributeDict,attributeLabel,TeamAstring,TeamBstring)
+	pressure(rawDict,attributeDict,attributeLabel,TeamAstring,TeamBstring,secondHalfTime)
 
 	attributeDict,attributeLabel = \
-	density(rawDict,attributeDict,attributeLabel,TeamAstring,TeamBstring)
+	density(rawDict,attributeDict,attributeLabel,TeamAstring,TeamBstring,secondHalfTime)
 
 	attributeDict,attributeLabel = \
 	dangerousity(rawDict,attributeDict,attributeLabel,TeamAstring,TeamBstring)
@@ -134,9 +138,10 @@ def heatMap(rawDict,attributeDict,attributeLabel,TeamAstring,TeamBstring):
 	pdb.set_trace()
 
 def determineHalfTime(rawDict,attributeDict,attributeLabel,TeamAstring,TeamBstring):
-	seconds = 6 # 1 minute LT: aanpassen naar 60!
+	seconds = 0.6 # 1 minute #LT: aanpassen naar 60!
 
-	previousTime = -1
+	previousTime = 0
+
 	for idx,i in enumerate(pd.unique(rawDict['Ts'])):
 		if (i - previousTime) > seconds:
 			return previousTime, i
@@ -224,6 +229,24 @@ def determineSide(rawDict,attributeDict,attributeLabel,TeamAstring,TeamBstring):
 		warn('\nWARNING: Cannot determine the side, because the players of the teams are not on the same side at the first timestamp.\n')
 		return 'Err','Err','Err','Err'
 
+def switchSides(goal_A_X,goal_B_X,zoneA,zoneB,zoneMin_A_X,zoneMax_A_X,zoneMin_B_X,zoneMax_B_X):
+	goal_A_X = goal_A_X * -1
+	goal_B_X = goal_B_X * -1
+
+	zoneA = zoneA * -1
+	zoneB = zoneB * -1
+
+	zoneMin_A_X_tmp = zoneMin_A_X
+	zoneMin_A_X = zoneMin_B_X
+	zoneMin_B_X = zoneMin_A_X_tmp
+
+	zoneMax_A_X_tmp = zoneMax_A_X
+	zoneMax_A_X = zoneMax_B_X
+	zoneMax_B_X = zoneMax_A_X_tmp
+
+	return goal_A_X,goal_B_X,zoneA,zoneB,zoneMin_A_X,zoneMax_A_X,zoneMin_B_X,zoneMax_B_X
+
+
 def determineFinalThird(leftSide,TeamAstring,TeamBstring,goal_A_X,goal_B_X):
 	beginZone = 34
 	zoneMin_X = fieldLength / 2 - beginZone
@@ -258,16 +281,14 @@ def playerInFinalThirdTeamB(curPlayerTeam,TeamBstring,curPlayerX,zoneMin_B_X,zon
 	return all(curPlayerTeam == TeamBstring) and all(curPlayerX >= zoneMin_B_X) and all(curPlayerX <= zoneMax_B_X) and all(curPlayerY >= zoneMin_Y) and all(curPlayerY <= zoneMax_Y)
 
 @timing
-def zone(rawDict,attributeDict,attributeLabel,TeamAstring,TeamBstring):
+def zone(rawDict,attributeDict,attributeLabel,TeamAstring,TeamBstring,secondHalfTime):
 	##############   READ ZONE CSV   ###############
 	dirPath = os.path.dirname(os.path.realpath(__file__))
 	fileName = dirPath + '\\Zone.csv'
 	zoneMatrix = np.loadtxt(open(fileName, 'r'),delimiter=os.pathsep)
 
-	##############   DETERMINE SIDE   ###############
+	##############   DETERMINE SIDE FIRST HALF   ###############
 	leftSide, goal_A_X, goal_B_X, goal_Y = determineSide(rawDict,attributeDict,attributeLabel,TeamAstring,TeamBstring)
-
-	halfTime, secondHalfTime = determineHalfTime(rawDict,attributeDict,attributeLabel,TeamAstring,TeamBstring)
 
 	#LT: switch sides at half time? When is it half time?
 	beginZone,zoneMin_X,zoneA,zoneB,zoneMin_A_X,zoneMax_A_X,zoneMin_B_X,zoneMax_B_X,zoneMin_Y,zoneMax_Y = determineFinalThird(leftSide,TeamAstring,TeamBstring,goal_A_X,goal_B_X)
@@ -277,6 +298,9 @@ def zone(rawDict,attributeDict,attributeLabel,TeamAstring,TeamBstring):
 	newAttributes['inZone'] = 0
 	newAttributes['zone'] = 0
 
+	#check if it is half time
+	halfTimeBool = False
+
 	#only for players in possession
 	inPossession = rawDict[attributeDict['inPossession'] == 1]
 
@@ -285,7 +309,11 @@ def zone(rawDict,attributeDict,attributeLabel,TeamAstring,TeamBstring):
 		curTime = i#rawDict.loc[idx,'Ts']
 		# print(curTime)
 		
-		# if(curTime == secondHalfTime):
+		#second half
+		if (curTime >= secondHalfTime) and (not halfTimeBool):
+			halfTimeBool = True
+			goal_A_X,goal_B_X,zoneA,zoneB,zoneMin_A_X,zoneMax_A_X,zoneMin_B_X,zoneMax_B_X = switchSides(goal_A_X, goal_B_X,zoneA,zoneB,zoneMin_A_X,zoneMax_A_X,zoneMin_B_X,zoneMax_B_X)
+
 		curPlayerX = inPossession['X'][inPossession['Ts'] == curTime]
 		curPlayerY = inPossession['Y'][inPossession['Ts'] == curTime]
 		curPlayerTeam = inPossession['TeamID'][inPossession['Ts'] == curTime]
@@ -336,8 +364,8 @@ def control(rawDict,attributeDict,attributeLabel,TeamAstring,TeamBstring):
 	#ball
 	ballComplete = attributeDict[rawDict['PlayerID'] == 'ball']
 
-	leftSide, goal_A_X, goal_B_X, goal_Y = determineSide(rawDict,attributeDict,attributeLabel,TeamAstring,TeamBstring)
-	beginZone,zoneMin_X,zoneA,zoneB,zoneMin_A_X,zoneMax_A_X,zoneMin_B_X,zoneMax_B_X,zoneMin_Y,zoneMax_Y = determineFinalThird(leftSide,TeamAstring,TeamBstring,goal_A_X,goal_B_X)
+	# leftSide, goal_A_X, goal_B_X, goal_Y = determineSide(rawDict,attributeDict,attributeLabel,TeamAstring,TeamBstring)
+	# beginZone,zoneMin_X,zoneA,zoneB,zoneMin_A_X,zoneMax_A_X,zoneMin_B_X,zoneMax_B_X,zoneMin_Y,zoneMax_Y = determineFinalThird(leftSide,TeamAstring,TeamBstring,goal_A_X,goal_B_X)
 	
 	newAttributes = pd.DataFrame(index = attributeDict.index, columns = ['avgRelSpeedPlayerBall','control'])
 	newAttributes['avgRelSpeedPlayerBall'] = 0
@@ -384,15 +412,15 @@ def control(rawDict,attributeDict,attributeLabel,TeamAstring,TeamBstring):
 	return attributeDict,attributeLabel
 
 @timing
-def pressure(rawDict,attributeDict,attributeLabel,TeamAstring,TeamBstring):
+def pressure(rawDict,attributeDict,attributeLabel,TeamAstring,TeamBstring,secondHalfTime):
 	def distance(X_1,Y_1,X_2,Y_2):
 		return np.sqrt((X_1 - X_2)**2 + (Y_1 - Y_2)**2)
 
 	#distances -> LT: change distances
-	highPressDist = 3#1
-	headOnDist = 12#4
-	lateralDist = 9#3
-	hindDist = 6#2 
+	highPressDist = 1
+	headOnDist = 4
+	lateralDist = 3
+	hindDist = 2 
 
 	#angles to both sides, so max angle is 180
 	highPressAngle = 180 #LT: not necessary --> everybody
@@ -417,6 +445,9 @@ def pressure(rawDict,attributeDict,attributeLabel,TeamAstring,TeamBstring):
 	#players in zone with ball possession
 	inZone = rawDict[attributeDict['inZone'] == 1]
 
+	#to check whether it is half time or not
+	halfTimeBool = False
+
 	#all players
 	players = rawDict[(rawDict['PlayerID'] != 'ball') & (rawDict['PlayerID'] != 'groupRow')]
 
@@ -436,25 +467,38 @@ def pressure(rawDict,attributeDict,attributeLabel,TeamAstring,TeamBstring):
 			curInZoneX = float(curInZoneX)
 			curInZoneY = float(curInZoneY)
 
-		#calculate distances between player with ball, defender and goal
+		#second half
+		if (curTime >= secondHalfTime) and (not halfTimeBool):
+			halfTimeBool = True
+			# print(zoneMin_A_X,zoneMax_A_X,zoneMin_B_X,zoneMax_B_X)
+			goal_A_X,goal_B_X,zoneA,zoneB,zoneMin_A_X,zoneMax_A_X,zoneMin_B_X,zoneMax_B_X = switchSides(goal_A_X, goal_B_X,zoneA,zoneB,zoneMin_A_X,zoneMax_A_X,zoneMin_B_X,zoneMax_B_X)
+			# print(zoneMin_A_X,zoneMax_A_X,zoneMin_B_X,zoneMax_B_X)
+
 		if all(curTeamInZone == TeamAstring):
 		# if playerInFinalThirdTeamA(curTeamInZone,TeamAstring,curInZoneX,zoneMin_A_X,zoneMax_A_X,curInZoneY,zoneMin_Y,zoneMax_Y):
+			goalOpponent_X = goal_B_X
 			playersOpponent = curPlayer[curPlayer['TeamID'] == TeamBstring]
 
 		elif all(curTeamInZone == TeamBstring):
 		# elif playerInFinalThirdTeamB(curTeamInZone,TeamBstring,curInZoneX,zoneMin_B_X,zoneMax_B_X,curInZoneY,zoneMin_Y,zoneMax_Y):
+			goalOpponent_X = goal_A_X
 			playersOpponent = curPlayer[curPlayer['TeamID'] == TeamAstring]
 
 		else:#nobody in possession
 			continue
 
+		#calculate distances between player with ball, defender and goal
 		distInPossessDefender = distance(curInZoneX,curInZoneY,playersOpponent['X'],playersOpponent['Y'])
-		distInPossessGoal = distance(curInZoneX,curInZoneY,goal_B_X,goal_Y)
-		distDefenderGoal = distance(playersOpponent['X'],playersOpponent['Y'],goal_B_X,goal_Y)
+		distInPossessGoal = distance(curInZoneX,curInZoneY,goalOpponent_X,goal_Y)
+		distDefenderGoal = distance(playersOpponent['X'],playersOpponent['Y'],goalOpponent_X,goal_Y)
+
+		# print(distInPossessDefender,distInPossessGoal,distDefenderGoal)
 
 		newAttributes.loc[playersOpponent.index,'distToPlayerWithBall'] = distInPossessDefender
 		#angle between player with ball, defender and goal, see https://stackoverflow.com/questions/1211212/how-to-calculate-an-angle-from-three-points
 		angleInPossDefGoal = np.degrees(np.arccos((distInPossessDefender**2 + distInPossessGoal**2 - distDefenderGoal**2) / (2 * distInPossessDefender * distInPossessGoal)))
+		# print('-----------')
+		# print(angleInPossDefGoal)
 
 		#HIGH PRESSURE ZONE
 		defenderIdx = playersOpponent[(distInPossessDefender < highPressDist) & (angleInPossDefGoal < highPressAngle)].index
@@ -572,7 +616,7 @@ def plotZone(pointA,pointB,pointC,pointD,pointE,playersOpponent,playersOwnTeam):
 	# pdb.set_trace()
 
 @timing
-def density(rawDict,attributeDict,attributeLabel,TeamAstring,TeamBstring):
+def density(rawDict,attributeDict,attributeLabel,TeamAstring,TeamBstring,secondHalfTime):
 	def distance(X_1,Y_1,X_2,Y_2):
 		return np.sqrt((X_1 - X_2)**2 + (Y_1 - Y_2)**2)
 
@@ -616,6 +660,10 @@ def density(rawDict,attributeDict,attributeLabel,TeamAstring,TeamBstring):
 		else:
 			curInZoneX = float(curInZoneX)
 			curInZoneY = float(curInZoneY)
+
+		#second half
+		if(curTime == secondHalfTime):
+			goal_A_X,goal_B_X,zoneA,zoneB,zoneMin_A_X,zoneMax_A_X,zoneMin_B_X,zoneMax_B_X = switchSides(goal_A_X, goal_B_X,zoneA,zoneB,zoneMin_A_X,zoneMax_A_X,zoneMin_B_X,zoneMax_B_X)
 
 		if all(curTeamInZone == TeamAstring):
 		# if playerInFinalThirdTeamA(curTeamInZone,TeamAstring,curInZoneX,zoneMin_A_X,zoneMax_A_X,curInZoneY,zoneMin_Y,zoneMax_Y):
@@ -770,7 +818,7 @@ def dangerousity(rawDict,attributeDict,attributeLabel,TeamAstring,TeamBstring):
 	attributeLabel_tmp = {'dangerousity': tmpDangerousity}
 	attributeLabel.update(attributeLabel_tmp)
 	altogether = pd.concat([rawDict,attributeDict], axis=1)
-	altogether.to_csv('D:\\KNVB\\test.csv')
+	altogether.to_csv('D:\\KNVB\\test2.csv')
 
 	return attributeDict,attributeLabel
 
