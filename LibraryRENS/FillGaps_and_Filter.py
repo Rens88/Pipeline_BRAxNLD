@@ -191,7 +191,7 @@ def fillGaps(df,**kwargs):
 			warn('\nWARNING: The specified datasetFramerate <%s> does not correspond with the dataDrivenFrameRate <%s>.\nIf the difference is substantial, this may affect the reliability of the results.\n' %(datasetFramerate,dataDrivenFrameRate))
 	else:
 		frameRateForInterpolation = dataDrivenFrameRate
-	interpolatedVals = pd.DataFrame([],columns = [df.keys()])
+	interpolatedVals = pd.DataFrame([],columns = df.keys())
 
 	for nthPlayer, everyPlayerID in enumerate(everyPlayerIDs['everyPlayerIDs']):
 		# The interpolation has to happen per player
@@ -296,7 +296,7 @@ def fillGaps(df,**kwargs):
 				# Event identifiers and player level identifiers can simply be copied:
 				if all(df.loc[curRows,key] == df.loc[curRows[0],key]):
 					# If they're all the same (i.e., player, team or match identifiers)
-					int_curKey = pd.DataFrame([df.loc[curRows[0],key]]*len(X_int), columns = [key], index = [int_curPlayer.index])
+					int_curKey = pd.DataFrame([df.loc[curRows[0],key]]*len(X_int), columns = [key], index = int_curPlayer.index)
 					if not key in ['TeamID', 'PlayerID', 'temporalAggregate','RefTeam','EventUID','School','Class','Group', 'Test', 'Exp','MatchContinent','MatchCountry','MatchID','HomeTeamContinent','HomeTeamCountry','HomeTeamAgeGroup','HomeTeamID','AwayTeamContinent','AwayTeamCountry','AwayTeamAgeGroup','AwayTeamID' ]:
 						warn('\nWARNING: Key <%s> was identified as an event identifier.\nTherefore, no data was interpolated, instead, the same value was copied for all cells.\n' %key)
 				else:
