@@ -1,7 +1,7 @@
 # Some problems still with colouring of sets.
 
 # 09-02-2018 Rens Meerhoff
-# In process. Continue with PairwisePerTeam2() 
+# In process. Continue with PairwisePerTeam2()
 # --> which will be edited to automatically identify whether a variable is a team or individual variable.
 #
 # 30-11-2017 Rens Meerhoff
@@ -25,7 +25,9 @@ from scipy.interpolate import InterpolatedUnivariateSpline
 import scipy as sp
 import scipy.stats
 
-if __name__ == '__main__':		
+imageExtension = ".png"
+
+if __name__ == '__main__':
 
 	# 09-02-2018 Rens Meerhoff
 	# The plot new style
@@ -34,13 +36,13 @@ if __name__ == '__main__':
 def process(plotTheseAttributes,aggregateLevel,eventExcerptPanda,attributeLabel,tmpFigFolder,fname,debuggingMode,**kwargs):
 
 	tDatasetVisualization = time.time()	# do stuff
-	
+
 	LPvsNP = False
 	if 'LPvsNP' in kwargs:
 		LPvsNP = kwargs['LPvsNP']
-	
+
 	xLabel = attributeLabel['Ts']
-	
+
 	if not 'temporalAggregate' in eventExcerptPanda.keys():
 		# No events detected
 		warn('\nWARNING: No temporalAggregate detected. \nCouldnt plot any data.\nUse <Random> to create random events, or <full> to plot the whole file.\n')
@@ -52,7 +54,7 @@ def process(plotTheseAttributes,aggregateLevel,eventExcerptPanda,attributeLabel,
 	tmp = eventExcerptPanda.loc[eventExcerptPanda['PlayerID'] == 'groupRow']
 	rowswithinrangeTeamA_groupRows = tmp.index
 	rowswithinrangeTeamB_groupRows = tmp.index
-	
+
 	tmp = eventExcerptPanda.loc[eventExcerptPanda['TeamID'] == eventExcerptPanda['RefTeam']]#.index
 	rowswithinrangePlayer_ref = tmp.index
 	refTeamString = 'refTeam' #eventExcerptPanda['RefTeam'][0]
@@ -78,21 +80,21 @@ def process(plotTheseAttributes,aggregateLevel,eventExcerptPanda,attributeLabel,
 		othTeamString = 'LP'
 
 		fileAggregateID = 'window(' + str(aggregateLevel[1]) + ')_lag(' + str(aggregateLevel[2]) + ')_LPvsNP'
-	
-	
+
+
 	for plotThisAttribute in plotTheseAttributes:
 
 		plt.figure(num=None, figsize=(3.8*5,3*5), dpi=300, facecolor='w', edgecolor='k')
 
 		if type(plotThisAttribute) == tuple: # pairwise comparison of team
-			
+
 			##################
 			if LPvsNP:
 				plotThisAttribute = (plotThisAttribute[0],plotThisAttribute[0])
 			############
 
 			# Pairwise per team
-			yLabel = findYlabel(plotThisAttribute,attributeLabel,refTeamString,othTeamString) 
+			yLabel = findYlabel(plotThisAttribute,attributeLabel,refTeamString,othTeamString)
 
 			# Plot it
 			plotPerTeamPerEvent(plotThisAttribute,eventExcerptPanda,rowswithinrangeTeamA_groupRows,rowswithinrangeTeamB_groupRows,refTeamString,othTeamString)
@@ -102,7 +104,7 @@ def process(plotTheseAttributes,aggregateLevel,eventExcerptPanda,attributeLabel,
 				varName = varName[:-1]
 			if plotThisAttribute[0][-4:] == '_oth' or plotThisAttribute[0][-4:] == '_ref':
 				varName = varName[:-4]
-			outputFilename = tmpFigFolder + fname + '_' + varName + '_' + fileAggregateID + '.jpg'
+			outputFilename = tmpFigFolder + fname + '_' + varName + '_' + fileAggregateID + imageExtension
 		else:
 			if LPvsNP:
 				continue
@@ -115,7 +117,7 @@ def process(plotTheseAttributes,aggregateLevel,eventExcerptPanda,attributeLabel,
 			else:
 				yLabel = 'Unknown'
 
-			outputFilename = tmpFigFolder + fname + '_' + plotThisAttribute + '_' + fileAggregateID + '.jpg'
+			outputFilename = tmpFigFolder + fname + '_' + plotThisAttribute + '_' + fileAggregateID + imageExtension
 
 		plt.title(fileAggregateID)
 		plt.xlabel(xLabel)
@@ -135,7 +137,7 @@ def findYlabel(plotThisAttribute,attributeLabel,refTeamString,othTeamString):
 		tmpA = attributeLabel[plotThisAttribute[0]][0]
 	else:
 		tmpA = 'Unknown'
-	
+
 	if plotThisAttribute[1] in attributeLabel.keys():
 		tmpB = attributeLabel[plotThisAttribute[1]][0]
 	else:
@@ -146,55 +148,55 @@ def findYlabel(plotThisAttribute,attributeLabel,refTeamString,othTeamString):
 		if refTeamString in i:
 			ofrefTeamString = ' of %s' %refTeamString
 			if ofrefTeamString in i:
-				i = i.replace(ofrefTeamString,'')	
+				i = i.replace(ofrefTeamString,'')
 			else:
 				i = i.replace(refTeamString,'both teams')
 
 		elif othTeamString in i:
 			ofothTeamString = ' of %s' %othTeamString
 			if ofothTeamString in i:
-				i = i.replace(ofothTeamString,'')	
+				i = i.replace(ofothTeamString,'')
 			else:
 				i = i.replace(othTeamString,'both teams')
 		elif 'refTeam' in i:
 			ofRefString = ' of refTeam'
 			if ofRefString in i:
-				i = i.replace(ofRefString,'')	
+				i = i.replace(ofRefString,'')
 			else:
 				i = i.replace(ofRefString,'both teams')
 		elif 'othTeam' in i:
 			ofOthString = ' of othTeam'
 			if ofOthString in i:
-				i = i.replace(ofOthString,'')	
+				i = i.replace(ofOthString,'')
 			else:
 				i = i.replace(ofOthString,'both teams')
 
 		tmp.append(i)
-	
+
 	yLabel = tmp[0]
 
 	if tmp[0] != tmp[1]:
 		# To do: find a way to generalize labels (i.e., take out team bit)
 		warn('\nWARNING: y-labels not identical:\n<%s>\nand\n<%s>' %(tmp[0],tmp[1]))
-		
+
 	return yLabel
 
 def plotPerPlayerPerTeam(plotThisAttribute,eventExcerptPanda,rowswithinrangePlayer_ref,rowswithinrangePlayer_oth,refTeamString,othTeamString):
-	
+
 	Y1 = eventExcerptPanda.loc[rowswithinrangePlayer_ref].pivot(columns='EventUID',values=plotThisAttribute)
 	Players_Y1 = eventExcerptPanda.loc[rowswithinrangePlayer_ref].pivot(columns='EventUID',values='PlayerID')
 	Y2 = eventExcerptPanda.loc[rowswithinrangePlayer_oth].pivot(columns='EventUID',values=plotThisAttribute)
 	Players_Y2 = eventExcerptPanda.loc[rowswithinrangePlayer_oth].pivot(columns='EventUID',values='PlayerID')
 	X1 = eventExcerptPanda.loc[rowswithinrangePlayer_ref].pivot(columns='EventUID',values='eventTime')
 	X2 = eventExcerptPanda.loc[rowswithinrangePlayer_oth].pivot(columns='EventUID',values='eventTime')
-	
+
 	# # Sort colors by hue, saturation, value and name.
 	colors = dict(mcolors.BASE_COLORS, **mcolors.CSS4_COLORS)
 	by_hsv = sorted((tuple(mcolors.rgb_to_hsv(mcolors.to_rgba(color)[:3])), name)
 	                for name, color in colors.items())
 	sorted_names = [name for hsv, name in by_hsv]
 	[sorted_names.remove(i) for i in ['gainsboro', 'whitesmoke', 'w', 'white', 'snow','salmon']] # remove some hard to see colors
-	
+
 	# Use this to make code more generic (and allow user to specify color)
 	refColorA = 'red'
 	refColorB = 'blue'
@@ -235,7 +237,7 @@ def plotPerPlayerPerTeam(plotThisAttribute,eventExcerptPanda,rowswithinrangePlay
 		for player in pd.unique(Players_Y1[event]):
 			PlotThisX = X1.loc[Players_Y1[event] == player,event]
 			PlotThisY = Y1.loc[Players_Y1[event] == player,event]
-			pltA = plt.plot(PlotThisX,PlotThisY,color=curColorA,linestyle='-') 
+			pltA = plt.plot(PlotThisX,PlotThisY,color=curColorA,linestyle='-')
 
 		for player in pd.unique(Players_Y2[event]):
 			PlotThisX = X2.loc[Players_Y2[event] == player,event]
@@ -243,7 +245,7 @@ def plotPerPlayerPerTeam(plotThisAttribute,eventExcerptPanda,rowswithinrangePlay
 
 			pltB = plt.plot(PlotThisX,PlotThisY,color=curColorB,linestyle='--')
 
-	plt.legend([pltA[0], pltB[0]], [refTeamString,othTeamString])	
+	plt.legend([pltA[0], pltB[0]], [refTeamString,othTeamString])
 
 
 
@@ -259,7 +261,7 @@ def plotPerTeamPerEvent(plotThisAttribute,eventExcerptPanda,rowswithinrangeTeamA
 	X2 = eventExcerptPanda.loc[rowswithinrangeTeamB].pivot(columns='EventUID',values='eventTime',index = 'eventTimeIndex')
 
 	# X_int = X1
-	
+
 	# avgY1 = np.nanmean(Y1, axis = 1)
 	# avgY2 = np.nanmean(Y2, axis = 1)
 
@@ -275,7 +277,7 @@ def plotPerTeamPerEvent(plotThisAttribute,eventExcerptPanda,rowswithinrangeTeamA
 	                for name, color in colors.items())
 	sorted_names = [name for hsv, name in by_hsv]
 	[sorted_names.remove(i) for i in ['gainsboro', 'whitesmoke', 'w', 'white', 'snow','salmon']] # remove some hard to see colors
-	
+
 	# Use this to make code more generic (and allow user to specify color)
 	refColorA = 'red'
 	refColorB = 'blue'
@@ -316,7 +318,7 @@ def plotPerTeamPerEvent(plotThisAttribute,eventExcerptPanda,rowswithinrangeTeamA
 	# 	curColorA = sorted_names[colorPickerA[ix]]
 	# 	curColorB = sorted_names[colorPickerB[ix]]
 
-	# 	pltA = plt.plot(X_int[event],Y1[event],color=curColorA,linestyle='-') 
+	# 	pltA = plt.plot(X_int[event],Y1[event],color=curColorA,linestyle='-')
 	# 	pltB = plt.plot(X_int[event],Y2[event],color=curColorB,linestyle='--')
 
 	# #########################
@@ -328,7 +330,7 @@ def plotPerTeamPerEvent(plotThisAttribute,eventExcerptPanda,rowswithinrangeTeamA
 
 	for ix,event1 in enumerate(Y1.keys()):
 		curColorA = sorted_names[colorPickerA[ix]]
-		pltA = plt.plot(X1[event1],Y1[event1],color=curColorA,linestyle='-') 
+		pltA = plt.plot(X1[event1],Y1[event1],color=curColorA,linestyle='-')
 
 	for ix,event2 in enumerate(Y2.keys()):
 		curColorB = sorted_names[colorPickerB[ix]]
@@ -337,13 +339,13 @@ def plotPerTeamPerEvent(plotThisAttribute,eventExcerptPanda,rowswithinrangeTeamA
 	#########################
 	pltAvgA = plt.plot(X1[event1],avgY1, color = refColorA, linestyle = '-', linewidth = 4)
 	pltAvgB = plt.plot(X2[event2],avgY2, color = refColorB, linestyle = '--', linewidth = 4)
-	# plt.legend([pltA[0], pltB[0]], [refTeamString,othTeamString])	
-	
+	# plt.legend([pltA[0], pltB[0]], [refTeamString,othTeamString])
+
 	# print(Y1.shape[1])
 	lgString1 = refTeamString + ' (n = %s)'  %Y1.shape[1]
 	lgString2 = othTeamString + ' (n = %s)'  %Y2.shape[1]
 
-	plt.legend([pltAvgA[0], pltAvgB[0]], [lgString1,lgString2])	
+	plt.legend([pltAvgA[0], pltAvgB[0]], [lgString1,lgString2])
 
 def mean_confidence_interval(data, confidence=0.95):
 	a = 1.0*np.array(data)
@@ -357,7 +359,7 @@ def mean_confidence_interval(data, confidence=0.95):
 		if not all(a_not_nan):
 			warn('\nWARNING: Not every event had data at every timepoint.\nI now adjusted the confidence interval to only be based on the data points available for that timepoint.\nI may want to exclude listwise, in which case I can only compute a confidence interval when all events have that datapoint.\nAt the very least, I should consider including a threshold.\n')
 		se.append(scipy.stats.sem(a[i,a_not_nan]))
-	
+
 	se = 1.0*np.array(se)
 
 	# m, se = np.nanmean(a, axis = 1), scipy.stats.sem(a, axis = 1)

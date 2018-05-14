@@ -36,7 +36,7 @@ from os import listdir, path
 from warnings import warn, filterwarnings
 import time
 # From my own library:
-#import plotSnapshot
+import plotSnapshot
 import safetyWarning
 import countEvents2
 from scipy import stats
@@ -216,7 +216,7 @@ def process(targetEvents,aggregateLevel,rawDict,attributeDict,exportData,exportD
 
 		## All data in exportCurrentData are trial identifiers. Create a column in a new panda copying these:
 		# Copy everything that exists in exportCurrentData up until here into a new dataFrame.
-		currentEventID = pd.DataFrame([],columns = [exportDataString],index = [rawDict['Ts'][rowswithinrange].index])
+		currentEventID = pd.DataFrame([],columns = exportDataString,index = rawDict['Ts'][rowswithinrange].index)
 		for i,val in enumerate(exportCurrentData):
 			currentEventID[exportDataString[i]] = val
 
@@ -239,6 +239,9 @@ def process(targetEvents,aggregateLevel,rawDict,attributeDict,exportData,exportD
 			tmp['eventTime'] = eventTime
 			curEventTime = curEventTime.append(tmp)
 
+		print(type(curEventTime.index))
+		print("-----------------------")
+		print(type(currentEventID.index))
 		## Create a new panda that has the identifiers of the current event and the rawdata
 		curEventExcerptPanda = pd.concat([curEventTime, currentEventID, rawDict.loc[rowswithinrange], attributeDict.loc[rowswithinrange, attrDictCols]], axis=1) # Skip the duplicate 'Ts' columns
 		# # !!!!!!!!!!!!!!!!!!!!!!!!!!!!! remember this for re_indexing
