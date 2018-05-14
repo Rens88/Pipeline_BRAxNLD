@@ -28,7 +28,7 @@ import re
 import pandas as pd
 import student_LT_cleanUp
 import time
-import FillGaps_and_Filter
+# import FillGaps_and_Filter
 
 if __name__ == '__main__':
 
@@ -106,8 +106,6 @@ def process(dirtyFname,cleanFname,dataType,dataFolder,cleanedFolder,spatAggFname
 
 	skipEventAgg = False
 	skipSpatAgg = False # over-rule skipSpatAgg as the corresponding spatAgg output file could not be found
-	halfTime = -1 #LT: added!
-	secondHalfTime = -1 #LT: added!
 	if cleanFname in cleanFnames and skipCleanup:
 		with open(cleanedFolder+cleanFname, 'r') as f:
 			reader = csv.reader(f)
@@ -135,14 +133,9 @@ def process(dirtyFname,cleanFname,dataType,dataFolder,cleanedFolder,spatAggFname
 			NP(dirtyFname,cleanFname,dataFolder,cleanedFolder,headers,readAttributeCols,debugOmittedRows,readEventColumns,TeamAstring,TeamBstring)
 		elif dataType == "FDP":
 			df_cleaned,df_omitted,fatalTeamIDissue = FDP(dirtyFname,cleanFname,dataFolder,cleanedFolder,headers,readAttributeCols,debugOmittedRows,readEventColumns,TeamAstring,TeamBstring)
-<<<<<<< HEAD
 		elif dataType == "KNVB":#LT: added!
 			df_cleaned,df_omitted,fatalTeamIDissue = \
 			student_LT_cleanUp.process(dirtyFname,cleanFname,dataFolder,cleanedFolder,headers,readAttributeCols,debugOmittedRows,readEventColumns,TeamAstring,TeamBstring)
-=======
-		elif dataType == "KNVB":
-			df_cleaned,df_omitted,fatalTeamIDissue,halfTime,secondHalfTime = student_XX_cleanUp.process(dirtyFname,cleanFname,dataFolder,cleanedFolder,headers,readAttributeCols,debugOmittedRows,readEventColumns,TeamAstring,TeamBstring)
->>>>>>> origin/VP
 		else:
 			# overwrite cleanedFolder and add a warning that no cleanup had taken place
 			loadFolder = dataFolder
@@ -176,12 +169,6 @@ def process(dirtyFname,cleanFname,dataType,dataFolder,cleanedFolder,spatAggFname
 
 		# The first fatal error. Skip file and continue.
 		fatalTimeStampIssue = checkForFatalTimestampIssue(df_cleaned)
-<<<<<<< HEAD
-=======
-
-		#df_cleaned,df_omitted,fatalTeamIDissue,halfTime,secondHalfTime = \
-		#student_XX_cleanUp.process(dirtyFname,cleanFname,dataFolder,cleanedFolder,headers,readAttributeCols,debugOmittedRows,readEventColumns,TeamAstring,TeamBstring)
->>>>>>> origin/VP
 
 		if exists(cleanedFolder + cleanFname):
 			warn('\nOverwriting file <%s> \nin cleanedFolder <%s>.\n' %(cleanFname,cleanedFolder))
@@ -196,8 +183,8 @@ def process(dirtyFname,cleanFname,dataType,dataFolder,cleanedFolder,spatAggFname
 			df_Fatal.to_csv(cleanedFolder + cleanFname)
 			fatalIssue = True
 		else:
-			if includeCleanupInterpolation:
-				df_cleaned = FillGaps_and_Filter.process(df_cleaned,datasetFramerate = datasetFramerate)
+			# if includeCleanupInterpolation:
+			# 	df_cleaned = FillGaps_and_Filter.process(df_cleaned,datasetFramerate = datasetFramerate)
 			df_cleaned.to_csv(cleanedFolder + cleanFname)
 
 		# Optional: Export data that has been omitted, in case you suspect that relevent rows were omitted.
@@ -223,11 +210,8 @@ def process(dirtyFname,cleanFname,dataType,dataFolder,cleanedFolder,spatAggFname
 		elapsed = str(round(time.time() - tCleanup, 2))
 		print('***** Time elapsed during cleanupData: %ss' %elapsed)
 
-<<<<<<< HEAD
-	return loadFolder,loadFname,fatalIssue,skipSpatAgg#,halfTime,secondHalfTime #, readAttributeCols#, attrLabel
-=======
 	return loadFolder,loadFname,fatalIssue,skipSpatAgg,skipEventAgg#, readAttributeCols#, attrLabel
->>>>>>> origin/VP
+
 
 def FDP(fname,cleanFname,dataFolder,cleanedFolder,headers,readAttributeCols,debugOmittedRows,readEventColumns,TeamAstring,TeamBstring):
 
@@ -240,29 +224,22 @@ def FDP(fname,cleanFname,dataFolder,cleanedFolder,headers,readAttributeCols,debu
 
 	colHeaders = [ts,x,y,ID] + readAttributeCols + readEventColumns
 	if headers['TeamID'] != None:
-<<<<<<< HEAD
-		# If there is a header for 'TeamID', then include it as the colHeaders that will be read from the CSV file.
-		Tid = headers['TeamID']
-		colHeaders = [ts,x,y,ID,Tid] + readAttributeCols + readEventColumns
-		
-=======
-	 # If there is a header for 'TeamID', then include it as the colHeaders that will be read from the CSV file.
-	 # Mede mogelijk gemaakt door: Lars
-	 Tid = headers['TeamID']
-	 colHeaders = [ts,x,y,ID,Tid] + readAttributeCols + readEventColumns
+		 # If there is a header for 'TeamID', then include it as the colHeaders that will be read from the CSV file.
+		 # Mede mogelijk gemaakt door: Lars
+		 Tid = headers['TeamID']
+		 colHeaders = [ts,x,y,ID,Tid] + readAttributeCols + readEventColumns
 
->>>>>>> origin/VP
 	newPlayerIDstring = 'Player'
 	newTeamIDstring = 'Team'
 
 	# Only read the headers as a check-up:
 	with open(dataFolder+fname, 'r') as f:
-	 reader = csv.reader(f)
-	 fileHeaders = list(next(reader))
+		reader = csv.reader(f)
+		fileHeaders = list(next(reader))
 
 	for i in colHeaders:
-	 if not i in fileHeaders:
-	  exit('EXIT: Column header <%s> not in column headers of the file:\n%s\n\nSOLUTION: Change the user input in \'process\' \n' %(i,fileHeaders))
+		if not i in fileHeaders:
+			exit('EXIT: Column header <%s> not in column headers of the file:\n%s\n\nSOLUTION: Change the user input in \'process\' \n' %(i,fileHeaders))
 
 	df = pd.read_csv(dataFolder+fname,usecols=(colHeaders),low_memory=False)
 	df[ts] = df[ts]*conversion_to_S # Convert from ms to s.
@@ -279,13 +256,6 @@ def FDP(fname,cleanFname,dataFolder,cleanedFolder,headers,readAttributeCols,debu
 	#LT: added!
 	else:
 		fatalTeamIDissue = False
-<<<<<<< HEAD
-=======
-
-
-	print(headers)
-	print(ID)
->>>>>>> origin/VP
 
 	df_cropped01,df_omitted01 = omitXandY_equals0(df,x,y,ID)
 	df_cropped02,df_omitted02 = omitRowsWithout_XandY(df_cropped01,x,y)
@@ -494,16 +464,6 @@ def verifyGroupRows(df_cleaned):
 
 	# Grouprows - at this stage - are characterized by:
 	# 1) a 'TeamID' that isnull()
-<<<<<<< HEAD
-
-	#LT: added!
-	try:
-		groupRows = (df_cleaned['TeamID'].isnull()) & (df_cleaned['Ts'].notnull()) 
-	except:
-		return df_cleaned
-=======
->>>>>>> origin/VP
-
 	#LT: added!
 	try:
 		groupRows = (df_cleaned['TeamID'].isnull()) & (df_cleaned['Ts'].notnull())
@@ -540,10 +500,6 @@ def verifyGroupRows(df_cleaned):
 		# pdb.set_trace()
 		# Put these in a DataFrame with the same column headers
 		df_group = pd.DataFrame({'Ts':uniqueTs,'PlayerID':groupPlayerID},index = groupIndex)# possibly add the index ? index = []
-<<<<<<< HEAD
-=======
-
->>>>>>> origin/VP
 		# Append them to the existing dataframe
 		df_cleaned = df_cleaned.append(df_group)
 

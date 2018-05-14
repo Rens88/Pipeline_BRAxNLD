@@ -21,7 +21,7 @@ import pandas as pd
 # import exportCSV
 
 import safetyWarning
-import student_XX_importEvents
+import student_LT_importEvents
 import time
 if __name__ == '__main__':
 	process(eventsPanda,TeamAstring,TeamBstring)
@@ -64,7 +64,7 @@ def process(eventsPanda,TeamAstring,TeamBstring,cleanFname,dataFolder,debuggingM
 	targetEvents = full(eventsPanda,targetEvents,TeamAstring)
 
 	targetEvents = \
-	student_XX_importEvents.process(targetEvents,cleanFname,TeamAstring,TeamBstring,dataFolder)
+	student_LT_importEvents.process(targetEvents,cleanFname,TeamAstring,TeamBstring,dataFolder)
 
 	if debuggingMode:
 		elapsed = str(round(time.time() - tImportEvents, 2))

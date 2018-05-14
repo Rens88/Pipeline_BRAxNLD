@@ -12,13 +12,8 @@ from os.path import isfile, join, isdir, exists
 from os import listdir, path, makedirs
 import re
 import pandas as pd
-<<<<<<< HEAD
 import student_LT_dissectFilename
-=======
-import student_XX_dissectFilename
 import time
-
->>>>>>> origin/VP
 
 if __name__ == '__main__':
 
@@ -41,12 +36,8 @@ def process(fname,dataType,TeamAstring,TeamBstring,debuggingMode):
 		exportData, exportDataString, exportDataFullExplanation,cleanFname,TeamAstring,TeamBstring = FDP(fname)
 	elif dataType == "KNVB":
 		exportData, exportDataString, exportDataFullExplanation,cleanFname,TeamAstring,TeamBstring = \
-<<<<<<< HEAD
 		student_LT_dissectFilename.process(fname,dataType,TeamAstring,TeamBstring)
 		# exportData, exportDataString, exportDataFullExplanation,cleanFname = default(fname)
-=======
-		student_XX_dissectFilename.KNVB(fname)
->>>>>>> origin/VP
 	else:
 		exportData, exportDataString, exportDataFullExplanation,cleanFname = \
 		student_LT_dissectFilename.process(fname,dataType,TeamAstring,TeamBstring)

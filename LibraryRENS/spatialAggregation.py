@@ -12,11 +12,7 @@ import plotSnapshot
 import safetyWarning
 import pandas as pd
 
-<<<<<<< HEAD
 import student_LT_spatialAggregation
-=======
-import student_XX_spatialAggregation
->>>>>>> origin/VP
 import time
 
 if __name__ == '__main__':
@@ -59,7 +55,6 @@ def process(rawDict,attributeDict,attributeLabel,TeamAstring,TeamBstring,skipSpa
 	# attributeDict,attributeLabel = \
 	# teamSurface_asPanda(rawDict,attributeDict,attributeLabel,TeamAstring,TeamBstring,skipSpatAgg)
 
-<<<<<<< HEAD
 	# # Computing vNorm, technically requires some form of temporalAggregation. 
 	# # This is permitted ONLY if the compute variable returns a value for every timeframe.
 	# attributeDict,attributeLabel = \
@@ -67,17 +62,7 @@ def process(rawDict,attributeDict,attributeLabel,TeamAstring,TeamBstring,skipSpa
 
 	attributeDict,attributeLabel = \
 	student_LT_spatialAggregation.process(rawDict,attributeDict,attributeLabel,TeamAstring,TeamBstring,skipSpatAgg)
-	
-=======
-	# Computing vNorm, technically requires some form of temporalAggregation.
-	# This is permitted ONLY if the compute variable returns a value for every timeframe.
-	attributeDict,attributeLabel = \
-	vNorm(rawDict,attributeDict,attributeLabel,TeamAstring,TeamBstring,skipSpatAgg)
 
-	attributeDict,attributeLabel = \
-	student_XX_spatialAggregation.process(rawDict,attributeDict,attributeLabel,TeamAstring,TeamBstring,skipSpatAgg)
-
->>>>>>> origin/VP
 	## debugging only
 	# allesBijElkaar = pd.concat([rawDict, attributeDict], axis=1) # debugging only
 	# allesBijElkaar.to_csv('C:\\Users\\rensm\\Documents\\PostdocLeiden\\BRAxNLD repository\\Data\\tmp\\test.csv') # debugging only
@@ -85,13 +70,8 @@ def process(rawDict,attributeDict,attributeLabel,TeamAstring,TeamBstring,skipSpa
 
 	if debuggingMode:
 		elapsed = str(round(time.time() - tSpatAgg, 2))
-<<<<<<< HEAD
-		print('Time elapsed during spatialAggregation: %ss' %elapsed)
-		
-=======
 		print('***** Time elapsed during spatialAggregation: %ss' %elapsed)
 
->>>>>>> origin/VP
 	return attributeDict, attributeLabel
 
 ############################################################
@@ -209,18 +189,9 @@ def teamCentroid_panda(rawDict,attributeDict,attributeLabel,TeamAstring,TeamBstr
 	pd.options.mode.chained_assignment = None  # default='warn' # NB: The code below gives a warning because it may be uncertain whether the right ind_groupRows are called. If you know a work-around, let me know.
 
 	# For team A
-<<<<<<< HEAD
-
-	if Team_A_X.shape == (0,0):
-		exit('\nFATAL WARNING: No data in TeamA\'s X positions.\nThis is likely because the TeamAstring and TeamBstring do not correspond with the strings in the dataset.\nThis may be because the user input is incorrect OR, because the Team strings are unsuccesfully derived from the filename (especialy when using dataType FDP for a new dataset):\nConsider writing a specific function in dissectFilename.py.\n')
-=======
 	if Team_A_X.shape == (0,0):
 	  exit('\nFATAL WARNING: No data in TeamA\'s X positions.\nThis is likely because the TeamAstring and TeamBstring do not correspond with the strings in the dataset.\nThis may be because the user input is incorrect OR, because the Team strings are unsuccesfully derived from the filename (especialy when using dataType FDP for a new dataset):\nConsider writing a specific function in dissectFilename.py.\n')
 
-	print(Team_A_X.shape)
-	print(ind_groupRowsA.shape)
-
->>>>>>> origin/VP
 	newAttributesA['TeamCentXA'][ind_groupRowsA] = Team_A_X.mean(axis=0, skipna=True)
 	newAttributesA['TeamCentYA'][ind_groupRowsA] = Team_A_Y.mean(axis=0, skipna=True)
 	newAttributesA['LengthA'][ind_groupRowsA] = Team_A_X.max(axis=0, skipna=True) - Team_A_X.min(axis=0, skipna=True)

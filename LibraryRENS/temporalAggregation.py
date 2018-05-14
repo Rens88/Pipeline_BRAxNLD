@@ -329,7 +329,7 @@ def process(targetEvents,aggregateLevel,rawDict,attributeDict,exportData,exportD
 				if targetGroup == []:
 					targetGroup = 'playerRows'
 				else:
-					warn('\FATAL ERROR: A variable seemed to be covering multiple sets (playerRows and [groupRows and/or ballRows]).\nThis should be avoided or accounted for in the code.\n')
+					warn('\nFATAL ERROR: A variable seemed to be covering multiple sets (playerRows and [groupRows and/or ballRows]).\nThis should be avoided or accounted for in the code.\n')
 					exit()
 					# To avoid errors: either separate variables covering multiple sets, or add code here that joins targetGroups..
 

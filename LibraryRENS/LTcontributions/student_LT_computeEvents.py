@@ -23,11 +23,11 @@ if __name__ == '__main__':
 	
 ## Here, you specifiy what each function does
 def process(targetEvents,aggregateLevel,rawPanda,attrPanda,eventsPanda,TeamAstring,TeamBstring):
-	
 	targetEvents = addRandomEvents(rawPanda,targetEvents,TeamAstring,TeamBstring)
 	targetEvents = attackEvents(rawPanda,attrPanda,targetEvents,TeamAstring,TeamBstring)
-	print('################')
-	print(targetEvents)
+	# print('################')
+	# print(targetEvents)
+	# pdb.set_trace()
 
 	return targetEvents
 
@@ -40,6 +40,12 @@ def attackEvents(rawPanda,attrPanda,targetEvents,TeamAstring,TeamBstring):
 	endTime = 0
 	secondsForHalfTime = 60 # 1 minute, seconds to determine if it is half time
 
+	#labels for event result
+	noShotLabel = 0
+	shotNotOnTargetLabel = 1
+	shotOnTargetLabel = 2
+	goalLabel = 3
+
 	inZone = rawPanda[attrPanda['inZone'] == 1]
 
 	attackEvents = []
@@ -48,6 +54,7 @@ def attackEvents(rawPanda,attrPanda,targetEvents,TeamAstring,TeamBstring):
 	for idx,i in enumerate(pd.unique(inZone['Ts'])):
 		curTime = round(i,1)
 		curTeamInZone = inZone['TeamID'][inZone['Ts'] == i]
+		eventSet = False
 
 		#determine current team
 		if all(curTeamInZone == TeamAstring):
@@ -68,8 +75,27 @@ def attackEvents(rawPanda,attrPanda,targetEvents,TeamAstring,TeamBstring):
 		if (curTime - previousTime) > (consecutiveTs - 1) * timeFrequenty or (curTime - previousTime) > secondsForHalfTime or curTime == max(inZone['Ts']):
 			endTime = previousTime
 
+		#LT: begin en endTime omdraaien?
 		if endTime > 0:
-			attackEvents.append((beginTime,curTeam,endTime))
+			for idx, i in enumerate(targetEvents['shotNotOnTarget']):
+				if i[0] >= beginTime and i[0] < endTime:
+					attackEvents.append((beginTime,curTeam,endTime,shotNotOnTargetLabel))
+					eventSet = True
+					break
+			if not eventSet:
+				for idx, i in enumerate(targetEvents['shotOnTarget']):
+					if i[0] >= beginTime and i[0] < endTime:
+						attackEvents.append((beginTime,curTeam,endTime,shotOnTargetLabel))
+						eventSet = True
+						break
+			if not eventSet:
+				for idx, i in enumerate(targetEvents['goal']):
+					if i[0] >= beginTime and i[0] < endTime:
+						attackEvents.append((beginTime,curTeam,endTime,goal))
+						eventSet = True
+						break
+			if not eventSet:
+				attackEvents.append((beginTime,curTeam,endTime,noShotLabel))
 
 		previousTime = curTime
 		endTime = 0
