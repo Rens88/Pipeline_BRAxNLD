@@ -73,10 +73,16 @@ def turnovers(window,aggregateEvent,targetEvents,TeamAstring,TeamBstring,exportD
 
 	if targetEvents['Turnovers'] != []:
 		turnoverCharacteristics = []
-		for eventInstant,eventID in targetEvents['Turnovers']:
+		if len(targetEvents['Turnovers'][0]) == 7:
+			for eventInstant,eventID,a,b,c,d,e in targetEvents['Turnovers']:
 
-			if eventInstant > window[0] and eventInstant <= window[1]:
-				turnoverCharacteristics.append(eventID)
+				if eventInstant > window[0] and eventInstant <= window[1]:
+					turnoverCharacteristics.append(eventID)
+		else:
+			for eventInstant,eventID in targetEvents['Turnovers']:
+
+				if eventInstant > window[0] and eventInstant <= window[1]:
+					turnoverCharacteristics.append(eventID)
 
 		# define outcome variables here
 		turnoverCount = len(turnoverCharacteristics)
@@ -278,10 +284,16 @@ def passes(window,aggregateEvent,targetEvents,TeamAstring,TeamBstring,exportData
 	if targetEvents['Passes'] != []:
 		passes = []
 		consecutivePasses = []
-		for eventInstant,eventID,consecutiveEvents in targetEvents['Passes']:
-			if eventInstant > window[0] and eventInstant <= window[1]:
-				passes.append(eventID)
-				consecutivePasses.append(consecutiveEvents)
+		if len(targetEvents['Passes'][0]) == 5:
+			for eventInstant,eventID,consecutiveEvents,a,b in targetEvents['Passes']:
+				if eventInstant > window[0] and eventInstant <= window[1]:
+					passes.append(eventID)
+					consecutivePasses.append(consecutiveEvents)
+		else:
+			for eventInstant,eventID,consecutiveEvents in targetEvents['Passes']:
+				if eventInstant > window[0] and eventInstant <= window[1]:
+					passes.append(eventID)
+					consecutivePasses.append(consecutiveEvents)
 
 		passCount = float(len(passes))
 		passCountA = float(sum([TeamAstring in i for i in passes]))

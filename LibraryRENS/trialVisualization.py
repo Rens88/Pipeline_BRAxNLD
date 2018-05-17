@@ -1,21 +1,23 @@
 # 09-02-2018 Rens Meerhoff
 
-import pylab
+# import pylab
 import pdb; #pdb.set_trace()
 from warnings import warn
 import numpy as np
 from os.path import isfile, join, isdir, exists
 from os import listdir, path, makedirs, sep
 # import CSVexcerpt
+import matplotlib
+matplotlib.use('Agg') #https://stackoverflow.com/questions/37604289/tkinter-tclerror-no-display-name-and-no-display-environment-variable?utm_medium=organic&utm_source=google_rich_qa&utm_campaign=google_rich_qa
 import matplotlib.pyplot as plt
 from matplotlib import colors as mcolors
-import matplotlib.pyplot as plt
 import matplotlib.patches as patches
 import matplotlib.lines as mlines
 import time
 import math
 import pandas as pd
 import time
+import imp
 # import plotSnapshot
 
 if __name__ == '__main__':		
@@ -25,9 +27,18 @@ if __name__ == '__main__':
 	process(plotTheseAttributes,aggregateLevel,rawDict,attributeDict,attributeLabel,tmpFigFolder,fname,TeamAstring,TeamBstring)
 
 def process(plotTheseAttributes,aggregateLevel,eventExcerptPanda,attributeLabel,tmpFigFolder,fname,TeamAstring,TeamBstring,debuggingMode,dataType,fieldDimensions):
-	tmpFigFolder = tmpFigFolder + 'trialVisualization' + sep
 	tTrialVisualization = time.time()
 
+	# An attempt to avoid the error 'Fail to allocate bitmap'
+	# imp.reload(plt) 
+	# imp.reload(mcolors) 
+	# imp.reload(patches) 
+	# imp.reload(mlines) 
+	# imp.reload(matplotlib) 	
+	# matplotlib.use('Agg') 
+
+	tmpFigFolder = tmpFigFolder + 'trialVisualization' + sep
+	
 	xLabel = attributeLabel['Ts']
 	
 	if not 'temporalAggregate' in eventExcerptPanda.keys():
@@ -82,7 +93,7 @@ def process(plotTheseAttributes,aggregateLevel,eventExcerptPanda,attributeLabel,
 				if plotThisAttribute[0][-4:] == '_oth' or plotThisAttribute[0][-4:] == '_ref':
 					varName = varName[:-4]
 
-				outputFilename = tmpFigFolder + fname + '_' + varName + '_' + fileAggregateID + '.jpg'
+				outputFilename = tmpFigFolder + fname + '_' + varName + '_' + fileAggregateID + '.png'
 			else:
 				# Plot it
 				plotPerPlayerPerTeam(plotThisAttribute,currentEvent,rowswithinrangePlayerA,rowswithinrangePlayerB,TeamAstring,TeamBstring)
@@ -92,7 +103,7 @@ def process(plotTheseAttributes,aggregateLevel,eventExcerptPanda,attributeLabel,
 				else:
 					yLabel = 'Unknown'
 
-				outputFilename = tmpFigFolder + fname + '_' + plotThisAttribute + '_' + fileAggregateID + '.jpg'
+				outputFilename = tmpFigFolder + fname + '_' + plotThisAttribute + '_' + fileAggregateID + '.png'
 
 			plt.title(fileAggregateID)
 			plt.xlabel(xLabel)
@@ -102,7 +113,7 @@ def process(plotTheseAttributes,aggregateLevel,eventExcerptPanda,attributeLabel,
 				print('EXPORTED: <%s>' %outputFilename)
 			plt.close()
 		# Plot a snapshot of the positions
-		outputFilename = tmpFigFolder + fname + '_Snapshot_' + fileAggregateID + '.jpg'
+		outputFilename = tmpFigFolder + fname + '_Snapshot_' + fileAggregateID + '.png'
 		plotSnapshot(outputFilename,currentEvent,rowswithinrangePlayerA,rowswithinrangePlayerB,teamStrings,fileAggregateID,dataType,fieldDimensions)
 		if debuggingMode:
 			print('EXPORTED: <%s>' %outputFilename)
@@ -198,6 +209,8 @@ def	plotSnapshot(outputFilename,currentEvent,rowswithinrangePlayerA,rowswithinra
 
 	plt.title(fileAggregateID)
 	plt.savefig(outputFilename, figsize=(1,1), dpi = 300, bbox_inches='tight')
+	plt.close()
+
 	# IDEA: could plot dotted line as representing speed
 
 def findTeamString(currentEvent,TeamAstring,TeamBstring):

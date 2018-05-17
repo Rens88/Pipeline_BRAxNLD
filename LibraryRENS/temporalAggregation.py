@@ -67,6 +67,11 @@ def process(targetEvents,aggregateLevel,rawDict,attributeDict,exportData,exportD
 	aggrMeth_playerLevel = ['avg', 'std'] # specifically for pertime perplayer
 	aggrMeth_popLevel = ['avg', 'std','cnt']
 
+	overallString_prev = []
+	overallString_longest = []
+	# exportAsPanda = pd.DataFrame([])
+	warn('\nWARNING: Because for some trials Acceleration and speed are missing, Im creating these columns in advance.\nGood enough for a temporary work-around.\BUT I foresee it will be problematic with any readAttributCols that end up being (partially) missing.\n***\n***\n***\n***\n***\n***\n***\n***\n***\n***\n***\n***\n')
+	exportAsPanda = pd.DataFrame([],columns = ['Acceleration_avg_perTimePerPlayer_all_cnt', 'Acceleration_avg_perTimePerPlayer_all_avg', 'Acceleration_avg_perTimePerPlayer_all_std', 'Acceleration_std_perTimePerPlayer_all_cnt', 'Acceleration_std_perTimePerPlayer_all_avg', 'Acceleration_std_perTimePerPlayer_all_std', 'Acceleration_avg_perTimePerPlayer_ref_cnt', 'Acceleration_avg_perTimePerPlayer_ref_avg', 'Acceleration_avg_perTimePerPlayer_ref_std', 'Acceleration_std_perTimePerPlayer_ref_cnt', 'Acceleration_std_perTimePerPlayer_ref_avg', 'Acceleration_std_perTimePerPlayer_ref_std', 'Acceleration_avg_perTimePerPlayer_oth_cnt', 'Acceleration_avg_perTimePerPlayer_oth_avg', 'Acceleration_avg_perTimePerPlayer_oth_std', 'Acceleration_std_perTimePerPlayer_oth_cnt', 'Acceleration_std_perTimePerPlayer_oth_avg', 'Acceleration_std_perTimePerPlayer_oth_std', 'Speed_avg_perTimePerPlayer_all_cnt', 'Speed_avg_perTimePerPlayer_all_avg', 'Speed_avg_perTimePerPlayer_all_std', 'Speed_std_perTimePerPlayer_all_cnt', 'Speed_std_perTimePerPlayer_all_avg', 'Speed_std_perTimePerPlayer_all_std', 'Speed_avg_perTimePerPlayer_ref_cnt', 'Speed_avg_perTimePerPlayer_ref_avg', 'Speed_avg_perTimePerPlayer_ref_std', 'Speed_std_perTimePerPlayer_ref_cnt', 'Speed_std_perTimePerPlayer_ref_avg', 'Speed_std_perTimePerPlayer_ref_std', 'Speed_avg_perTimePerPlayer_oth_cnt', 'Speed_avg_perTimePerPlayer_oth_avg', 'Speed_avg_perTimePerPlayer_oth_std', 'Speed_std_perTimePerPlayer_oth_cnt', 'Speed_std_perTimePerPlayer_oth_avg', 'Speed_std_perTimePerPlayer_oth_std'])
 	## If you want a combination of all possible methods, then use these strings: (NB, this explodes the number of features)
 	# aggregationOrders = ['perTimePerPlayer','perTimePerPlayer','perTimePerPlayer','perPlayerPerTime','perPlayerPerTime','perPlayerPerTime']
 	# populations = ['allTeam','refTeam','othTeam','allTeam','refTeam','othTeam']
@@ -93,12 +98,18 @@ def process(targetEvents,aggregateLevel,rawDict,attributeDict,exportData,exportD
 	# The export matrix includes a range of outcome measures that don't change per event (these are already in <exportData>)
 	# Most outcome variables will be added by simply going through all the spatially aggregated variables
 	# Some other outcome measures describe the current event and can also be created here:
-	exportMatrix = [] # in which you can combine the exported data of each event in this trial / file
+	#####exportMatrix = [] # in which you can combine the exported data of each event in this trial / file
+
 	fileIdentifiers = exportDataString.copy()
 	exportDataString.append('temporalAggregate') # output string that identifies the current event
 	exportFullExplanation.append('Level of temporal aggregation, based on <<%s>> event and counted chronologically' %aggregateLevel[0])
 	exportDataString.append('EventUID') # output string that UNIQUELY identifies the current event
 	exportFullExplanation.append('Unique identifier of the <<%s>> events.' %aggregateLevel[0])
+	# not yet a generic solution.
+	# TO DO: WRITE THIS GENERICALLY
+	
+	exportDataString.append('eventClassification')
+	exportFullExplanation.append('Classification of the current event.')
 	exportDataString.append('RefTeam')
 	exportFullExplanation.append('Teamstring of the reference team the <<%s>> events refer to.' %aggregateLevel[0])
 	exportDataString.append('OthTeam')
@@ -109,7 +120,7 @@ def process(targetEvents,aggregateLevel,rawDict,attributeDict,exportData,exportD
 	# Omit outcome variables that are not numeric. These should be aggregated using countEvents2 (see below)
 	# NB: May be this should be written more generic..
 	attrDictCols_numeric = [tmp for tmp in attrDictCols if tmp not in ['Run', 'Possession/Turnover', 'Pass', 'Goal']]
-	
+	# print(attributeDict.keys())
 	## FYI:
 	# aggregateLevel[0] --> event ID
 	# aggregateLevel[1] --> window (s)
@@ -121,13 +132,25 @@ def process(targetEvents,aggregateLevel,rawDict,attributeDict,exportData,exportD
 
 	## Loop over every event
 	for idx,currentEvent in enumerate(targetEvents[aggregateLevel[0]]):
+		# print('This is event <%s>:\n%s' %(idx,currentEvent))
+		
 		#####################################
 		## Prepare export of current event ##
 		#####################################
-
+		if currentEvent[0] == None:
+			try:
+				warn('\nWARNING: Event had no time of occurrence. Therefore, it was skipped.\nThese are the event contents:\ntime of event = %s\nRefTeam of event = %s\nend of event = %s' %currentEvent)
+			except: # a lazy way to catch currentEvents with only 2 bits of info.
+				warn('\nWARNING: Event had no time of occurrence. Therefore, it was skipped.\nThese are the event contents:\ntime of event = %s\nRefTeam of event = %s\n' %currentEvent)				
+			continue
 		## Determine the window
 		if aggregateLevel[1] != None:
+			# try:
 			tEnd = currentEvent[0] - aggregateLevel[2] # tEnd - lag
+			# except:
+			# 	print(currentEvent)
+			# 	print(aggregateLevel)
+			# 	pdb.set_trace()
 			tStart = currentEvent[0] - aggregateLevel[1] - aggregateLevel[2] # tEnd - window - lagg
 			eventDescrString = 'During <%ss> seconds up until <%ss> before event <%s>.' %(aggregateLevel[1],aggregateLevel[2],aggregateLevel[0])
 		else:
@@ -140,6 +163,7 @@ def process(targetEvents,aggregateLevel,rawDict,attributeDict,exportData,exportD
 			eventDescrString =  'During the whole duration of the events <%s>.' %aggregateLevel[0]
 
 		window = (tStart, tEnd)
+
 		if window[0] == None or window[1] == None: # Check if both end and start are allocated
 			warn('\nEvent %d skipped because tStart = <<%s>> and tEnd = <<%s>>.\n' %(idx,window[0],window[1]))
 			continue
@@ -147,17 +171,36 @@ def process(targetEvents,aggregateLevel,rawDict,attributeDict,exportData,exportD
 		# warn and/or shorten whenever there is overlap with the previous event
 		if idx != 0:
 			tEnd_prevEvent = targetEvents[aggregateLevel[0]][idx-1][0]
+			# # store the time in-between events that can help determine the maximum window size you may want to choose
+			# availableWindow.append(tEnd - tEnd_prevEvent)
+
 			if tEnd_prevEvent > tStart:
-				warn('\nWARNING: Current event start <%ss> before previous event finished <%ss>.\nCurrently, this is allowed. You may want to:\n1) Restrict events to only cover unique periods\nor 2) Avoid windows that result into overlapping times.\n' %(tStart,tEnd_prevEvent))
+
+				warn('\nWARNING: Current event start <%ss> before previous event finished <%ss>.\nThis should have been dealt with in computeEvents.\n1) Restrict events to only cover unique periods\nor 2) Avoid windows that result into overlapping times.\n' %(tStart,tEnd_prevEvent))
 		
 		tmp = rawDict[rawDict['Ts'] > window[0]]
 		rowswithinrange = tmp[tmp['Ts'] <= window[1]].index
+
+		if rowswithinrange.empty:
+			# no data found, probably because the event times lie outside of the available positional data.
+			######if min(rawDict['Ts']) < window[0] and max(rawDict['Ts']) > window[1]:
+			if min(rawDict['Ts']) > window[1] or max(rawDict['Ts']) < window[0]:
+				# Indeed, no data available for given event.
+				warn('\nWARNING: No positional data available for when the requested event occurred.\nAs a work-around, this event was skipped.\nThis is an indication that the positional data and the event data do not lign up.\nmin(Ts) = %s\nmax(Ts) = %s\nEvent:\n%s' %(min(rawDict['Ts']),max(rawDict['Ts']),currentEvent))
+				# pdb.set_trace()
+				continue
 		
 		## Prepare a copy of exported data so far (which can be considered as file identifiers)
+
 		exportCurrentData = exportData.copy()
 		overallString = exportDataString.copy()
 		overallExplanation = exportFullExplanation.copy()
 		
+		# print('\nBefore appending trial identifiers:')
+		# print('len(exportCurrentData) = %s' %len(exportCurrentData))
+		# print('len(overallString) = %s' %len(overallString))
+		# print('len(overallExplanation) = %s' %len(overallExplanation))
+
 		## Create the output string that identifies the current event
 		aggregateString = '%s_%03d' %(aggregateLevel[0],idx)		
 		if idx > 1000:
@@ -169,6 +212,15 @@ def process(targetEvents,aggregateLevel,rawDict,attributeDict,exportData,exportD
 		## Create unique event identifier 
 		EventUID = FileID + '_' + aggregateString
 		exportCurrentData.append(EventUID) # NB: String and explanation are defined before the for loop
+
+		# not yet a generic solution.
+		# TO DO: WRITE THIS GENERICALLY
+		if aggregateLevel[0] == 'Turnovers':
+			eventClassification = currentEvent[6]
+			exportCurrentData.append(eventClassification)
+		else:
+			exportCurrentData.append('Undefined')
+			warn('\nWARNING: need to add a generic eventClassification.\n')
 
 		## Assign refTeam
 		refTeam = currentEvent[1]
@@ -199,15 +251,48 @@ def process(targetEvents,aggregateLevel,rawDict,attributeDict,exportData,exportD
 
 		# Write a warning: If a gropuRow that doesn't end in A or B, warn about the weakness
 		groupRowsInds = rawDict[rawDict['PlayerID'] == 'groupRow'].index
+		playerRowsInds = rawDict[rawDict['PlayerID'] != 'groupRow'].index
+
 		for attrKey in attributeDict.keys():
 			if attrKey in ['PlayerID','TeamID','Ts','X','Y']:
 				continue
-			if all(attributeDict.loc[groupRowsInds,attrKey].notnull()):
+			if all(attributeDict[attrKey].isnull()):
+				# No data at all..
+				warn('\nWARNING: No data was found in <%s>.\nEither something went wrong in the analysis, or this feature was missing from the start..\n' %attrKey)
+				# Take it out of attrDictCols_numeric
+				if attrKey in attrDictCols_numeric:
+					attrDictCols_numeric.remove(attrKey)
+
+				continue
+			
+			## if all(attributeDict.loc[groupRowsInds,attrKey].notnull()):
+				# assumes that all grouprows have a value
+				# however, whenever only one team is visible for some time (for example during the break), this is possible!
+				# So I formulated an alternative:
+				# Of the group key, all player rows should be zero
+		
+			if all(attributeDict.loc[playerRowsInds,attrKey].isnull()):				
+				if attrKey in ['Run', 'Goal', 'Possession/Turnover', 'Pass']:
+					continue
 				if not (attrKey[-1] == 'A' or attrKey[-1] == 'B'):
 					warn('\nWARNING: The pipeline recognizes team spatial aggregates based on whether they end with <A> or <B> (case-sensitive).\nIt seems that a team spatial aggregate <%s> did not end with A or B.\nIf you want the spatial aggregate to be split based on the reference team, change the name of the outcome variable to end with A or B.\n' %attrKey)
+					print('------Group Rows in rawDict---------')
+					print(rawDict.loc[groupRowsInds,['PlayerID']])
+					print('------Group Rows---------')
+					print(attributeDict.loc[groupRowsInds,['PlayerID',attrKey]])
+					print('------Player Rows---------')
+					print(attributeDict.loc[playerRowsInds,attrKey])
+					pdb.set_trace()
 			else:
+
 				if attrKey[-1] == 'A' or attrKey[-1] == 'B':
 					warn('\nWARNING: The pipeline recognizes team spatial aggregates based on whether they end with <A> or <B> (case-sensitive).\nIt seems that a player spatial aggregate <%s> ended with A or B.\nThis may cause problems. Avoid using A or B as the last string of any player level outcome variables.\n' %attrKey)
+					print(rawDict.loc[groupRowsInds,['PlayerID']])
+					print(attributeDict.loc[groupRowsInds,['PlayerID',attrKey]])
+					print('There where this many not nulls:\n%s' %sum(attributeDict.loc[groupRowsInds,attrKey].notnull()))
+					print('Out of %s' %len(groupRowsInds))
+					print('************')
+					pdb.set_trace()
 
 		for ikey in copyTheseKeys_A:
 			attrLabel.update({ikey[:-1] + '_ref': attrLabel[ikey].replace(TeamAstring,'refTeam')})
@@ -216,11 +301,13 @@ def process(targetEvents,aggregateLevel,rawDict,attributeDict,exportData,exportD
 
 		## All data in exportCurrentData are trial identifiers. Create a column in a new panda copying these:
 		# Copy everything that exists in exportCurrentData up until here into a new dataFrame.
-		currentEventID = pd.DataFrame([],columns = [exportDataString],index = [rawDict['Ts'][rowswithinrange].index])
+		currentEventID = pd.DataFrame([],columns = exportDataString,index = rawDict['Ts'][rowswithinrange].index,dtype = object)
+		
 		for i,val in enumerate(exportCurrentData):
 			currentEventID[exportDataString[i]] = val
 
 		if skipEventAgg_curFile:
+			# it's probably here because the currentEventID is used to identify the trial in the eventAggFile
 			# load prev aggregated data??
 			warn('\nContinued with previously aggregated event data.\nIf you want to add new (or revised) spatial aggregates, change <skipEventAgg> into <False>.\n')
 			break	
@@ -239,8 +326,95 @@ def process(targetEvents,aggregateLevel,rawDict,attributeDict,exportData,exportD
 			tmp['eventTime'] = eventTime
 			curEventTime = curEventTime.append(tmp)
 
+
+		if isinstance(curEventTime.index, pd.core.index.MultiIndex):
+			warn('\nFATAL WARNING: Somehow, the index of <curEventTime> turned out as a multi-index.\nOn Francium (and probably on Linux in general), this will result into problems with pd.concat.\nThe solution is to reset the index and then assign a new index (that still represents the same order as the order dataframes that are concatenated).\n')
+		if isinstance(currentEventID.index, pd.core.index.MultiIndex):
+			warn('\nFATAL WARNING: Somehow, the index of <currentEventID> turned out as a multi-index.\nOn Francium (and probably on Linux in general), this will result into problems with pd.concat.\nThe solution is to reset the index and then assign a new index (that still represents the same order as the order dataframes that are concatenated).\n')
+		if isinstance(rawDict.loc[rowswithinrange].index, pd.core.index.MultiIndex):
+			warn('\nFATAL WARNING: Somehow, the index of <rawDict.loc[rowswithinrange]> turned out as a multi-index.\nOn Francium (and probably on Linux in general), this will result into problems with pd.concat.\nThe solution is to reset the index and then assign a new index (that still represents the same order as the order dataframes that are concatenated).\n')
+		if isinstance(attributeDict.loc[rowswithinrange, attrDictCols].index, pd.core.index.MultiIndex):
+			warn('\nFATAL WARNING: Somehow, the index of <attributeDict.loc[rowswithinrange, attrDictCols]> turned out as a multi-index.\nOn Francium (and probably on Linux in general), this will result into problems with pd.concat.\nThe solution is to reset the index and then assign a new index (that still represents the same order as the order dataframes that are concatenated).\n')
+
 		## Create a new panda that has the identifiers of the current event and the rawdata
 		curEventExcerptPanda = pd.concat([curEventTime, currentEventID, rawDict.loc[rowswithinrange], attributeDict.loc[rowswithinrange, attrDictCols]], axis=1) # Skip the duplicate 'Ts' columns
+
+		
+		# print('\nthe problematic index:')
+		# print(currentEventID.index)
+		# print('-----------------------\n')
+
+		# # print('index types:\n')
+		# # print('curEventTime = %s' %type(curEventTime.index))
+		# # print('currentEventID = %s' %type(currentEventID.index))
+		# # print('rawDict.loc[rowswithinrange] = %s' %type(rawDict.loc[rowswithinrange].index))
+		# # print('attributeDict.loc[rowswithinrange, attrDictCols] = %s' %type(attributeDict.loc[rowswithinrange, attrDictCols].index))
+		# # print('*******\n\n')
+		# # print('Boolean testing for types:\n')
+
+		# # print('curEventTime == \'pandas.core.indexes.multi.MultiIndex\':')
+		# # print(isinstance(curEventTime.index, pd.core.index.MultiIndex))
+		# # # print(type(curEventTime.index) == 'pandas.core.indexes.multi.MultiIndex')
+		# # print('currentEventID == \'pandas.core.indexes.multi.MultiIndex\':')
+		# # print(isinstance(currentEventID.index, pd.core.index.MultiIndex))
+		# # # print(type(currentEventID.index) == 'pandas.core.indexes.multi.MultiIndex')
+		# # print('rawDict.loc[rowswithinrange] == \'pandas.core.indexes.multi.MultiIndex\':')
+		# # print(isinstance(rawDict.loc[rowswithinrange].index, pd.core.index.MultiIndex))
+		# # # print(type(rawDict.loc[rowswithinrange].index) == 'pandas.core.indexes.multi.MultiIndex')
+		# # print('attributeDict.loc[rowswithinrange, attrDictCols] == \'pandas.core.indexes.multi.MultiIndex\':')
+		# # print(isinstance(attributeDict.loc[rowswithinrange, attrDictCols].index, pd.core.index.MultiIndex))
+		# # # print(type(attributeDict.loc[rowswithinrange, attrDictCols].index) == 'pandas.core.indexes.multi.MultiIndex')
+		# # print('*******\n\n')
+
+
+		# ## Test whether each to be concatenated df has an int64index.
+		# ## If not (or specifically, if it is a multiIndex): reset the index.
+		# ## !!!!!!!!!!!!!!
+		# ## Afterwards, the index should be re-aligned. NB: this step is not yet in the code.
+		# ## !!!!!!!!!!!!!!
+		# if isinstance(curEventTime.index, pd.core.index.MultiIndex):
+		# 	print('reset1')
+		# 	tmp1 = curEventTime.reset_index()
+		# else:
+		# 	tmp1 = curEventTime
+
+		# if isinstance(currentEventID.index, pd.core.index.MultiIndex):
+		# 	print('reset2')
+		# 	tmp2 = currentEventID.reset_index()
+		# 	tmp2.reindex(curEventTime.index)
+		# else:
+		# 	tmp2 = currentEventID
+
+		# if isinstance(rawDict.loc[rowswithinrange].index, pd.core.index.MultiIndex):
+		# 	print('reset3')
+		# 	tmp3 = rawDict.loc[rowswithinrange].reset_index()
+		# else:
+		# 	tmp3 = rawDict.loc[rowswithinrange]
+
+		# if isinstance(attributeDict.loc[rowswithinrange, attrDictCols].index, pd.core.index.MultiIndex):
+		# 	print('reset4')
+		# 	tmp4 = attributeDict.loc[rowswithinrange, attrDictCols].reset_index()
+		# else:
+		# 	tmp4 = attributeDict.loc[rowswithinrange, attrDictCols]
+
+		# # tmp2 = currentEventID.reset_index()
+		# # tmp3 = rawDict.loc[rowswithinrange].reset_index()
+		# # tmp4 = attributeDict.loc[rowswithinrange, attrDictCols].reset_index()
+
+		# # tmp1 = tmp1.reindex(curEventTime.index)
+		# # tmp2 = tmp2.reindex(currentEventID.index, level = 0)
+		# # MultiIndex.reindex(target, method=None, level=None, limit=None, tolerance=None)
+		# # tmp3 = tmp3.loc[rowswithinrange].reindex(rawDict.loc[rowswithinrange].index)
+		# # tmp4 = tmp4.reindex(attributeDict.loc[rowswithinrange, attrDictCols].index)
+
+		# curEventExcerptPanda = pd.concat([tmp1, tmp2, tmp3, tmp4], axis=1) # Skip the duplicate 'Ts' columns
+		# print(curEventExcerptPanda.keys())
+		# curEventExcerptPanda.to_csv('test.csv')
+		# pdb.set_trace()
+		###curEventExcerptPanda = curEventTime.join(currentEventID)
+		###curEventExcerptPanda = curEventExcerptPanda.join(rawDict.loc[rowswithinrange])
+		###curEventExcerptPanda = curEventExcerptPanda.join(attributeDict.loc[rowswithinrange, attrDictCols])
+
 		# # !!!!!!!!!!!!!!!!!!!!!!!!!!!!! remember this for re_indexing
 		# Use the new index as the index
 		# curEventExcerptPanda = curEventExcerptPanda.set_index('eventTimeIndex', drop=True, append=False, inplace=False, verify_integrity=False)
@@ -261,6 +435,10 @@ def process(targetEvents,aggregateLevel,rawDict,attributeDict,exportData,exportD
 		###################################
 		## Start of temporal aggregation ##
 		###################################
+		# print('\nBefore counting events:')
+		# print('len(exportCurrentData) = %s' %len(exportCurrentData))
+		# print('len(overallString) = %s' %len(overallString))
+		# print('len(overallExplanation) = %s' %len(overallExplanation))
 
 		## Count exsiting events (goals, possession and passes)
 		exportCurrentData,overallString,overallExplanation =\
@@ -276,25 +454,123 @@ def process(targetEvents,aggregateLevel,rawDict,attributeDict,exportData,exportD
 		countEvents2.passes(window,aggregateLevel[0],targetEvents,TeamAstring,TeamBstring,exportCurrentData,overallString,overallExplanation)
 
 		## Systematically aggregate all existing spatial aggregates		
+		# print(attrDictCols_numeric)
 		for key in attrDictCols_numeric:
+			# print('THIS IS THE key: %s' %key)
+
 			#####################
 			## Prepare the data #
 			#####################
 
+			if all(attributeDict[key].isnull()):
+				# No data at all..
+				warn('\nWARNING: No data was found in <%s>.\nEither something went wrong in the analysis, or this feature was missing from the start..\n**********\nWeird. Definitely shouldn\'t happen here. Probably an issue with exporting and/or loading the data.\n' %attrKey)
+				# Take it out of attrDictCols_numeric
+				if key in attrDictCols_numeric:
+					attrDictCols_numeric.remove(key)
+
+				continue
+
 			# Include the current content
 			# A silly work-around in case the data is not in np.float
 			tmp = interpolatedCurEventExcerptPanda[key].index
-			if type(interpolatedCurEventExcerptPanda[key][tmp[0]]) == float:
-				interpolatedCurEventExcerptPanda[key] = interpolatedCurEventExcerptPanda[key].astype(np.float64)
+
+			try:
+				if type(interpolatedCurEventExcerptPanda[key][tmp[0]]) == float:
+					interpolatedCurEventExcerptPanda[key] = interpolatedCurEventExcerptPanda[key].astype(np.float64)
+			except:
+				warn('\nWARNING: Tried to set the dataType to np.float64, but failed.\nA known exception occurs when the data is empty. This should in turn lead to exporting NaNs below.\n')
+				print(window)
+				print(interpolatedCurEventExcerptPanda)
+				print(interpolatedCurEventExcerptPanda[key])
+				print(key)
+				print(tmp)
+				print(type(interpolatedCurEventExcerptPanda[key]))
+				pdb.set_trace()
 			curContent = np.isnan(interpolatedCurEventExcerptPanda[key]) == False			
 			tmpPlayerID = interpolatedCurEventExcerptPanda['PlayerID'][curContent]
 			tmpTeampID = interpolatedCurEventExcerptPanda['TeamID'][curContent]
 			
 			players = np.sort(interpolatedCurEventExcerptPanda.loc[curContent,'PlayerID'].unique())		# THIS IS THE SAME, regardless of which key is used. So, only once, export player IDs			
+			targetGroup = []
 
 			## Make outcome variable dependent on current event's refTeam
 			# NB: attrLabel is already changed earlier.			
-			targetGroup = []
+			# print('WAS THERE ANY CURRENT CONTENT? %s' %any(curContent))
+			if not any(curContent):
+				# apparently, there were no values for the current key during the whole event excerpt
+				# This could be a team variable that is empty
+				uniqueTeams = interpolatedCurEventExcerptPanda['TeamID'].unique()
+				uniqueTeams = [st for st in uniqueTeams if type(st) == str]
+
+				safeEnoughToBeAgroupRow = False
+				safeEnoughToBeAplayerRow = False
+				if len(uniqueTeams) == 1:
+					# there was only 1 team, so very plausible that there were missing values at the grouprows for the current variable
+					safeEnoughToBeAgroupRow = True				
+
+				nPlA = len(interpolatedCurEventExcerptPanda.loc[interpolatedCurEventExcerptPanda['TeamID'] == TeamAstring,'PlayerID'].unique())
+				nPlB = len(interpolatedCurEventExcerptPanda.loc[interpolatedCurEventExcerptPanda['TeamID'] == TeamBstring,'PlayerID'].unique())
+				if nPlA < 3 or nPlB < 3:
+					# there was at least one team with less than 3 players (therefore, it is impossible to compute the surface)
+					safeEnoughToBeAgroupRow = True
+				if nPlA == 0 and nPlB == 0:
+					safeEnoughToBeAgroupRow = False
+					safeEnoughToBeAplayerRow = True
+
+				if safeEnoughToBeAgroupRow:
+					# only one team found, so indeed a team was missing
+					targetGroup = 'groupRows'
+					if key[-1] == ref:
+						# Ref team
+						newKey = key[:-1] + '_ref'
+						interpolatedCurEventExcerptPanda[newKey] = interpolatedCurEventExcerptPanda[key]
+						interpolatedCurEventExcerptPanda.drop(key, axis=1, inplace=True)
+						key = newKey
+
+					elif key[-1] == oth:
+						# Other
+						newKey = key[:-1] + '_oth'
+						interpolatedCurEventExcerptPanda[newKey] = interpolatedCurEventExcerptPanda[key]
+						interpolatedCurEventExcerptPanda.drop(key, axis=1, inplace=True)
+						key = newKey
+					
+				if safeEnoughToBeAgroupRow or safeEnoughToBeAplayerRow:
+					try:
+						curLabelKey = attrLabel[key]
+					except:
+						print('\nWARNING: Could not find a label for the current attribute <%s>.\nMost likeley problem:' %key)
+						print('\nFORMAT USER INPUT ERROR: The number of columns to be read as attributes does not correspond to the number of labels given.\nMake sure that for each column that is read from the data there is a label.\nAs a working solution, the attributes will be given <no_label> as a label.\n********* PLEASE UPDATE USER INPUT ********\n*******************************************')
+						warn('')
+						curLabelKey = 'NO_LABEL'
+
+					# print('\nBefore exception with only 1 team:')
+					# print('len(exportCurrentData) = %s' %len(exportCurrentData))
+					# # print('len(overallString) = %s' %len(overallString))
+					# # print('len(overallExplanation) = %s' %len(overallExplanation))
+
+					# print('\nsafeEnoughToBeAgroupRow = %s' %safeEnoughToBeAgroupRow)
+					# print('\nsafeEnoughToBeAplayerRow = %s' %safeEnoughToBeAplayerRow)
+
+					# Temporal aggregation (across ALL player vals and/or team vals and/or ball vals)
+					data = pd.DataFrame([])
+					exportCurrentData, overallString, overallExplanation = \
+					aggregateTemporally(data,exportCurrentData,targetGroup,key,curLabelKey,eventDescrString, overallString, overallExplanation,aggrMethods = aggrMeth_popLevel, exportNans = True)
+
+
+					# print('\nAfter exception with only 1 team:')
+					# print('len(exportCurrentData) = %s' %len(exportCurrentData))
+					# # print('len(overallString) = %s' %len(overallString))
+					# # print('len(overallExplanation) = %s' %len(overallExplanation))
+
+					#### continue writing this statement
+					warn('\nWARNING: Encountered an event where there was only data available for 1 team.\nAs there was no content for the current key <%s>, it must have been a team feature (IF IT WAS NOT, THEN THIS NEEDS TO BE LOOKED AT).\nThe analysis continues by aggregating this feature as a NaN.\nConsider excluding this event listwise.\n' %key)
+					continue
+				else:
+					# probably go back  to the original debugging output?
+					warn('\nWARNING: Although there were no values for this key <%s>, it was not likely to be a team feature, because both teamstrings existed in the excerpt.\nIt may be that the teamstring existed but the values where all nans.\nIf this occurs, you could go back to the solution written above this warning.\nAs a safety measure, this will at the moment lead to an error.\n')
+					print('CHECK WHY THE SERIES OF THE CURRENT KEY HAD NO DATA. THERE SHOULD BE A CSV FILE IN YOUR PIPELINE FOLDER WITH THE CURRENT EVENT.')
+
 			if all(tmpPlayerID == 'groupRow'):
 				targetGroup = 'groupRows'
 				if key[-1] == ref:
@@ -318,10 +594,27 @@ def process(targetEvents,aggregateLevel,rawDict,attributeDict,exportData,exportD
 				if targetGroup == []:				
 					targetGroup = 'ballRows'
 				else:
-					print(targetGroup)
-					print('---')
-					print(tmpPlayerID)
+					interpolatedCurEventExcerptPanda.to_csv('interpolatedCurEventExcerptPanda_complete.csv')
+					interpolatedCurEventExcerptPanda.loc[curContent].to_csv('interpolatedCurEventExcerptPanda_curContent.csv')
+					print('Apparently, targetGroup has already been allocated as a grouprow:' )
+					print('targetGroup = %s' %targetGroup)
+					print('----')
+					print('Previously - when this error occurred, tmpPlayerID was empty:')
+					print('tmpPlayerID = %s' %tmpPlayerID)
+					print('Lets see if there was a curContent:')
+					print('curContent = %s' %any(curContent))
+					print('How about a teamID:')
+					print('tmpTeampID = %s' %tmpTeampID)
+					print('and what about players:')
+					print('players = %s' %players)
+					print('This is the key: <%s>' %key)
 					warn('\nFATAL ERROR: A variable seemed to be covering multiple sets (groupRows and ballRows).\nThis should be avoided or accounted for in the code.\n')
+					print('possibly a result of not having any rows within range:')
+					print('window[0] = %s' %window[0])
+					print('window[1] = %s' %window[1])
+					print('min(rawDict[\'Ts\']) = %s' %min(rawDict['Ts']))
+					print('max(rawDict[\'Ts\']) = %s' %max(rawDict['Ts']))
+					print('rowswithinrange = %s' %rowswithinrange)
 					exit()
 					# To avoid errors: either separate variables covering multiple sets, or add code here that joins targetGroups..
 			
@@ -335,17 +628,41 @@ def process(targetEvents,aggregateLevel,rawDict,attributeDict,exportData,exportD
 
 			# Temporal aggregation (across ALL player vals and/or team vals and/or ball vals)
 			data = interpolatedCurEventExcerptPanda[key][curContent]
-			exportCurrentData, overallString, overallExplanation = \
-			aggregateTemporally(data,exportCurrentData,targetGroup,key,attrLabel[key],eventDescrString, overallString, overallExplanation,aggrMethods = aggrMeth_popLevel)
+			try:
+				curLabelKey = attrLabel[key]
+			except:
+				print('\nWARNING: Could not find a label for the current attribute <%s>.\nMost likeley problem:' %key)
+				print('\nFORMAT USER INPUT ERROR: The number of columns to be read as attributes does not correspond to the number of labels given.\nMake sure that for each column that is read from the data there is a label.\nAs a working solution, the attributes will be given <no_label> as a label.\n********* PLEASE UPDATE USER INPUT ********\n*******************************************')
+				warn('')
+				curLabelKey = 'NO_LABEL'
+			# print('\nBefore aggregating all players and/or gropuRows:')
+			# print('len(exportCurrentData) = %s' %len(exportCurrentData))
+			# # print('len(overallString) = %s' %len(overallString))
+			# # print('len(overallExplanation) = %s' %len(overallExplanation))
 
+			exportCurrentData, overallString, overallExplanation = \
+			aggregateTemporally(data,exportCurrentData,targetGroup,key,curLabelKey,eventDescrString, overallString, overallExplanation,aggrMethods = aggrMeth_popLevel)
+			# print('targetGroup = %s' %targetGroup)
 			# Finally, aggregate player level values per team and/or per time separately
 			if targetGroup == 'playerRows':
 				# When it's a playerRow, the outcome measure is also aggregated per player per team separately.
+				# print('\nBefore aggregating playerRows:')
+				# print('len(exportCurrentData) = %s' %len(exportCurrentData))
+				# print('len(overallString) = %s' %len(overallString))
+				# print('len(overallExplanation) = %s' %len(overallExplanation))
+
 				for i in np.arange(len(aggregationOrders)):
 					aggregationOrder = aggregationOrders[i]
 					population = populations[i]
+
 					exportCurrentData, overallString, overallExplanation = \
 					aggregateTemporallyINCEPTION(population,aggregationOrder,aggrMeth_popLevel,aggrMeth_playerLevel,interpolatedCurEventExcerptPanda,key,refTeam,othTeam,attrLabel,eventDescrString, exportCurrentData, overallString, overallExplanation)
+				
+				# print('\nBefore aggregate per player:')
+				# print('len(exportCurrentData) = %s' %len(exportCurrentData))
+				# print('len(overallString) = %s' %len(overallString))
+				# print('len(overallExplanation) = %s' %len(overallExplanation))
+
 				if key in aggregatePerPlayer:
 					
 					# Create the attrlabel for 22 players (that may remain empty)
@@ -370,7 +687,33 @@ def process(targetEvents,aggregateLevel,rawDict,attributeDict,exportData,exportD
 							data = pd.DataFrame([])
 							exportCurrentData, overallString, overallExplanation = \
 							aggregateTemporally(data,exportCurrentData,targetGroup,newKey,attrLabel[newKey],eventDescrString, overallString, overallExplanation,aggrMethods = aggrMeth_popLevel,exportNans = True)
+			# # here
+			# print('\nAt the end:')
+			# print('len(exportCurrentData) = %s' %len(exportCurrentData))
+			# # print('len(overallString) = %s' %len(overallString))
+			# print('len(overallExplanation) = %s' %len(overallExplanation))
 
+			# if len(exportCurrentData) > 165:
+			# 	pdb.set_trace()
+		# print(len(overallString))
+		# print(len(exportCurrentData))
+		# print(len(overallString_prev))
+		if overallString_prev != []:
+			if len(overallString_prev) > len(overallString):
+				missingOutput = [s for s in overallString_prev if not s in overallString]
+				warn('\nWARNING: The following features were previously exported, but not currently:\n<%s>\nThe missing values were replaced with <NaN>.\n' %missingOutput)
+
+			elif len(overallString_prev) < len(overallString):
+				missingOutput = [s for s in overallString if not s in overallString_prev]
+				warn('\nWARNING: The following features were currently exported, but not previously:\n<%s>\nThe missing values were replaced with <NaN>.\n' %missingOutput)
+					# The number of features exported per event was not the same.\nThis will result in an alignment problem in the output.\nExported previously:\n%s\n\nExported currently:\n%s\n' %(overallString_prev,overallString))
+		overallString_prev = overallString
+		
+		if len(overallString) > len(overallString_longest):
+			overallString_longest = overallString
+
+		if not len(overallString) == len(exportCurrentData):
+			warn('\nWARNING: Not every output data had an outputstring.\nThis could be an indication that the order of exporting data was incorrect.\nBesides, for clarity it is always better to immediately write up a dataString.\n')
 		# Create a panda where all events are stored (before temporal aggregation)
 		# This includes the ref_team edits.
 		eventExcerptPanda = eventExcerptPanda.append(interpolatedCurEventExcerptPanda)
@@ -386,9 +729,25 @@ def process(targetEvents,aggregateLevel,rawDict,attributeDict,exportData,exportD
 				else:
 					exportCurrentData.append(np.nan)
 
-		# Create a matrix where all temporally aggregated data of each event are stored
-		exportMatrix.append(exportCurrentData)
+		# print(type(overallString))
+		# print(type(exportCurrentData))
+		# print(len(overallString))
+		# print(len(exportCurrentData))
 
+		currentAsPanda = pd.DataFrame([[d for d in exportCurrentData]],columns=overallString,index = [idx])
+		exportAsPanda = pd.concat([exportAsPanda, currentAsPanda],axis = 0)
+
+		# exportAsPanda
+		# Create a matrix where all temporally aggregated data of each event are stored
+		#####exportMatrix.append(exportCurrentData)
+
+	#####warn('\nTO DO: !!!!!: Rather than converting pandas to lists at the end of temporalAggregation, I should re-write the export to be based on pandas. Much safer.\nAlso, export should happen in temporalAggregation.\n')
+	#####exportAsPanda = exportAsPanda[overallString_longest]
+	#####exportAsPanda_toMatrix = exportAsPanda.as_matrix()
+	#####exportAsPanda_toMatrix_toList = exportAsPanda_toMatrix.tolist()
+	#####exportMatrix = exportAsPanda_toMatrix_toList
+
+	exportMatrix = exportAsPanda[overallString_longest]
 	if debuggingMode:
 		elapsed = str(round(time.time() - tTempAgg, 2))
 		print('***** Time elapsed during temporalAggregation: %ss' %elapsed)
@@ -405,8 +764,14 @@ def interpolateEventExcerpt(curEventExcerptPanda,freqInterpolatedData,tStart,tEn
 	tmp = np.arange(tStartRound,tEndRound + 1/freqInterpolatedData, 1/freqInterpolatedData) # referring to eventTime
 	X_int = np.round(tmp,math.ceil(math.log(freqInterpolatedData,10))) # automatically rounds it to the required number of significant numbers (decimal points) for the given sampling frequency (to avoid '0' being stored as 1.474746 E16 AND 1.374750987 E16)
 
-	interpolatedVals = FillGaps_and_Filter.fillGaps(curEventExcerptPanda,eventInterpolation = True,fixed_X_int = X_int,aggregateLevel = aggregateLevel,datasetFramerate = datasetFramerate)
-
+	fatalIssue = False
+	interpolatedVals,fatalIssue = FillGaps_and_Filter.fillGaps(curEventExcerptPanda,eventInterpolation = True,fixed_X_int = X_int,aggregateLevel = aggregateLevel,datasetFramerate = datasetFramerate)
+	if 'fatalIssue' in interpolatedVals:		
+		fatalIssue = True
+	if fatalIssue == True:
+		warn('\nWARNING: uhoh... picked up a fatal error later on in the pipeline. Likely a processing error (not a data issue).')
+		print(interpolatedVals)
+		pdb.set_trace()
 	# interpolatedVals.to_csv('C:\\Users\\rensm\\Documents\\SURFDRIVE\\Repositories\\NP repository\\test.csv')
 
 	##### This WORKED as well:
@@ -496,8 +861,15 @@ def aggregateTemporallyINCEPTION(population,aggregationOrder,aggrMeth_popLevel,a
 			warn('\nFATAL WARNING: Could not identify aggregation method <%s>.' %meth)
 		
 		curKeyString = key + '_' + meth + '_' + aggregationOrder + '_' + popString
-		exportCurrentData, overallString, overallExplanation = \
-		aggregateTemporally(data,exportCurrentData,population,curKeyString,attrLabel[key],eventDescrString, overallString, overallExplanation, aggrMethods = aggrMeth_popLevel)
+
+		if data.size == 0:
+			# if it's empty, export as nans
+			exportCurrentData, overallString, overallExplanation = \
+			aggregateTemporally(data,exportCurrentData,population,curKeyString,attrLabel[key],eventDescrString, overallString, overallExplanation, aggrMethods = aggrMeth_popLevel,exportNans = True)
+		else:
+			exportCurrentData, overallString, overallExplanation = \
+			aggregateTemporally(data,exportCurrentData,population,curKeyString,attrLabel[key],eventDescrString, overallString, overallExplanation, aggrMethods = aggrMeth_popLevel)
+
 
 	return exportCurrentData, overallString, overallExplanation
 

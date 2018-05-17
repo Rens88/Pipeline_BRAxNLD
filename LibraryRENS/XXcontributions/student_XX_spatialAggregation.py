@@ -58,12 +58,17 @@ if __name__ == '__main__':
 ## Here, you specifiy what each function does
 def process(rawDict,attributeDict,attributeLabel,TeamAstring,TeamBstring,skipSpatAgg):
 	# Use this is an example for a GROUP level aggregate
-	attributeDict_EXAMPLE,attributeLabel_EXAMPLE = \
-	teamCentroid_panda(rawDict,attributeDict,attributeLabel,TeamAstring,TeamBstring,skipSpatAgg)
+
+	skipBecauseItTakesTooMuchTime = True
+	if not skipBecauseItTakesTooMuchTime:
+		attributeDict_EXAMPLE,attributeLabel_EXAMPLE = \
+		teamCentroid_panda(rawDict,attributeDict,attributeLabel,TeamAstring,TeamBstring,skipSpatAgg)
 
 	# Use this is an example for a PLAYER level aggregate
-	attributeDict_EXAMPLE,attributeLabel_EXAMPLE = \
-	distanceToCentroid(rawDict,attributeDict,attributeLabel,TeamAstring,TeamBstring,skipSpatAgg)
+	skipBecauseItTakesTooMuchTime = True
+	if not skipBecauseItTakesTooMuchTime:
+		attributeDict_EXAMPLE,attributeLabel_EXAMPLE = \
+		distanceToCentroid(rawDict,attributeDict,attributeLabel,TeamAstring,TeamBstring,skipSpatAgg)
 
 	# NB: Centroid and distance to centroid are stored in example variables that are not exported
 	# when 'process' is finished, because these features are already embedded in the main pipeline.
@@ -94,10 +99,11 @@ def teamCentroid_panda(rawDict,attributeDict,attributeLabel,TeamAstring,TeamBstr
 	
 	attributeLabel_tmp = {'TeamCentXA': tmpXAString, 'TeamCentYA': tmpYAString, 'LengthA': tmpLengthAString,'WidthA': tmpWidthAString,\
 	'TeamCentXB': tmpXBString,'TeamCentYB': tmpYBString,'LengthB': tmpLengthBString,'WidthB': tmpWidthBString}
-	attributeLabel.update(attributeLabel_tmp)
+	attributeLabel.update(attributeLabel_tmp)	
 
-	if skipSpatAgg:
+	if skipSpatAgg: # Return eary if spatial aggregation is being skipped
 		return attributeDict,attributeLabel
+
 	##### THE DATA #####
 	# Prepare the indices of the groupRows. This will be used to store the computed values in the index corresponding to attributeDict.
 	ind_groupRows = attributeDict[rawDict['PlayerID'] == 'groupRow'].index
@@ -107,18 +113,64 @@ def teamCentroid_panda(rawDict,attributeDict,attributeLabel,TeamAstring,TeamBstr
 	dfA = rawDict[rawDict['TeamID'] == TeamAstring]
 	dfB = rawDict[rawDict['TeamID'] == TeamBstring]
 	# Pivot X and Y dataframes for Team A
-	Team_A_X = dfA.pivot(columns='Ts', values='X')
-	Team_A_Y = dfA.pivot(columns='Ts', values='Y')
+	try:
+	# 	# Pivotting method:
+		# Team_A_X_pivotted = dfA.pivot(columns='Ts', values='X')		
+
+		# Groupby method:
+		tmp = dfA[['Ts','X','PlayerID']]
+		Team_A_X = tmp.groupby(['Ts'])
+		
+	except:
+		Team_A_X = np.nanmean(dfA['X'])
+		print(Team_A_X.shape)
+		print(dfA['X'].shape)
+		print(len(ind_groupRows))
+		warn('Tried to pivot Team_A_X. but it didnt work. Find a different way, because dataset is too large for pivoting')
+		pdb.set_trace()
+
+	try:
+		##Team_A_Y = dfA.pivot(columns='Ts', values='Y')
+		# Groupby method:
+		tmp = dfA[['Ts','Y']]
+		Team_A_Y = tmp.groupby(['Ts'])
+		
+	except:
+		Team_A_Y = np.nanmean(dfA['Y'])
+		print(dfA.shape)
+		warn('Tried to pivot Team_A_Y. but it didnt work. Find a different way, because dataset is too large for pivoting')
+		pdb.set_trace()
+
 	# Pivot X and Y dataframes for Team B
-	Team_B_X = dfB.pivot(columns='Ts', values='X')
-	Team_B_Y = dfB.pivot(columns='Ts', values='Y')   
+	try:
+		##Team_B_X = dfB.pivot(columns='Ts', values='X')
+		# Groupby method:
+		tmp = dfB[['Ts','X']]
+		Team_B_X = tmp.groupby(['Ts'])		
+	except:
+		print(dfB.shape)
+		warn('Tried to pivot Team_B_X. but it didnt work. Find a different way, because dataset is too large for pivoting')
+		pdb.set_trace()
+	try:
+		##Team_B_Y = dfB.pivot(columns='Ts', values='Y')   
+		# Groupby method:
+		tmp = dfB[['Ts','Y']]
+		Team_B_Y = tmp.groupby(['Ts'])
+		
+	except:
+		print(dfB.shape)
+		warn('Tried to pivot Team_B_Y. but it didnt work. Find a different way, because dataset is too large for pivoting')
+		pdb.set_trace()
 
 	# The warnings below were included to debug problems with different lengths per team and/or group row
-	if len(ind_groupRows) != Team_A_X.shape[1]:
-		warn('\nWARNING: (potentially fatal) The number of groupRows does not correspond to the number of entries identified for <%s>.\nMOST LIKELY CAUSE: There are less ''groupRows'' than there are unique timeStamps\nAlternative reasons: This is either due to incorrect identification of groupRows (and subsequent allocation of the string <groupRow> in its TeamID).\nOr, this could be due to issues with identifying <%s>.\nUPDATE: Should now be cleaned in cleanupData.py in verifyGroupRows().\n' %(TeamAstring,TeamAstring))
-	if len(ind_groupRows) != Team_B_X.shape[1]:
-		warn('\nWARNING: (potentially fatal) The number of groupRows does not correspond to the number of entries identified for <%s>.\nMOST LIKELY CAUSE: There are less ''groupRows'' than there are unique timeStamps\nAlternative reasons: This is either due to incorrect identification of groupRows (and subsequent allocation of the string <groupRow> in its TeamID).\nOr, this could be due to issues with identifying <%s>.\nUPDATE: Should now be cleaned in cleanupData.py in verifyGroupRows().\n' %(TeamBstring,TeamBstring))
-	if Team_A_X.shape[1] != Team_B_X.shape[1]:
+	####### if len(ind_groupRows) != Team_A_X.shape[1]:
+	if len(ind_groupRows) != len(Team_A_X):
+		warn('\nWARNING: (potentially fatal) The number of groupRows does not correspond to the number of entries identified for <%s>.\nMOST LIKELY CAUSE: There are less ''groupRows'' than there are unique timeStamps\nAlternative reasons: This is either due to incorrect identification of groupRows (and subsequent allocation of the string <groupRow> in its TeamID).\nOr, this could be due to issues with identifying <%s>.\nUPDATE: Should now be cleaned in cleanupData.py in verifyGroupRows().\nALTERNATIVELY: As a result of a non-chronological dataset, the interpolation in cleanup doesnt work well.\n' %(TeamAstring,TeamAstring))
+	####### if len(ind_groupRows) != Team_B_X.shape[1]:
+	if len(ind_groupRows) != len(Team_B_X):		
+		warn('\nWARNING: (potentially fatal) The number of groupRows does not correspond to the number of entries identified for <%s>.\nMOST LIKELY CAUSE: There are less ''groupRows'' than there are unique timeStamps\nAlternative reasons: This is either due to incorrect identification of groupRows (and subsequent allocation of the string <groupRow> in its TeamID).\nOr, this could be due to issues with identifying <%s>.\nUPDATE: Should now be cleaned in cleanupData.py in verifyGroupRows().\nALTERNATIVELY: As a result of a non-chronological dataset, the interpolation in cleanup doesnt work well.\n' %(TeamBstring,TeamBstring))
+	##############if Team_A_X.shape[1] != Team_B_X.shape[1]:
+	if len(Team_A_X) != len(Team_B_X):
 		warn('\nWARNING: (potentially fatal) \n\
 	The number of rows (i.e., unique timestamps) identified for <%s> (n = %s frames) != <%s> (n = %s frames).\n\
 	In other words. For some period of time, only players from one team were registered.\n\
@@ -128,7 +180,8 @@ def teamCentroid_panda(rawDict,attributeDict,attributeLabel,TeamAstring,TeamBstr
 		2) Write the analysis to only compute the spatial aggregate when there is data from both teams.\n\
 	NB: As long as the difference in n is small (e.g., less than a second), the impact is minimal.\n\
 #######################################################################################################'\
- %(TeamAstring,Team_A_X.shape[1],TeamBstring,Team_B_X.shape[1]))
+ %(TeamAstring,len(Team_A_X),TeamBstring,len(Team_B_X)))
+ ############# %(TeamAstring,Team_A_X.shape[1],TeamBstring,Team_B_X.shape[1]))
 
 		# Index of the groupRows for every unique timestamp that exists for each team separately
 		uniqueTs_TeamA_Rows = rawDict['Ts'][rawDict['TeamID'] == TeamAstring].unique()
@@ -136,6 +189,25 @@ def teamCentroid_panda(rawDict,attributeDict,attributeLabel,TeamAstring,TeamBstr
 		
 		uniqueTs_TeamB_Rows = rawDict['Ts'][rawDict['TeamID'] == TeamBstring].unique()
 		ind_groupRowsB = [i for i in ind_groupRows if np.isin(rawDict['Ts'][i],uniqueTs_TeamB_Rows)]
+
+
+		# print(len(ind_groupRowsA))
+		# pdb.set_trace()
+
+		# ind_groupRows_to_be_removed = [i for i in ind_groupRows if not np.isin(rawDict['Ts'][i],uniqueTs_TeamA_Rows)]
+
+
+		# ind_groupRowsA = ind_groupRows[ind_groupRows != ind_groupRows_to_be_removed]
+		# print(len(ind_groupRowsA))
+		# print(ind_groupRows_to_be_removed)
+		# pdb.set_trace()
+
+		# uniqueTs_GroupRows = df_cleaned['Ts'][df_cleaned['PlayerID'] == 'groupRow'].unique()
+		# uniqueTs_TeamA_Rows = df_cleaned['Ts'][df_cleaned['TeamID'] == TeamAstring].unique()
+
+		# Ts_to_be_removed = [i for i in uniqueTs_GroupRows if not np.isin(i,uniqueTs_nonGroupRows)]
+
+		# ind_groupRows = attributeDict[rawDict['PlayerID'] == 'groupRow'].index
 
 	# Create empty DataFrame to store results, NB: columns need to be assigend beforehand.
 	# newAttributes = pd.DataFrame(index = ind_groupRows,columns = ['TeamCentXA', 'TeamCentYA', 'LengthA', 'WidthA', 'TeamCentXB', 'TeamCentYB', 'LengthB', 'WidthB'])
@@ -146,43 +218,80 @@ def teamCentroid_panda(rawDict,attributeDict,attributeLabel,TeamAstring,TeamBstr
 	pd.options.mode.chained_assignment = None  # default='warn' # NB: The code below gives a warning because it may be uncertain whether the right ind_groupRows are called. If you know a work-around, let me know.
 		
 	# For team A
-	newAttributesA['TeamCentXA'][ind_groupRowsA] = Team_A_X.mean(axis=0, skipna=True)
-	newAttributesA['TeamCentYA'][ind_groupRowsA] = Team_A_Y.mean(axis=0, skipna=True)
-	newAttributesA['LengthA'][ind_groupRowsA] = Team_A_X.max(axis=0, skipna=True) - Team_A_X.min(axis=0, skipna=True)
-	newAttributesA['WidthA'][ind_groupRowsA] = Team_A_Y.max(axis=0, skipna=True) - Team_A_Y.min(axis=0, skipna=True)
+	############## if Team_A_X.shape == (0,0):
+	if len(Team_A_X) == 0:		
+	  exit('\nFATAL WARNING: No data in TeamA\'s X positions.\nThis is likely because the TeamAstring and TeamBstring do not correspond with the strings in the dataset.\nThis may be because the user input is incorrect OR, because the Team strings are unsuccesfully derived from the filename (especialy when using dataType FDP for a new dataset):\nConsider writing a specific function in dissectFilename.py.\n')
+
+	##########newAttributesA['TeamCentXA'][ind_groupRowsA] = Team_A_X.mean(axis=0, skipna=True)
+	##########newAttributesA['TeamCentYA'][ind_groupRowsA] = Team_A_Y.mean(axis=0, skipna=True)
+	##########newAttributesA['LengthA'][ind_groupRowsA] = Team_A_X.max(axis=0, skipna=True) - Team_A_X.min(axis=0, skipna=True)
+	##########newAttributesA['WidthA'][ind_groupRowsA] = Team_A_Y.max(axis=0, skipna=True) - Team_A_Y.min(axis=0, skipna=True)
+	# print( Team_A_X.mean())
+	# print( len(Team_A_X.mean()))
+	# # print(Team_A_X_pivotted.mean(axis=0,skipna=True))
+	# # print(len(Team_A_X_pivotted.mean(axis=0,skipna=True)))
+	# print(len(ind_groupRowsA))
+	# for name, group in Team_A_X:
+	# 	print('************')
+	# 	print('Name:')
+	# 	print(name)
+	# 	print('************')
+	# 	print('Group:')
+	# 	print(group)
+	# 	print('************')
+	# print(len(Team_A_X))
+	# print(len(ind_groupRowsA))
+	newAttributesA['TeamCentXA'][ind_groupRowsA] = Team_A_X['X'].mean()
+	newAttributesA['TeamCentYA'][ind_groupRowsA] = Team_A_Y['Y'].mean()
+	newAttributesA['LengthA'][ind_groupRowsA] = Team_A_X['X'].max() - Team_A_X['X'].min()
+	newAttributesA['WidthA'][ind_groupRowsA] = Team_A_Y['Y'].max() - Team_A_Y['Y'].min()
+
 	# And for team B
-	newAttributesB['TeamCentXB'][ind_groupRowsB] = Team_B_X.mean(axis=0, skipna=True)
-	newAttributesB['TeamCentYB'][ind_groupRowsB] = Team_B_Y.mean(axis=0, skipna=True)
-	newAttributesB['LengthB'][ind_groupRowsB] = Team_B_X.max(axis=0, skipna=True) - Team_B_X.min(axis=0, skipna=True)
-	newAttributesB['WidthB'][ind_groupRowsB] = Team_B_Y.max(axis=0, skipna=True) - Team_B_Y.min(axis=0, skipna=True)
+	###########if Team_B_X.shape == (0,0):
+	if len(Team_B_X) == 0:		
+	  exit('\nFATAL WARNING: No data in TeamA\'s X positions.\nThis is likely because the TeamAstring and TeamBstring do not correspond with the strings in the dataset.\nThis may be because the user input is incorrect OR, because the Team strings are unsuccesfully derived from the filename (especialy when using dataType FDP for a new dataset):\nConsider writing a specific function in dissectFilename.py.\n')
+	# print(Team_A_X.shape)  
+	# print(len(ind_groupRowsA))
+	# print(Team_B_X.shape) 
+	# print(len(ind_groupRowsB))
+	# pdb.set_trace()
+	###########newAttributesB['TeamCentXB'][ind_groupRowsB] = Team_B_X.mean(axis=0, skipna=True)
+	###########newAttributesB['TeamCentYB'][ind_groupRowsB] = Team_B_Y.mean(axis=0, skipna=True)
+	###########newAttributesB['LengthB'][ind_groupRowsB] = Team_B_X.max(axis=0, skipna=True) - Team_B_X.min(axis=0, skipna=True)
+	###########newAttributesB['WidthB'][ind_groupRowsB] = Team_B_Y.max(axis=0, skipna=True) - Team_B_Y.min(axis=0, skipna=True)
+	
+	newAttributesB['TeamCentXB'][ind_groupRowsB] = Team_B_X['X'].mean()
+	newAttributesB['TeamCentYB'][ind_groupRowsB] = Team_B_Y['Y'].mean()
+	newAttributesB['LengthB'][ind_groupRowsB] = Team_B_X['X'].max() - Team_B_X['X'].min()
+	newAttributesB['WidthB'][ind_groupRowsB] = Team_B_Y['Y'].max() - Team_B_Y['Y'].min()
+
 	pd.options.mode.chained_assignment = 'warn'  # default='warn'
+
+	warn('\nUnverified assumption: field width = X-axis, field length = Y-axis\n')
 
 	# Combine the pre-existing attributes with the new attributes:
 	attributeDict = pd.concat([attributeDict, newAttributesA, newAttributesB], axis=1)
 	
 	return attributeDict,attributeLabel
 
-
-############################################################################
-
 def distanceToCentroid(rawDict,attributeDict,attributeLabel,TeamAstring,TeamBstring,skipSpatAgg):
 	###############
 	# Use this as an example to compute a PLAYER level variable. Pay attention to the indexing. Let me know if you have an easier way.
 	###############
-	
+
 	##### THE STRINGS #####
 	# Export a string label of each new attribute in the labels dictionary (useful for plotting purposes)
 	tmpDistToCentString = 'Player\'s distance to its team\'s centroid (m)'
 	attributeLabel.update({'distToCent':tmpDistToCentString})
-
-	if skipSpatAgg:
+		
+	if skipSpatAgg: # Return eary if spatial aggregation is being skipped
 		return attributeDict,attributeLabel
 
 	##### THE DATA #####
 	# In this case, the new attribute will be computed based on a group (i.e., team) value
 	TeamVals = attributeDict[rawDict['PlayerID'] == 'groupRow'].set_index('Ts')
 	# Create empty DataFrame to store results, NB: columns need to be assigend beforehand.
-	newAttributes = pd.DataFrame(index = attributeDict.index, columns = ['distToCent'])
+	newAttributes = pd.DataFrame(index = attributeDict.index, columns = ['distToCent'], dtype = np.float64)
 	
 	# For every player in the dataFrame
 	for idx,i in enumerate(pd.unique(rawDict['PlayerID'])):
@@ -209,4 +318,3 @@ def distanceToCentroid(rawDict,attributeDict,attributeLabel,TeamAstring,TeamBstr
 	attributeDict = pd.concat([attributeDict, newAttributes], axis=1)
 
 	return attributeDict,attributeLabel
-

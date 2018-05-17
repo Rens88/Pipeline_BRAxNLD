@@ -9,13 +9,15 @@
 #
 # vNorm => normalized velocity
 
-import pylab
+# import pylab
 import pdb; #pdb.set_trace()
 from warnings import warn
 import numpy as np
 from os.path import isfile, join, isdir, exists
 from os import listdir, makedirs
 # import CSVexcerpt
+import matplotlib
+matplotlib.use('Agg') #https://stackoverflow.com/questions/37604289/tkinter-tclerror-no-display-name-and-no-display-environment-variable?utm_medium=organic&utm_source=google_rich_qa&utm_campaign=google_rich_qa
 import matplotlib.pyplot as plt
 from matplotlib import colors as mcolors
 import time
@@ -102,7 +104,7 @@ def process(plotTheseAttributes,aggregateLevel,eventExcerptPanda,attributeLabel,
 				varName = varName[:-1]
 			if plotThisAttribute[0][-4:] == '_oth' or plotThisAttribute[0][-4:] == '_ref':
 				varName = varName[:-4]
-			outputFilename = tmpFigFolder + fname + '_' + varName + '_' + fileAggregateID + '.jpg'
+			outputFilename = tmpFigFolder + fname + '_' + varName + '_' + fileAggregateID + '.png'
 		else:
 			if LPvsNP:
 				continue
@@ -115,14 +117,14 @@ def process(plotTheseAttributes,aggregateLevel,eventExcerptPanda,attributeLabel,
 			else:
 				yLabel = 'Unknown'
 
-			outputFilename = tmpFigFolder + fname + '_' + plotThisAttribute + '_' + fileAggregateID + '.jpg'
+			outputFilename = tmpFigFolder + fname + '_' + plotThisAttribute + '_' + fileAggregateID + '.png'
 
 		plt.title(fileAggregateID)
 		plt.xlabel(xLabel)
 		plt.ylabel(yLabel)
 		plt.savefig(outputFilename, figsize=(1,1), dpi = 300, bbox_inches='tight')
 		print('EXPORTED: <%s>' %outputFilename)
-		plt.close()
+		plt.close() # misschien ook nog een delete?
 
 	if debuggingMode:
 		elapsed = str(round(time.time() - tDatasetVisualization, 2))
@@ -229,7 +231,17 @@ def plotPerPlayerPerTeam(plotThisAttribute,eventExcerptPanda,rowswithinrangePlay
 	colorPickerB[round(len(colorPickerB)/2)], colorPickerB[-1] = colorPickerB[-1], colorPickerB[round(len(colorPickerB)/2)]
 
 	for ix,event in enumerate(Y1.keys()):
+
+		if colorPickerA[ix] >= len(sorted_names):
+			colorPickerA[ix] = colorPickerA[ix] - len(sorted_names)
+			warn('\nWARNING: Colorpicker out of range (more lines to plot than colors specified).\nCurrent solution is to restart the count.\nNB: Solution will not work when the difference is twice the size of the number of colors specified.\nMay not look nice.\nShould be possible to increase the number of colors in the color picker by listing them as a numerical RGB code.\n')
+
 		curColorA = sorted_names[colorPickerA[ix]]
+
+		if colorPickerB[ix] >= len(sorted_names):
+			colorPickerB[ix] = colorPickerB[ix] - len(sorted_names)
+			warn('\nWARNING: Colorpicker out of range (more lines to plot than colors specified).\nCurrent solution is to restart the count.\nNB: Solution will not work when the difference is twice the size of the number of colors specified.\nMay not look nice.\nShould be possible to increase the number of colors in the color picker by listing them as a numerical RGB code.\n')
+
 		curColorB = sorted_names[colorPickerB[ix]]
 
 		for player in pd.unique(Players_Y1[event]):
@@ -327,11 +339,18 @@ def plotPerTeamPerEvent(plotThisAttribute,eventExcerptPanda,rowswithinrangeTeamA
 	ax.fill_between(X2[Y2.keys()[0]], lo95Y2, hi95Y2, where=hi95Y2 >= lo95Y2, facecolor = refColorB, interpolate=True,alpha=0.4)
 
 	for ix,event1 in enumerate(Y1.keys()):
+		if colorPickerA[ix] >= len(sorted_names):
+			colorPickerA[ix] = colorPickerA[ix] - len(sorted_names)
+			warn('\nWARNING: Colorpicker out of range (more lines to plot than colors specified).\nCurrent solution is to restart the count.\nNB: Solution will not work when the difference is twice the size of the number of colors specified.\nMay not look nice.\nShould be possible to increase the number of colors in the color picker by listing them as a numerical RGB code.\n')
 		curColorA = sorted_names[colorPickerA[ix]]
 		pltA = plt.plot(X1[event1],Y1[event1],color=curColorA,linestyle='-') 
 
 	for ix,event2 in enumerate(Y2.keys()):
+		if colorPickerB[ix] >= len(sorted_names):
+			colorPickerB[ix] = colorPickerB[ix] - len(sorted_names)
+			warn('\nWARNING: Colorpicker out of range (more lines to plot than colors specified).\nCurrent solution is to restart the count.\nNB: Solution will not work when the difference is twice the size of the number of colors specified.\nMay not look nice.\nShould be possible to increase the number of colors in the color picker by listing them as a numerical RGB code.\n')
 		curColorB = sorted_names[colorPickerB[ix]]
+
 		pltB = plt.plot(X2[event2],Y2[event2],color=curColorB,linestyle='--')
 
 	#########################
