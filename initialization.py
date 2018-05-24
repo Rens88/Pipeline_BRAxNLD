@@ -33,30 +33,118 @@ def addLibrary(studentFolder):
 	#########################################
 
 
-def checkFolders(folder,aggregateEvent):
+def checkFolders(folder,aggregateLevel,skipToDataSetLevel,skipCleanup,skipSpatAgg,skipEventAgg,includeTrialVisualization):
 	if folder[-1:] != sep:
 		warn('\n<folder> did not end with <%s>. \nOriginal input <%s>\nReplaced with <%s>' %(sep,folder,folder+sep))
 		folder = folder + sep
 
 	dataFolder = folder + 'Data' + sep
-	tmpFigFolder = folder + 'Figs' + sep + 'Temp' + sep + aggregateEvent + sep
+	tmpFigFolder = folder + 'Figs' + sep + 'Temp' + sep + aggregateLevel[0] + sep
 	outputFolder = folder + 'Output' + sep# Folder where tabular output will be stored (aggregated spatially and temporally)
 	cleanedFolder = dataFolder + 'Cleaned' + sep    
+	spatAggFolder = dataFolder + 'SpatAgg' + sep
+	eventAggFolder = dataFolder + 'EventAgg' + sep
 
 	# Verify if folders exists
 	if not exists(dataFolder):
-		warn('\nWARNING: dataFolder not found.\nMake sure that you put your data in the folder <%s>\n' %dataFolder)
+		warn('\nFATAL WARNING: dataFolder not found.\nMake sure that you put your data in the folder <%s>\n' %dataFolder)
 		exit()
 	if not exists(outputFolder):
 		makedirs(outputFolder)
 	if not exists(tmpFigFolder):
 		makedirs(tmpFigFolder)
+	if not exists(tmpFigFolder + 'trialVisualization' + sep):
+		makedirs(tmpFigFolder + 'trialVisualization' + sep)
 	if not exists(cleanedFolder):
 		makedirs(cleanedFolder)
-
+	if not exists(spatAggFolder):
+		makedirs(spatAggFolder)
+	if not exists(eventAggFolder):
+		makedirs(eventAggFolder)
+	
 	timeString = time.strftime("%Hh%Mm_%d_%B_%Y")
-	outputFilename = outputFolder + 'output_' + aggregateEvent + '_' + timeString +  '.csv'
-	outputDescriptionFilename = outputFolder + 'output_Description_' + aggregateEvent + '.txt'
-	return dataFolder,tmpFigFolder,outputFolder,cleanedFolder,outputFilename,outputDescriptionFilename
+	outputFilename = outputFolder + 'output_' + aggregateLevel[0] + '_window(' + str(aggregateLevel[1]) + ')_lag(' + str(aggregateLevel[2]) + ')_' + timeString +  '.csv'
+	outputDescriptionFilename = outputFolder + 'output_Description_' + aggregateLevel[0] + '.txt'
+	eventAggFname = 'eventExcerpt_' + aggregateLevel[0] + '_window(' + str(aggregateLevel[1]) + ')_lag(' + str(aggregateLevel[2]) + ').csv'
+	backupEventAggFname = eventAggFolder + 'eventExcerpt_' + aggregateLevel[0] + '_window(' + str(aggregateLevel[1]) + ')_lag(' + str(aggregateLevel[2]) + ') - AUTOMATIC BACKUP.csv'
 
-# >>>>>>> d6c15d944b1168972454264b6f2fc40ddffffa10
+
+<<<<<<< HEAD
+=======
+		else:
+			eventFolder = dataFolder + sep + 'existingTargets' + sep
+			DirtyEventFiles = [f for f in listdir(eventFolder) if isfile(join(eventFolder, f)) if '.csv' in f]				
+			DirtyDataFiles = []
+			for f in DirtyEventFiles:
+				rawData_f = f[:-10] + '.csv'
+				if isfile(join(dataFolder, rawData_f)):
+					DirtyDataFiles.append(rawData_f)
+				else:
+					warn('\nWARNING: Couldnt find the raw data of event file: <%s>.\nTherefore, it was excluded.' %f)
+				
+	else:
+		DirtyDataFiles = [f for f in listdir(dataFolder) if isfile(join(dataFolder, f)) if '.csv' in f]
+
+	# divide dirtyDataFiles amongst parallel processes:
+	nFiles = len(DirtyDataFiles)
+	nPerProcess = np.ceil(nFiles / parallelProcess[1])
+	if not parallelProcess[1] == 1:
+		start = int((parallelProcess[0] * nPerProcess) - nPerProcess)
+		end = int(((parallelProcess[0]+1) * nPerProcess) - nPerProcess)
+		print('First file = %s' %start)
+		print('Last file = %s\n' %end)
+		if parallelProcess[0] == parallelProcess[1]:
+			DirtyDataFiles = DirtyDataFiles[start : ]
+		else:
+			DirtyDataFiles = DirtyDataFiles[start : end]
+
+	return dataFolder,tmpFigFolder,outputFolder,cleanedFolder,spatAggFolder,eventAggFolder, outputFilename,outputDescriptionFilename,eventAggFname,backupEventAggFname,DirtyDataFiles,aggregateLevel
+
+def skipPartsOfPipeline(backupEventAggFname,DirtyDataFiles,skipToDataSetLevel,skipCleanup,skipSpatAgg,skipEventAgg,includeTrialVisualization):
+>>>>>>> 267cb947c209f37a1ae8efc81ce0980ba33dc2a7
+
+	DirtyDataFiles = [f for f in listdir(dataFolder) if isfile(join(dataFolder, f)) if '.csv' in f]
+	t = ([],0,len(DirtyDataFiles))#(time started,nth file,total number of files)
+	
+	# Skipping certain parts can only be done if other parts are skipped as well:
+	if skipCleanup == False: # NB: if False, all other skips become ineffective.
+		if skipSpatAgg:
+			skipSpatAgg = False
+			warn('\nWARNING: Requested skipSpatAgg, but not skipCleanup.\nBy default, when not skipping cleanup, spatial aggregation can\'t be skipped.\n')
+		if skipEventAgg:
+			skipEventAgg = False		
+			warn('\nWARNING: Requested skipEventAgg, but not skipCleanup.\nBy default, when not skipping cleanup, event aggregation can\'t be skipped.\n')
+		if skipToDataSetLevel:
+			skipToDataSetLevel = False
+			warn('\nWARNING: Requested skipToDataSetLevel, but not skipCleanup.\nBy default, when not skipping cleanup, can\'t jump to datasetlevel.\n')
+	else:
+		if skipSpatAgg == False: # NB: if False, skipEventAgg and skipToDataSetLevel become ineffective.
+			if skipEventAgg:
+				skipEventAgg = False		
+				warn('\nWARNING: Requested skipEventAgg, but not skipSpatAgg.\nBy default, when not skipping spatial aggregation, event aggregation can\'t be skipped.\n')
+			if skipToDataSetLevel:
+				skipToDataSetLevel = False
+				warn('\nWARNING: Requested skipToDataSetLevel, but not skipSpatAgg.\nBy default, when not skipping spatial aggregation, can\'t jump to datasetlevel.\n')
+		else:
+			if skipEventAgg == False: # NB: if False, skipToDataSetLevel becomes ineffective.
+				if skipToDataSetLevel:
+					skipToDataSetLevel = False
+					warn('\nWARNING: Requested skipToDataSetLevel, but not skipEventAgg.\nBy default, when not skipping event aggregation, can\'t jump to datasetlevel.\n')
+			else:
+				if skipToDataSetLevel:
+					if includeTrialVisualization:
+						includeTrialVisualization = False
+						warn('\nWARNING: Requested includeTrialVisualization, but also skipToDataSetLevel.\nBy default, when skipping to DataSet-level, trial-level plots are skipped.\n')
+
+
+	if skipToDataSetLevel: # This allows you to quickly skip the analysis section, if you've already created a backup of a fully analyzed dataset
+		if isfile(backupEventAggFname):
+			warn('\n********\nWARNING: Skipped analyzing the database and jumped straight to DataSet-level comparisons.\nAny new files, spatial aggregates, temporal aggregates, windows, lags etc. ARE NOT INCLUDED.\nTo re-analyze the database, change <skipToDataSetLevel> to False. (and re-analyzing MANUALLY copy a \'BACKUP\'.)\n')
+			t = (t[0],t[2],t[2])
+			DirtyDataFiles = []
+		else:
+			skipToDataSetLevel = False
+			warn('\nWARNING: Tried to <skipToDataSetLevel>, but could not find corresponding data backup:\n%s\n\n*********' %backupEventAggFname)
+
+
+	return dataFolder,tmpFigFolder,outputFolder,cleanedFolder,spatAggFolder,eventAggFolder, outputFilename,outputDescriptionFilename,eventAggFname,backupEventAggFname,DirtyDataFiles,t,skipToDataSetLevel,skipCleanup,skipSpatAgg,skipEventAgg,includeTrialVisualization

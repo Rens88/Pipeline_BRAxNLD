@@ -6,9 +6,30 @@ if __name__ == '__main__':
 	printProgress(t)
 
 ## Here, you specifiy what each function does
+def printDuration(t):
+	# t => (time started,nth file,total number of files)
+	nthFile = t[1]
+	totalFiles = t[2]
+	timeStarted = t[0]
+
+	if timeStarted == []: # First file
+		timeStarted = time.time()	# do stuff
+		percentageProgress = 0
+		elapsedTime = time.time() - timeStarted
+
+	else:
+
+		percentageProgress = (nthFile) / totalFiles * 100
+		elapsedTime = time.time() - timeStarted		
+		estTimeRemaining_inSeconds = (elapsedTime / percentageProgress * 100) - elapsedTime
+
+	percentageProgress  = str(round(percentageProgress, 2))	
+	elapsedTime = str(round(elapsedTime, 2))
+	print('\n-------------------------------\n-------------------------------\n%s out of %s files (%s%%) analyzed in %ss.\n-------------------------------\n-------------------------------\n' %(nthFile,totalFiles,percentageProgress,elapsedTime))
+
 def printProgress(t):
 	# t => (time started,nth file,total number of files)
-	nthFile = t[1]-1
+	nthFile = t[1]
 	totalFiles = t[2]
 	timeStarted = t[0]
 
@@ -29,5 +50,5 @@ def printProgress(t):
 	elapsedTime = str(round(elapsedTime, 2))
 	print('%s out of %s files (%s%%) analyzed in %ss.\nEstimated time remaining: %s\n-------------------------------\n' %(nthFile,totalFiles,percentageProgress,elapsedTime,remainingTimeInHHMMSS))
 	
-	t = (timeStarted,nthFile + 2,totalFiles)
+	t = (timeStarted,nthFile + 1,totalFiles)
 	return t
