@@ -45,7 +45,7 @@ conversionToMeter = 1 #111111 # https://gis.stackexchange.com/questions/8650/mea
 # 'Regular' works as long as you don't choose a window larger than your file.
 # Other keywords depend on which events you import and/or compute.
 aggregateEvent = 'Turnovers' # Event that will be used to aggregate over (verified for 'Goals' and for 'Possession')
-aggregateWindow = 15 # in seconds #NB: still need to write warning in temporal aggregation in case you have Goals in combination with None.
+aggregateWindow = 25 # in seconds #NB: still need to write warning in temporal aggregation in case you have Goals in combination with None.
 aggregateLag = 0 # in seconds
 aggregatePerPlayer = [] # a list of outcome variables that you want to aggregated per player. For example: ['vNorm','distFrame']
 
@@ -61,8 +61,8 @@ includeDatasetVisualization = False
 plotTheseAttributes_atDatasetLevel = ['vNorm',('Surface_ref','Surface_oth'),('Spread_ref','Spread_oth')]
 
 # Parts of the pipeline can be skipped
-skipCleanup = True # Only works if cleaned file exists. NB: if False, all other skips become ineffective.
-skipSpatAgg = True # Only works if spat agg export exists. NB: if False, skipEventAgg and skipToDataSetLevel become ineffective.
+skipCleanup = False # Only works if cleaned file exists. NB: if False, all other skips become ineffective.
+skipSpatAgg = False # Only works if spat agg export exists. NB: if False, skipEventAgg and skipToDataSetLevel become ineffective.
 skipEventAgg = False # Only works if current file already exists in eventAgg. NB: if False, skipToDataSetLevel becomes ineffective.
 skipToDataSetLevel = False # Only works if corresponding AUTOMATIC BACKUP exists. NB: Does not check if all raw data files are in automatic backup. NB2: does not include any changes in cleanup, spatagg, or eventagg
 
@@ -83,15 +83,27 @@ includeEventInterpolation = False # may cause problems at the plotting level,
 includeCleanupInterpolation = True # When not interpolating at all, plotting procedure becomes less reliable as it uses an un-aligned index (and it may even fail)
 datasetFramerate = 10 # (Hz) This is the framerate with which the whole dataset will be aggregated.
 
-parallelProcess = (8,10) # (nth process,total n processes) # default = (1,1)
+parallelProcess = (6,15) # (nth process,total n processes) # default = (1,1)
 
 #########################
 # INITIALIZATION ########
 #########################
 
-# Gerenal Python modules
-# To do: I'm pretty sure these functions can be loaded automatically using _init_.py
-# To do: convert to Python package?
+# pre-initialization
+from shutil import copyfile	
+import pdb; #pdb.set_trace()
+from os.path import isfile, join, exists, realpath, abspath, split,dirname, isdir#, isdir, exists
+from os import listdir, stat, sep#, path, makedirs
+import inspect
+from warnings import warn
+
+cdir = realpath(abspath(split(inspect.getfile( inspect.currentframe() ))[0]))
+pdir = dirname(cdir) # parent directory
+library_folder = cdir + str(sep + "LibraryRENS")
+
+if not isdir(library_folder):
+	# if the process.py is in a subfolder, then copy the initialization module
+	copyfile(pdir + sep + 'initialization.py', cdir + sep + 'initialization.py')
 
 import initialization
 # In this module, the library is added to the system path. 
@@ -100,10 +112,6 @@ import initialization
 dataFolder,tmpFigFolder,outputFolder,cleanedFolder,spatAggFolder,eventAggFolder,aggregatedOutputFilename,outputDescriptionFilename,eventAggFname,backupEventAggFname,DirtyDataFiles,aggregateLevel,t,skipToDataSetLevel,skipCleanup,skipSpatAgg,skipEventAgg,includeTrialVisualization,rawHeaders, attrLabel = \
 initialization.process(studentFolder,folder,aggregateEvent,aggregateWindow,aggregateLag,skipToDataSetLevel,skipCleanup,skipSpatAgg,skipEventAgg,includeTrialVisualization,timestampString,PlayerIDstring,TeamIDstring,XPositionString,YPositionString,readAttributeCols,readAttributeLabels,onlyAnalyzeFilesWithEventData,parallelProcess)
 
-import pdb; #pdb.set_trace()
-from os.path import isfile, join, exists#, isdir, exists
-from os import listdir, stat#, path, makedirs
-from warnings import warn
 # Custom modules (from LibrarRENS)
 import datasetVisualization
 import spatialAggregation
@@ -119,7 +127,6 @@ import estimateRemainingTime
 import trialVisualization
 import computeEvents
 import copy
-from shutil import copyfile
 import importFieldDimensions
 import gc
 
@@ -128,7 +135,6 @@ import gc
 #########################
 
 for dirtyFname in DirtyDataFiles:
-	# dirtyFname = 'data_JYSS_1E1_Pre test_Soccer_Gp 3 v 4_onesheet_inColumns.csv'
 	print(	'\nFILE: << %s >>' %dirtyFname[:-4])
 	t = estimateRemainingTime.printProgress(t)
 	gc.collect() # not entirey sure what this does, but it's my attempt to avoid a MemoryError
@@ -201,7 +207,7 @@ for dirtyFname in DirtyDataFiles:
 	## Temporal aggregation
 	exportData,exportDataString,exportFullExplanation,trialEventsSpatAggExcerpt,attrLabel = \
 	temporalAggregation.process(targetEvents,aggregateLevel,rawPanda,attrPanda,exportData,exportDataString,exportDataFullExplanation,TeamAstring,TeamBstring,debuggingMode,skipEventAgg_curFile,fileIdentifiers,attrLabel,aggregatePerPlayer,includeEventInterpolation,datasetFramerate)
-
+	
 	########################################################################################
 	####### EXPORT to CSV ##################################################################
 	########################################################################################

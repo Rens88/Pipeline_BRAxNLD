@@ -19,6 +19,8 @@ newEventsFolder = 'C:\\Users\\rensm\\Documents\\SURFDRIVE\\Repositories\\Sample 
 fnames = ['1_EL_XIV.csv','2_EL_XIV.csv']
 fnames = ['134_NLCUP_XVI.csv']
 fnames = ['100_ERE_XV.csv']
+fnames = ['35_ERE_XIV.csv']
+fnames = ['32_ERE_XIV.csv']
 for fname in fnames:
 	eventsFname = fname[:-4] + '_Event.csv'
 
@@ -32,7 +34,8 @@ for fname in fnames:
 	# Make sure this is referencing the key that represents the timestamp. 
 	# Make sure the unit of measurement is appropriate.
 	## EDIT THIS ##################################################################
-	theFirst_n_seconds = 100000 # in ms						
+	theFirst_n_seconds = 10000 # in ms						
+	theFirst_n_seconds = 7000000 # in ms						
 
 	statement = (df['Timestamp'] < theFirst_n_seconds)# & df['Ts'] < 50)
 	statementEvent = (dfEvent['End_Ts (ms)'] < theFirst_n_seconds)

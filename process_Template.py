@@ -45,7 +45,7 @@ conversionToMeter = 1 #111111 # https://gis.stackexchange.com/questions/8650/mea
 # 'Regular' works as long as you don't choose a window larger than your file.
 # Other keywords depend on which events you import and/or compute.
 aggregateEvent = 'Turnovers' # Event that will be used to aggregate over (verified for 'Goals' and for 'Possession')
-aggregateWindow = 7 # in seconds #NtmpB: still need to write warning in temporal aggregation in case you have Goals in combination with None.
+aggregateWindow = 20 # in seconds #NtmpB: still need to write warning in temporal aggregation in case you have Goals in combination with None.
 aggregateLag = 0 # in seconds
 aggregatePerPlayer = [] # a list of outcome variables that you want to aggregated per player. For example: ['vNorm','distFrame']
 
@@ -126,9 +126,10 @@ import gc
 #########################
 # ANALYSIS (file by file)
 #########################
+DirtyDataFiles = ['CROPPED_35_ERE_XIV.csv']
+DirtyDataFiles = ['CROPPED_32_ERE_XIV.csv']
 
 for dirtyFname in DirtyDataFiles:
-	dirtyFname = 'CROPPED_100_ERE_XV.csv'
 	print(	'\nFILE: << %s >>' %dirtyFname[:-4])
 	t = estimateRemainingTime.printProgress(t)
 	gc.collect() # not entirey sure what this does, but it's my attempt to avoid a MemoryError

@@ -165,8 +165,8 @@ def checkFolders(folder,aggregateEvent,aggregateWindow,aggregateLag,onlyAnalyzeF
 	if not parallelProcess[1] == 1:
 		start = int((parallelProcess[0] * nPerProcess) - nPerProcess)
 		end = int(((parallelProcess[0]+1) * nPerProcess) - nPerProcess)
-		print('First file = %s' %start)
-		print('Last file = %s\n' %end)
+		print('start = %s' %start)
+		print('endt = %s\n' %end)
 		if parallelProcess[0] == parallelProcess[1]:
 			DirtyDataFiles = DirtyDataFiles[start : ]
 		else:

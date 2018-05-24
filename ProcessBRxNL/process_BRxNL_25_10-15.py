@@ -12,56 +12,56 @@ studentFolder = 'XXcontributions'
 debuggingMode = True # whether yo want to print the times that each script took
 
 # dataType is used for dataset specific parts of the analysis (in the preparation phase only)
-dataType =  "NP" # "FPD" or or "NP" --> so far, only used to call the right cleanup script. Long term goal would be to have a generic cleanup script
+dataType =  "FDP" # "FDP" or or "NP" --> so far, only used to call the right cleanup script. Long term goal would be to have a generic cleanup script
 
 # This folder should contain a folder with 'Data'. The tabular output and figures will be stored in this folder as well.
-folder = 'C:\\Users\\rensm\\Documents\\SURFDRIVE\\Repositories\\NP repository\\'
-# folder = '/home/meerhoffla/Repositories/NP repository/'
+# folder = 'C:\\Users\\rensm\\Documents\\SURFDRIVE\\Repositories\\BRAxNLD repository_newStyle\\'
+folder = '/home/meerhoffla/Repositories/BRAxNLD repository_newStyle/'
 
 # String representing the different teams
 # NB: not necessary for FDP (and other datasets where teamstring can be read from the filename, should be done in discetFilename.py)
-TeamAstring = 'Team A'
-TeamBstring = 'Team B'
+TeamAstring = 'Provide the string that represents one team'  # it's silly to have this at the dataset level. Future versions should have this embedded in the dissictfilename phase.
+TeamBstring = 'Provide the string that represents the other team'
 
 # Input of raw data, indicate at least timestamp, entity and Location info
-timestampString = 'Video time (s)'					#'enter the string in the header of the column that represents TIMESTAMP' 	# 'Video time (s)'
-PlayerIDstring = 'jersey n.'						#'enter the string in the header of the column that represents PLAYERID' 	# 'jersey n.'
+timestampString = 'Timestamp' 						#'enter the string in the header of the column that represents TIMESTAMP' 	# 'Video time (s)'
+PlayerIDstring = 'Player Name' 							#'enter the string in the header of the column that represents PLAYERID' 	# 'jersey n.'
 TeamIDstring = 'Team' 								#'enter the string in the header of the column that represents TEAMID' 			# Optional
-XPositionString = 'x' 								#'enter the string in the header of the column that represents X-POSITION'			# 'x'
-YPositionString = 'y' 								#'enter the string in the header of the column that represents Y-POSITION'			# 'y'
+XPositionString = 'X' 								#'enter the string in the header of the column that represents X-POSITION'			# 'x'
+YPositionString = 'Y' 								#'enter the string in the header of the column that represents Y-POSITION'			# 'y'
 
 # Case-sensitive string rawHeaders of attribute columns that already exist in the data (optional). NB: String also sensitive for extra spaces.
-readAttributeCols = [] # NB: should correspond directly with readAttributeLabels
-readAttributeLabels = [] # NB: should correspond directly with readAttributeCols
+readAttributeCols = ['Speed','Acceleration'] # NB: should correspond directly with readAttributeLabels
+readAttributeLabels = ['Speed (m/s)','Acceleration (m/s^2)','Distance to closest home (m)','Distance to cloesest visitor (m)'] # NB: should correspond directly with readAttributeCols
 
 # When event columns exist in the raw data, they can be read to export an event file
-readEventColumns = ['Run', 'Goal', 'Possession/Turnover', 'Pass']
+readEventColumns = []
 
 # If the raw data is not given in meters, provide the conversion.
-conversionToMeter = 111111 # https://gis.stackexchange.com/questions/8650/measuring-accuracy-of-latitude-and-longitude/8674#8674
+conversionToMeter = 1 #111111 # https://gis.stackexchange.com/questions/8650/measuring-accuracy-of-latitude-and-longitude/8674#8674
 
 # Here you can determine which event is aggregated before. 
 # 'Full' and 'Random' always work. 
 # 'Regular' works as long as you don't choose a window larger than your file.
 # Other keywords depend on which events you import and/or compute.
-aggregateEvent = 'Possession' # Event that will be used to aggregate over ('full' denotes aggregating over the whole file. 'None' denotes skipping the temporal aggregation)
-aggregateWindow = None # in seconds #NB: still need to write warning in temporal aggregation in case you have Goals in combination with None.
+aggregateEvent = 'Turnovers' # Event that will be used to aggregate over (verified for 'Goals' and for 'Possession')
+aggregateWindow = 25 # in seconds #NB: still need to write warning in temporal aggregation in case you have Goals in combination with None.
 aggregateLag = 0 # in seconds
-aggregatePerPlayer = []#['vNorm'] # a list of outcome variables that you want to aggregated per player. For example: ['vNorm','distFrame']
+aggregatePerPlayer = [] # a list of outcome variables that you want to aggregated per player. For example: ['vNorm','distFrame']
 
 # Strings need to correspond to outcome variables (dict keys). 
 # Individual level variables ('vNorm') should be included as a list element.
 # Group level variables ('LengthA','LengthB') should be included as a tuple (and will be plotted in the same plot).
-# plotTheseAttributes = []#['vNorm',('Surface_ref','Surface_oth'),('Spread_ref','Spread_oth')]#,'LengthB',('LengthA','LengthB'),('SurfaceA','SurfaceB'),('SpreadA','SpreadB'),('WidthA','WidthB')] # [('LengthA','LengthB'),('WidthA','WidthB'),('SurfaceA','SurfaceB'),('SpreadA','SpreadB')] # teams that need to be compared as tuple
+# plotTheseAttributes = ['vNorm',('Surface_ref','Surface_oth')]#,('Spread_ref','Spread_oth'),('stdSpread_ref','stdSpread_oth'),'vNorm']#,'LengthB',('LengthA','LengthB'),('SurfaceA','SurfaceB'),('SpreadA','SpreadB'),('WidthA','WidthB')] # [('LengthA','LengthB'),('WidthA','WidthB'),('SurfaceA','SurfaceB'),('SpreadA','SpreadB')] # teams that need to be compared as tuple
 # This trialVisualization plots the selected outcome variables variable for the given window for the temporal aggregation. Useful to verify if your variables are as excpected.
-includeTrialVisualization = False # When true and empty --> only plots snapshot
-plotTheseAttributes_atTrialLevel = [] #
+includeTrialVisualization = False
+plotTheseAttributes_atTrialLevel = ['vNorm'] #
 # This datasetVisualization compares all events of all files in the dataset. Useful for datasetlevel comparisons
 includeDatasetVisualization = False
 plotTheseAttributes_atDatasetLevel = ['vNorm',('Surface_ref','Surface_oth'),('Spread_ref','Spread_oth')]
 
 # Parts of the pipeline can be skipped
-skipCleanup = True # Only works if cleaned file exists. NB: if False, all other skips become ineffective.
+skipCleanup = False # Only works if cleaned file exists. NB: if False, all other skips become ineffective.
 skipSpatAgg = False # Only works if spat agg export exists. NB: if False, skipEventAgg and skipToDataSetLevel become ineffective.
 skipEventAgg = False # Only works if current file already exists in eventAgg. NB: if False, skipToDataSetLevel becomes ineffective.
 skipToDataSetLevel = False # Only works if corresponding AUTOMATIC BACKUP exists. NB: Does not check if all raw data files are in automatic backup. NB2: does not include any changes in cleanup, spatagg, or eventagg
@@ -71,7 +71,7 @@ skipToDataSetLevel = False # Only works if corresponding AUTOMATIC BACKUP exists
 appendEventAggregate = False
 
 # Restrict the analysis to files of which event data exists
-onlyAnalyzeFilesWithEventData = False
+onlyAnalyzeFilesWithEventData = True
 
 #########################
 # END USER INPUT ########
@@ -83,7 +83,7 @@ includeEventInterpolation = False # may cause problems at the plotting level,
 includeCleanupInterpolation = True # When not interpolating at all, plotting procedure becomes less reliable as it uses an un-aligned index (and it may even fail)
 datasetFramerate = 10 # (Hz) This is the framerate with which the whole dataset will be aggregated.
 
-parallelProcess = (1,1) # (nth process,total n processes) # default = (1,1)
+parallelProcess = (10,15) # (nth process,total n processes) # default = (1,1)
 
 #########################
 # INITIALIZATION ########
@@ -138,7 +138,7 @@ for dirtyFname in DirtyDataFiles:
 	print(	'\nFILE: << %s >>' %dirtyFname[:-4])
 	t = estimateRemainingTime.printProgress(t)
 	gc.collect() # not entirey sure what this does, but it's my attempt to avoid a MemoryError
-	dirtyFname = 'data_JYSS_1E4_Pre_Gp 3 v 4_onesheet_inColumns.csv'
+
 	#########################
 	# PREPARATION ###########
 	#########################
@@ -207,7 +207,7 @@ for dirtyFname in DirtyDataFiles:
 	## Temporal aggregation
 	exportData,exportDataString,exportFullExplanation,trialEventsSpatAggExcerpt,attrLabel = \
 	temporalAggregation.process(targetEvents,aggregateLevel,rawPanda,attrPanda,exportData,exportDataString,exportDataFullExplanation,TeamAstring,TeamBstring,debuggingMode,skipEventAgg_curFile,fileIdentifiers,attrLabel,aggregatePerPlayer,includeEventInterpolation,datasetFramerate)
-	pdb.set_trace()
+	
 	########################################################################################
 	####### EXPORT to CSV ##################################################################
 	########################################################################################

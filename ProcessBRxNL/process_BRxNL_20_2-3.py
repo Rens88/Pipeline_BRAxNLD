@@ -15,7 +15,8 @@ debuggingMode = True # whether yo want to print the times that each script took
 dataType =  "FDP" # "FDP" or or "NP" --> so far, only used to call the right cleanup script. Long term goal would be to have a generic cleanup script
 
 # This folder should contain a folder with 'Data'. The tabular output and figures will be stored in this folder as well.
-folder = 'C:\\Users\\rensm\\Documents\\SURFDRIVE\\Repositories\\BRAxNLD repository_newStyle\\'
+# folder = 'C:\\Users\\rensm\\Documents\\SURFDRIVE\\Repositories\\BRAxNLD repository_newStyle\\'
+folder = '/home/meerhoffla/Repositories/BRAxNLD repository_newStyle/'
 
 # String representing the different teams
 # NB: not necessary for FDP (and other datasets where teamstring can be read from the filename, should be done in discetFilename.py)
@@ -43,10 +44,10 @@ conversionToMeter = 1 #111111 # https://gis.stackexchange.com/questions/8650/mea
 # 'Full' and 'Random' always work. 
 # 'Regular' works as long as you don't choose a window larger than your file.
 # Other keywords depend on which events you import and/or compute.
-aggregateEvent = 'Random' # Event that will be used to aggregate over (verified for 'Goals' and for 'Possession')
-aggregateWindow = 7 # in seconds #NB: still need to write warning in temporal aggregation in case you have Goals in combination with None.
+aggregateEvent = 'Turnovers' # Event that will be used to aggregate over (verified for 'Goals' and for 'Possession')
+aggregateWindow = 20 # in seconds #NB: still need to write warning in temporal aggregation in case you have Goals in combination with None.
 aggregateLag = 0 # in seconds
-aggregatePerPlayer = ['vNorm'] # a list of outcome variables that you want to aggregated per player. For example: ['vNorm','distFrame']
+aggregatePerPlayer = [] # a list of outcome variables that you want to aggregated per player. For example: ['vNorm','distFrame']
 
 # Strings need to correspond to outcome variables (dict keys). 
 # Individual level variables ('vNorm') should be included as a list element.
@@ -61,7 +62,7 @@ plotTheseAttributes_atDatasetLevel = ['vNorm',('Surface_ref','Surface_oth'),('Sp
 
 # Parts of the pipeline can be skipped
 skipCleanup = True # Only works if cleaned file exists. NB: if False, all other skips become ineffective.
-skipSpatAgg = False # Only works if spat agg export exists. NB: if False, skipEventAgg and skipToDataSetLevel become ineffective.
+skipSpatAgg = True # Only works if spat agg export exists. NB: if False, skipEventAgg and skipToDataSetLevel become ineffective.
 skipEventAgg = False # Only works if current file already exists in eventAgg. NB: if False, skipToDataSetLevel becomes ineffective.
 skipToDataSetLevel = False # Only works if corresponding AUTOMATIC BACKUP exists. NB: Does not check if all raw data files are in automatic backup. NB2: does not include any changes in cleanup, spatagg, or eventagg
 
@@ -82,25 +83,35 @@ includeEventInterpolation = False # may cause problems at the plotting level,
 includeCleanupInterpolation = True # When not interpolating at all, plotting procedure becomes less reliable as it uses an un-aligned index (and it may even fail)
 datasetFramerate = 10 # (Hz) This is the framerate with which the whole dataset will be aggregated.
 
+parallelProcess = (2,3) # (nth process,total n processes) # default = (1,1)
+
 #########################
 # INITIALIZATION ########
 #########################
 
-# Gerenal Python modules
-# To do: I'm pretty sure these functions can be loaded automatically using _init_.py
-# To do: convert to Python package?
+# pre-initialization
+from shutil import copyfile	
+import pdb; #pdb.set_trace()
+from os.path import isfile, join, exists, realpath, abspath, split,dirname, isdir#, isdir, exists
+from os import listdir, stat, sep#, path, makedirs
+import inspect
+from warnings import warn
+
+cdir = realpath(abspath(split(inspect.getfile( inspect.currentframe() ))[0]))
+pdir = dirname(cdir) # parent directory
+library_folder = cdir + str(sep + "LibraryRENS")
+
+if not isdir(library_folder):
+	# if the process.py is in a subfolder, then copy the initialization module
+	copyfile(pdir + sep + 'initialization.py', cdir + sep + 'initialization.py')
 
 import initialization
 # In this module, the library is added to the system path. 
 # This allows Python to import the custom modules in our library. 
 # If you add new subfolders in the library, they need to be added in addLibary (in initialization.py) as well.
 dataFolder,tmpFigFolder,outputFolder,cleanedFolder,spatAggFolder,eventAggFolder,aggregatedOutputFilename,outputDescriptionFilename,eventAggFname,backupEventAggFname,DirtyDataFiles,aggregateLevel,t,skipToDataSetLevel,skipCleanup,skipSpatAgg,skipEventAgg,includeTrialVisualization,rawHeaders, attrLabel = \
-initialization.process(studentFolder,folder,aggregateEvent,aggregateWindow,aggregateLag,skipToDataSetLevel,skipCleanup,skipSpatAgg,skipEventAgg,includeTrialVisualization,timestampString,PlayerIDstring,TeamIDstring,XPositionString,YPositionString,readAttributeCols,readAttributeLabels,onlyAnalyzeFilesWithEventData)
+initialization.process(studentFolder,folder,aggregateEvent,aggregateWindow,aggregateLag,skipToDataSetLevel,skipCleanup,skipSpatAgg,skipEventAgg,includeTrialVisualization,timestampString,PlayerIDstring,TeamIDstring,XPositionString,YPositionString,readAttributeCols,readAttributeLabels,onlyAnalyzeFilesWithEventData,parallelProcess)
 
-import pdb; #pdb.set_trace()
-from os.path import isfile, join, exists#, isdir, exists
-from os import listdir, stat#, path, makedirs
-from warnings import warn
 # Custom modules (from LibrarRENS)
 import datasetVisualization
 import spatialAggregation
@@ -116,7 +127,6 @@ import estimateRemainingTime
 import trialVisualization
 import computeEvents
 import copy
-from shutil import copyfile
 import importFieldDimensions
 import gc
 
@@ -125,7 +135,6 @@ import gc
 #########################
 
 for dirtyFname in DirtyDataFiles:
-	# dirtyFname = 'data_JYSS_1E1_Pre test_Soccer_Gp 3 v 4_onesheet_inColumns.csv'
 	print(	'\nFILE: << %s >>' %dirtyFname[:-4])
 	t = estimateRemainingTime.printProgress(t)
 	gc.collect() # not entirey sure what this does, but it's my attempt to avoid a MemoryError
@@ -185,30 +194,8 @@ for dirtyFname in DirtyDataFiles:
 	####### Compute new attributes #########################################################
 	########################################################################################
 
-	# temporary debugging edits
-	temporaryDebugging = False
-	if temporaryDebugging:
-		attrPanda = pd.read_csv('C:\\Users\\rensm\\Documents\\SURFDRIVE\\Repositories\\BRAxNLD repository_newStyle\\TMPattrPanda2.csv')
-		attrPanda.set_index('Unnamed: 0',inplace = True)
-		attrLabel = pd.read_csv('C:\\Users\\rensm\\Documents\\SURFDRIVE\\Repositories\\BRAxNLD repository_newStyle\\TMPattributeLabel2.csv')
+	attrPanda,attrLabel = spatialAggregation.process(rawPanda,attrPanda,attrLabel,TeamAstring,TeamBstring,skipSpatAgg_curFile,eventsPanda,spatAggFolder,spatAggFname,debuggingMode)
 
-	else:
-		# original
-		attrPanda,attrLabel = spatialAggregation.process(rawPanda,attrPanda,attrLabel,TeamAstring,TeamBstring,skipSpatAgg_curFile,eventsPanda,spatAggFolder,spatAggFname,debuggingMode)
-		
-		# addition
-		# attrPanda.to_csv('C:\\Users\\rensm\\Documents\\SURFDRIVE\\Repositories\\BRAxNLD repository_newStyle\\TMPattrPanda3.csv')
-		# just to be sure.
-		attrLabel_asPanda = pd.DataFrame.from_dict([attrLabel],orient='columns')
-		attrLabel_asPanda.to_csv('C:\\Users\\rensm\\Documents\\SURFDRIVE\\Repositories\\BRAxNLD repository_newStyle\\TMPattributeLabel3.csv') 
-
-	print('TOOK A SHORTCUT AND SKIPPED TEMPORAL AGGREGATION')
-	print('************************************************')
-	print('************************************************')
-	print('************************************************')
-	print('************************************************')
-	print('************************************************')
-	continue
 	# NB: targetEVents is a dictionary with the key corresponding to the type of event.
 	# For each key, there is a tuple that contains (timeOfEvent,TeamID,..) 
 	# --> in some cases there is also a starting time of the event and other information 
@@ -220,7 +207,7 @@ for dirtyFname in DirtyDataFiles:
 	## Temporal aggregation
 	exportData,exportDataString,exportFullExplanation,trialEventsSpatAggExcerpt,attrLabel = \
 	temporalAggregation.process(targetEvents,aggregateLevel,rawPanda,attrPanda,exportData,exportDataString,exportDataFullExplanation,TeamAstring,TeamBstring,debuggingMode,skipEventAgg_curFile,fileIdentifiers,attrLabel,aggregatePerPlayer,includeEventInterpolation,datasetFramerate)
-
+	
 	########################################################################################
 	####### EXPORT to CSV ##################################################################
 	########################################################################################

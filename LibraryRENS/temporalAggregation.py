@@ -56,6 +56,14 @@ def process(targetEvents,aggregateLevel,rawDict,attributeDict,exportData,exportD
 	tTempAgg = time.time()
 	FileID = "_".join(fileIdentifiers)
 
+	# something that could be part of clean-up:
+	if not all(np.isnan(attributeDict.loc[rawDict['PlayerID'] == 'ball','Acceleration'])):
+		attributeDict.loc[rawDict['PlayerID'] == 'ball','Acceleration'] = np.nan
+		warn('\nWARN: Some datasets also give the acceleration of the ball.\nTo avoid conflicts, these input values will be overwritten with empty values.\nIf you are in fact interested in Acceleration of the ball, then create a new feature that refers to the ball specifically (ballAcceleration).\n')
+	if not all(np.isnan(attributeDict.loc[rawDict['PlayerID'] == 'ball','Speed'])):
+		attributeDict.loc[rawDict['PlayerID'] == 'ball','Speed'] = np.nan
+		warn('\nWARN: Some datasets also give the Speed of the ball.\nTo avoid conflicts, these input values will be overwritten with empty values.\nIf you are in fact interested in Speed of the ball, then create a new feature that refers to the ball specifically (ballSpeed).\n')
+
 	## user inputs, could easily lift this out of function
 	freqInterpolatedData = 10 # in Hz
 
@@ -114,6 +122,8 @@ def process(targetEvents,aggregateLevel,rawDict,attributeDict,exportData,exportD
 	exportFullExplanation.append('Teamstring of the reference team the <<%s>> events refer to.' %aggregateLevel[0])
 	exportDataString.append('OthTeam')
 	exportFullExplanation.append('Teamstring of the other team (i.e., not reference) the <<%s>> events refer to.' %aggregateLevel[0])
+	exportDataString.append('eventOverlap')
+	exportFullExplanation.append('Boolean that indicates whether there was overlap with the previous event (True) or if there was NO overlap (False).')
 
 	# All the outcome measures that exist
 	attrDictCols = [i for i in attributeDict.columns if not i in ['Ts','TeamID','PlayerID','X','Y']]
@@ -169,16 +179,19 @@ def process(targetEvents,aggregateLevel,rawDict,attributeDict,exportData,exportD
 			continue
 
 		# warn and/or shorten whenever there is overlap with the previous event
+		overlapFoundHere = False
 		if idx != 0:
 			tEnd_prevEvent = targetEvents[aggregateLevel[0]][idx-1][0]
 			# # store the time in-between events that can help determine the maximum window size you may want to choose
 			# availableWindow.append(tEnd - tEnd_prevEvent)
 
 			if tEnd_prevEvent > tStart:
+				overlapFoundHere = True
 
-				warn('\nWARNING: Current event start <%ss> before previous event finished <%ss>.\nThis should have been dealt with in computeEvents.\n1) Restrict events to only cover unique periods\nor 2) Avoid windows that result into overlapping times.\n' %(tStart,tEnd_prevEvent))
 		
-		tmp = rawDict[rawDict['Ts'] > window[0]]
+		
+		# tmp = rawDict[rawDict['Ts'] > window[0]] 
+		tmp = attributeDict[attributeDict['Ts'] > window[0]]
 		rowswithinrange = tmp[tmp['Ts'] <= window[1]].index
 
 		if rowswithinrange.empty:
@@ -242,6 +255,12 @@ def process(targetEvents,aggregateLevel,rawDict,attributeDict,exportData,exportD
 			othTeam = TeamBstring
 		exportCurrentData.append(refTeam) # NB: String and explanation are defined before the for loop	
 		exportCurrentData.append(othTeam) # NB: String and explanation are defined before the for loop	
+		eventOverlap = currentEvent[-1] # should always be the last value in currentEvent
+		exportCurrentData.append(eventOverlap) # NB: String and explanation are defined before the for loop
+		if not type(eventOverlap) == bool:
+			warn('\nWARNING: Something went wrong with appending the boolean that indicates whether there was overlap in the events. See computeEvents.py.\n')
+		if not eventOverlap == overlapFoundHere:
+			warn('\nWARNING: Current event start <%ss> before previous event finished <%ss>.\nThis should have been dealt with in computeEvents.\nStrange..' %(tStart,tEnd_prevEvent))
 
 		## Change attribute keys to refer to refTeam and othTeam		
 		# WEAKNESS: relies on attribute keys to end with 'A' or 'B' in team scenarios.
@@ -291,8 +310,9 @@ def process(targetEvents,aggregateLevel,rawDict,attributeDict,exportData,exportD
 					print(attributeDict.loc[groupRowsInds,['PlayerID',attrKey]])
 					print('There where this many not nulls:\n%s' %sum(attributeDict.loc[groupRowsInds,attrKey].notnull()))
 					print('Out of %s' %len(groupRowsInds))
+					print('Temporary explanation: its an empty variable (such as team surface which requires at least 3 players at every timestep. To test this, Im letting it continue and it should be picked up further down.')
 					print('************')
-					pdb.set_trace()
+					# pdb.set_trace()
 
 		for ikey in copyTheseKeys_A:
 			attrLabel.update({ikey[:-1] + '_ref': attrLabel[ikey].replace(TeamAstring,'refTeam')})
@@ -302,6 +322,7 @@ def process(targetEvents,aggregateLevel,rawDict,attributeDict,exportData,exportD
 		## All data in exportCurrentData are trial identifiers. Create a column in a new panda copying these:
 		# Copy everything that exists in exportCurrentData up until here into a new dataFrame.
 		currentEventID = pd.DataFrame([],columns = exportDataString,index = rawDict['Ts'][rowswithinrange].index,dtype = object)
+		# currentEventID = pd.DataFrame(['test']*1571,columns = ['test'],index = rawDict['Ts'][rowswithinrange].index,dtype = object)
 		
 		for i,val in enumerate(exportCurrentData):
 			currentEventID[exportDataString[i]] = val
@@ -461,6 +482,7 @@ def process(targetEvents,aggregateLevel,rawDict,attributeDict,exportData,exportD
 			#####################
 			## Prepare the data #
 			#####################
+			targetGroup = []
 
 			if all(attributeDict[key].isnull()):
 				# No data at all..
@@ -486,17 +508,19 @@ def process(targetEvents,aggregateLevel,rawDict,attributeDict,exportData,exportD
 				print(key)
 				print(tmp)
 				print(type(interpolatedCurEventExcerptPanda[key]))
-				pdb.set_trace()
+				# pdb.set_trace()
+				
 			curContent = np.isnan(interpolatedCurEventExcerptPanda[key]) == False			
 			tmpPlayerID = interpolatedCurEventExcerptPanda['PlayerID'][curContent]
 			tmpTeampID = interpolatedCurEventExcerptPanda['TeamID'][curContent]
-			
-			players = np.sort(interpolatedCurEventExcerptPanda.loc[curContent,'PlayerID'].unique())		# THIS IS THE SAME, regardless of which key is used. So, only once, export player IDs			
-			targetGroup = []
+			tmpPlayersUnique = tmpPlayerID.unique()
+			players = np.sort(tmpPlayersUnique.astype(str))		# THIS IS THE SAME, regardless of which key is used. So, only once, export player IDs			
+			### players = np.sort(interpolatedCurEventExcerptPanda.loc[curContent,'PlayerID'].unique())		# THIS IS THE SAME, regardless of which key is used. So, only once, export player IDs			
 
 			## Make outcome variable dependent on current event's refTeam
 			# NB: attrLabel is already changed earlier.			
 			# print('WAS THERE ANY CURRENT CONTENT? %s' %any(curContent))
+
 			if not any(curContent):
 				# apparently, there were no values for the current key during the whole event excerpt
 				# This could be a team variable that is empty
@@ -511,13 +535,57 @@ def process(targetEvents,aggregateLevel,rawDict,attributeDict,exportData,exportD
 
 				nPlA = len(interpolatedCurEventExcerptPanda.loc[interpolatedCurEventExcerptPanda['TeamID'] == TeamAstring,'PlayerID'].unique())
 				nPlB = len(interpolatedCurEventExcerptPanda.loc[interpolatedCurEventExcerptPanda['TeamID'] == TeamBstring,'PlayerID'].unique())
+
 				if nPlA < 3 or nPlB < 3:
 					# there was at least one team with less than 3 players (therefore, it is impossible to compute the surface)
 					safeEnoughToBeAgroupRow = True
+				else: # and check some more possibilities
+					# check how many frames for each unique player there are
+					for iA in interpolatedCurEventExcerptPanda.loc[interpolatedCurEventExcerptPanda['TeamID'] == TeamAstring,'PlayerID'].unique():
+						# if there is a player that only had 1 frame and the nPlA is only 4, then it is treated similarly as nPlA < 3
+						if sum(interpolatedCurEventExcerptPanda['PlayerID'] == iA) == 1 and nPlA == 4:
+							safeEnoughToBeAgroupRow = True
+							warn('\nWARNING: Assumed that if there is only 1 occurence for a player, it was impossible to compute some of the team variables. (such as surface etc.)\n')
+							break
+					# same for B
+					if not safeEnoughToBeAgroupRow: # only necessary if it hasn't yet been found
+						for iB in interpolatedCurEventExcerptPanda.loc[interpolatedCurEventExcerptPanda['TeamID'] == TeamBstring,'PlayerID'].unique():
+							# if there is a player that only had 1 frame and the nPlA is only 4, then it is treated similarly as nPlA < 3
+							if sum(interpolatedCurEventExcerptPanda['PlayerID'] == iB) == 1 and nPlB == 4:
+								safeEnoughToBeAgroupRow = True
+								warn('\nWARNING: Assumed that if there is only 1 occurence for a player, it was impossible to compute some of the team variables. (such as surface etc.)\n')
+								break
+
+					if not safeEnoughToBeAgroupRow: # only necessary if it hasn't yet been found
+						# check how many unique players exist at each timepoint
+						tmp = interpolatedCurEventExcerptPanda.loc[interpolatedCurEventExcerptPanda['TeamID'] == TeamAstring,['Ts','PlayerID']]
+						tmp = tmp.pivot(columns ='Ts', values='PlayerID')
+						for c in tmp.keys():
+							tmp1 = tmp.loc[tmp[c].notnull(),c]
+
+							# if there are never more than 3 different players, the surface measures could not have been computed.
+							if len(tmp1.unique()) < 3:
+								safeEnoughToBeAgroupRow = True
+								warn('\nWARNING: At no point during the excerpt there were 3 or more players of this team. Therefore, the data is missing and it is safe to assume it was a grouprow.')
+							break
+
+					if not safeEnoughToBeAgroupRow: # only necessary if it hasn't yet been found
+					# check how many unique players exist at each timepoint, same for Team B
+						tmp = interpolatedCurEventExcerptPanda.loc[interpolatedCurEventExcerptPanda['TeamID'] == TeamBstring,['Ts','PlayerID']]
+						tmp = tmp.pivot(columns ='Ts', values='PlayerID')
+						for c in tmp.keys():
+							tmp1 = tmp.loc[tmp[c].notnull(),c]
+
+							# if there are never more than 3 different players, the surface measures could not have been computed.
+							if len(tmp1.unique()) < 3:
+								safeEnoughToBeAgroupRow = True
+								warn('\nWARNING: At no point during the excerpt there were 3 or more players of this team. Therefore, the data is missing and it is safe to assume it was a grouprow.')
+								break
+
 				if nPlA == 0 and nPlB == 0:
 					safeEnoughToBeAgroupRow = False
 					safeEnoughToBeAplayerRow = True
-
+				
 				if safeEnoughToBeAgroupRow:
 					# only one team found, so indeed a team was missing
 					targetGroup = 'groupRows'
@@ -534,7 +602,7 @@ def process(targetEvents,aggregateLevel,rawDict,attributeDict,exportData,exportD
 						interpolatedCurEventExcerptPanda[newKey] = interpolatedCurEventExcerptPanda[key]
 						interpolatedCurEventExcerptPanda.drop(key, axis=1, inplace=True)
 						key = newKey
-					
+
 				if safeEnoughToBeAgroupRow or safeEnoughToBeAplayerRow:
 					try:
 						curLabelKey = attrLabel[key]
@@ -596,6 +664,11 @@ def process(targetEvents,aggregateLevel,rawDict,attributeDict,exportData,exportD
 				else:
 					interpolatedCurEventExcerptPanda.to_csv('interpolatedCurEventExcerptPanda_complete.csv')
 					interpolatedCurEventExcerptPanda.loc[curContent].to_csv('interpolatedCurEventExcerptPanda_curContent.csv')
+					rawDict.loc[rowswithinrange].to_csv('rawDict_rowswithinrange.csv')
+					rawDict.to_csv('rawDict_complete.csv')
+					attributeDict.loc[rowswithinrange].to_csv('attributeDict_rowswithinrange.csv')
+					attributeDict.to_csv('attributeDict_complete.csv')
+					attributeDict.loc[attributeDict['PlayerID'] == 'groupRow'].to_csv('attributeDict_allGropuRows.csv')
 					print('Apparently, targetGroup has already been allocated as a grouprow:' )
 					print('targetGroup = %s' %targetGroup)
 					print('----')
@@ -615,6 +688,9 @@ def process(targetEvents,aggregateLevel,rawDict,attributeDict,exportData,exportD
 					print('min(rawDict[\'Ts\']) = %s' %min(rawDict['Ts']))
 					print('max(rawDict[\'Ts\']) = %s' %max(rawDict['Ts']))
 					print('rowswithinrange = %s' %rowswithinrange)
+					print('number of players of team A within the excerpt nPlA = %s' %nPlA)
+					print('number of players of team B within the excerpt nPlB = %s' %nPlB)
+					pdb.set_trace()
 					exit()
 					# To avoid errors: either separate variables covering multiple sets, or add code here that joins targetGroups..
 			
@@ -625,6 +701,19 @@ def process(targetEvents,aggregateLevel,rawDict,attributeDict,exportData,exportD
 					warn('\FATAL ERROR: A variable seemed to be covering multiple sets (playerRows and [groupRows and/or ballRows]).\nThis should be avoided or accounted for in the code.\n')
 					exit()
 					# To avoid errors: either separate variables covering multiple sets, or add code here that joins targetGroups..
+
+			if targetGroup == []:
+				if key == 'Acceleration' or key == 'Speed':
+					warn('\nWARN: A known exception of a variable covering multiple sets. Some datasets also give the acceleration and speed of the ball.\nTo avoid conflicts, these input values will be ignored here at the level of temporal aggregation.\nIf you are in fact interested in Acceleration or Speed of the ball, then create a new feature that refers to the ball specifically (ballSpeed and ballAcceleration).\n')
+					curContent = (np.isnan(interpolatedCurEventExcerptPanda[key]) == False) & (interpolatedCurEventExcerptPanda['PlayerID'] != 'ball')
+					# curContent = interpolatedCurEventExcerptPanda.loc[curContent,'PlayerID'] != 'ball'
+					targetGroup = 'playerRows'
+
+				else:
+					warn('\nFATAL WARNING: Somehow, targetGroup was still empty. My best guess is that it has to be a playerRow, but this is JUST GUESSING.\n!!!!!!!!!!!!!!!! NEED TO FIX THIS !!!!!!!!!!!!!!!!!!!!!!!!!!\nKey = <%s>' %key)
+					targetGroup = 'playerRows'
+					rawDict.to_csv('rawDict_complete_noTargetGroup.csv')
+					attributeDict.to_csv('attributeDict_complete_noTargetGroup.csv')
 
 			# Temporal aggregation (across ALL player vals and/or team vals and/or ball vals)
 			data = interpolatedCurEventExcerptPanda[key][curContent]
@@ -788,7 +877,23 @@ def aggregateTemporallyINCEPTION(population,aggregationOrder,aggrMeth_popLevel,a
 	
 	# Allplayers of refTeam
 	curContent_refTeam = curEventExcerptPanda['TeamID'] == refTeam
-	pivotedData_refTeam = curEventExcerptPanda[curContent_refTeam].pivot(index = 'eventTimeIndex', columns = 'PlayerID', values = key)
+	try:
+		pivotedData_refTeam = curEventExcerptPanda[curContent_refTeam].pivot(index = 'eventTimeIndex', columns = 'PlayerID', values = key)
+	except:
+		print('failed again, pdb set.')
+		print('population = %s' %population)
+		print('aggregationOrder = %s' %aggregationOrder)
+		print('aggrMeth_popLevel = %s' %aggrMeth_popLevel)
+		print('aggrMeth_playerLevel = %s' %aggrMeth_playerLevel)
+		print('curEventExcerptPanda = %s' %curEventExcerptPanda)
+		print('key = %s' %key)
+		print('refTeam = %s' %refTeam)
+		print('othTeam = %s' %othTeam)
+		print('eventDescrString = %s' %eventDescrString)
+		print('exportCurrentData = %s' %exportCurrentData)
+		print('overallString = %s' %overallString)
+		print('overallExplanation = %s' %overallExplanation)
+		pdb.set_trace()
 	# Allplayers of othTeam
 	curContent_othTeam = curEventExcerptPanda['TeamID'] == othTeam
 	pivotedData_othTeam = curEventExcerptPanda[curContent_othTeam].pivot(index = 'eventTimeIndex', columns = 'PlayerID', values = key)

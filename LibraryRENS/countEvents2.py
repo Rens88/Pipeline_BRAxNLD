@@ -29,7 +29,8 @@ def goals(window,aggregateEvent,targetEvents,TeamAstring,TeamBstring,exportData,
 
 	if targetEvents['Goal'] != []:
 		goals = []
-		for eventInstant,eventID in targetEvents['Goal']:
+		for a in targetEvents['Goal']:
+			eventInstant,eventID = a[:2]
 			if eventInstant > window[0] and eventInstant <= window[1]:
 				goals.append(eventID)
 
@@ -73,16 +74,17 @@ def turnovers(window,aggregateEvent,targetEvents,TeamAstring,TeamBstring,exportD
 
 	if targetEvents['Turnovers'] != []:
 		turnoverCharacteristics = []
-		if len(targetEvents['Turnovers'][0]) == 7:
-			for eventInstant,eventID,a,b,c,d,e in targetEvents['Turnovers']:
+		# if len(targetEvents['Turnovers'][0]) == 8:
+		for a in targetEvents['Turnovers']:
+			eventInstant,eventID = a[:2]
 
-				if eventInstant > window[0] and eventInstant <= window[1]:
-					turnoverCharacteristics.append(eventID)
-		else:
-			for eventInstant,eventID in targetEvents['Turnovers']:
+			if eventInstant > window[0] and eventInstant <= window[1]:
+				turnoverCharacteristics.append(eventID)
+		# else:
+		# 	for eventInstant,eventID,a in targetEvents['Turnovers']:
 
-				if eventInstant > window[0] and eventInstant <= window[1]:
-					turnoverCharacteristics.append(eventID)
+		# 		if eventInstant > window[0] and eventInstant <= window[1]:
+		# 			turnoverCharacteristics.append(eventID)
 
 		# define outcome variables here
 		turnoverCount = len(turnoverCharacteristics)
@@ -124,7 +126,8 @@ def possessions(window,aggregateEvent,targetEvents,TeamAstring,TeamBstring,expor
 	possessionCharacteristics = []
 	if targetEvents['Possession'] != []:
 		possessionCharacteristics = []
-		for eventInstantEnd,eventID,eventInstantStart in targetEvents['Possession']:
+		for a in targetEvents['Possession']:
+			eventInstantEnd,eventID,eventInstantStart = a[:3]
 			if eventInstantStart == None or eventInstantEnd == None:
 				# No possession window defined. Skip this event.
 				# NB: This might make all the 'None' possession statistics obsolete.
@@ -284,16 +287,18 @@ def passes(window,aggregateEvent,targetEvents,TeamAstring,TeamBstring,exportData
 	if targetEvents['Passes'] != []:
 		passes = []
 		consecutivePasses = []
-		if len(targetEvents['Passes'][0]) == 5:
-			for eventInstant,eventID,consecutiveEvents,a,b in targetEvents['Passes']:
-				if eventInstant > window[0] and eventInstant <= window[1]:
-					passes.append(eventID)
-					consecutivePasses.append(consecutiveEvents)
-		else:
-			for eventInstant,eventID,consecutiveEvents in targetEvents['Passes']:
-				if eventInstant > window[0] and eventInstant <= window[1]:
-					passes.append(eventID)
-					consecutivePasses.append(consecutiveEvents)
+		# if len(targetEvents['Passes'][0]) == 6:
+		for a in targetEvents['Passes']:
+			eventInstant,eventID,consecutiveEvents = a[:3]
+
+			if eventInstant > window[0] and eventInstant <= window[1]:
+				passes.append(eventID)
+				consecutivePasses.append(consecutiveEvents)
+		# else:
+		# 	for eventInstant,eventID,consecutiveEvents,a in targetEvents['Passes']:
+		# 		if eventInstant > window[0] and eventInstant <= window[1]:
+		# 			passes.append(eventID)
+		# 			consecutivePasses.append(consecutiveEvents)
 
 		passCount = float(len(passes))
 		passCountA = float(sum([TeamAstring in i for i in passes]))

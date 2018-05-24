@@ -84,8 +84,9 @@ def process(targetEvents,aggregateLevel,rawPanda,attrPanda,eventsPanda,TeamAstri
 	student_XX_computeEvents.process(targetEvents,aggregateLevel,rawPanda,attrPanda,eventsPanda,TeamAstring,TeamBstring)
 
 	# Deal with overlapping targets
+	# by default, the last value added to the tuple informs about whether there was any overlap with the previous event.
 	excludeOverlappingEvents= True
-	methodOverlap = 'exclude' # or 'limitWindow'
+	methodOverlap = 'include' # or 'limitWindow' or 'exclude'
 	targetEvents = overlappingTargets(targetEvents,aggregateLevel,excludeOverlappingEvents,methodOverlap)
 
 	
@@ -126,12 +127,17 @@ def overlappingTargets(targetEvents,aggregateLevel,excludeOverlappingEvents,meth
 			tEnd = currentEvent[0]# - aggregateLevel[2]
 			tStart = currentEvent[2]# - aggregateLevel[1]			
 
+		targetEvents_new[aggregateLevel[0]][-1] = currentEvent + (False,)
+
 		if idx != 0:
 
 			# # store the time in-between events that can help determine the maximum window size you may want to choose
 			availableWindow.append(tEnd - tEnd_prevEvent)
 
+
 			if tEnd_prevEvent > tStart:
+				targetEvents_new[aggregateLevel[0]][-1] = currentEvent + (True,)
+				currentEvent = targetEvents_new[aggregateLevel[0]][-1]
 
 				if excludeOverlappingEvents:					
 					if methodOverlap == 'exclude':
@@ -143,8 +149,14 @@ def overlappingTargets(targetEvents,aggregateLevel,excludeOverlappingEvents,meth
 						# or limit the window size 
 						# and report window limit
 						tStart = tEnd_prevEvent
+						warn('UNFINISHED')
+					elif methodOverlap == 'include':
+						donothing = [] # just leave it in there
 					else:
 						warn('\nWARNING: Only <exclude> or <limitWindow> are valid inputs for <methodOverlap> when excluding events in temporalAggregation.\nBy default, overlapping events are skipped.\n')
+			# else:
+			# 	print('hi')
+			# 	targetEvents_new[aggregateLevel[0]][-1] = currentEvent + (False,)
 		tEnd_prevEvent = tEnd
 
 	targetEvents[aggregateLevel[0]] = targetEvents_new[aggregateLevel[0]]
