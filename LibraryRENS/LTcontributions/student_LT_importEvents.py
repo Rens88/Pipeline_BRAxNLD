@@ -60,10 +60,10 @@ def importFromXML(targetEvents,cleanFname,TeamAstring,TeamBstring,dataFolder):
 		warn('\nWARNING: folder <existingTargets> in dataFolder <%s> NOT found.\nIf you want to import target events, put them in that folder.' %dataFolder)
 		return targetEvents
 
-	existingTargetsFname = dataFolder + 'existingTargets' + sep + cleanFname + '_existingTargets.xml'
+	existingTargetsFname = dataFolder + 'existingTargets' + sep + cleanFname[:-12] + '_Events.xml'
 	if not isfile(existingTargetsFname):
 		warn('\nWARNING: Although the existingTarget\'s folder existed in dataFolder <%s>, no <%s> found.\nNo existing targets imported.\n' %(dataFolder,cleanFname + '_existingTargets.xml'))
-		return existingTargets
+		return targetEvents
 
 	#Read XML file
 	tree = ET.parse(existingTargetsFname)

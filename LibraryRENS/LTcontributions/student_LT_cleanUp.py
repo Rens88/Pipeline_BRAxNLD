@@ -99,6 +99,17 @@ def KNVB(fname,cleanFname,dataFolder,cleanedFolder,headers,readAttributeCols,deb
 	else:
 		fatalTeamIDissue = False
 
+	#Copy shirtnumbers of opponnents to PlayerID's and multiply with -1
+	df = setPlayerID(df,ID,Tid,TeamBstring)
+
+	#delete referees
+	refereeIdx = (df[Tid].isnull()) & (df[ID] != 'ball')
+	df = df[refereeIdx == False]
+
+	#no negative speed
+	speedZero = df['Speed'] < 0.0
+	df.loc[speedZero,'Speed'] = 0.0
+
 	df_cropped01,df_omitted01 = omitXandY_equals0(df,x,y,ID)
 	df_cropped02,df_omitted02 = omitRowsWithout_XandY(df_cropped01,x,y)	
 	df_cropped03,df_omitted03 =	omitRowsWithExtreme_XandY(df_cropped02,x,y,expectedVals)	
@@ -107,14 +118,30 @@ def KNVB(fname,cleanFname,dataFolder,cleanedFolder,headers,readAttributeCols,deb
 	df_omitted = pd.concat([df_omitted01, df_omitted02, df_omitted03])
 	## End cleanup for BRAxNLD
 
+	#LT: controleren of dit er in moet!
 	df_cleaned = df_cropped03
 	
-	return df_cleaned, df_omitted,fatalTeamIDissue#,halfTime,secondHalfTime
+	return df_cleaned, df_omitted,fatalTeamIDissue
 
+def setPlayerID(df,ID,Tid,TeamBstring):
+	#Copy shirtnumbers of opponnents to PlayerID's and multiply with -1
+	teamOppIdx = df[Tid] == TeamBstring
+	df.loc[teamOppIdx,ID] = df.loc[teamOppIdx,'Shirt'] * -1
+
+	#Set ball
+	# Ball: Team = NaN, PlrID = 0, Shirt = 1, inBallPoss always 0
+	ballIdx = (df[Tid].isnull()) & (df[ID] == 0) & (df['Shirt'] == 1)
+	df.loc[ballIdx,ID] = 'ball'
+
+	return df
 
 def omitXandY_equals0(df,x,y,ID):
 	# Omit rows where both x and y = 0 and where there is no team value
-	XandY_equals0 = ( ((df[x] == 0) & (df[y] == 0) & (df[ID] == 'nan')) ) 
+	# XandY_equals0 = ( ((df[x] == 0) & (df[y] == 0) & (df[ID] == 'nan')) ) 
+	# print(df)
+	# XandY_equals0 = ( (df[ID] == 'nan') )
+	XandY_equals0 = ( ((df[x] == 0) & (df[y] == 0) & (df[ID].isnull())) )
+	# pdb.set_trace()
 	df[XandY_equals0 == True]
 	df_cleaned 	= df[XandY_equals0 == False]
 	df_omitted 	= df[XandY_equals0 == True]

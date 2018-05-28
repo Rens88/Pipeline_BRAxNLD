@@ -33,6 +33,9 @@ def process(targetEvents,aggregateLevel,rawPanda,attrPanda,eventsPanda,TeamAstri
 
 #LT: afronden nodig?
 def attackEvents(rawPanda,attrPanda,targetEvents,TeamAstring,TeamBstring):
+	if 'shotNotOnTarget' not in targetEvents or 'shotOnTarget' not in targetEvents or 'goal' not in targetEvents:
+		warn('\nWARNING: Shots and goals are not labeled. Check importEvents.\n')
+
 	consecutiveTs = 5 #consecutive timestamps to call it an attack
 	timeCount = 0
 	timeFrequenty = 0.1 #in seconds
@@ -77,23 +80,26 @@ def attackEvents(rawPanda,attrPanda,targetEvents,TeamAstring,TeamBstring):
 
 		#LT: begin en endTime omdraaien?
 		if endTime > 0:
-			for idx, i in enumerate(targetEvents['shotNotOnTarget']):
-				if i[0] >= beginTime and i[0] < endTime:
-					attackEvents.append((beginTime,curTeam,endTime,shotNotOnTargetLabel))
-					eventSet = True
-					break
-			if not eventSet:
-				for idx, i in enumerate(targetEvents['shotOnTarget']):
+			if 'shotNotOnTarget' in targetEvents:
+				for idx, i in enumerate(targetEvents['shotNotOnTarget']):
 					if i[0] >= beginTime and i[0] < endTime:
-						attackEvents.append((beginTime,curTeam,endTime,shotOnTargetLabel))
+						attackEvents.append((beginTime,curTeam,endTime,shotNotOnTargetLabel))
 						eventSet = True
 						break
-			if not eventSet:
-				for idx, i in enumerate(targetEvents['goal']):
-					if i[0] >= beginTime and i[0] < endTime:
-						attackEvents.append((beginTime,curTeam,endTime,goal))
-						eventSet = True
-						break
+			if 'shotOnTarget' in targetEvents:
+				if not eventSet:
+					for idx, i in enumerate(targetEvents['shotOnTarget']):
+						if i[0] >= beginTime and i[0] < endTime:
+							attackEvents.append((beginTime,curTeam,endTime,shotOnTargetLabel))
+							eventSet = True
+							break
+			if 'goal' in targetEvents:
+				if not eventSet:
+					for idx, i in enumerate(targetEvents['goal']):
+						if i[0] >= beginTime and i[0] < endTime:
+							attackEvents.append((beginTime,curTeam,endTime,goalLabel))
+							eventSet = True
+							break
 			if not eventSet:
 				attackEvents.append((beginTime,curTeam,endTime,noShotLabel))
 

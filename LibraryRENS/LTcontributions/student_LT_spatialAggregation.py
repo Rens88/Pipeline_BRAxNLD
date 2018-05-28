@@ -77,26 +77,26 @@ def process(rawDict,attributeDict,attributeLabel,TeamAstring,TeamBstring,skipSpa
 
 	# pd.options.mode.chained_assignment = None  # default='warn' --> to disable SettingWithCopyWarning
 
-	halfTime, secondHalfTime = determineHalfTime(rawDict,attributeDict,attributeLabel,TeamAstring,TeamBstring)
+	# halfTime, secondHalfTime = determineHalfTime(rawDict,attributeDict,attributeLabel,TeamAstring,TeamBstring)
 
-	print("halftime: ", halfTime)
-	print("secondhalf: ", secondHalfTime)
-	# pdb.set_trace()
+	# print("halftime: ", halfTime)
+	# print("secondhalf: ", secondHalfTime)
+	# # pdb.set_trace()
+
+	# attributeDict,attributeLabel = \
+	# ballPossession(rawDict,attributeDict,attributeLabel,TeamAstring,TeamBstring)
 
 	attributeDict,attributeLabel = \
-	ballPossession(rawDict,attributeDict,attributeLabel,TeamAstring,TeamBstring)
-
-	attributeDict,attributeLabel = \
-	zone(rawDict,attributeDict,attributeLabel,TeamAstring,TeamBstring,secondHalfTime)
+	zone(rawDict,attributeDict,attributeLabel,TeamAstring,TeamBstring)#,secondHalfTime)
 
 	attributeDict,attributeLabel = \
 	control(rawDict,attributeDict,attributeLabel,TeamAstring,TeamBstring)
 
 	attributeDict,attributeLabel = \
-	pressure(rawDict,attributeDict,attributeLabel,TeamAstring,TeamBstring,secondHalfTime)
+	pressure(rawDict,attributeDict,attributeLabel,TeamAstring,TeamBstring)#,secondHalfTime)
 
 	attributeDict,attributeLabel = \
-	density(rawDict,attributeDict,attributeLabel,TeamAstring,TeamBstring,secondHalfTime)
+	density(rawDict,attributeDict,attributeLabel,TeamAstring,TeamBstring)#,secondHalfTime)
 
 	attributeDict,attributeLabel = \
 	dangerousity(rawDict,attributeDict,attributeLabel,TeamAstring,TeamBstring)
@@ -137,29 +137,160 @@ def heatMap(rawDict,attributeDict,attributeLabel,TeamAstring,TeamBstring):
 
 	pdb.set_trace()
 
-def determineHalfTime(rawDict,attributeDict,attributeLabel,TeamAstring,TeamBstring):
-	seconds = 0.6 # 1 minute #LT: aanpassen naar 60!
+# def determineHalfTime(rawDict,attributeDict,attributeLabel,TeamAstring,TeamBstring):
+# 	seconds = 0.6 # 1 minute #LT: aanpassen naar 60!
 
-	previousTime = 0
+# 	previousTime = 0
 
-	for idx,i in enumerate(pd.unique(rawDict['Ts'])):
-		if (i - previousTime) > seconds:
-			return previousTime, i
+# 	for idx,i in enumerate(pd.unique(rawDict['Ts'])):
+# 		if (i - previousTime) > seconds:
+# 			return previousTime, i
 
-		previousTime = i
+# 		previousTime = i
 
-	return -1,-1
+# 	return -1,-1
+
+
+def ballPossessionNew(rawDict,attributeDict,attributeLabel,TeamAstring,TeamBstring):
+	tDistToBall = time.time()
+	distanceTreshold = 1.5
+	velocityTreshold = 5
+
+	##### THE STRINGS #####
+	# Export a string label of each new attribute in the labels dictionary (useful for plotting purposes)
+	inPossessionString = '0 = not in possession, 1 = in possession'
+	attributeLabel.update({'InBallPos':inPossessionString}) ##################################### andere afgeleiden nog toevoegen
+		
+	# if skipSpatAgg: # Return eary if spatial aggregation is being skipped
+	# 	return attributeDict,attributeLabel
+
+	##### THE DATA #####
+	# In this case, the new attribute will be computed based on a group (i.e., team) value
+	ballVals = rawDict[rawDict['PlayerID'] == 'ball'].set_index('Ts')
+	# Create empty DataFrame to store results, NB: columns need to be assigned beforehand.
+	newAttributes = pd.DataFrame(index = attributeDict.index, columns = ['distToBall','velRelToBall','InBallPos'], dtype = np.float64)
+	
+	# 1) Compute the X and Y velocities of the ball
+	curBall = rawDict[rawDict['PlayerID'] == 'ball']
+
+	# using np's gradient.
+	dt = 0.1
+	Ball_VX = np.gradient(curBall['X'],dt)
+	Ball_VY = np.gradient(curBall['Y'],dt)
+
+	# based on the difference between frames
+	dt = curBall['Ts'] - curBall['Ts'].shift(1)
+	dX = curBall['X'] - curBall['X'].shift(1)
+	dY = curBall['Y'] - curBall['Y'].shift(1)
+	# The second method
+	Ball_VX2 = dX / dt
+	Ball_VY2 = dY / dt
+
+	# Compute the direction of the ball
+	# Based on the difference in Y and X position
+	ballDir = np.arctan2(dY,dX)
+	# Based on the difference in Y and X velocity (method 1)
+	ballDir_vel = np.arctan2(Ball_VY,Ball_VX)
+	# Based on the difference in Y and X velocity (method 2)
+	ballDir_vel2 = np.arctan2(Ball_VY2,Ball_VX2)
+
+	newBallAttributes1 = pd.DataFrame(Ball_VX, index = curBall['Ts'], columns = ['Ball_VX'], dtype = np.float64)
+	newBallAttributes2 = pd.DataFrame(Ball_VY, index = curBall['Ts'], columns = ['Ball_VY'], dtype = np.float64)
+	# newBallAttributes = pd.DataFrame([Ball_VX,Ball_VY], index = curBall['Ts'].index, columns = ['Ball_VX', 'Ball_VY'], dtype = np.float64)
+
+	ballVals = pd.concat([ballVals,newBallAttributes1,newBallAttributes2], axis = 1)
+	# print(ballVals)
+
+	# # Plot to verify
+	# plt.figure()
+	# plt.plot(curBall['Ts'],ballDir_vel)
+	# plt.show()
+	# pdb.set_trace()
+
+	# 2) compute the distance of each player to the ball
+	# and
+	# 3) compute the relative X and Y velocities
+
+	# For every player in the dataFrame
+	players = rawDict[(rawDict['PlayerID'] != 'ball') & (rawDict['PlayerID'] != 'groupRow')]
+
+	for idx,i in enumerate(pd.unique(players['PlayerID'])):
+
+		curPlayer = rawDict[rawDict['PlayerID'] == i]
+		curPlayerDict = curPlayer.set_index('Ts')
+
+		# if all(curPlayer['PlayerID'] == 'groupRow'):
+		# 	# It's actually not a player, but a group, so skip it.
+		# 	continue # do nothing
+		# elif all(curPlayer['PlayerID'] == 'ball'):
+		# 	# It's actually not a player, but the ball, so skip it.
+		# 	continue # do nothing
+		# else: # either a TeamAstring or a TeamBstring
+
+		curPlayer_distToBall = np.sqrt((curPlayerDict['X'] - ballVals['X'])**2 + (curPlayerDict['Y'] - ballVals['Y'])**2)
+
+		dt = 0.1
+		curPlayer_VX = np.gradient(curPlayerDict['X'],dt)
+		curPlayer_VY = np.gradient(curPlayerDict['Y'],dt)
+
+		curPlayer_VX_asPanda = pd.DataFrame(curPlayer_VX,columns = ['VX'],index = curPlayer['Ts'])
+		curPlayer_VY_asPanda = pd.DataFrame(curPlayer_VX,columns = ['VY'],index = curPlayer['Ts'])
+
+		# Compute relative velocity
+		curPlayer_velRelToBall = np.sqrt((curPlayer_VX_asPanda['VX'] - ballVals['Ball_VX'])**2 + (curPlayer_VY_asPanda['VY'] - ballVals['Ball_VY'])**2)
+
+		# Put compute values in the right place in the dataFrame
+		newAttributes['distToBall'][curPlayer.index] = curPlayer_distToBall[curPlayerDict.index]
+		newAttributes['velRelToBall'][curPlayer.index] = curPlayer_velRelToBall[curPlayerDict.index]
+
+		# idxPossession = curPlayer_distToBall[(curPlayer_distToBall < distanceTreshold) & (curPlayer_distToBall == min(curPlayer_distToBall))].index # & (curPlayer_velRelToBall < velocityTreshold) & (curPlayer_velRelToBall == min(curPlayer_velRelToBall))].index
+		# # idxPossession = curPlayer_distToBall[(curPlayer_distToBall < distanceTreshold) & (curPlayer_distToBall == min(curPlayer_distToBall))].index
+		# # print(curPlayerDict[idxPossession])
+		# newAttributes.loc[idxPossession,'InBallPos'] = 1
+
+		# print(curPlayer,curPlayer_velRelToBall)
+
+
+		# print(curPlayer_distToBall,curPlayer_velRelToBall)
+
+	# IDEAS:
+	# Duration threshold?
+
+	# absolute threshold (<3m?)
+
+	# velocity (same direction?)
+
+	# Prioritization?
+	# Gain based on duration (cv. gaze studies)
+
+	# Discrete?
+	# Every change of direction of the ball means possession has been had. Take whoever was closest.
+
+	
+	# Combine the pre-existing attributes with the new attributes:
+	attributeDict = pd.concat([attributeDict, newAttributes], axis=1)
+
+	elapsed = str(round(time.time() - tDistToBall, 2))
+	print('*****----- Time elapsed during determining distance to ball.: %ss' %elapsed)
+
+	altogether = pd.concat([rawDict,attributeDict], axis=1)
+	altogether.to_csv('D:\\KNVB\\ballposs.csv')
+
+	pdb.set_trace()
+	return attributeDict,attributeLabel
 
 @timing
 def ballPossession(rawDict,attributeDict,attributeLabel,TeamAstring,TeamBstring):
+	ballTreshold = 1.5
+
 	#ball
 	ballComplete = rawDict[rawDict['PlayerID'] == 'ball']
 
 	#only players
-	players = rawDict[(rawDict['PlayerID'] != 'ball') & (['PlayerID'] != 'groupRow')]
+	players = rawDict[(rawDict['PlayerID'] != 'ball') & (rawDict['PlayerID'] != 'groupRow')]
 
-	newAttributes = pd.DataFrame(index = attributeDict.index, columns = ['distToBall', 'inPossession'])
-	newAttributes['inPossession'] = 0
+	newAttributes = pd.DataFrame(index = attributeDict.index, columns = ['distToBall', 'InBallPos'])
+	newAttributes['InBallPos'] = 0
 	
 	# For every ball
 	for idx,i in enumerate(pd.unique(ballComplete['Ts'])):
@@ -178,8 +309,10 @@ def ballPossession(rawDict,attributeDict,attributeLabel,TeamAstring,TeamBstring)
 
 		curPlayer_distToBall = np.sqrt((curPlayersX - curBallX)**2 + (curPlayersY - curBallY)**2)
 		newAttributes.loc[curPlayer_distToBall.index,'distToBall'] = curPlayer_distToBall
-		idxPossession = curPlayer_distToBall[curPlayer_distToBall == min(curPlayer_distToBall)].index
-		newAttributes.loc[idxPossession,'inPossession'] = 1
+		
+		idxPossession = curPlayer_distToBall[(curPlayer_distToBall < ballTreshold) & (curPlayer_distToBall == min(curPlayer_distToBall))].index
+		# idxPossession = curPlayer_distToBall[curPlayer_distToBall == min(curPlayer_distToBall)].index
+		newAttributes.loc[idxPossession,'InBallPos'] = 1
 		# IDEA??
 		# Duration threshold?
 
@@ -196,8 +329,13 @@ def ballPossession(rawDict,attributeDict,attributeLabel,TeamAstring,TeamBstring)
 	# Export a string label of each new attribute in the labels dictionary (useful for plotting purposes)
 	tmpDistToBallString = 'Distance from player to ball.'
 	tmpInPossession = 'Boolean for player in possession of the ball.'
-	attributeLabel_tmp = {'distToBall':tmpDistToBallString,'inPossession':tmpInPossession}
+	attributeLabel_tmp = {'distToBall':tmpDistToBallString,'InBallPos':tmpInPossession}
 	attributeLabel.update(attributeLabel_tmp)
+
+	# altogether = pd.concat([rawDict,attributeDict], axis=1)
+	# altogether.to_csv('D:\\KNVB\\test2.csv')
+
+	# pdb.set_trace()
 	
 	return attributeDict,attributeLabel
 
@@ -281,7 +419,7 @@ def playerInFinalThirdTeamB(curPlayerTeam,TeamBstring,curPlayerX,zoneMin_B_X,zon
 	return all(curPlayerTeam == TeamBstring) and all(curPlayerX >= zoneMin_B_X) and all(curPlayerX <= zoneMax_B_X) and all(curPlayerY >= zoneMin_Y) and all(curPlayerY <= zoneMax_Y)
 
 @timing
-def zone(rawDict,attributeDict,attributeLabel,TeamAstring,TeamBstring,secondHalfTime):
+def zone(rawDict,attributeDict,attributeLabel,TeamAstring,TeamBstring):#,secondHalfTime):
 	##############   READ ZONE CSV   ###############
 	dirPath = os.path.dirname(os.path.realpath(__file__))
 	fileName = dirPath + '\\Zone.csv'
@@ -302,21 +440,21 @@ def zone(rawDict,attributeDict,attributeLabel,TeamAstring,TeamBstring,secondHalf
 	halfTimeBool = False
 
 	#only for players in possession
-	inPossession = rawDict[attributeDict['inPossession'] == 1]
+	InBallPos = rawDict[attributeDict['InBallPos'] == 1]
 
 	##############   DETERMINE ZONE VALUE IF PLAYER IS IN ZONE   ###############
-	for idx,i in enumerate(pd.unique(inPossession['Ts'])):
+	for idx,i in enumerate(pd.unique(InBallPos['Ts'])):
 		curTime = i#rawDict.loc[idx,'Ts']
 		# print(curTime)
 		
 		#second half
-		if (curTime >= secondHalfTime) and (not halfTimeBool):
-			halfTimeBool = True
-			goal_A_X,goal_B_X,zoneA,zoneB,zoneMin_A_X,zoneMax_A_X,zoneMin_B_X,zoneMax_B_X = switchSides(goal_A_X, goal_B_X,zoneA,zoneB,zoneMin_A_X,zoneMax_A_X,zoneMin_B_X,zoneMax_B_X)
+		# if (curTime >= secondHalfTime) and (not halfTimeBool):
+		# 	halfTimeBool = True
+		# 	goal_A_X,goal_B_X,zoneA,zoneB,zoneMin_A_X,zoneMax_A_X,zoneMin_B_X,zoneMax_B_X = switchSides(goal_A_X, goal_B_X,zoneA,zoneB,zoneMin_A_X,zoneMax_A_X,zoneMin_B_X,zoneMax_B_X)
 
-		curPlayerX = inPossession['X'][inPossession['Ts'] == curTime]
-		curPlayerY = inPossession['Y'][inPossession['Ts'] == curTime]
-		curPlayerTeam = inPossession['TeamID'][inPossession['Ts'] == curTime]
+		curPlayerX = InBallPos['X'][InBallPos['Ts'] == curTime]
+		curPlayerY = InBallPos['Y'][InBallPos['Ts'] == curTime]
+		curPlayerTeam = InBallPos['TeamID'][InBallPos['Ts'] == curTime]
 		#skip if NaN
 		if all(np.isnan(curPlayerX)) or all(np.isnan(curPlayerY)):
 		 	continue #LT: or break?
@@ -357,6 +495,107 @@ def zone(rawDict,attributeDict,attributeLabel,TeamAstring,TeamBstring,secondHalf
 
 @timing
 def control(rawDict,attributeDict,attributeLabel,TeamAstring,TeamBstring):
+	##### THE DATA #####
+	# In this case, the new attribute will be computed based on a group (i.e., team) value
+	ballVals = rawDict[rawDict['PlayerID'] == 'ball'].set_index('Ts')
+	# inZoneRaw = rawDict[attributeDict['inZone'] == 1]
+	# Create empty DataFrame to store results, NB: columns need to be assigend beforehand.
+	newAttributes = pd.DataFrame(index = attributeDict.index, columns = ['control','velRelToBall'], dtype = np.float64)
+	
+	# 1) Compute the X and Y velocities of the ball
+	curBall = rawDict[rawDict['PlayerID'] == 'ball']
+
+	# using np's gradient.
+	dt = 0.1
+	Ball_VX = np.gradient(curBall['X'],dt)
+	Ball_VY = np.gradient(curBall['Y'],dt)
+
+	# based on the difference between frames
+	dt = curBall['Ts'] - curBall['Ts'].shift(1)
+	dX = curBall['X'] - curBall['X'].shift(1)
+	dY = curBall['Y'] - curBall['Y'].shift(1)
+	# The second method
+	Ball_VX2 = dX / dt
+	Ball_VY2 = dY / dt
+
+	# Compute the direction of the ball
+	# Based on the difference in Y and X position
+	ballDir = np.arctan2(dY,dX)
+	# Based on the difference in Y and X velocity (method 1)
+	ballDir_vel = np.arctan2(Ball_VY,Ball_VX)
+	# Based on the difference in Y and X velocity (method 2)
+	ballDir_vel2 = np.arctan2(Ball_VY2,Ball_VX2)
+
+	newBallAttributes1 = pd.DataFrame(Ball_VX, index = curBall['Ts'], columns = ['Ball_VX'], dtype = np.float64)
+	newBallAttributes2 = pd.DataFrame(Ball_VY, index = curBall['Ts'], columns = ['Ball_VY'], dtype = np.float64)
+	# newBallAttributes = pd.DataFrame([Ball_VX,Ball_VY], index = curBall['Ts'].index, columns = ['Ball_VX', 'Ball_VY'], dtype = np.float64)
+
+	ballVals = pd.concat([ballVals,newBallAttributes1,newBallAttributes2], axis = 1)
+
+	constant = 0.0016 # 1 / 25^2. Zie paper
+
+	# # Plot to verify
+	# plt.figure()
+	# plt.plot(curBall['Ts'],ballDir_vel)
+	# plt.show()
+	# pdb.set_trace()
+
+	# 2) compute the distance of each player to the ball
+	# and
+	# 3) compute the relative X and Y velocities
+
+	# For every player in the dataFrame
+	# players = rawDict[(rawDict['PlayerID'] != 'ball') & (rawDict['PlayerID'] != 'groupRow')]
+	inZoneRaw = rawDict[attributeDict['inZone'] == 1]
+
+	for idx,i in enumerate(pd.unique(inZoneRaw['PlayerID'])):
+
+		curPlayer = rawDict[rawDict['PlayerID'] == i]
+		curPlayerDict = curPlayer.set_index('Ts')
+
+		# if all(curPlayer['PlayerID'] == 'groupRow'):
+		# 	# It's actually not a player, but a group, so skip it.
+		# 	continue # do nothing
+		# elif all(curPlayer['PlayerID'] == 'ball'):
+		# 	# It's actually not a player, but the ball, so skip it.
+		# 	continue # do nothing
+		# else: # either a TeamAstring or a TeamBstring
+
+		curPlayer_distToBall = np.sqrt((curPlayerDict['X'] - ballVals['X'])**2 + (curPlayerDict['Y'] - ballVals['Y'])**2)
+
+		dt = 0.1
+		curPlayer_VX = np.gradient(curPlayerDict['X'],dt)
+		curPlayer_VY = np.gradient(curPlayerDict['Y'],dt)
+
+		curPlayer_VX_asPanda = pd.DataFrame(curPlayer_VX,columns = ['VX'],index = curPlayer['Ts'])
+		curPlayer_VY_asPanda = pd.DataFrame(curPlayer_VX,columns = ['VY'],index = curPlayer['Ts'])
+
+		# Compute relative velocity
+		curPlayer_velRelToBall = np.sqrt((curPlayer_VX_asPanda['VX'] - ballVals['Ball_VX'])**2 + (curPlayer_VY_asPanda['VY'] - ballVals['Ball_VY'])**2)
+		control = 1 - constant * curPlayer_velRelToBall**2
+		control[control < 0] = 0
+
+		# Put compute values in the right place in the dataFrame
+		newAttributes['velRelToBall'][curPlayer.index] = curPlayer_velRelToBall[curPlayerDict.index]
+		newAttributes['control'][curPlayer.index] = control
+
+	attributeDict = pd.concat([attributeDict, newAttributes], axis=1)
+
+	##### THE STRINGS #####
+	# Export a string label of each new attribute in the labels dictionary (useful for plotting purposes)
+	tmpVelRelToBall = 'Relative velocity between player and ball.'
+	tmpControl = 'Ball control of player with ball.'
+
+	attributeLabel_tmp = {'velRelToBall': tmpVelRelToBall, 'control': tmpControl}
+	attributeLabel.update(attributeLabel_tmp)
+
+	# altogether = pd.concat([rawDict,attributeDict], axis=1)
+	# altogether.to_csv('D:\\KNVB\\test.csv')
+	
+	return attributeDict,attributeLabel
+
+@timing
+def controlOUD(rawDict,attributeDict,attributeLabel,TeamAstring,TeamBstring):
 	#Only players in possession
 	inZoneRaw = rawDict[attributeDict['inZone'] == 1]
 	inZoneAtt = attributeDict[attributeDict['inZone'] == 1]
@@ -379,10 +618,15 @@ def control(rawDict,attributeDict,attributeLabel,TeamAstring,TeamBstring):
 		curTime = i#rawDict.loc[idx,'Ts']
 
 		# if(playerInFinalThirdTeamA(curPlayerTeam,TeamAstring,curPlayerX,zoneMin_A_X,zoneMax_A_X,curPlayerY,zoneMin_Y,zoneMax_Y) or playerInFinalThirdTeamB(curPlayerTeam,TeamBstring,curPlayerX,zoneMin_B_X,zoneMax_B_X,curPlayerY,zoneMin_Y,zoneMax_Y)):
-		curBallSpeed = float(ballComplete.loc[ballComplete['Ts'] == curTime,'Snelheid'])
-		curPlayerSpeed = float(inZoneAtt.loc[inZoneAtt['Ts'] == curTime,'Snelheid'])
-		# print(curPlayerSpeed)
+		# curBallSpeed = float(ballComplete.loc[ballComplete['Ts'] == curTime,'Speed'])
+		curBallSpeed = float(ballComplete.loc[ballComplete['Ts'] == curTime,'Speed'])
+		if(curBallSpeed == 0):
+			curBallSpeed = 0.01
+		# curPlayerSpeed = float(inZoneAtt.loc[inZoneAtt['Ts'] == curTime,'Speed'])
+		curPlayerSpeed = float(inZoneAtt.loc[inZoneAtt['Ts'] == curTime,'Speed'])
+		# print(i,curBallSpeed,curPlayerSpeed)
 		curPlayerSpeedDiffBall = abs((curPlayerSpeed - curBallSpeed)/curBallSpeed)
+		# print(curPlayerSpeedDiffBall)
 		control = 1 - constant * curPlayerSpeedDiffBall**2
 
 		# print(curPlayerSpeedDiffBall,control)
@@ -404,19 +648,19 @@ def control(rawDict,attributeDict,attributeLabel,TeamAstring,TeamBstring):
 	attributeLabel_tmp = {'avgRelSpeedPlayerBall': tmpAvgRelSpeedPlayerBall, 'control': tmpControl}
 	attributeLabel.update(attributeLabel_tmp)
 
-	# altogether = pd.concat([rawDict,attributeDict], axis=1)
-	# altogether.to_csv('D:\\KNVB\\test.csv')
+	altogether = pd.concat([rawDict,attributeDict], axis=1)
+	altogether.to_csv('D:\\KNVB\\test.csv')
 
-	# pdb.set_trace()
+	pdb.set_trace()
 	
 	return attributeDict,attributeLabel
 
 @timing
-def pressure(rawDict,attributeDict,attributeLabel,TeamAstring,TeamBstring,secondHalfTime):
+def pressure(rawDict,attributeDict,attributeLabel,TeamAstring,TeamBstring):#,secondHalfTime):
 	def distance(X_1,Y_1,X_2,Y_2):
 		return np.sqrt((X_1 - X_2)**2 + (Y_1 - Y_2)**2)
 
-	#distances -> LT: change distances
+	#distances
 	highPressDist = 1
 	headOnDist = 4
 	lateralDist = 3
@@ -468,10 +712,10 @@ def pressure(rawDict,attributeDict,attributeLabel,TeamAstring,TeamBstring,second
 			curInZoneY = float(curInZoneY)
 
 		#second half
-		if (curTime >= secondHalfTime) and (not halfTimeBool):
-			halfTimeBool = True
-			# print(zoneMin_A_X,zoneMax_A_X,zoneMin_B_X,zoneMax_B_X)
-			goal_A_X,goal_B_X,zoneA,zoneB,zoneMin_A_X,zoneMax_A_X,zoneMin_B_X,zoneMax_B_X = switchSides(goal_A_X, goal_B_X,zoneA,zoneB,zoneMin_A_X,zoneMax_A_X,zoneMin_B_X,zoneMax_B_X)
+		# if (curTime >= secondHalfTime) and (not halfTimeBool):
+		# 	halfTimeBool = True
+		# 	# print(zoneMin_A_X,zoneMax_A_X,zoneMin_B_X,zoneMax_B_X)
+		# 	goal_A_X,goal_B_X,zoneA,zoneB,zoneMin_A_X,zoneMax_A_X,zoneMin_B_X,zoneMax_B_X = switchSides(goal_A_X, goal_B_X,zoneA,zoneB,zoneMin_A_X,zoneMax_A_X,zoneMin_B_X,zoneMax_B_X)
 			# print(zoneMin_A_X,zoneMax_A_X,zoneMin_B_X,zoneMax_B_X)
 
 		if all(curTeamInZone == TeamAstring):
@@ -616,7 +860,7 @@ def plotZone(pointA,pointB,pointC,pointD,pointE,playersOpponent,playersOwnTeam):
 	# pdb.set_trace()
 
 @timing
-def density(rawDict,attributeDict,attributeLabel,TeamAstring,TeamBstring,secondHalfTime):
+def density(rawDict,attributeDict,attributeLabel,TeamAstring,TeamBstring):#,secondHalfTime):
 	def distance(X_1,Y_1,X_2,Y_2):
 		return np.sqrt((X_1 - X_2)**2 + (Y_1 - Y_2)**2)
 
@@ -662,8 +906,8 @@ def density(rawDict,attributeDict,attributeLabel,TeamAstring,TeamBstring,secondH
 			curInZoneY = float(curInZoneY)
 
 		#second half
-		if(curTime == secondHalfTime):
-			goal_A_X,goal_B_X,zoneA,zoneB,zoneMin_A_X,zoneMax_A_X,zoneMin_B_X,zoneMax_B_X = switchSides(goal_A_X, goal_B_X,zoneA,zoneB,zoneMin_A_X,zoneMax_A_X,zoneMin_B_X,zoneMax_B_X)
+		# if(curTime == secondHalfTime):
+		# 	goal_A_X,goal_B_X,zoneA,zoneB,zoneMin_A_X,zoneMax_A_X,zoneMin_B_X,zoneMax_B_X = switchSides(goal_A_X, goal_B_X,zoneA,zoneB,zoneMin_A_X,zoneMax_A_X,zoneMin_B_X,zoneMax_B_X)
 
 		if all(curTeamInZone == TeamAstring):
 		# if playerInFinalThirdTeamA(curTeamInZone,TeamAstring,curInZoneX,zoneMin_A_X,zoneMax_A_X,curInZoneY,zoneMin_Y,zoneMax_Y):
@@ -817,8 +1061,10 @@ def dangerousity(rawDict,attributeDict,attributeLabel,TeamAstring,TeamBstring):
 
 	attributeLabel_tmp = {'dangerousity': tmpDangerousity}
 	attributeLabel.update(attributeLabel_tmp)
-	altogether = pd.concat([rawDict,attributeDict], axis=1)
-	altogether.to_csv('D:\\KNVB\\test2.csv')
+	# altogether = pd.concat([rawDict,attributeDict], axis=1)
+	# altogether.to_csv('D:\\KNVB\\test2.csv')
+
+	# pdb.set_trace()
 
 	return attributeDict,attributeLabel
 
