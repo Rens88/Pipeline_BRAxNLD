@@ -8,15 +8,17 @@
 
 import numpy as np
 import math
+import re
 import pandas as pd
 from warnings import warn
+import xml.etree.ElementTree as ET
 import pdb; #pdb.set_trace()
 from os import listdir, path, makedirs, sep
 from os.path import isfile, join, isdir, exists
 
 
 ## Here, you can clarify which functions exist in this module.
-if __name__ == '__main__': 
+if __name__ == '__main__':
 
 	process(targetEvents,cleanFname,TeamAstring,TeamBstring,dataFolder)
 	importFromXML(targetEvents,cleanFname,TeamAstring,TeamBstring,dataFolder)
@@ -36,23 +38,187 @@ def process(targetEvents,cleanFname,TeamAstring,TeamBstring,dataFolder):
 
 
 def importFromXML(targetEvents,cleanFname,TeamAstring,TeamBstring,dataFolder):
+	def XMLToDF(root,iterate,childCols,teamName):
+		dfList2 = []
+
+		for child in root.iter(iterate):
+			dfList = []
+			if teamName != '':
+				dfList.append(teamName)
+			for key in child.keys():
+				# print(key,child.attrib.get(key))
+				if key in childCols and child.attrib.get(key) != '':
+					dfList.append(child.attrib.get(key))
+
+			if len(dfList) == len(childCols):
+				dfList2.append(dfList)
+
+		return dfList2 #pd.DataFrame(dfList2,columns=childCols)
+
 
 	if not exists(dataFolder + 'existingTargets'):
 		warn('\nWARNING: folder <existingTargets> in dataFolder <%s> NOT found.\nIf you want to import target events, put them in that folder.' %dataFolder)
 		return targetEvents
 
-	existingTargetsFname = dataFolder + 'existingTargets' + sep + cleanFname + '_existingTargets.xml'
+	existingTargetsFname = dataFolder + 'existingTargets' + sep + cleanFname[:-12] + '.xml'#'_Events.xml'
+
 	if not isfile(existingTargetsFname):
 		warn('\nWARNING: Although the existingTarget\'s folder existed in dataFolder <%s>, no <%s> found.\nNo existing targets imported.\n' %(dataFolder,cleanFname + '_existingTargets.xml'))
-		return existingTargets
+		return targetEvents
 
-	rawTargetEvents = pd.read_csv(existingTargetsFname)
+	#Read XML file
+	tree = ET.parse(existingTargetsFname)
+	root = tree.getroot()
+	ballEventCols = ['Id','Time', 'BallEventCode', 'NumAmiscoJ1']#'WithWhat', 'How', 'NumAmiscoJ1']
+	matchEventCols = ['Id','Time', 'MatchEventCode', 'NumAmiscoJ1']
+	playerCols = ['Team','Id','NumAmisco','SecondName', 'FirstName', 'ShirtNumber', 'Poste']
 
+	# for child in root.iter('EVENT'):
+	# 	print(child.attrib)
+		# for key in child.keys():
+		# 		if key == 'MatchEventCode' and child.attrib.get(key) != '' :
+		# 			# goalsEvents.append(child.attrib)
+		# 			print(child.attrib,child.attrib.get(key))
+
+	# pdb.set_trace()
+
+	#read Events
+	dfBallEvents = pd.DataFrame(XMLToDF(root, 'EVENT', ballEventCols, ''), columns=ballEventCols)
+	dfBallEvents.rename(columns={'BallEventCode': 'Event'}, inplace=True)
+	dfMatchEvents = pd.DataFrame(XMLToDF(root, 'EVENT', matchEventCols, ''), columns=matchEventCols)
+	dfMatchEvents.rename(columns={'MatchEventCode': 'Event'}, inplace=True)
+
+	# dfEvents = pd.concat([dfBallEvents, dfMatchEvents])
+	# print(dfEvents['Time'].count())
+	# print(dfEvents[dfEvents.index.duplicated()])
+	dfEvents = dfBallEvents.append(dfMatchEvents, ignore_index=True)
+	# print(dfBallEvents['Time'].count())
+	# print(dfEvents['Time'].count())
+	# print(dfEvents[dfEvents.index.duplicated()])
+
+	dfBallEvents.to_csv('D:\\KNVB\\ballevents.csv')
+	dfMatchEvents.to_csv('D:\\KNVB\\matchevents.csv')
+
+	#read Team and Players
+	dfList = []
+	for team in root.iter('tTEAM'):
+		for teamKey in team.keys():
+			if teamKey == 'Name':
+				teamName = team.attrib.get(teamKey)
+				dfList = dfList + XMLToDF(team, 'PLAYER', playerCols, teamName)
+
+	dfPlayers = pd.DataFrame(dfList,columns=playerCols)
+	# dfPlayers.to_csv('D:\\KNVB\\players.csv')
+
+	# print(dfPlayers)
+
+	dfEvents = timestampToSeconds(dfEvents,'Time')
+
+	dfEvents.rename(columns={'NumAmiscoJ1': 'NumAmisco'}, inplace=True)
+
+	# print(dfEvents[dfEvents['Id'] == '1469'])
+
+	dfMerged = pd.merge(dfEvents, dfPlayers, on='NumAmisco')
+	# print(dfMerged[dfMerged['Time'].isnull()])
+	# pdb.set_trace()
+	# dfMerged = dfMerged[pd.notnull(dfMerged['Time'])]
+	# print(dfMerged['Time'].count())
+
+	# print(dfMerged)
+
+	# pdb.set_trace()
+
+	#Ball events
+	passEvents = []
+	receptionEvents = []
+	runningEvents = []
+	neutralEvents = []
+	crossEvents = []
+	highCatchGkEvents = []
+	clearanceEvents = []
+	shotOnTargetEvents = []
+	holdOfBallGkEvents = []
+	shotNotOnTargetEvents = []
+	footClearGkEvents = []
+	highDeflGkEvents = []
+	lowCatchGkEvents = []
+	lowDeflGkEvents = []
+	#Match events
+	dirFreeKickEvents = []
+	goalEvents = []
+	offsideEvents = []
+	yellowCardEvents = []
+	redCardEvents = []
+	playerInEvents = []
+	playerOutEvents = []
+
+	for idx,i in enumerate(pd.unique(dfMerged['Time'])):
+		curTime = i
+		curTeam = dfMerged.loc[dfMerged['Time'] == curTime,'Team'].values[0]
+		curEvent = dfMerged.loc[dfMerged['Time'] == curTime,'Event'].values[0]
+		#BALL EVENTS
+		if curEvent == 'Pass':
+			passEvents.append((curTime,curTeam,None))
+		elif curEvent == 'Reception':
+			receptionEvents.append((curTime,curTeam,None))
+		elif curEvent == 'Running with ball':
+			runningEvents.append((curTime,curTeam,None))
+		elif curEvent == 'Neutral contact':
+			neutralEvents.append((curTime,curTeam,None))
+		elif curEvent == 'Cross':
+			crossEvents.append((curTime,curTeam,None))
+		elif curEvent == 'Clearance':
+			clearanceEvents.append((curTime,curTeam,None))
+		elif curEvent == 'Shot on target':
+			shotOnTargetEvents.append((curTime,curTeam,None))
+		elif curEvent == 'Shot not on target':
+			shotNotOnTargetEvents.append((curTime,curTeam,None))
+		elif curEvent == 'Hold of ball gk':
+			holdOfBallGkEvents.append((curTime,curTeam,None))
+		elif curEvent == 'Foot clearance gk':
+			footClearGkEvents.append((curTime,curTeam,None))
+		elif curEvent == 'High deflection gk':
+			highDeflGkEvents.append((curTime,curTeam,None))
+		elif curEvent == 'Low deflection gk':
+			lowDeflGkEvents.append((curTime,curTeam,None))
+		elif curEvent == 'High catch gk':
+			highCatchGkEvents.append((curTime,curTeam,None))
+		elif curEvent == 'Low catch gk':
+			lowCatchGkEvents.append((curTime,curTeam,None))
+		#MATCH EVENTS
+		elif curEvent == 'Foul - dir. free-kick':
+			dirFreeKickEvents.append((curTime,curTeam,None))
+		elif curEvent == 'Goal':
+			goalEvents.append((curTime,curTeam,None))
+		elif curEvent == 'Offside':
+			offsideEvents.append((curTime,curTeam,None))
+		elif curEvent == 'Yellow card':
+			yellowCardEvents.append((curTime,curTeam,None))
+		elif curEvent == 'Red card':
+			redCardEvents.append((curTime,curTeam,None))
+		elif curEvent == 'Player in':
+			playerInEvents.append((curTime,curTeam,None))
+		elif curEvent == 'Player out':
+			playerOutEvents.append((curTime,curTeam,None))
+
+
+	# print(pd.unique(dfEvents['BallEventCode']))
+	# print(dfEvents[dfEvents['BallEventCode'] == 'Pass'])
+	# print('#############################',receptionEvents,'#############################',runningEvents,'#############################',neutralEvents,'#############################',crossEvents,'#############################',highCatchGkEvents,'#############################',clearanceEvents,'#############################',shotOnTargetEvents,'#############################',holdOfBallGkEvents,'#############################',shotNotOnTargetEvents,'#############################',footClearGkEvents,'#############################',highDeflGkEvents,'#############################',lowCatchGkEvents,'#############################',lowDeflGkEvents)
+	# pdb.set_trace()
+
+	targetEvents = {**targetEvents,'pass':passEvents,'reception':receptionEvents,'runningWithBall':runningEvents,'neutralContact':neutralEvents,'cross':crossEvents,'clearance':clearanceEvents,'shotOnTarget':shotOnTargetEvents,'shotNotOnTarget':shotNotOnTargetEvents,'holdOfBallGk':holdOfBallGkEvents,'footClearanceGk':footClearGkEvents,'highDeflectionGk':highDeflGkEvents,'lowDelfectionGk':lowDeflGkEvents,'highCatchGk':highCatchGkEvents,'lowCatchGk':lowCatchGkEvents,'directFreeKick':dirFreeKickEvents,'goal':goalEvents,'offside':offsideEvents,'yellowCard':yellowCardEvents,'redCard':redCardEvents,'playerIn':playerInEvents,'playerOut':playerOutEvents}
+
+	# print(targetEvents)
+	# pdb.set_trace()
+
+	#LT: added! Anders pakt hij het example mee.
+	return targetEvents
 
 	## HERE YOU PROCESS THE rawTargetEvents
 	#
-	#	NB --> this module assumes that you have a folder in the dataFolder that 
-	#	contains all the .xml files that have the same filename as the corresponding 
+	#	NB --> this module assumes that you have a folder in the dataFolder that
+	#	contains all the .xml files that have the same filename as the corresponding
 	#	cleanFname, but with the addition '_existingTargets.xml'. For example:
 	#	dataFolder = 'dataFolder'
 	#	cleanFname = 'this_is_the_first_clean_match.csv'
@@ -71,3 +237,12 @@ def importFromXML(targetEvents,cleanFname,TeamAstring,TeamBstring,dataFolder):
 	targetEvents = {**targetEvents,'exampleTarget':[made_up_target]}
 
 	return targetEvents
+
+def timestampToSeconds(df,ts):
+	newdf = pd.DataFrame(data = [],index = df.index, columns = [ts],dtype = 'int32')
+	for idx,tmpTs in enumerate(df[ts]):
+		newdf[ts][idx] = (int(tmpTs) / 10)
+
+	df[ts] = newdf[ts]
+
+	return df

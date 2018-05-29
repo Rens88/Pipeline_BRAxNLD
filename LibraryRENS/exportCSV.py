@@ -8,7 +8,8 @@ import csv
 from warnings import warn
 # import numpy as np
 from os.path import isfile, join, exists#, isdir, exists
-from os import listdir, startfile
+from os import listdir#, startfile
+import os, sys, subprocess
 import pandas as pd
 import time
 
@@ -16,16 +17,23 @@ import time
 
 
 if __name__ == '__main__':
-	
+
 	# fname can include the folder as well
-	newOrAdd(fname,header,data,skippedData)	
+	newOrAdd(fname,header,data,skippedData)
 	varDescription(fname,exportDataString,exportFullExplanation)
-	
+
 	# Filename should probably be 'temp.csv'
 	# varToPrint is the variable you want to print
 	# winopen: if True: open in windows
 	debugPrint(filename,varToPrint,winopen)
 #########################################################################
+
+def open_file(filename):
+    if sys.platform == "win32":
+        os.startfile(filename)
+    else:
+        opener ="open" if sys.platform == "darwin" else "xdg-open"
+        subprocess.call([opener, filename])
 
 def process(trialEventsSpatAggExcerpt,exportData,exportDataString,exportFullExplanation,readEventColumns,readAttributeCols,aggregatedOutputFilename,outputDescriptionFilename,rawPanda,eventsPanda,attrPanda,spatAggFolder,spatAggFname,eventAggFolder,eventAggFname,appendEventAggregate,skipEventAgg_curFile,fileIdentifiers,t,attrLabel,outputFolder,debuggingMode):
 	tExportCSV = time.time()
@@ -44,27 +52,27 @@ def process(trialEventsSpatAggExcerpt,exportData,exportDataString,exportFullExpl
 			firstColumns.append(ikey)
 		elif ikey in readEventColumns:
 			# Pre existing event columns
-			secondColumns.append(ikey) 				
+			secondColumns.append(ikey)
 		elif ikey in readAttributeCols:
 			# Pre existing attribute columns
-			thirdColumns.append(ikey) 
+			thirdColumns.append(ikey)
 		else:
 			laterColumns.append(ikey)
 	columnOrder = firstColumns + secondColumns + thirdColumns + laterColumns
 
 	if len(exportData[0]) <= len(firstColumns):
 		skippedData = True
-		newOrAdd(aggregatedOutputFilename,exportDataString,exportData,skippedData)	
+		newOrAdd(aggregatedOutputFilename,exportDataString,exportData,skippedData)
 		warn('\nWARNING: No Data exported.\nProbably because there were no targetevents detected.\nCheck if this was warned for in temporalAggregation.\n')
 
 		if debuggingMode:
 			elapsed = str(round(time.time() - tExportCSV, 2))
 			print('***** Time elapsed during exportCSV: %ss' %elapsed)
-		return appendEventAggregate	
+		return appendEventAggregate
 
 	# Temporally aggregated data
 	skippedData = False
-	newOrAdd(aggregatedOutputFilename,exportDataString,exportData,skippedData)	
+	newOrAdd(aggregatedOutputFilename,exportDataString,exportData,skippedData)
 	varDescription(outputDescriptionFilename,exportDataString,exportFullExplanation)
 
 	# Spatially aggregated data
@@ -78,14 +86,14 @@ def process(trialEventsSpatAggExcerpt,exportData,exportDataString,exportFullExpl
 	## Export attribute label for skip skipToDataSetLevel
 	if t[1] == 1: # only after the first file (attribute label won't change in the next iterations of the file by file analysis)
 		attrLabel_asPanda = pd.DataFrame.from_dict([attrLabel],orient='columns')
-		attrLabel_asPanda.to_csv(outputFolder + 'attributeLabel.csv') 
+		attrLabel_asPanda.to_csv(outputFolder + 'attributeLabel.csv')
 
 	if debuggingMode:
 		elapsed = str(round(time.time() - tExportCSV, 2))
 		print('***** Time elapsed during exportCSV: %ss' %elapsed)
 	return appendEventAggregate
 
-######################################################################################################################################################	
+######################################################################################################################################################
 ######################################################################################################################################################
 
 def eventAggregate(eventAggFolder,eventAggFname,appendEventAggregate,trialEventsSpatAggExcerpt,skipEventAgg_curFile,fileIdentifiers,columnOrder):
@@ -100,7 +108,7 @@ def eventAggregate(eventAggFolder,eventAggFname,appendEventAggregate,trialEvents
 	# Give the new index a name
 	trialEventsSpatAggExcerpt.index.name = 'DataSetIndex'
 
-	if exists(eventAggFolder + eventAggFname) and appendEventAggregate:# and not stat(eventAggFolder + eventAggFname).st_size == 0: 
+	if exists(eventAggFolder + eventAggFname) and appendEventAggregate:# and not stat(eventAggFolder + eventAggFname).st_size == 0:
 		# Append to existing file
 
 		# # Store the trial based index
@@ -168,7 +176,7 @@ def eventAggregate(eventAggFolder,eventAggFname,appendEventAggregate,trialEvents
 		combinedData = trialEventsSpatAggExcerpt
 		# From now onward, append to existing eventAgg
 		appendEventAggregate = True
-		
+
 	else: # apparently trialEventsSpatAggExcerpt was empty..
 		warn('\nWARNING: Targetevents were empty. \nNo Data exported.\n')
 		return appendEventAggregate
@@ -188,7 +196,7 @@ def eventAggregate(eventAggFolder,eventAggFname,appendEventAggregate,trialEvents
 			columnOrder.remove(ikey)
 
 	# Save as new csv (overwrite)
-	combinedData.to_csv(eventAggFolder + eventAggFname, index_label = 'DataSetIndex', columns = columnOrder)	
+	combinedData.to_csv(eventAggFolder + eventAggFname, index_label = 'DataSetIndex', columns = columnOrder)
 
 	return appendEventAggregate
 
@@ -204,12 +212,12 @@ def debugPrint(filename,varToPrint,winopen):
 			# else:
 			# 	print('I did the other this')
 			# 	print(len(i))
-			# 	print(i[0:5])				
+			# 	print(i[0:5])
 			wr.writerow(i)
 
 
 	if winopen == True:
-		startfile(filename)
+		open_file(filename)
 
 def varDescription(fname,exportDataString,exportFullExplanation):
 	with open(fname,'w') as myfile:
@@ -219,9 +227,9 @@ def varDescription(fname,exportDataString,exportFullExplanation):
 
 			curLine = '%s:\t\t\t %s\n' %(val,exportFullExplanation[idx])
 			if len(val) >= 15:
-				curLine = '%s:\t\t %s\n' %(val,exportFullExplanation[idx])	
+				curLine = '%s:\t\t %s\n' %(val,exportFullExplanation[idx])
 			if len(val) >= 23:
-				curLine = '%s:\t %s\n' %(val,exportFullExplanation[idx])				
+				curLine = '%s:\t %s\n' %(val,exportFullExplanation[idx])
 			myfile.write(curLine)
 
 #########################################################################
@@ -238,7 +246,7 @@ def newOrAdd(fname,header,data,skippedData):
 				missingValue = [missingValue for missingValue,value in enumerate(row) if value == None]
 				for i in missingValue:
 					row[i] = 'NaN'
-				wr.writerow(row)			
+				wr.writerow(row)
 
 	else:
 		# append
@@ -264,7 +272,7 @@ def newOrAdd(fname,header,data,skippedData):
 				data = newData['newData'].values.tolist()
 				# print(data)
 			else:
-				warn('\nWARNING: original file did not have the same number of columns as the newly exported data.\nConsider creating a new file or at least edit the existingHeaders.')	    
+				warn('\nWARNING: original file did not have the same number of columns as the newly exported data.\nConsider creating a new file or at least edit the existingHeaders.')
 
 		with open(fname, 'a',newline='') as myfile:
 			wr = csv.writer(myfile)

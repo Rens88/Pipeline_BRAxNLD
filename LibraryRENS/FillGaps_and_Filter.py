@@ -11,18 +11,25 @@ from scipy.interpolate import InterpolatedUnivariateSpline,interp1d
 import pandas as pd
 import math
 from scipy.signal import butter,lfilter,filtfilt
-
+import cleanupData
+import time
 
 if __name__ == '__main__':		
 	process(df)
 ########################################################################	
 
 def process(df,**kwargs):
+
 	if 'datasetFramerate' in kwargs:
-		df_filled = fillGaps(df, checkForJumps = True,datasetFramerate =  kwargs['datasetFramerate'])
+		df_filled,fatalGroupRowIssueAfterFiltering = fillGaps(df, checkForJumps = True,datasetFramerate =  kwargs['datasetFramerate'])
 	else:
-		df_filled = fillGaps(df, checkForJumps = True)
-	
+		df_filled,fatalGroupRowIssueAfterFiltering = fillGaps(df, checkForJumps = True)
+
+	if 'fatalIssue' in df_filled:
+		return df_filled,fatalGroupRowIssueAfterFiltering
+
+
+
 	if max(df_filled['Ts']) == float("inf"):
 		# an issue with filtering.. Havent resolved it yet.
 		warn('\n(potentially FATAL) WARNING: Max Ts after filling gaps = %s' %max(df_filled['Ts']))
@@ -32,7 +39,7 @@ def process(df,**kwargs):
 	if max(df_filled_filtered['Ts']) == float("inf"):
 		# an issue with filtering.. Havent resolved it yet.
 		warn('\n(potentially FATAL) WARNING: Max Ts after filtering = %s' %max(df_filled_filtered['Ts']))
-	return df_filled_filtered
+	return df_filled_filtered,fatalGroupRowIssueAfterFiltering
 ########################################################################	
 
 def filterData(df):
@@ -130,7 +137,7 @@ def filterData(df):
 def butter_lowpass(cutoff, fs, order=5):
     nyq = 0.5 * fs
     normal_cutoff = cutoff / nyq
-    print(normal_cutoff)
+    # print(normal_cutoff)
     b, a = butter(order, normal_cutoff, btype='low', analog=False)
     return b, a
 
@@ -140,7 +147,8 @@ def butter_lowpass_filter(data, cutoff, fs, order=5):
     return y
     
 def fillGaps(df,**kwargs):
-	
+	uniqueGroupRowsAtStart = len(df.loc[df['PlayerID'] == 'groupRow','Ts'].unique())
+
 	checkForJumps = False
 	excludeJumps = False
 	eventInterpolation = False
@@ -168,7 +176,7 @@ def fillGaps(df,**kwargs):
 	# print(type(everyPlayerIDs))
 	# print(everyPlayerIDs)
 	# # everyPlayerIDs = everyPlayerIDs[~np.isnan(everyPlayerIDs)]
-	if any(everyPlayerIDs[everyPlayerIDs['everyPlayerIDs'].notnull()]):
+	if any(everyPlayerIDs['everyPlayerIDs'].isnull()):
 		warn('\nWARNING: Found a row without a PlayerID that could neither be labelled as a ball-row, nor a groupRow.\nConsider checking the raw data file and filling in the empty PlayerID rows.\n')
 
 	everyPlayerIDs = everyPlayerIDs[everyPlayerIDs['everyPlayerIDs'].notnull()]
@@ -191,9 +199,15 @@ def fillGaps(df,**kwargs):
 			warn('\nWARNING: The specified datasetFramerate <%s> does not correspond with the dataDrivenFrameRate <%s>.\nIf the difference is substantial, this may affect the reliability of the results.\n' %(datasetFramerate,dataDrivenFrameRate))
 	else:
 		frameRateForInterpolation = dataDrivenFrameRate
-	interpolatedVals = pd.DataFrame([],columns = [df.keys()])			
-
+	interpolatedVals = pd.DataFrame([],columns = df.columns)			
+	beforeWarning = []
+	afterWarning = []
 	for nthPlayer, everyPlayerID in enumerate(everyPlayerIDs['everyPlayerIDs']):
+		int_curPlayer = pd.DataFrame([], columns = df.columns)
+		# print(interpolatedVals.columns)
+		# print(int_curPlayer.columns)
+		# print('---------')
+		# pdb.set_trace()
 		# The interpolation has to happen per player
 		curRows = df.loc[df['PlayerID'] == everyPlayerID].index
 		curTs = df.loc[curRows]['Ts']
@@ -211,18 +225,18 @@ def fillGaps(df,**kwargs):
 		if min(curTs) - min(df['Ts']) > dataDrivenThreshold:
 			# 'gap' for this player at the start
 			gapSize = min(curTs) - min(df['Ts'])
-			warn('\nWARNING:Found a jump in time (of <%ss>) BEFORE the first frame of the current player <%s>.\nCurrently, this gap is ignored when filling gaps.\n Adjust code here if you want to do something with it.\n' %(gapSize,everyPlayerID))
+			beforeWarning.append((gapSize,everyPlayerID))
+			# warn('\nWARNING:Found a jump in time (of <%ss>) BEFORE the first frame of the current player <%s>.\nCurrently, this gap is ignored when filling gaps.\n Adjust code here if you want to do something with it.\n' %(gapSize,everyPlayerID))
 
 		if max(df['Ts']) - max(curTs) > dataDrivenThreshold:
 			# 'gap' for this player at the end
 			gapSize = max(df['Ts']) - max(curTs)
-			warn('\nWARNING:Found a jump in time (of <%ss>) AFTER the first frame of the current player <%s>.\nCurrently, this gap is ignored when filling gaps.\n Adjust code here if you want to do something with it.\n' %(gapSize,everyPlayerID))
+			afterWarning.append((gapSize,everyPlayerID))
+			# warn('\nWARNING:Found a jump in time (of <%ss>) AFTER the first frame of the current player <%s>.\nCurrently, this gap is ignored when filling gaps.\n Adjust code here if you want to do something with it.\n' %(gapSize,everyPlayerID))
 
 		if eventInterpolation:
 			X_int = findJumps_Fixed_X_int(curTs,dataDrivenThreshold,frameRateForInterpolation,fixed_X_int,aggregateLevel)
-
 		elif checkForJumps:
-
 			# try:
 			# if not eventInterpolation:
 			X_int = findJumps(curTs,dataDrivenThreshold,frameRateForInterpolation)
@@ -241,17 +255,33 @@ def fillGaps(df,**kwargs):
 		else:
 			X_int = determineX_int(curTs,frameRateForInterpolation)
 		
+
 		if len(X_int) != len(np.unique(X_int)):
 			warn('\nWARNING: For some reason, the to be interpolated time had duplicate values.\nRemoved them, not sure about consequences.\nMight have something to do with jumps close together.\nCould avoid by making the threshold for jumps larger.\n')
 			X_int = np.unique(X_int)
-
 		# print(X_int)
 		# np.savetxt("C:\\Users\\rensm\\Documents\\SURFDRIVE\\Repositories\\NP repository\\X_int.csv", X_int, delimiter=",")
 
 		# pdb.set_trace()
 		# Start by adding time to the interpolated dataFrame
-		int_curPlayer = pd.DataFrame(X_int, columns = ['Ts'])
 
+		# if groupRows --> index should correspond to all unique Ts with NaNs for the missing ones?
+		# print(everyPlayerID)
+
+		if everyPlayerID == 'groupRow':
+			# print(len(X_int))
+			#### X_int = np.sort(int_curPlayer['Ts'].unique()) ###################################################### IT JUST TO BE THIS
+			X_int = np.sort(interpolatedVals['Ts'].unique())
+			# print(len(X_int))
+			
+		###int_curPlayer = pd.DataFrame(X_int, columns = ['Ts'])
+
+		int_curPlayer['Ts'] = X_int
+		# else:
+		# 	###int_curPlayer = pd.DataFrame(X_int, columns = ['Ts'])
+
+		# if everyPlayerID == '01A':
+		# 	pdb.set_trace()
 		# Do the interpolation for every key separately (necessary, because some keys need to be interpolated and others not)
 		for key in df.columns:
 
@@ -263,6 +293,7 @@ def fillGaps(df,**kwargs):
 			if key == 'Ts': # no need to interpolate time, it's added before based on X_int
 				continue
 			isString = [str_ix for str_ix,q in enumerate(df.loc[curRows,key]) if type(q) == str] 					# Search for rows where the cell has content
+			# curTs.loc[2162] = 299.4
 
 			if df.loc[curRows,key].dtype == float:
 				# Figure out what type of key it is.
@@ -270,16 +301,49 @@ def fillGaps(df,**kwargs):
 				Y = df.loc[curRows,key]
 				try:
 					f = InterpolatedUnivariateSpline(curTs,Y, k = 3) # order 1) = linear, 2) = quadratic, 3) = cubic
+
+				except ValueError as inst:
+					print(inst)
+					print('It seems that the cleanup missed a non-consecutive (and probably duplicated) timestamp in the data.\nFor the time being, this match will simply be skipped.\n')
+					print("NB: This error could have been missed if the max frequency of a timestamp did not exceed number of unique players (for example by having missing players at the time of duplicate timestamp; probably because identities were overwritten)")
+					df_Fatal = pd.DataFrame(['fatalTimestampIssue_inFillGaps'],columns=['fatalIssue'])
+					fatalGroupRowIssueAfterFiltering = False
+
+					return df_Fatal,fatalGroupRowIssueAfterFiltering
+
 				except:
 					print('curTs:')
 					print(curTs)
+					print('min time in interpolated time = <%s>' %min(curTs))
+					print('max time in interpolated time = <%s>' %max(curTs))
+					# print('min time in curRows time = <%s>' %min(df[curRows,'Ts']))
+					# print('max time in curRows time = <%s>' %max(df[curRows,'Ts']))
 					print('Y:')
 					print(Y)
+					print('curKey:')
+					print(key)
+					print('curPlayer:')
+					print(everyPlayerID)
 					print('!!!!!!!')
-					print('Sometimes, this causes a problem. I think it has something to do with a window that overlaps a time period that doesn\'t exist. (before tStart or after tEnd)).\nIf it occurs, let me know and give me as many details as you can (about the excerpt as well).\n!!!!!!!!\n')
+
+					timeString = time.strftime("%Hh%Mm_%d_%B_%Y")
+					curTs.to_csv('debug_curTs_' + timeString + '.csv')
+					Y.to_csv('debug_Y_' + timeString + '.csv')
+					df.loc[curRows].to_csv('debug_df[curRows]_' + timeString + '.csv')
+					df.to_csv('debug_df_' + timeString + '.csv')
+
+					warn('Sometimes, this causes a problem. I think it has something to do with a window that overlaps a time period that doesn\'t exist. (before tStart or after tEnd)).\nIf it occurs, let me know and give me as many details as you can (about the excerpt as well).\n!!!!!!!!\nOr maybe something with duplicate timestamps (see also firstData and lastData when determining jumps.')
+					f = InterpolatedUnivariateSpline(curTs,Y, k = 3) # order 1) = linear, 2) = quadratic, 3) = cubic
+
 					pdb.set_trace()
 				Y_int = f(X_int)
-				int_curKey = pd.DataFrame(Y_int, columns = [key])
+
+				# curRows.to_csv('debug_curRows.csv')
+				# print('im fine')
+				# pdb.set_trace()
+
+				###int_curKey = pd.DataFrame(Y_int, columns = [key])
+				int_curPlayer[key] = Y_int
 
 				# plt.figure()
 				# plt.plot(curTs, Y,'o',label = 'Raw')
@@ -296,12 +360,13 @@ def fillGaps(df,**kwargs):
 				# Event identifiers and player level identifiers can simply be copied:
 				if all(df.loc[curRows,key] == df.loc[curRows[0],key]):
 					# If they're all the same (i.e., player, team or match identifiers)
-					int_curKey = pd.DataFrame([df.loc[curRows[0],key]]*len(X_int), columns = [key], index = [int_curPlayer.index])
+					###int_curKey = pd.DataFrame([df.loc[curRows[0],key]]*len(X_int), columns = [key], index = [int_curPlayer.index])
+					int_curPlayer[key] = df.loc[curRows[0],key]
 					if not key in ['TeamID', 'PlayerID', 'temporalAggregate','RefTeam','EventUID','School','Class','Group', 'Test', 'Exp','MatchContinent','MatchCountry','MatchID','HomeTeamContinent','HomeTeamCountry','HomeTeamAgeGroup','HomeTeamID','AwayTeamContinent','AwayTeamCountry','AwayTeamAgeGroup','AwayTeamID' ]:
 						warn('\nWARNING: Key <%s> was identified as an event identifier.\nTherefore, no data was interpolated, instead, the same value was copied for all cells.\n' %key)
 				else:
 					# Create an empty dataframe
-					int_curKey = pd.DataFrame([], columns = [key], index = [int_curPlayer.index])
+					###int_curKey = pd.DataFrame([], columns = [key], index = [int_curPlayer.index])
 
 					# Event Strings
 					if not key in ['Goal','Run','Possession/Turnover','Pass']:
@@ -329,22 +394,39 @@ def fillGaps(df,**kwargs):
 
 						# Put the stringEvent there, and leave the rest as an empty string i.e., '' 
 						ix_event = nearestTimeOfEvent[0]
-						int_curKey.loc[ix_event,key] = df.loc[curRows,key].iloc[stringEvent]
+						###int_curKey.loc[ix_event,key] = df.loc[curRows,key].iloc[stringEvent]
+						int_curPlayer.loc[ix_event,key] = df.loc[curRows,key].iloc[stringEvent]
 
-			# Put interpolated / replaced data from current KEY in frame for current PLAYER
-			int_curPlayer = pd.concat([int_curPlayer,int_curKey],axis= 1) # Each key gets added one by one
-
-		# Put interpolated / replaced data from current PLAYER in frame for current FILE
-		interpolatedVals = pd.concat([interpolatedVals,int_curPlayer],axis= 0, ignore_index = True)
+			###int_curPlayer = pd.concat([int_curPlayer,int_curKey],axis= 1) # Each key gets added one by one
+		
+		interpolatedVals = interpolatedVals.append([int_curPlayer], ignore_index = True)
 		# Same same but different:
 		# interpolatedVals = interpolatedVals.append(int_curPlayer, ignore_index = True)
 
 		# Order the columns in the original way
 		interpolatedVals = interpolatedVals[df.keys()]
+	# pdb.set_trace()
 
+	if beforeWarning != []:
+		warn('\nWARNING:Found jumps in time BEFORE the first frame.\nCurrently, this gap is ignored when filling gaps.\n Adjust code here if you want to do something with it.\n\n(n seconds before, by this player)\n%s' %beforeWarning)
+	if afterWarning != []:
+		warn('\nWARNING:Found jumps in time AFTER the last frame.\nCurrently, this gap is ignored when filling gaps.\n Adjust code here if you want to do something with it.\n\n(n seconds after, by this player)\n%s' %afterWarning)
+
+	# print(interpolatedVals)
+	# print(interpolatedVals['TeamID'].unique())
+	# print(interpolatedVals['Possession/Turnover'].unique())
+	# pdb.set_trace()
+	# Call that function for grouprows from cleanup
+	uniqueGroupRowsAtEnd = len(interpolatedVals.loc[interpolatedVals['PlayerID'] == 'groupRow','Ts'].unique())
+	fatalGroupRowIssueAfterFiltering = False
+	if uniqueGroupRowsAtStart != uniqueGroupRowsAtEnd:
+
+		interpolatedVals,fatalGroupRowIssueAfterFiltering = cleanupData.verifyGroupRows(interpolatedVals)
+
+		warn('\nWARNING: It was required to doubly verify the groupRows, as there were too few after the interpolation.\nThis is a solution for a problem in spatialAggregation with pivotting.\nIt may affect the pipeline elsewhere...\n')
 	warn('\nWARNING: The threshold for the size of a gap to be determined as a gap was based on the median of the data-driven sampling frequency <%sHz>.\nWith the current sampling frequency, any gap in time longer than <%ss> was considered a jump (and not interpolated between).\nYou may want to manually set the size of a gap that needs to be filled..\n' %(dataDrivenFrameRate, dataDrivenThreshold))
 	df_filled = interpolatedVals
-	return df_filled
+	return df_filled,fatalGroupRowIssueAfterFiltering
 
 def filter(df):
 
@@ -376,16 +458,44 @@ def findJumps(curTs,dataDrivenThreshold,frameRateForInterpolation,**kwargs):
 	jumpSizes = dt['Ts'][dt['Ts']>(dataDrivenThreshold)] # Contains the size of the jump and the index with respect to t0 and t1
 
 	firstData = pd.DataFrame(curTs[min(curTs) == curTs])
+	# print('**************')
+	# print(jumpSizes)
+	# print('first and last data before correction:')
+	# print(firstData)
+	if firstData.shape != (1,1):
+		# A small work-around for the cases where there are multiple min curTs
+		# Kinda strange, but I suppose it's possible (before interpolation).
+		# Throw a warning just in case it links to problems later on.
+		warn('\nWARNING: Multiple occurrences of minimum Ts found. Causes an issue with skipping jumps.\nThe work-around simply takes the first of the multiple occurrences.\nIt may cause a problem later.\nOriginal firstdata:\n%s\n' %firstData)
+		firstData.drop(firstData.index[1:],inplace = True)
+		
+
 	lastData = pd.DataFrame(curTs[max(curTs) == curTs])
+	
+
+	if lastData.shape != (1,1):
+		# A small work-around for the cases where there are multiple max curTs
+		# Kinda strange, but I suppose it's possible (before interpolation).
+		# Throw a warning just in case it links to problems later on.
+		warn('\nWARNING: Multiple occurrences of maximum Ts found. Causes an issue with skipping jumps.\nThe work-around simply takes the first of the multiple occurrences.\nIt may cause a problem later.\nOriginal lastdata:\n%s\n' %lastData)
+		lastData.drop(lastData.index[1:],inplace = True)
+
+
+	# print('first and last data after correction:')
+	# print(firstData)
+	# print(lastData)
 
 	dataStarts = firstData
 	dataEnds = lastData
-
 
 	if jumpSizes.empty:
 		# No jumps found, simply interpolate with standardaized X_int
 		tmp = determineX_int(curTs,frameRateForInterpolation)
 		X_int = np.round(tmp,math.ceil(math.log(frameRateForInterpolation,10))) # automatically rounds it to the required number of significant numbers (decimal points) for the given sampling frequency (to avoid '0' being stored as 1.474746 E16 AND 1.374750987 E16)
+		
+		# print('X_int without jumps:')
+		# print(X_int)
+		# print('*********')
 
 	else:
 		# Jumps found, make sure X_int skips the jumps as well
@@ -395,12 +505,34 @@ def findJumps(curTs,dataDrivenThreshold,frameRateForInterpolation,**kwargs):
 
 		jumpEnds = t1['Ts'][dt['Ts']>(np.median(dt['Ts'])*1.5)]  # should it be the frame after jump ends?
 		dataStarts = pd.concat([firstData['Ts'], jumpEnds],axis = 0) #-1 # jumpStarts - 1
-	
+		
+		# print('dataEnds with jumps:')
+		# print(dataEnds)
+		# print('********')
+		# X_int without the jumps
 		tmp = [np.arange(dataStarts.iloc[isx],en + 1/frameRateForInterpolation,1/frameRateForInterpolation) for isx,en in enumerate(dataEnds)]
+		
+
+		# for isx,en in enumerate(dataEnds):
+		# 	print('this is the end:')
+		# 	print(en)
+		# 	print('\nThis is the range:')
+		# 	print(np.arange(dataStarts.iloc[isx],en + 1/frameRateForInterpolation,1/frameRateForInterpolation))
+		# 	print( 'frameRateForInterpolation = %s' %frameRateForInterpolation)
+
+
+		# print('tmp:\n%s' %tmp)
+
+
+
+		# Put all the different bits ()
 		tmp = np.concatenate(tmp)
 		X_int = np.round(tmp,math.ceil(math.log(frameRateForInterpolation,10))) # automatically rounds it to the required number of significant numbers (decimal points) for the given sampling frequency (to avoid '0' being stored as 1.474746 E16 AND 1.374750987 E16)
+		# I had to implement this to avoid creating new timestamps
+		X_int = X_int[X_int<=max(curTs)]
 		# X_int = np.around(tmp,1) # automatically rounds it to the required number of significant numbers (decimal points) for the given sampling frequency (to avoid '0' being stored as 1.474746 E16 AND 1.374750987 E16)
 		# print(math.ceil(math.log(frameRateForInterpolation,10)))
+
 
 		# np.savetxt("C:\\Users\\rensm\\Documents\\SURFDRIVE\\Repositories\\NP repository\\test.csv", X_int, delimiter=",")
 		# pdb.set_trace()
@@ -427,7 +559,6 @@ def findJumps_Fixed_X_int(curTs,dataDrivenThreshold,frameRateForInterpolation,fi
 	dataStarts = firstData
 	dataEnds = lastData
 
-
 	#################################################################
 	# This is where it's different from findJumps()
 	#################################################################
@@ -452,7 +583,6 @@ def findJumps_Fixed_X_int(curTs,dataDrivenThreshold,frameRateForInterpolation,fi
 		
 		""""
 		s = interp1d(curTs, curY)		
-
 		try:
 			Y_int = s(X_int_cropped)				
 		except:

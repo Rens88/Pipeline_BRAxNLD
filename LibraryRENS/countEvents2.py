@@ -158,7 +158,7 @@ def possessions(window,aggregateEvent,targetEvents,TeamAstring,TeamBstring,expor
 			possessionDurationStdB = sum(abs(i[0]-possessionDurationAvgB) for i in possessionCharacteristics if i[1] == TeamBstring) / possessionCountB
 		else:
 			possessionDurationAvgB = None
-			possessionDurationStdB = None		
+			possessionDurationStdB = None
 
 		if possessionCountNone != 0:
 			possessionDurationAvgNone = possessionDurationSumNone / possessionCountNone
@@ -206,14 +206,14 @@ def possessions(window,aggregateEvent,targetEvents,TeamAstring,TeamBstring,expor
 	exportData.append(possessionCountB)
 	exportFullExplanation.append('Number full possession %s had per %s. NB: <full> refers to from the start until the end of a possession.' %(TeamBstring,aggregateEvent))
 
-	exportDataString.append('possessionCountDelta')	
+	exportDataString.append('possessionCountDelta')
 	exportData.append(possessionCountDelta)
 	exportFullExplanation.append('Absolute difference between number of full possessions by %s and %s, per %s. NB: <full> refers to from the start until the end of a possession.' %(TeamAstring,TeamBstring,aggregateEvent))
 
 	exportDataString.append('possessionCountNone')
 	exportData.append(possessionCountNone)
 	exportFullExplanation.append('Number of times no team had possession per %s.' %aggregateEvent)
-	
+
 	# possessionDuration (in seconds) --> sum,std,avg,
 	exportDataString.append('possessionDurationSum')
 	exportData.append(possessionDurationSum)
@@ -252,7 +252,7 @@ def possessions(window,aggregateEvent,targetEvents,TeamAstring,TeamBstring,expor
 	exportDataString.append('possessionDurationStd')
 	exportData.append(possessionDurationStd)
 	exportFullExplanation.append('Standard deviation of the duration of a full possession per %s by %s and %s. NB: <full> refers to from the start until the end of a possession.' %(aggregateEvent,TeamAstring,TeamBstring))
-	
+
 	exportDataString.append('possessionDurationStdA')
 	exportData.append(possessionDurationStdA)
 	exportFullExplanation.append('Standard deviation of the duration of a full possession per %s by %s. NB: <full> refers to from the start until the end of a possession.' %(aggregateEvent,TeamAstring))
@@ -262,7 +262,7 @@ def possessions(window,aggregateEvent,targetEvents,TeamAstring,TeamBstring,expor
 	exportFullExplanation.append('Standard deviation of the duration of a full possession per %s by %s. NB: <full> refers to from the start until the end of a possession.' %(aggregateEvent,TeamBstring))
 
 	exportDataString.append('possessionDurationStdNone')
-	exportData.append(possessionDurationStdNone) 
+	exportData.append(possessionDurationStdNone)
 	exportFullExplanation.append('Standard deviation of the duration (s) of no possession per %s.' %aggregateEvent)
 
 	safetyWarning.checkLengthExport(exportData,exportDataString,exportFullExplanation)
@@ -312,7 +312,7 @@ def passes(window,aggregateEvent,targetEvents,TeamAstring,TeamBstring,exportData
 			if idx == len(consecutivePasses)-1: # last one
 				break
 			if val != consecutivePasses[idx+1]: # new possession
-				tmp = 1	
+				tmp = 1
 			else:
 				tmp = tmp + 1
 
@@ -341,7 +341,7 @@ def passes(window,aggregateEvent,targetEvents,TeamAstring,TeamBstring,exportData
 		else:
 			maxConsecutivePassesB = None
 			avgConsecutivePassesB = None
-			stdConsecutivePassesB = None		
+			stdConsecutivePassesB = None
 	else:
 		maxConsecutivePasses = None
 		maxConsecutivePassesA = None
@@ -416,7 +416,7 @@ def passes(window,aggregateEvent,targetEvents,TeamAstring,TeamBstring,exportData
 	return exportData,exportDataString,exportFullExplanation
 
 # def passes2(rowswithinrange,aggregateEvent,possessionCharacteristics,rawDict,attributeDict,TeamAstring,TeamBstring,exportData,exportDataString,exportFullExplanation):
-	
+
 # 	i = [idx for idx,val in enumerate(exportDataString) if val == 'possessionCount']
 # 	possessionCount = exportData[i[0]]
 # 	i = [idx for idx,val in enumerate(exportDataString) if val == 'possessionCountA']
@@ -457,11 +457,11 @@ def passes(window,aggregateEvent,targetEvents,TeamAstring,TeamBstring,exportData
 # 	exportData.append(float(passCountA))
 # 	passCountB = sum([TeamBstring in i for i in passes])
 # 	exportFullExplanation.append('Number of passes by %s per %s.' %(TeamAstring,aggregateEvent))
-	
+
 # 	exportDataString.append('passCountB')
 # 	exportData.append(float(passCountB))
 # 	exportFullExplanation.append('Number of passes by %s per %s.' %(TeamBstring,aggregateEvent))
-	
+
 # 	exportDataString.append('passDelta')
 # 	exportData.append(float(abs(passCountA - passCountB)))
 # 	exportFullExplanation.append('Absolute difference between number of passes scored by %s and %s.' %(TeamAstring,TeamBstring))
@@ -471,7 +471,7 @@ def passes(window,aggregateEvent,targetEvents,TeamAstring,TeamBstring,exportData
 # 	PassessPossession = []
 
 # 	for idx,i in enumerate(possessionCharacteristics):
-# 		tmp = 0		
+# 		tmp = 0
 # 		if len(passOut) != 0: # Skip this if there were no passess during the current possession
 # 			while passOut[ind][1] >= i[0]: # after the start
 # 				if passOut[ind][1] <= i[4]: # before the end

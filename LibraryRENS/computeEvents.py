@@ -30,19 +30,19 @@ def process(targetEvents,aggregateLevel,rawPanda,attrPanda,eventsPanda,TeamAstri
 	# For demonstration purposes, generate some random events
 	if aggregateLevel[0].lower() == 'random':
 		targetEvents = \
-		addRandomEvents(rawPanda,targetEvents,TeamAstring,TeamBstring)	
+		addRandomEvents(rawPanda,targetEvents,TeamAstring,TeamBstring)
 
 	if aggregateLevel[0].lower() == 'regular':
 		targetEvents = \
-		addRegularEvents(rawPanda,targetEvents,TeamAstring,TeamBstring,aggregateLevel)	
+		addRegularEvents(rawPanda,targetEvents,TeamAstring,TeamBstring,aggregateLevel)
 
 	targetEvents = \
 	student_XX_computeEvents.process(targetEvents,aggregateLevel,rawPanda,attrPanda,eventsPanda,TeamAstring,TeamBstring)
-	
+
 	if debuggingMode:
 		elapsed = str(round(time.time() - tComputeEvents, 2))
 		print('***** Time elapsed during computeEvents: %ss' %elapsed)
-	
+
 	return targetEvents
 
 ############################################################
@@ -56,12 +56,12 @@ def addRandomEvents(rawPanda,targetEvents,TeamAstring,TeamBstring):
 	tEnd = math.floor(targetEvents['Full'][0][0])
 
 	timeRange = range(tStart,tEnd)
-	
+
 	if nRandom > len(timeRange):
 		warn('\nWARNING: Number of random events was larger than seconds in the datasets.\nThe number was reduced to the number of seconds in the dataset.\n')
 		nRandom = len(timeRange)
 	randomTimes = random.sample(timeRange, nRandom)
-	
+
 	randomEvents = []
 	teamStrings = (TeamAstring,TeamBstring)
 
@@ -71,9 +71,9 @@ def addRandomEvents(rawPanda,targetEvents,TeamAstring,TeamBstring):
 		randomTeam = random.randint(0,1)
 
 		if not type(idxEqual) == np.int64:
-			randomEvents.append((rawPanda['Ts'][idxEqual[0]],teamStrings[randomTeam]))	
+			randomEvents.append((rawPanda['Ts'][idxEqual[0]],teamStrings[randomTeam]))
 		else:
-			randomEvents.append((rawPanda['Ts'][idxEqual],teamStrings[randomTeam]))	
+			randomEvents.append((rawPanda['Ts'][idxEqual],teamStrings[randomTeam]))
 
 	targetEvents = {**targetEvents,'Random':randomEvents}
 	# If an error occurs here, then this may be a problem with Linux.
@@ -96,7 +96,7 @@ def addRegularEvents(rawPanda,targetEvents,TeamAstring,TeamBstring,aggregateLeve
 	# Number of random events
 	nRandom = 5
 	timeRange = range(tStart,tEnd)
-	# From end to start, to make sure that the end is included	
+	# From end to start, to make sure that the end is included
 	regularTimes = np.arange(tEnd,tStart,-aggregateLevel[1])
 	regularTimes = np.sort(regularTimes)
 
@@ -109,9 +109,9 @@ def addRegularEvents(rawPanda,targetEvents,TeamAstring,TeamBstring,aggregateLeve
 		# randomTeam = random.randint(0,1)
 
 		if not type(idxEqual) == np.int64:
-			regularEvents.append((rawPanda['Ts'][idxEqual[0]],TeamAstring))	
+			regularEvents.append((rawPanda['Ts'][idxEqual[0]],TeamAstring))
 		else:
-			regularEvents.append((rawPanda['Ts'][idxEqual],TeamAstring))	
+			regularEvents.append((rawPanda['Ts'][idxEqual],TeamAstring))
 
 	targetEvents = {**targetEvents,'Regular':regularEvents}
 	# If an error occurs here, then this may be a problem with Linux.

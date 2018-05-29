@@ -15,12 +15,12 @@ import pandas as pd
 import student_XX_dissectFilename
 import time
 
-
 if __name__ == '__main__':
-	
+
 	process(fname,dataType,TeamAstring,TeamBstring)
 	FDP(fname)
 	NP(fname)
+	KNVB(fname)
 	default(fname)
 
 
@@ -34,12 +34,15 @@ def process(fname,dataType,TeamAstring,TeamBstring,debuggingMode):
 
 	elif dataType == "FDP":
 		exportData, exportDataString, exportDataFullExplanation,cleanFname,TeamAstring,TeamBstring = FDP(fname)
-
+	elif dataType == "KNVB":
+		exportData, exportDataString, exportDataFullExplanation,cleanFname,TeamAstring,TeamBstring,Half = \
+		student_XX_dissectFilename.process(fname,dataType,TeamAstring,TeamBstring)
+		# exportData, exportDataString, exportDataFullExplanation,cleanFname = default(fname)
 	else:
 		exportData, exportDataString, exportDataFullExplanation,cleanFname = \
 		student_XX_dissectFilename.process(fname,dataType,TeamAstring,TeamBstring)
 		# exportData, exportDataString, exportDataFullExplanation,cleanFname = default(fname)
-	
+
 	spatAggFname = 'TimeseriesAttributes_' + cleanFname
 
 	if debuggingMode:
@@ -47,8 +50,8 @@ def process(fname,dataType,TeamAstring,TeamBstring,debuggingMode):
 		print('***** Time elapsed during dissectFilename: %ss' %elapsed)
 	return exportData, exportDataString, exportDataFullExplanation,cleanFname,spatAggFname,TeamAstring,TeamBstring
 
-def FDP(fname):	
-	# Using regular expression to extract info from filename		
+def FDP(fname):
+	# Using regular expression to extract info from filename
 	regex = r'([a-zA-Z]{1})([a-zA-Z]{1})(\d+)_([a-zA-Z]{1})([a-zA-Z]{1})(\d{1})(\d{3})_v_([a-zA-Z]{1})([a-zA-Z]{1})(\d{1})(\d{3})'
 	match = re.search(regex,fname)
 	if match:
@@ -102,17 +105,17 @@ def NP(fname):
 			elif Class in ['1E1', '1E2']:
 				Exp = 'LP'
 			else:
-				warn('\nWARNING: Could not identify experimental gruop: <%s>' %fname)				
+				warn('\nWARNING: Could not identify experimental gruop: <%s>' %fname)
 
 		else:
 			warn('\nWARNING: Could not identify class: <%s>' %fname)
 	elif 'St Pat' in fname:
 		School = 'StPt'
-		
+
 		classStrings = ['1A','1E','12','13']
 		Class = ['X' + i for i in classStrings if i in fname]
 		if Class == [] or len(Class) > 1:
-			warn('\nCould not identify class: <%s>' %fname)				
+			warn('\nCould not identify class: <%s>' %fname)
 		Class = Class[0]
 		if Class in ['X1A', 'X13']:
 			Exp = 'NP'
@@ -123,7 +126,7 @@ def NP(fname):
 
 	else:
 		warn('\nWARNING: Could not identify School: <%s>' %fname)
-	
+
 	# Test
 	if re.search('ret',fname, re.IGNORECASE):
 		Test = 'RET'
