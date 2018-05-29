@@ -34,9 +34,6 @@ def process(studentFolder,folder,aggregateEvent,allWindows_and_Lags,skipToDataSe
 	dataFolder,tmpFigFolder,outputFolder,cleanedFolder,spatAggFolder,eventAggFolder,aggregatedOutputFilename,outputDescriptionFilename,eventAggFname,backupEventAggFname,DirtyDataFiles,aggregateLevel = \
 	checkFolders(folder,aggregateEvent,aggregateWindow,aggregateLag,onlyAnalyzeFilesWithEventData,parallelProcess)
 
-	# WARNING: any edits made to DirtyDataFiles in skipPartsOfPipeline will NOT apply to the back-up
-	DirtyDataFiles_backup = DirtyDataFiles.copy()
-
 	t,skipToDataSetLevel,skipCleanup,skipSpatAgg,skipEventAgg,includeTrialVisualization,DirtyDataFiles,skipComputeEvents =\
 	skipPartsOfPipeline(backupEventAggFname,DirtyDataFiles,skipToDataSetLevel,skipCleanup,skipSpatAgg,skipEventAgg,includeTrialVisualization,eventAggFolder,eventAggFname,skipComputeEvents,cleanedFolder)
 	
@@ -54,6 +51,7 @@ def process(studentFolder,folder,aggregateEvent,allWindows_and_Lags,skipToDataSe
 	# 		print(df.keys())
 	# 		print(df['Unnamed: 0'])
 	# pdb.set_trace()
+	DirtyDataFiles_backup = DirtyDataFiles.copy()
 
 	return dataFolder,tmpFigFolder,outputFolder,cleanedFolder,spatAggFolder,eventAggFolder,aggregatedOutputFilename,outputDescriptionFilename,eventAggFname,backupEventAggFname,DirtyDataFiles,aggregateLevel,t,skipToDataSetLevel,skipCleanup,skipSpatAgg,skipEventAgg,includeTrialVisualization,rawHeaders, attrLabel,skipComputeEvents,DirtyDataFiles_backup
 
@@ -301,8 +299,7 @@ def skipPartsOfPipeline(backupEventAggFname,DirtyDataFiles,skipToDataSetLevel,sk
 					warn('\nWARNING: Dropped MatchID <%s> from eventAggregate backup as it did not exist in DirtyDataFiles.\nNote that it was only dropped from the automatic backup, in the original file the match can still be accessed.\n' %i)
 					### df = df.loc[df['MatchID'] != i]
 					# Memory error with line above, perhaps this works:
-					df = df.drop(df[df['MatchID'] != i].index)
-					
+					df = df.drop(df['MatchID'] != i)
 					storeItAgain = True
 
 			if storeItAgain:
@@ -360,10 +357,10 @@ def skipPartsOfPipeline(backupEventAggFname,DirtyDataFiles,skipToDataSetLevel,sk
 
 	if skipToDataSetLevel: # This allows you to quickly skip the analysis section, if you've already created a backup of a fully analyzed dataset
 		if isfile(backupEventAggFname):
-			warn('\n********\nWARNING: Skipped analyzing the database and jumped straight to DataSet-level comparisons.\nAny raw data, spatial aggregates ARE NOT INCLUDED.\nTo re-analyze the database, change <skipToDataSetLevel> to False.\n')
-
+			warn('\n********\nWARNING: Skipped analyzing the database and jumped straight to DataSet-level comparisons.\nAny new files, spatial aggregates, temporal aggregates, windows, lags etc. ARE NOT INCLUDED.\nTo re-analyze the database, change <skipToDataSetLevel> to False. (and re-analyzing MANUALLY copy a \'BACKUP\'.)\n')
+			warn('\nWARNING: Skipped to datasetLevel without verifying whether matches from current batch were analyzed.')
 			t = (t[0],t[2],t[2])
-			DirtyDataFiles = [] # WARNING: any edits made to DirtyDataFiles in skipPartsOfPipeline will NOT apply to the back-up
+			DirtyDataFiles = []
 		else:
 			skipToDataSetLevel = False
 			warn('\nWARNING: Tried to <skipToDataSetLevel>, but could not find corresponding data backup:\n%s\n\n*********' %backupEventAggFname)

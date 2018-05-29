@@ -14,9 +14,11 @@ debuggingMode = True # whether yo want to print the times that each script took
 # dataType is used for dataset specific parts of the analysis (in the preparation phase only)
 dataType =  "FDP" # "FDP" or or "NP" --> so far, only used to call the right cleanup script. Long term goal would be to have a generic cleanup script
 
-# This folder should contain a folder with 'Data'. The tabular output and figures will be stored in this folder as well.
+# This folder should contain a folder with 'Data'. The tabular output and figure will be stored in this folder as well.
 folder = 'C:\\Users\\rensm\\Documents\\SURFDRIVE\\Repositories\\Sample repository\\'
+# folder = 'C:\\Users\\rensm\\Documents\\SURFDRIVE\\Repositories\\BRAxNLD repository_newStyle\\'
 # folder = '/home/meerhoffla/Repositories/Sample repository/'
+# folder = '/local/rens/Repositories/BRAxNLD repository_newStyle/'
 
 # String representing the different teams
 # NB: not necessary for FDP (and other datasets where teamstring can be read from the filename, should be done in discetFilename.py)
@@ -45,8 +47,8 @@ conversionToMeter = 1 #111111 # https://gis.stackexchange.com/questions/8650/mea
 # 'Regular' works as long as you don't choose a window larger than your file.
 # Other keywords depend on which events you import and/or compute.
 aggregateEvent = 'Turnovers' # Event that will be used to aggregate over (verified for 'Goals' and for 'Possession')
-aggregateWindow = 20 # in seconds #NtmpB: still need to write warning in temporal aggregation in case you have Goals in combination with None.
-aggregateLag = 0 # in seconds
+allWindows_and_Lags = [(30,-5),(25,0),(20,0),(15,0),(10,0),(5,0)] # input tuple of window and corresponding lag. # a negative lag indicates tEnd as after the event
+
 aggregatePerPlayer = [] # a list of outcome variables that you want to aggregated per player. For example: ['vNorm','distFrame']
 
 # Strings need to correspond to outcome variables (dict keys). 
@@ -57,14 +59,18 @@ aggregatePerPlayer = [] # a list of outcome variables that you want to aggregate
 includeTrialVisualization = False
 plotTheseAttributes_atTrialLevel = ['vNorm'] #
 # This datasetVisualization compares all events of all files in the dataset. Useful for datasetlevel comparisons
-includeDatasetVisualization = True
+includeDatasetVisualization = False
 plotTheseAttributes_atDatasetLevel = ['vNorm',('Surface_ref','Surface_oth'),('Spread_ref','Spread_oth')]
 
 # Parts of the pipeline can be skipped
 skipCleanup = True # Only works if cleaned file exists. NB: if False, all other skips become ineffective.
 skipSpatAgg = True # Only works if spat agg export exists. NB: if False, skipEventAgg and skipToDataSetLevel become ineffective.
-skipEventAgg = False # Only works if current file already exists in eventAgg. NB: if False, skipToDataSetLevel becomes ineffective.
-skipToDataSetLevel = False # Only works if corresponding AUTOMATIC BACKUP exists. NB: Does not check if all raw data files are in automatic backup. NB2: does not include any changes in cleanup, spatagg, or eventagg
+skipComputeEvents = True #
+
+# If both True, then files are not verified to be analyzed previously
+# If skipToDataSetLevel == False, then it is verified that every match exists in eventAggregate
+skipEventAgg = True # For now, don't skip unless longest window was computed. # Only works if current file already exists in eventAgg. NB: if False, skipToDataSetLevel becomes ineffective.
+skipToDataSetLevel = True # Only works if corresponding AUTOMATIC BACKUP exists. NB: Does not check if all raw data files are in automatic backup. NB2: does not include any changes in cleanup, spatagg, or eventagg NB2: may not work after implementing iteratoverwindows thingy
 
 # Choose between append (= True) or overwrite (= False) (the first time around only of course) the existing (if any) eventAggregate CSV.
 # NB: This could risk in adding duplicate data. There is no warning for that at the moment (could use code from cleanupData that checks if current file already exist in eventAggregate)
@@ -89,25 +95,33 @@ parallelProcess = (1,1) # (nth process,total n processes) # default = (1,1)
 # INITIALIZATION ########
 #########################
 
-# Gerenal Python modules
-# To do: I'm pretty sure these functions can be loaded automatically using _init_.py
-# To do: convert to Python package?
+# pre-initialization
+from shutil import copyfile	
+import pdb; #pdb.set_trace()
+from os.path import isfile, join, exists, realpath, abspath, split,dirname, isdir#, isdir, exists
+from os import listdir, stat, sep, rename#, path, makedirs
+import inspect
+from warnings import warn
+
+cdir = realpath(abspath(split(inspect.getfile( inspect.currentframe() ))[0]))
+pdir = dirname(cdir) # parent directory
+library_folder = cdir + str(sep + "LibraryRENS")
+
+if not isdir(library_folder):
+	# if the process.py is in a subfolder, then copy the initialization module
+	copyfile(pdir + sep + 'initialization.py', cdir + sep + 'initialization.py')
 
 import initialization
 # In this module, the library is added to the system path. 
 # This allows Python to import the custom modules in our library. 
 # If you add new subfolders in the library, they need to be added in addLibary (in initialization.py) as well.
-dataFolder,tmpFigFolder,outputFolder,cleanedFolder,spatAggFolder,eventAggFolder,aggregatedOutputFilename,outputDescriptionFilename,eventAggFname,backupEventAggFname,DirtyDataFiles,aggregateLevel,t,skipToDataSetLevel,skipCleanup,skipSpatAgg,skipEventAgg,includeTrialVisualization,rawHeaders, attrLabel = \
-initialization.process(studentFolder,folder,aggregateEvent,aggregateWindow,aggregateLag,skipToDataSetLevel,skipCleanup,skipSpatAgg,skipEventAgg,includeTrialVisualization,timestampString,PlayerIDstring,TeamIDstring,XPositionString,YPositionString,readAttributeCols,readAttributeLabels,onlyAnalyzeFilesWithEventData,parallelProcess)
+dataFolder,tmpFigFolder,outputFolder,cleanedFolder,spatAggFolder,eventAggFolder,aggregatedOutputFilename,outputDescriptionFilename,eventAggFname,backupEventAggFname,DirtyDataFiles,aggregateLevel,t,skipToDataSetLevel,skipCleanup,skipSpatAgg,skipEventAgg,includeTrialVisualization,rawHeaders, attrLabel,skipComputeEvents,DirtyDataFiles_backup = \
+initialization.process(studentFolder,folder,aggregateEvent,allWindows_and_Lags,skipToDataSetLevel,skipCleanup,skipSpatAgg,skipEventAgg,includeTrialVisualization,timestampString,PlayerIDstring,TeamIDstring,XPositionString,YPositionString,readAttributeCols,readAttributeLabels,onlyAnalyzeFilesWithEventData,parallelProcess,skipComputeEvents)
 
-import pdb; #pdb.set_trace()
-from os.path import isfile, join, exists#, isdir, exists
-from os import listdir, stat#, path, makedirs
-from warnings import warn
 # Custom modules (from LibrarRENS)
 import datasetVisualization
 import spatialAggregation
-import temporalAggregation
+import temporalAggregation_towardsGeneric
 import importEvents
 import dissectFilename
 import importTimeseries_aspanda
@@ -119,20 +133,22 @@ import estimateRemainingTime
 import trialVisualization
 import computeEvents
 import copy
-from shutil import copyfile
 import importFieldDimensions
 import gc
+import iterateWindowsOverEventAgg
 
 #########################
 # ANALYSIS (file by file)
 #########################
-DirtyDataFiles = ['CROPPED_35_ERE_XIV.csv']
-DirtyDataFiles = ['CROPPED_32_ERE_XIV.csv']
 
 for dirtyFname in DirtyDataFiles:
 	print(	'\nFILE: << %s >>' %dirtyFname[:-4])
 	t = estimateRemainingTime.printProgress(t)
 	gc.collect() # not entirey sure what this does, but it's my attempt to avoid a MemoryError
+	if skipToDataSetLevel:
+		# Skipp immediately without verification
+		warn('\nWARNING: Skipped to datasetLevel without verifying whether matches from current batch were analyzed.')
+		break
 
 	#########################
 	# PREPARATION ###########
@@ -146,16 +162,32 @@ for dirtyFname in DirtyDataFiles:
 	fileIdentifiers = copy.copy(exportData)
 
 	# Clean cleanFname (it only cleans data if there is no existing cleaned file of the current (dirty)file )
-	loadFolder,loadFname,fatalTimeStampIssue,skipSpatAgg_curFile,skipEventAgg_curFile,TeamAstring,TeamBstring = \
-	cleanupData.process(dirtyFname,cleanFname,dataType,dataFolder,cleanedFolder,spatAggFname,spatAggFolder,eventAggFolder,eventAggFname,TeamAstring,TeamBstring,rawHeaders,readAttributeCols,timestampString,readEventColumns,conversionToMeter,skipCleanup,skipSpatAgg,skipEventAgg,exportData, exportDataString,includeCleanupInterpolation,datasetFramerate,debuggingMode)
+	loadFolder,loadFname,fatalTimeStampIssue,skipSpatAgg_curFile,skipEventAgg_curFile,TeamAstring,TeamBstring,skipComputeEvents_curFile = \
+	cleanupData.process(dirtyFname,cleanFname,dataType,dataFolder,cleanedFolder,spatAggFname,spatAggFolder,eventAggFolder,eventAggFname,TeamAstring,TeamBstring,rawHeaders,readAttributeCols,timestampString,readEventColumns,conversionToMeter,skipCleanup,skipSpatAgg,skipEventAgg,exportData, exportDataString,includeCleanupInterpolation,datasetFramerate,debuggingMode,skipComputeEvents,aggregateLevel)
+
+	# perhaps write a separate function that decides to skip the file or not.
+	# In there, you can find an efficient way to process current skips (and automatically force skip to fals if necessary of higher level processes)
 
 	if fatalTimeStampIssue:
-		skippedData = True
-		exportCSV.newOrAdd(aggregatedOutputFilename,exportDataString,exportData,skippedData)	
+
+		if not skipEventAgg:
+			skippedData = True
+			exportCSV.newOrAdd(aggregatedOutputFilename,exportDataString,exportData,skippedData)	
+		else:
+			doNotExport = []
+			# This is the exception. To avoid incorrectly exported data..
+			# Best solution would be to look in cleanedfiles to overrule decision not to skipDataset level
+			# Anyway, whenever skipping to eventAgg, it's not necessary to export fataIssue because it was already exported in the past.
 		continue
-	if skipEventAgg_curFile and not includeTrialVisualization and t[1] != 1:
-		# The first loop has to be run to make sure the attribute labels are exported.
-		# The rest of the loop can be skipped, as there is no action to be taken in the rest of the for loop
+	
+	if skipEventAgg_curFile and not includeTrialVisualization:# and t[1] != t[2]:
+		# if eventAgg exists for currentfile and no trialVizualiation was asked
+		appendEventAggregate = True
+		continue
+
+	elif skipEventAgg == True:
+		# Apparently specifically this file was missing from eventAgg, therefore re-do it, but always as an append
+		appendEventAggregate = True
 		continue
 
 	# From now onward, rawData contains:
@@ -183,7 +215,7 @@ for dirtyFname in DirtyDataFiles:
 	# Or, events can be imported from a separate file (metadata)
 	# Eventually, this separate file should be in a generic format. (using a cleanup module)
 	# This is the second example of using metadata. Probably will end up formalizing this in a 'importMetaData' module.
-	targetEventsImported = importEvents.process(rawPanda,eventsPanda,TeamAstring,TeamBstring,cleanFname,dataFolder,debuggingMode)
+	targetEventsImported = importEvents.process(rawPanda,eventsPanda,TeamAstring,TeamBstring,cleanFname,dataFolder,debuggingMode,skipComputeEvents_curFile)
 	
 	########################################################################################
 	####### Compute new attributes #########################################################
@@ -197,12 +229,12 @@ for dirtyFname in DirtyDataFiles:
 	# (for example, possession contains the starting time and the nubmer of passes made within that possession)
 	# NB2: For attack - events, use the 4th place in the tuple for the label (e.g., 1 = no shot, 2 = shot off target, 3 = shot on target, 4 = goals)
 	targetEvents = \
-	computeEvents.process(targetEventsImported,aggregateLevel,rawPanda,attrPanda,eventsPanda,TeamAstring,TeamBstring,debuggingMode)
+	computeEvents.process(targetEventsImported,aggregateLevel,rawPanda,attrPanda,eventsPanda,TeamAstring,TeamBstring,dataFolder,cleanFname,debuggingMode,skipComputeEvents_curFile)
 
 	## Temporal aggregation
 	exportData,exportDataString,exportFullExplanation,trialEventsSpatAggExcerpt,attrLabel = \
-	temporalAggregation.process(targetEvents,aggregateLevel,rawPanda,attrPanda,exportData,exportDataString,exportDataFullExplanation,TeamAstring,TeamBstring,debuggingMode,skipEventAgg_curFile,fileIdentifiers,attrLabel,aggregatePerPlayer,includeEventInterpolation,datasetFramerate)
-
+	temporalAggregation_towardsGeneric.process(targetEvents,aggregateLevel,rawPanda,attrPanda,exportData,exportDataString,exportDataFullExplanation,TeamAstring,TeamBstring,debuggingMode,skipEventAgg_curFile,fileIdentifiers,attrLabel,aggregatePerPlayer,includeEventInterpolation,datasetFramerate)
+	# pdb.set_trace()
 	########################################################################################
 	####### EXPORT to CSV ##################################################################
 	########################################################################################
@@ -230,17 +262,56 @@ for dirtyFname in DirtyDataFiles:
 
 estimateRemainingTime.printDuration(t)
 
+################################
+# End of file by file analysis #
+################################
+
+########################
+# DataSetLevel - stuff #
+########################
 if not skipToDataSetLevel: # i.e., did the whole file-by-file analysis
 	# Store an automatic back-up if the file-by-file analysis has been completed without skipping the data.
 	copyfile(eventAggFolder + eventAggFname, backupEventAggFname)
+	## If you want to be more memory efficient, then use rename instead of copy.
+	## Make sure you check the consequences for if-statements that check whether the temporal aggregate exists.
+	# os.rename(eventAggFolder + eventAggFname, backupEventAggFname)
+
+if not isfile(backupEventAggFname):
+	warn('\nFATAL WARNING: Could not find backupEventAggFname:\n%s' %backupEventAggFname)
+	exit()
 
 # Load the datasetEventsSpatAggExcerpt
 datasetEventsSpatAggExcerpt = pd.read_csv(backupEventAggFname, low_memory = True, index_col = 'DataSetIndex')
 attrLabel_asPanda = pd.read_csv(outputFolder+'attributeLabel.csv',low_memory=True, index_col = 'Unnamed: 0') # index_col added last. Should work. Otherwise use the next line
 
-################################
-# End of file by file analysis #
-################################
+########### can be embedded in a function?
+# Necessary to double check whether there are only files in the backed up file that were also in DirtyDataFiles
+# Need to make sure that there are only files in here that were in fact requested
+# See also, initialization
+uniqueMatches = datasetEventsSpatAggExcerpt['MatchID'].unique()
+warn('\nWARNING: Currently, Im using something non-generic. It only works if your file has a MatchID column.\nTo make it more generic, I should store the filename of the match as a column and refer to that instead.\n!!!!!!!!!!!!\n!!!!!!!!!!!!!!!!!\n')
+
+for i in uniqueMatches:
+	# Is True when a unique match in eventAggrgate does not exist the dirtyDataFiles
+	# This match should be dropped from the backup
+	doesItExistIn_DDF = [True for j in DirtyDataFiles_backup if str(i) in j]
+	if not any(doesItExistIn_DDF):
+		# drop this uniqueMatch from the eventAggregate automatic backup file
+		warn('\nWARNING: Dropped MatchID <%s> from eventAggregate backup as it did not exist in DirtyDataFiles.\nNote that it was only dropped from the working memory, the stored CSV still has the data.\n' %i)
+		### datasetEventsSpatAggExcerpt = datasetEventsSpatAggExcerpt.loc[datasetEventsSpatAggExcerpt['MatchID'] != i]
+		# Memory error with line above, perhaps this works:
+		datasetEventsSpatAggExcerpt = datasetEventsSpatAggExcerpt.drop(datasetEventsSpatAggExcerpt[datasetEventsSpatAggExcerpt['MatchID'] != i].index)
+########### can be embedded in a function?
+
+# Iterate over the remaining windows
+###iterateWindowsOverEventAgg.process(aggregateLevel,eventAggFolder,aggregateEvent,allWindows_and_Lags,eventAggFname,aggregatePerPlayer,outputFolder,debuggingMode,dataFolder,parallelProcess)
+iterateWindowsOverEventAgg.process(datasetEventsSpatAggExcerpt,attrLabel_asPanda,aggregateLevel,aggregateEvent,allWindows_and_Lags,aggregatePerPlayer,outputFolder,debuggingMode,dataFolder,parallelProcess,eventAggFname)
+
+warn('\nWARNING: Due to implementation iterateWindowsOverEventAgg, plotting procedure might not work correctly.\n')
+
+############################
+# End dataSetLevel - stuff #
+############################
 
 ########################################################################################
 ####### datasetVisualization  ##########################################################

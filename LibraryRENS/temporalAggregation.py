@@ -63,7 +63,7 @@ def process(targetEvents,aggregateLevel,rawDict,attributeDict,exportData,exportD
 	if not all(np.isnan(attributeDict.loc[rawDict['PlayerID'] == 'ball','Speed'])):
 		attributeDict.loc[rawDict['PlayerID'] == 'ball','Speed'] = np.nan
 		warn('\nWARN: Some datasets also give the Speed of the ball.\nTo avoid conflicts, these input values will be overwritten with empty values.\nIf you are in fact interested in Speed of the ball, then create a new feature that refers to the ball specifically (ballSpeed).\n')
-
+	
 	## user inputs, could easily lift this out of function
 	freqInterpolatedData = 10 # in Hz
 

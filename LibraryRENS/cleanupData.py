@@ -23,7 +23,7 @@ import csv
 from warnings import warn
 import numpy as np
 from os.path import isfile, join, isdir, exists
-from os import listdir, path, makedirs
+from os import listdir, path, makedirs, sep
 import re
 import pandas as pd
 import student_XX_cleanUp
@@ -50,7 +50,7 @@ if __name__ == '__main__':
 	NP(dataFiles,cleanFname,folder,cleanedFolder,TeamAstring,TeamBstring)
 
 #########################################################################
-def process(dirtyFname,cleanFname,dataType,dataFolder,cleanedFolder,spatAggFname,spatAggFolder,eventAggFolder,eventAggFname,TeamAstring,TeamBstring,headers,readAttributeCols,timestampString,readEventColumns,conversionToMeter,skipCleanup,skipSpatAgg,skipEventAgg,exportData, exportDataString,includeCleanupInterpolation,datasetFramerate,debuggingMode):
+def process(dirtyFname,cleanFname,dataType,dataFolder,cleanedFolder,spatAggFname,spatAggFolder,eventAggFolder,eventAggFname,TeamAstring,TeamBstring,headers,readAttributeCols,timestampString,readEventColumns,conversionToMeter,skipCleanup,skipSpatAgg,skipEventAgg,exportData, exportDataString,includeCleanupInterpolation,datasetFramerate,debuggingMode,skipComputeEvents,aggregateLevel):
 	tCleanup = time.time()	# do stuff
 
 	headers = headers.copy()
@@ -66,6 +66,17 @@ def process(dirtyFname,cleanFname,dataType,dataFolder,cleanedFolder,spatAggFname
 	spatAggFnames = [f for f in listdir(spatAggFolder) if isfile(join(spatAggFolder, f)) if '.csv' in f]
 	eventAggFnames = [f for f in listdir(eventAggFolder) if isfile(join(eventAggFolder, f)) if '.csv' in f]
 
+	skipComputeEvents_curFile = skipComputeEvents
+	if skipComputeEvents_curFile:
+		targetFolder = dataFolder + sep + 'existingTargets' + sep
+		preComputedTargetFolder = targetFolder + 'preComputed' + sep
+		key = aggregateLevel[0] # at least the key that will be aggregated over must exist
+		targetEventsFname = preComputedTargetFolder + cleanFname[:-12] + '_preComputed_Event_' + key +  '.csv'
+
+		if not isfile(targetEventsFname):
+			warn('\nWARNING: Although skipComputeEvents was requested, no targetEventsFname with name <%s> was found. Therefore, it couldnt be skipped.' %targetEventsFname)
+			skipComputeEvents_curFile = False
+			
 	if spatAggFname in spatAggFnames and skipSpatAgg == True:
 		warn('\nContinued with previously cleaned and spatially aggregated data.\nIf you want to add new spatial aggregates, change <skipSpatAgg> into <False>.\n')
 		# Spat agg files don't exist if there was a fatal error, so:
@@ -82,9 +93,15 @@ def process(dirtyFname,cleanFname,dataType,dataFolder,cleanedFolder,spatAggFname
 				# testCount = testCount + 1
 
 				try:
-					if not any(df[exportDataString[i]] == exportData[i]):
-						skipEventAgg = False
-						break
+
+					if not df[exportDataString[i]].dtype == str:
+						if not any(df[exportDataString[i]].astype(str) == exportData[i]):
+							skipEventAgg = False
+							break
+					else:	
+						if not any(df[exportDataString[i]] == exportData[i]):
+							skipEventAgg = False
+							break
 				except: # this error occurred a couple of times. Not sure why... something with an invalid comparison, so presumably one of the inputs wasnt a string??
 					print('DataFrame type:')
 					print(type(df[exportDataString[i]]))
@@ -95,6 +112,12 @@ def process(dirtyFname,cleanFname,dataType,dataFolder,cleanedFolder,spatAggFname
 					print(type(exportData[i]))
 					print('\nFile identifiers contents:')
 					print(exportData[i])
+					
+					print('Df identifiers type:')
+					print(type(exportDataString[i]))
+					print('\nDf identifiers contents:')
+					print(exportDataString[i])
+					pdb.set_trace()
 					print('\nNB: In the past, this problem was related to the string input resembling a float input.\nFor example, <1E3>, which (with low_memory = True) is read as a float (1,000).\n')
 					if not exportData[i] in exportDataString[i]:
 						skipEventAgg = False
@@ -109,7 +132,7 @@ def process(dirtyFname,cleanFname,dataType,dataFolder,cleanedFolder,spatAggFname
 		if debuggingMode:
 			elapsed = str(round(time.time() - tCleanup, 2))
 			print('***** Time elapsed during cleanupData: %ss' %elapsed)
-		return loadFolder,loadFname,fatalIssue,skipSpatAgg,skipEventAgg,TeamAstring,TeamBstring
+		return loadFolder,loadFname,fatalIssue,skipSpatAgg,skipEventAgg,TeamAstring,TeamBstring,skipComputeEvents_curFile
 
 	skipEventAgg = False
 	skipSpatAgg = False # over-rule skipSpatAgg as the corresponding spatAgg output file could not be found
@@ -135,7 +158,7 @@ def process(dirtyFname,cleanFname,dataType,dataFolder,cleanedFolder,spatAggFname
 		if debuggingMode:
 			elapsed = str(round(time.time() - tCleanup, 2))
 			print('***** Time elapsed during cleanupData: %ss' %elapsed)
-		return loadFolder,loadFname,fatalIssue,skipSpatAgg,skipEventAgg,TeamAstring,TeamBstring#, readAttributeCols#, attrLabel
+		return loadFolder,loadFname,fatalIssue,skipSpatAgg,skipEventAgg,TeamAstring,TeamBstring,skipComputeEvents_curFile#, readAttributeCols#, attrLabel
 	else: # create a new clean Fname
 		print('\nCleaning up file...')
 
@@ -156,7 +179,7 @@ def process(dirtyFname,cleanFname,dataType,dataFolder,cleanedFolder,spatAggFname
 			if debuggingMode:
 				elapsed = str(round(time.time() - tCleanup, 2))
 				print('***** Time elapsed during cleanupData: %ss' %elapsed)
-			return loadFolder,loadFname,fatalIssue,skipSpatAgg,skipEventAgg
+			return loadFolder,loadFname,fatalIssue,skipSpatAgg,skipEventAgg,skipComputeEvents_curFile
 
 		## Genereic clean up function (for all datasets)
 		# First: Rename columns to be standardized.
@@ -245,7 +268,7 @@ def process(dirtyFname,cleanFname,dataType,dataFolder,cleanedFolder,spatAggFname
 		elapsed = str(round(time.time() - tCleanup, 2))
 		print('***** Time elapsed during cleanupData: %ss' %elapsed)
 
-	return loadFolder,loadFname,fatalIssue,skipSpatAgg,skipEventAgg,TeamAstring,TeamBstring #, readAttributeCols#, attrLabel
+	return loadFolder,loadFname,fatalIssue,skipSpatAgg,skipEventAgg,TeamAstring,TeamBstring,skipComputeEvents_curFile #, readAttributeCols#, attrLabel
 
 def FDP(fname,cleanFname,dataFolder,cleanedFolder,headers,readAttributeCols,debugOmittedRows,readEventColumns,TeamAstring,TeamBstring):
 	expectedVals = (-60,60,-40,40) # This should probably be dataset specific.

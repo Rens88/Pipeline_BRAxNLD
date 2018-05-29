@@ -3,8 +3,8 @@
 import csv
 import pdb; #pdb.set_trace()
 import numpy as np
-from os.path import isfile, join, isdir
-from os import listdir, path
+from os.path import isfile, join, isdir, exists
+from os import listdir, path, makedirs, sep, walk
 from warnings import warn
 import math
 import random
@@ -24,8 +24,44 @@ if __name__ == '__main__':
 	#####################################################################################
 	#####################################################################################
 
-def process(targetEvents,aggregateLevel,rawPanda,attrPanda,eventsPanda,TeamAstring,TeamBstring,debuggingMode):
+def process(targetEvents,aggregateLevel,rawPanda,attrPanda,eventsPanda,TeamAstring,TeamBstring,dataFolder,cleanFname,debuggingMode,skipComputeEvents_curFile):
 	tComputeEvents = time.time()
+
+	if skipComputeEvents_curFile:
+		# Load previously computed target events
+		targetFolder = dataFolder + sep + 'existingTargets' + sep
+		preComputedTargetFolder = targetFolder + 'preComputed' + sep
+		
+		# find a way to iterate over all keys.
+		files = listdir(preComputedTargetFolder)
+		curFiles = [f[:-4] for f in files if cleanFname[:-12] + '_preComputed_Event_' in f]
+		curKeys = [cf.split('_')[-1] for cf in curFiles]
+
+		for key in curKeys:
+			targetEventsFname = preComputedTargetFolder + cleanFname[:-12] + '_preComputed_Event_' + key +  '.csv'
+			targetEvents.update({key:[]})
+			df_targetEvents = pd.read_csv(targetEventsFname)
+			for idx in df_targetEvents.index:
+				curList = [df_targetEvents.loc[idx,key] for key in df_targetEvents.keys()]
+
+				if key == 'Turnovers':
+					# tuple was stored as string, convert it to tuple again.
+					tmp = curList[6].split(', ')
+					tmp0 = tmp[0].replace('(','')
+					tmp1 = tmp[1].replace(')','')
+
+					curList[6] = (float(tmp0),float(tmp1))
+
+				curList[-1] = bool(curList[-1])
+				curList = curList[1:] # drop the index
+				curTuple = tuple(curList)
+				targetEvents[key].append(curTuple)
+
+		if debuggingMode:
+			elapsed = str(round(time.time() - tComputeEvents, 2))
+			print('***** Time elapsed during computeEvents: %ss' %elapsed)
+		
+		return targetEvents
 
 	# For demonstration purposes, generate some random events
 	if aggregateLevel[0].lower() == 'random':
@@ -49,7 +85,7 @@ def process(targetEvents,aggregateLevel,rawPanda,attrPanda,eventsPanda,TeamAstri
 				elif refTeam == TeamBstring:
 					othTeam = TeamAstring
 				else:
-					warn('\nFATAL WARNING: Could not deterine othTeam in Turnovers events...\nrefTeam = <%s>\nTeamAstring = <%s>\nTeamBstring = <%s>\n' %(refTeam,TeamAstring,TeamBstring))
+					warn('\nFATAL WARNING: Could not determine othTeam in Turnovers events...\nrefTeam = <%s>\nTeamAstring = <%s>\nTeamBstring = <%s>\n' %(refTeam,TeamAstring,TeamBstring))
 					pdb.set_trace()
 
 				curX = val[5][0]
@@ -83,12 +119,28 @@ def process(targetEvents,aggregateLevel,rawPanda,attrPanda,eventsPanda,TeamAstri
 	targetEvents = \
 	student_XX_computeEvents.process(targetEvents,aggregateLevel,rawPanda,attrPanda,eventsPanda,TeamAstring,TeamBstring)
 
-	# Deal with overlapping targets
-	# by default, the last value added to the tuple informs about whether there was any overlap with the previous event.
-	excludeOverlappingEvents= True
-	methodOverlap = 'include' # or 'limitWindow' or 'exclude'
-	targetEvents = overlappingTargets(targetEvents,aggregateLevel,excludeOverlappingEvents,methodOverlap)
 
+	# export it
+	targetFolder = dataFolder + sep + 'existingTargets' + sep
+	if not exists(targetFolder):
+		warn('\nFATAL WARNING: folder <existingTargets> in dataFolder <%s> NOT found.\nShould have been created in initialization.py\n' %dataFolder)
+
+	preComputedTargetFolder = targetFolder + 'preComputed' + sep
+	
+
+	# Deal with overlapping targets
+	# by default, the last value added to the tuple informs about whether there was any overlap with the previous event. The second to last about the time difference between events
+	# & export it 
+	for key in targetEvents.keys():
+		# Deal with overlap
+		excludeOverlappingEvents= True
+		methodOverlap = 'include' # or 'limitWindow' or 'exclude'
+		targetEvents = overlappingTargets(targetEvents,key,aggregateLevel,excludeOverlappingEvents,methodOverlap)
+		
+		# Export it
+		targetEventsFname = preComputedTargetFolder + cleanFname[:-12] + '_preComputed_Event_' + key +  '.csv'
+		tmp = pd.DataFrame.from_dict(targetEvents[key])
+		tmp.to_csv(targetEventsFname) # filename only needs match	
 	
 	if debuggingMode:
 		elapsed = str(round(time.time() - tComputeEvents, 2))
@@ -99,16 +151,16 @@ def process(targetEvents,aggregateLevel,rawPanda,attrPanda,eventsPanda,TeamAstri
 ############################################################
 ############################################################
 
-def overlappingTargets(targetEvents,aggregateLevel,excludeOverlappingEvents,methodOverlap):
+def overlappingTargets(targetEvents,key,aggregateLevel,excludeOverlappingEvents,methodOverlap):
 
 	availableWindow = []
-	nOriginal = len(targetEvents[aggregateLevel[0]])
+	nOriginal = len(targetEvents[key])
 
-	targetEvents_new = {aggregateLevel[0]:[]}
-	# for idx,currentEvent in enumerate(targetEvents[aggregateLevel[0]]):
+	targetEvents_new = {key:[]}
+	# for idx,currentEvent in enumerate(targetEvents[key]):
 	for idx in np.arange(0,nOriginal):
-		currentEvent = targetEvents[aggregateLevel[0]][idx]
-		targetEvents_new[aggregateLevel[0]].append(currentEvent)
+		currentEvent = targetEvents[key][idx]
+		targetEvents_new[key].append(currentEvent)
 		if currentEvent[0] == None:
 			try:
 				warn('\nWARNING: Event had no time of occurrence. Therefore, it was skipped.\nThese are the event contents:\ntime of event = %s\nRefTeam of event = %s\nend of event = %s' %currentEvent)
@@ -127,23 +179,27 @@ def overlappingTargets(targetEvents,aggregateLevel,excludeOverlappingEvents,meth
 			tEnd = currentEvent[0]# - aggregateLevel[2]
 			tStart = currentEvent[2]# - aggregateLevel[1]			
 
-		targetEvents_new[aggregateLevel[0]][-1] = currentEvent + (False,)
+
+		dtPrev = tEnd # by default, dtPrev is as big as the window (only relevant for the first event)
+		targetEvents_new[key][-1] = currentEvent + (dtPrev,False,)
 
 		if idx != 0:
 
 			# # store the time in-between events that can help determine the maximum window size you may want to choose
-			availableWindow.append(tEnd - tEnd_prevEvent)
+			dtPrev = tEnd - tEnd_prevEvent
+			targetEvents_new[key][-1] = currentEvent + (dtPrev,False,)
+			availableWindow.append(dtPrev)
 
 
 			if tEnd_prevEvent > tStart:
-				targetEvents_new[aggregateLevel[0]][-1] = currentEvent + (True,)
-				currentEvent = targetEvents_new[aggregateLevel[0]][-1]
+				targetEvents_new[key][-1] = currentEvent + (dtPrev,True,)
+				currentEvent = targetEvents_new[key][-1]
 
 				if excludeOverlappingEvents:					
 					if methodOverlap == 'exclude':
 						# simply exclude
 
-						targetEvents_new[aggregateLevel[0]].remove(currentEvent)
+						targetEvents_new[key].remove(currentEvent)
 
 					elif methodOverlap == 'limitWindow':
 						# or limit the window size 
@@ -156,13 +212,13 @@ def overlappingTargets(targetEvents,aggregateLevel,excludeOverlappingEvents,meth
 						warn('\nWARNING: Only <exclude> or <limitWindow> are valid inputs for <methodOverlap> when excluding events in temporalAggregation.\nBy default, overlapping events are skipped.\n')
 			# else:
 			# 	print('hi')
-			# 	targetEvents_new[aggregateLevel[0]][-1] = currentEvent + (False,)
+			# 	targetEvents_new[key][-1] = currentEvent + (False,)
 		tEnd_prevEvent = tEnd
 
-	targetEvents[aggregateLevel[0]] = targetEvents_new[aggregateLevel[0]]
+	targetEvents[key] = targetEvents_new[key]
 
-	if nOriginal != len(targetEvents[aggregateLevel[0]]):
-		nRemoved = nOriginal - len(targetEvents[aggregateLevel[0]])
+	if nOriginal != len(targetEvents[key]):
+		nRemoved = nOriginal - len(targetEvents[key])
 		warn('\nWARNING: <%s> out of <%s> targetEvents were removed because the window would have overlapped the previous event.\nConsider choosing a window based on the availableWindows:\n%s' %(nRemoved,nOriginal,availableWindow))
 
 	return targetEvents

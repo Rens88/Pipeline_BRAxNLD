@@ -47,10 +47,16 @@ if __name__ == '__main__':
 	# 3 --> START time of the possession
 
 
-def process(rawPanda,eventsPanda,TeamAstring,TeamBstring,cleanFname,dataFolder,debuggingMode):
+def process(rawPanda,eventsPanda,TeamAstring,TeamBstring,cleanFname,dataFolder,debuggingMode,skipComputeEvents_curFile):
 	tImportEvents = time.time()
-	
 	targetEvents = {}
+
+	if skipComputeEvents_curFile:
+		if debuggingMode:
+			elapsed = str(round(time.time() - tImportEvents, 2))
+			print('***** Time elapsed during importEvents: %ss' %elapsed)
+
+		return targetEvents
 	########################################################################################
 	####### Import existing events ######################################################
 	########################################################################################
