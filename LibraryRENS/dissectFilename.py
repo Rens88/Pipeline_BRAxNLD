@@ -9,11 +9,17 @@ import csv
 from warnings import warn
 import numpy as np
 from os.path import isfile, join, isdir, exists
-from os import listdir, path, makedirs
+from os import listdir, path, makedirs, sep
 import re
 import pandas as pd
+<<<<<<< HEAD
 import student_LT_dissectFilename
 import time
+=======
+import student_XX_dissectFilename
+import time
+
+>>>>>>> origin/NP_continued
 
 if __name__ == '__main__':
 
@@ -34,14 +40,21 @@ def process(fname,dataType,TeamAstring,TeamBstring,debuggingMode):
 
 	elif dataType == "FDP":
 		exportData, exportDataString, exportDataFullExplanation,cleanFname,TeamAstring,TeamBstring = FDP(fname)
+<<<<<<< HEAD
 	elif dataType == "KNVB":
 		exportData, exportDataString, exportDataFullExplanation,cleanFname,TeamAstring,TeamBstring = \
 		student_LT_dissectFilename.process(fname,dataType,TeamAstring,TeamBstring)
 		# exportData, exportDataString, exportDataFullExplanation,cleanFname = default(fname)
+=======
+
+>>>>>>> origin/NP_continued
 	else:
 		exportData, exportDataString, exportDataFullExplanation,cleanFname = \
 		student_LT_dissectFilename.process(fname,dataType,TeamAstring,TeamBstring)
 		# exportData, exportDataString, exportDataFullExplanation,cleanFname = default(fname)
+	
+	# if the raw data was organized in subfolders, this is the way to omit the last subfolders
+	cleanFname = cleanFname.split(sep)[-1]
 
 	spatAggFname = 'TimeseriesAttributes_' + cleanFname
 
@@ -50,8 +63,16 @@ def process(fname,dataType,TeamAstring,TeamBstring,debuggingMode):
 		print('***** Time elapsed during dissectFilename: %ss' %elapsed)
 	return exportData, exportDataString, exportDataFullExplanation,cleanFname,spatAggFname,TeamAstring,TeamBstring
 
+<<<<<<< HEAD
 def FDP(fname):
 	# Using regular expression to extract info from filename
+=======
+def FDP(fname):	
+
+	cleanFname = fname[:-4] + '_cleaned.csv'
+
+	# Using regular expression to extract info from filename		
+>>>>>>> origin/NP_continued
 	regex = r'([a-zA-Z]{1})([a-zA-Z]{1})(\d+)_([a-zA-Z]{1})([a-zA-Z]{1})(\d{1})(\d{3})_v_([a-zA-Z]{1})([a-zA-Z]{1})(\d{1})(\d{3})'
 	match = re.search(regex,fname)
 	if match:
@@ -80,18 +101,34 @@ def FDP(fname):
 		'The age group of the home team.','The unique identifier of the home team.','The continent of the away team.','The country of the away team.', \
 		'The age group of the home away.','The unique identifier of the away team.']
 	else:
-		exportData, exportDataString, exportDataFullExplanation = default(fname)
+		coding_newStyle = fname.split('_')
+		if coding_newStyle[0] == 'CROPPED':
+			coding_newStyle = coding_newStyle[1:]
 
-	cleanFname = fname[:-4] + '_cleaned.csv'
+		if len(coding_newStyle) == 3:
+			MatchID = coding_newStyle[0]
+			Competition = coding_newStyle[1]
+			Season = coding_newStyle[2][:-4]
+
+			exportData = [MatchID, Competition, Season]
+			exportDataString = ['MatchID','Competition','Season']
+			exportDataFullExplanation = ['Unique identifier of the match.','Type of competition (ERE / EL / NLCUP)','Season (roman numerals).']
+
+		else:
+			# If none of these match, then just go for the default option where the filename is used as the match identifier.
+			exportData, exportDataString, exportDataFullExplanation = default(fname)
+
+		TeamAstring = None
+		TeamBstring = None
 	return exportData, exportDataString, exportDataFullExplanation,cleanFname,TeamAstring,TeamBstring
 
 def default(fname):
 	exportData = [fname]
-	exportDataString = 'filename'
+	exportDataString = ['filename']
 	exportDataFullExplanation = ['This is simply the complete filename.']
 	warn('\nWARNING: Could not identify match characteristics based on filename <%s>.\nInstead, filename itself was exported as match characteristic.' %fname)
 
-	return exportData, exportDataString, exportDataFullExplanation,fname
+	return exportData, exportDataString, exportDataFullExplanation
 
 def NP(fname):
 	# Trial parameters:
@@ -105,7 +142,11 @@ def NP(fname):
 			elif Class in ['1E1', '1E2']:
 				Exp = 'LP'
 			else:
+<<<<<<< HEAD
 				warn('\nWARNING: Could not identify experimental gruop: <%s>' %fname)
+=======
+				warn('\nWARNING: Could not identify experimental gruop: <%s>' %fname)				
+>>>>>>> origin/NP_continued
 
 		else:
 			warn('\nWARNING: Could not identify class: <%s>' %fname)
@@ -126,7 +167,11 @@ def NP(fname):
 
 	else:
 		warn('\nWARNING: Could not identify School: <%s>' %fname)
+<<<<<<< HEAD
 
+=======
+	
+>>>>>>> origin/NP_continued
 	# Test
 	if re.search('ret',fname, re.IGNORECASE):
 		Test = 'RET'

@@ -23,14 +23,17 @@ import csv
 from warnings import warn
 import numpy as np
 from os.path import isfile, join, isdir, exists
-from os import listdir, path, makedirs
+from os import listdir, path, makedirs, sep
 import re
 import pandas as pd
 import student_LT_cleanUp
 import time
 import FillGaps_and_Filter
 import math
+<<<<<<< HEAD
 import matplotlib.pyplot as plt
+=======
+>>>>>>> origin/NP_continued
 
 if __name__ == '__main__':
 
@@ -51,7 +54,11 @@ if __name__ == '__main__':
 	NP(dataFiles,cleanFname,folder,cleanedFolder,TeamAstring,TeamBstring)
 
 #########################################################################
+<<<<<<< HEAD
 def process(dirtyFname,cleanFname,dataType,dataFolder,cleanedFolder,spatAggFname,spatAggFolder,eventAggFolder,eventAggFname,TeamAstring,TeamBstring,headers,readAttributeCols,timestampString,readEventColumns,conversionToMeter,skipCleanup,skipSpatAgg,skipEventAgg,exportData, exportDataString,includeCleanupInterpolation,datasetFramerate,debuggingMode):
+=======
+def process(dirtyFname,cleanFname,dataType,dataFolder,cleanedFolder,spatAggFname,spatAggFolder,eventAggFolder,eventAggFname,TeamAstring,TeamBstring,headers,readAttributeCols,timestampString,readEventColumns,conversionToMeter,skipCleanup,skipSpatAgg,skipEventAgg,exportData, exportDataString,includeCleanupInterpolation,datasetFramerate,debuggingMode,skipComputeEvents,aggregateLevel):
+>>>>>>> origin/NP_continued
 	tCleanup = time.time()	# do stuff
 
 	headers = headers.copy()
@@ -67,6 +74,20 @@ def process(dirtyFname,cleanFname,dataType,dataFolder,cleanedFolder,spatAggFname
 	spatAggFnames = [f for f in listdir(spatAggFolder) if isfile(join(spatAggFolder, f)) if '.csv' in f]
 	eventAggFnames = [f for f in listdir(eventAggFolder) if isfile(join(eventAggFolder, f)) if '.csv' in f]
 
+<<<<<<< HEAD
+=======
+	skipComputeEvents_curFile = skipComputeEvents
+	if skipComputeEvents_curFile:
+		targetFolder = dataFolder + sep + 'existingTargets' + sep
+		preComputedTargetFolder = targetFolder + 'preComputed' + sep
+		key = aggregateLevel[0] # at least the key that will be aggregated over must exist
+		targetEventsFname = preComputedTargetFolder + cleanFname[:-12] + '_preComputed_Event_' + key +  '.csv'
+
+		if not isfile(targetEventsFname):
+			warn('\nWARNING: Although skipComputeEvents was requested, no targetEventsFname with name <%s> was found. Therefore, it couldnt be skipped.' %targetEventsFname)
+			skipComputeEvents_curFile = False
+			
+>>>>>>> origin/NP_continued
 	if spatAggFname in spatAggFnames and skipSpatAgg == True:
 		warn('\nContinued with previously cleaned and spatially aggregated data.\nIf you want to add new spatial aggregates, change <skipSpatAgg> into <False>.\n')
 		# Spat agg files don't exist if there was a fatal error, so:
@@ -83,9 +104,21 @@ def process(dirtyFname,cleanFname,dataType,dataFolder,cleanedFolder,spatAggFname
 				# testCount = testCount + 1
 
 				try:
+<<<<<<< HEAD
 					if not any(df[exportDataString[i]] == exportData[i]):
 						skipEventAgg = False
 						break
+=======
+
+					if not df[exportDataString[i]].dtype == str:
+						if not any(df[exportDataString[i]].astype(str) == exportData[i]):
+							skipEventAgg = False
+							break
+					else:	
+						if not any(df[exportDataString[i]] == exportData[i]):
+							skipEventAgg = False
+							break
+>>>>>>> origin/NP_continued
 				except: # this error occurred a couple of times. Not sure why... something with an invalid comparison, so presumably one of the inputs wasnt a string??
 					print('DataFrame type:')
 					print(type(df[exportDataString[i]]))
@@ -96,6 +129,15 @@ def process(dirtyFname,cleanFname,dataType,dataFolder,cleanedFolder,spatAggFname
 					print(type(exportData[i]))
 					print('\nFile identifiers contents:')
 					print(exportData[i])
+<<<<<<< HEAD
+=======
+					
+					print('Df identifiers type:')
+					print(type(exportDataString[i]))
+					print('\nDf identifiers contents:')
+					print(exportDataString[i])
+					pdb.set_trace()
+>>>>>>> origin/NP_continued
 					print('\nNB: In the past, this problem was related to the string input resembling a float input.\nFor example, <1E3>, which (with low_memory = True) is read as a float (1,000).\n')
 					if not exportData[i] in exportDataString[i]:
 						skipEventAgg = False
@@ -110,7 +152,11 @@ def process(dirtyFname,cleanFname,dataType,dataFolder,cleanedFolder,spatAggFname
 		if debuggingMode:
 			elapsed = str(round(time.time() - tCleanup, 2))
 			print('***** Time elapsed during cleanupData: %ss' %elapsed)
+<<<<<<< HEAD
 		return loadFolder,loadFname,fatalIssue,skipSpatAgg,skipEventAgg,TeamAstring,TeamBstring
+=======
+		return loadFolder,loadFname,fatalIssue,skipSpatAgg,skipEventAgg,TeamAstring,TeamBstring,skipComputeEvents_curFile
+>>>>>>> origin/NP_continued
 
 	skipEventAgg = False
 	skipSpatAgg = False # over-rule skipSpatAgg as the corresponding spatAgg output file could not be found
@@ -136,7 +182,11 @@ def process(dirtyFname,cleanFname,dataType,dataFolder,cleanedFolder,spatAggFname
 		if debuggingMode:
 			elapsed = str(round(time.time() - tCleanup, 2))
 			print('***** Time elapsed during cleanupData: %ss' %elapsed)
+<<<<<<< HEAD
 		return loadFolder,loadFname,fatalIssue,skipSpatAgg,skipEventAgg,TeamAstring,TeamBstring#, readAttributeCols#, attrLabel
+=======
+		return loadFolder,loadFname,fatalIssue,skipSpatAgg,skipEventAgg,TeamAstring,TeamBstring,skipComputeEvents_curFile#, readAttributeCols#, attrLabel
+>>>>>>> origin/NP_continued
 	else: # create a new clean Fname
 		print('\nCleaning up file...')
 
@@ -148,9 +198,12 @@ def process(dirtyFname,cleanFname,dataType,dataFolder,cleanedFolder,spatAggFname
 		elif dataType == "FDP":
 			df_cleaned,df_omitted,fatalTeamIDissue,TeamAstring,TeamBstring = FDP(dirtyFname,cleanFname,dataFolder,cleanedFolder,headers,readAttributeCols,debugOmittedRows,readEventColumns,TeamAstring,TeamBstring)
 			# return 1,2,3,4,5
+<<<<<<< HEAD
 		elif dataType == "KNVB":#LT: added!
 			df_cleaned,df_omitted,fatalTeamIDissue = \
 			student_LT_cleanUp.process(dirtyFname,cleanFname,dataFolder,cleanedFolder,headers,readAttributeCols,debugOmittedRows,readEventColumns,TeamAstring,TeamBstring)
+=======
+>>>>>>> origin/NP_continued
 		else:
 			# overwrite cleanedFolder and add a warning that no cleanup had taken place
 			loadFolder = dataFolder
@@ -160,7 +213,11 @@ def process(dirtyFname,cleanFname,dataType,dataFolder,cleanedFolder,spatAggFname
 			if debuggingMode:
 				elapsed = str(round(time.time() - tCleanup, 2))
 				print('***** Time elapsed during cleanupData: %ss' %elapsed)
+<<<<<<< HEAD
 			return loadFolder,loadFname,fatalIssue,skipSpatAgg,skipEventAgg
+=======
+			return loadFolder,loadFname,fatalIssue,skipSpatAgg,skipEventAgg,skipComputeEvents_curFile
+>>>>>>> origin/NP_continued
 
 		## Genereic clean up function (for all datasets)
 		# First: Rename columns to be standardized.
@@ -211,6 +268,7 @@ def process(dirtyFname,cleanFname,dataType,dataFolder,cleanedFolder,spatAggFname
 		else:
 			# print(len(df_cleaned.loc[df_cleaned['PlayerID'] == 'groupRow','Ts'].unique()))
 			if includeCleanupInterpolation:
+<<<<<<< HEAD
 				# tmp = df_cleaned.loc[df_cleaned['TeamID'] == TeamAstring]#.index
 				# rowswithinrangePlayerA = tmp.index
 				# X1 = df_cleaned.loc[rowswithinrangePlayerA].pivot(columns='PlayerID',values='Ts')
@@ -225,18 +283,29 @@ def process(dirtyFname,cleanFname,dataType,dataFolder,cleanedFolder,spatAggFname
 				# pdb.set_trace()
 				#LT: deleted, because of negative Speed
 				# df_cleaned,fatalGroupRowIssueAfterFiltering = FillGaps_and_Filter.process(df_cleaned,datasetFramerate = datasetFramerate)
+=======
+				df_cleaned,fatalGroupRowIssueAfterFiltering = FillGaps_and_Filter.process(df_cleaned,datasetFramerate = datasetFramerate)
+>>>>>>> origin/NP_continued
 				if 'fatalIssue' in df_cleaned:
 					df_cleaned.to_csv(cleanedFolder + cleanFname)
 					fatalIssue = True
 
 			# print(len(df_cleaned.loc[df_cleaned['PlayerID'] == 'groupRow','Ts'].unique()))
 			# pdb.set_trace()
+<<<<<<< HEAD
 			#LT: deleted, because of negative Speed --> nog fillgaps and filter
 			# if fatalGroupRowIssueAfterFiltering:
 			# 	df_Fatal = pd.DataFrame(['fatalGroupRowIssueAfterFiltering'],columns=['fatalIssue'])
 			# 	df_Fatal.to_csv(cleanedFolder + cleanFname)
 			# 	fatalIssue = True
 			# 	warn('\nFATAL CLEANUP ISSUE: This one is doubly weird, as there was no issue with the grouprows before FillGaps_and_Filter.py..\nThis really should not be possible.\nIf it happens, check out the bit in FillGaps_and_Filter where it calls upon verifyGroupRows again.\nFatal cleanup issue result in the current file being skipped in its entirety\n')
+=======
+			if fatalGroupRowIssueAfterFiltering:
+				df_Fatal = pd.DataFrame(['fatalGroupRowIssueAfterFiltering'],columns=['fatalIssue'])
+				df_Fatal.to_csv(cleanedFolder + cleanFname)
+				fatalIssue = True
+				warn('\nFATAL CLEANUP ISSUE: This one is doubly weird, as there was no issue with the grouprows before FillGaps_and_Filter.py..\nThis really should not be possible.\nIf it happens, check out the bit in FillGaps_and_Filter where it calls upon verifyGroupRows again.\nFatal cleanup issue result in the current file being skipped in its entirety\n')
+>>>>>>> origin/NP_continued
 			if not fatalIssue:
 				df_cleaned.to_csv(cleanedFolder + cleanFname)
 	
@@ -263,7 +332,11 @@ def process(dirtyFname,cleanFname,dataType,dataFolder,cleanedFolder,spatAggFname
 		elapsed = str(round(time.time() - tCleanup, 2))
 		print('***** Time elapsed during cleanupData: %ss' %elapsed)
 
+<<<<<<< HEAD
 	return loadFolder,loadFname,fatalIssue,skipSpatAgg,skipEventAgg,TeamAstring,TeamBstring #, readAttributeCols#, attrLabel
+=======
+	return loadFolder,loadFname,fatalIssue,skipSpatAgg,skipEventAgg,TeamAstring,TeamBstring,skipComputeEvents_curFile #, readAttributeCols#, attrLabel
+>>>>>>> origin/NP_continued
 
 def FDP(fname,cleanFname,dataFolder,cleanedFolder,headers,readAttributeCols,debugOmittedRows,readEventColumns,TeamAstring,TeamBstring):
 	expectedVals = (-60,60,-40,40) # This should probably be dataset specific.

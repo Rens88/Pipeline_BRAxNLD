@@ -583,6 +583,10 @@ def findJumps_Fixed_X_int(curTs,dataDrivenThreshold,frameRateForInterpolation,fi
 		
 		""""
 		s = interp1d(curTs, curY)		
+<<<<<<< HEAD
+=======
+
+>>>>>>> origin/NP_continued
 		try:
 			Y_int = s(X_int_cropped)				
 		except:
@@ -961,4 +965,8 @@ def savitzky_golay(y, window_size, order, deriv=0, rate=1):
     firstvals = y[0] - np.abs( y[1:half_window+1][::-1] - y[0] )
     lastvals = y[-1] + np.abs(y[-half_window-1:-1][::-1] - y[-1])
     y = np.concatenate((firstvals, y, lastvals))
+<<<<<<< HEAD
     return np.convolve( m[::-1], y, mode='valid')
+=======
+    return np.convolve( m[::-1], y, mode='valid')
+>>>>>>> origin/NP_continued

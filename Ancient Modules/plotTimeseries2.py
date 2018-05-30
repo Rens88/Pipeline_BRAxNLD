@@ -1,5 +1,5 @@
 # 09-02-2018 Rens Meerhoff
-# In process. Continue with PairwisePerTeam2()
+# In process. Continue with PairwisePerTeam2() 
 # --> which will be edited to automatically identify whether a variable is a team or individual variable.
 #
 # 30-11-2017 Rens Meerhoff
@@ -20,7 +20,7 @@ import time
 import math
 import pandas as pd
 
-if __name__ == '__main__':
+if __name__ == '__main__':		
 
 	# 09-02-2018 Rens Meerhoff
 	# The plot new style
@@ -29,22 +29,22 @@ if __name__ == '__main__':
 def process(plotTheseAttributes,aggregateLevel,targetEvents,rawDict,attributeDict,attributeLabel,tmpFigFolder,fname,TeamAstring,TeamBstring,debuggingMode):
 	# Idea: add overview of positions on the court
 	tPlot = time.time()	# do stuff
-
+	
 	xLabel = attributeLabel['Ts']
-
+	
 	# Put TeamID and PlayerID in attributeDict for pivoting
 	if 'PlayerID' not in attributeDict.keys():
 		attributeDict = pd.concat([attributeDict, rawDict['PlayerID']], axis = 1) # Skip the duplicate 'Ts' columns
 	if 'TeamID' not in attributeDict.keys():
-		attributeDict = pd.concat([attributeDict, rawDict['TeamID']], axis = 1) # Skip the duplicate 'Ts' columns
+		attributeDict = pd.concat([attributeDict, rawDict['TeamID']], axis = 1) # Skip the duplicate 'Ts' columns		
 	# attributeDict.drop('Ts', axis = 1, inplace = True)
-
+	
 	for idx,currentEvent in enumerate(targetEvents[aggregateLevel[0]]):
 		# Find rows
 		# Idea: Similar to tempAgg. Maybe write a generic module?
 		fileAggregateID,rowswithinrangeTeam,rowswithinrangeBall,rowswithinrangePlayer,rowswithinrangePlayerA,rowswithinrangePlayerB,specialCase,skipCurrentEvent = \
 		findRows(idx,aggregateLevel,targetEvents,rawDict,TeamAstring,TeamBstring,currentEvent)
-
+		
 		print(rowswithinrangeTeam)
 		print(rowswithinrangePlayerA)
 		print(rowswithinrangePlayerB)
@@ -52,7 +52,7 @@ def process(plotTheseAttributes,aggregateLevel,targetEvents,rawDict,attributeDic
 
 		if skipCurrentEvent:
 			continue
-
+		
 		for plotThisAttribute in plotTheseAttributes:
 
 			plt.figure(num=None, figsize=(3.8*5,3*5), dpi=300, facecolor='w', edgecolor='k')
@@ -60,7 +60,7 @@ def process(plotTheseAttributes,aggregateLevel,targetEvents,rawDict,attributeDic
 
 			if type(plotThisAttribute) == tuple: # pairwise comparison of team
 				# Pairwise per team
-				yLabel = findYlabel(plotThisAttribute,attributeLabel,TeamAstring,TeamBstring)
+				yLabel = findYlabel(plotThisAttribute,attributeLabel,TeamAstring,TeamBstring) 
 				# Plot it
 				pairwisePerTeam(plotThisAttribute,attributeDict,rowswithinrangeTeam,rawDict,TeamAstring,TeamBstring)
 				varName = plotThisAttribute[0]
@@ -93,11 +93,11 @@ def process(plotTheseAttributes,aggregateLevel,targetEvents,rawDict,attributeDic
 
 def findRows(idx,aggregateLevel,targetEvents,rawDict,TeamAstring,TeamBstring,currentEvent):
 	# Create the output string that identifies the current event
-	aggregateString = '%03d_%s' %(idx,aggregateLevel[0])
+	aggregateString = '%03d_%s' %(idx,aggregateLevel[0])	
 	specialCase = False
 	skipCurrentEvent = False
-	if type(targetEvents[aggregateLevel[0]]) != list:
-		# A special case: there was only one event identified, which means that <enumerate> now
+	if type(targetEvents[aggregateLevel[0]]) != list:			
+		# A special case: there was only one event identified, which means that <enumerate> now 
 		# goes through the contents of that specific event, rather than iterating over the events.
 		# Improvised solution is to overwrite currentEvent and subsequently terminate early.
 		#
@@ -137,7 +137,7 @@ def findRows(idx,aggregateLevel,targetEvents,rawDict,TeamAstring,TeamBstring,cur
 	else:
 		window = (tEnd,tStart)
 		warn('\nSTRANGE: tStart <%s> was bigger than tEnd <%s>.\nSwapped them to determine window' %(tStart,tEnd))
-
+	
 	tmp = rawDict[rawDict['Ts'] > window[0]]
 	rowswithinrange = tmp[tmp['Ts'] <= window[1]].index
 	del(tmp)
@@ -147,7 +147,7 @@ def findRows(idx,aggregateLevel,targetEvents,rawDict,TeamAstring,TeamBstring,cur
 	rowswithinrangePlayer = rawDict['Ts'][rowswithinrange].index[rawDict['TeamID'][rowswithinrange] != '']
 	rowswithinrangePlayerA = rawDict['Ts'][rowswithinrange].index[rawDict['TeamID'][rowswithinrange] == TeamAstring]
 	rowswithinrangePlayerB = rawDict['Ts'][rowswithinrange].index[rawDict['TeamID'][rowswithinrange] == TeamBstring]
-
+	
 	# rowswithinrangeTeam = rawDict['Ts'][rowswithinrange].index[rawDict['PlayerID'].loc[rowswithinrange] == 'groupRow']
 	# rowswithinrangeBall = rawDict['Ts'][rowswithinrange].index[rawDict['PlayerID'].loc[rowswithinrange] == 'ball']
 	# rowswithinrangePlayer = rawDict['Ts'][rowswithinrange].index[rawDict['TeamID'].loc[rowswithinrange] != '']
@@ -164,24 +164,24 @@ def findRows(idx,aggregateLevel,targetEvents,rawDict,TeamAstring,TeamBstring,cur
 	return fileAggregateID,rowswithinrangeTeam,rowswithinrangeBall,rowswithinrangePlayer,rowswithinrangePlayerA,rowswithinrangePlayerB,specialCase,skipCurrentEvent
 
 def findYlabel(plotThisAttribute,attributeLabel,TeamAstring,TeamBstring):
-
+	
 	tmp = []
 	for itmp in [0,1]:
 		labelProvided = [True for j in attributeLabel.keys() if plotThisAttribute[itmp] == j]
-
+		
 		if labelProvided:
 			tmp.append(attributeLabel[plotThisAttribute[itmp]]) # take the label as provided
 			if TeamAstring in tmp[itmp]:
 				ofTeamAstring = ' of %s' %TeamAstring
 				if ofTeamAstring in tmp[itmp]:
-					tmp[itmp] = tmp[itmp].replace(ofTeamAstring,'')
+					tmp[itmp] = tmp[itmp].replace(ofTeamAstring,'')	
 				else:
 					tmp[itmp] = tmp[itmp].replace(TeamAstring,'both teams')
 
 			if TeamBstring in tmp[itmp]:
 				ofTeamBstring = ' of %s' %TeamBstring
 				if ofTeamBstring in tmp[itmp]:
-					tmp[itmp] = tmp[itmp].replace(ofTeamBstring,'')
+					tmp[itmp] = tmp[itmp].replace(ofTeamBstring,'')	
 				else:
 					tmp[itmp] = tmp[itmp].replace(TeamBstring,'both teams')
 
@@ -202,7 +202,7 @@ def pairwisePerTeam(plotThisAttribute,attributeDict,rowswithinrangeTeam,rawDict,
 
 	X1 = rawDict['Ts'][rowswithinrangeTeam]
 	X2 = rawDict['Ts'][rowswithinrangeTeam]
-
+	
 	# Look for gaps in time:
 	# Idea: could separate this per team. But with the current definitions, Values for one team should occur equally often as for any other team
 	t0 = X1[:-1].reset_index(level=None, drop=False, inplace=False)
@@ -246,11 +246,11 @@ def plotPerPlayerPerTeam(plotThisAttribute,attributeDict,rowswithinrangePlayerA,
 	                for name, color in colors.items())
 	sorted_names = [name for hsv, name in by_hsv]
 	[sorted_names.remove(i) for i in ['gainsboro', 'whitesmoke', 'w', 'white', 'snow']] # remove some silly colors
-
+	
 	# Use this to make code more generic (and allow user to specify color)
 	refColorA = 'red'
 	refColorB = 'blue'
-
+	
 
 	# Colors A
 	refIndA = [i for i,v in enumerate(sorted_names) if v == refColorA]
@@ -278,10 +278,10 @@ def plotPerPlayerPerTeam(plotThisAttribute,attributeDict,rowswithinrangePlayerA,
 
 	for ix,player in enumerate(X1.keys()):
 		curColor = sorted_names[colorPickerA[ix]]
-		pltA = plt.plot(X1[player],Y1[player],color=curColor,linestyle='-')
+		pltA = plt.plot(X1[player],Y1[player],color=curColor,linestyle='-') 
 
 	for ix,player in enumerate(X2.keys()):
 		curColor = sorted_names[colorPickerB[ix]]
 		pltB = plt.plot(X2[player],Y2[player],color=curColor,linestyle='-')
 
-	plt.legend([pltA[0], pltB[0]], [TeamAstring,TeamBstring])
+	plt.legend([pltA[0], pltB[0]], [TeamAstring,TeamBstring])	

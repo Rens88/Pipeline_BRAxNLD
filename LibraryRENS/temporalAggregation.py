@@ -57,6 +57,7 @@ def process(targetEvents,aggregateLevel,rawDict,attributeDict,exportData,exportD
 	FileID = "_".join(fileIdentifiers)
 
 	# something that could be part of clean-up:
+<<<<<<< HEAD
 	if 'Acceleration' in targetEvents: 
 		if not all(np.isnan(attributeDict.loc[rawDict['PlayerID'] == 'ball','Acceleration'])):
 			attributeDict.loc[rawDict['PlayerID'] == 'ball','Acceleration'] = np.nan
@@ -70,6 +71,15 @@ def process(targetEvents,aggregateLevel,rawDict,attributeDict,exportData,exportD
 	else:
 		warn('\nWARN: Speed not included in the targetEvents.\n') #LT: added!
 
+=======
+	if not all(np.isnan(attributeDict.loc[rawDict['PlayerID'] == 'ball','Acceleration'])):
+		attributeDict.loc[rawDict['PlayerID'] == 'ball','Acceleration'] = np.nan
+		warn('\nWARN: Some datasets also give the acceleration of the ball.\nTo avoid conflicts, these input values will be overwritten with empty values.\nIf you are in fact interested in Acceleration of the ball, then create a new feature that refers to the ball specifically (ballAcceleration).\n')
+	if not all(np.isnan(attributeDict.loc[rawDict['PlayerID'] == 'ball','Speed'])):
+		attributeDict.loc[rawDict['PlayerID'] == 'ball','Speed'] = np.nan
+		warn('\nWARN: Some datasets also give the Speed of the ball.\nTo avoid conflicts, these input values will be overwritten with empty values.\nIf you are in fact interested in Speed of the ball, then create a new feature that refers to the ball specifically (ballSpeed).\n')
+	
+>>>>>>> origin/NP_continued
 	## user inputs, could easily lift this out of function
 	freqInterpolatedData = 10 # in Hz
 
@@ -329,6 +339,10 @@ def process(targetEvents,aggregateLevel,rawDict,attributeDict,exportData,exportD
 		# Copy everything that exists in exportCurrentData up until here into a new dataFrame.
 		currentEventID = pd.DataFrame([],columns = exportDataString,index = rawDict['Ts'][rowswithinrange].index,dtype = object)
 		# currentEventID = pd.DataFrame(['test']*1571,columns = ['test'],index = rawDict['Ts'][rowswithinrange].index,dtype = object)
+<<<<<<< HEAD
+=======
+		
+>>>>>>> origin/NP_continued
 		for i,val in enumerate(exportCurrentData):
 			currentEventID[exportDataString[i]] = val
 
@@ -673,7 +687,11 @@ def process(targetEvents,aggregateLevel,rawDict,attributeDict,exportData,exportD
 					rawDict.to_csv('rawDict_complete.csv')
 					attributeDict.loc[rowswithinrange].to_csv('attributeDict_rowswithinrange.csv')
 					attributeDict.to_csv('attributeDict_complete.csv')
+<<<<<<< HEAD
 					attributeDict.loc[rawDict['PlayerID'] == 'groupRow'].to_csv('attributeDict_allGroupRows.csv') #LT: change attributeDict to rawDict!
+=======
+					attributeDict.loc[attributeDict['PlayerID'] == 'groupRow'].to_csv('attributeDict_allGropuRows.csv')
+>>>>>>> origin/NP_continued
 					print('Apparently, targetGroup has already been allocated as a grouprow:' )
 					print('targetGroup = %s' %targetGroup)
 					print('----')
@@ -695,7 +713,11 @@ def process(targetEvents,aggregateLevel,rawDict,attributeDict,exportData,exportD
 					print('rowswithinrange = %s' %rowswithinrange)
 					print('number of players of team A within the excerpt nPlA = %s' %nPlA)
 					print('number of players of team B within the excerpt nPlB = %s' %nPlB)
+<<<<<<< HEAD
 					# pdb.set_trace()
+=======
+					pdb.set_trace()
+>>>>>>> origin/NP_continued
 					exit()
 					# To avoid errors: either separate variables covering multiple sets, or add code here that joins targetGroups..
 			
@@ -1034,12 +1056,15 @@ def aggregateTemporally(data,*positional_parameters,**keyword_parameters):
 	# continue to create the strings in the full version
 	exportCurrentData,targetGroup, curKeyString, curLabel, eventDescrString, overallString, overallExplanation = positional_parameters
 
+<<<<<<< HEAD
 	print(positional_parameters)
 	print('-------------')
 	print(curKeyString)
 	print('-------------')
 	print(curLabel)
 
+=======
+>>>>>>> origin/NP_continued
 	if 'aggrMethods' in keyword_parameters:
 		aggrMethods = keyword_parameters['aggrMethods']
 	else:

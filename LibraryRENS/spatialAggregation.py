@@ -42,6 +42,7 @@ def process(rawDict,attributeDict,attributeLabel,TeamAstring,TeamBstring,skipSpa
 	# Per Team and for both teams
 
 	# Ball possession
+<<<<<<< HEAD
 	# computeBallPossession = True # temporarily turned off
 	# if computeBallPossession:
 	# 	attributeDict,attributeLabel = \
@@ -85,14 +86,66 @@ def process(rawDict,attributeDict,attributeLabel,TeamAstring,TeamBstring,skipSpa
 	# 	elapsed = str(round(time.time() - tSpatAgg_surf, 2))
 	# 	print('*****----- Time elapsed during spatialAggregation.vNorm(): %ss' %elapsed)
 	tSpatAgg_vNorm = time.time()
+=======
+	computeBallPossession = False # temporarily turned off
+	if computeBallPossession:
+		attributeDict,attributeLabel = \
+		ballPossession(rawDict,attributeDict,attributeLabel,TeamAstring,TeamBstring,skipSpatAgg)
+
+	# Use this is an example for a GROUP level aggregate
+	attributeDict,attributeLabel = \
+	teamCentroid_panda(rawDict,attributeDict,attributeLabel,TeamAstring,TeamBstring,skipSpatAgg)
+	if debuggingMode:
+		elapsed = str(round(time.time() - tSpatAgg, 2))
+		print('*****----- Time elapsed during spatialAggregation.teamCentroid_panda(): %ss' %elapsed)
+		tSpatAgg_cent = time.time()
+
+	# Use this is an example for a PLAYER level aggregate
+	attributeDict,attributeLabel = \
+	distanceToCentroid(rawDict,attributeDict,attributeLabel,TeamAstring,TeamBstring,skipSpatAgg)
+	if debuggingMode:
+		elapsed = str(round(time.time() - tSpatAgg_cent, 2))
+		print('*****----- Time elapsed during spatialAggregation.distanceToCentroid(): %ss' %elapsed)
+		tSpatAgg_dist = time.time()
 
 	attributeDict,attributeLabel = \
+	teamSpread_asPanda(rawDict,attributeDict,attributeLabel,TeamAstring,TeamBstring,skipSpatAgg)
+	if debuggingMode:
+		elapsed = str(round(time.time() - tSpatAgg_dist, 2))
+		print('*****----- Time elapsed during spatialAggregation.teamSpread_asPanda(): %ss' %elapsed)
+		tSpatAgg_spread = time.time()
+
+	attributeDict,attributeLabel = \
+	teamSurface_asPanda(rawDict,attributeDict,attributeLabel,TeamAstring,TeamBstring,skipSpatAgg)
+	if debuggingMode:
+		elapsed = str(round(time.time() - tSpatAgg_spread, 2))
+		print('*****----- Time elapsed during spatialAggregation.teamSurface_asPanda(): %ss' %elapsed)
+		tSpatAgg_surf = time.time()
+>>>>>>> origin/NP_continued
+
+	attributeDict,attributeLabel = \
+<<<<<<< HEAD
 	student_LT_spatialAggregation.process(rawDict,attributeDict,attributeLabel,TeamAstring,TeamBstring,skipSpatAgg)
 	if debuggingMode:
 		elapsed = str(round(time.time() - tSpatAgg_vNorm, 2))
 		print('*****----- Time elapsed during spatialAggregation.student_XX_spatialAggregation(): %ss' %elapsed)
 		tSpatAgg_student = time.time()
 
+=======
+	vNorm(rawDict,attributeDict,attributeLabel,TeamAstring,TeamBstring,skipSpatAgg)
+	if debuggingMode:
+		elapsed = str(round(time.time() - tSpatAgg_surf, 2))
+		print('*****----- Time elapsed during spatialAggregation.vNorm(): %ss' %elapsed)
+		tSpatAgg_vNorm = time.time()
+
+	attributeDict,attributeLabel = \
+	student_XX_spatialAggregation.process(rawDict,attributeDict,attributeLabel,TeamAstring,TeamBstring,skipSpatAgg)
+	if debuggingMode:
+		elapsed = str(round(time.time() - tSpatAgg_vNorm, 2))
+		print('*****----- Time elapsed during spatialAggregation.student_XX_spatialAggregation(): %ss' %elapsed)
+		tSpatAgg_student = time.time()
+
+>>>>>>> origin/NP_continued
 	## debugging only
 	# allesBijElkaar = pd.concat([rawDict, attributeDict], axis=1) # debugging only
 	# allesBijElkaar.to_csv('C:\\Users\\rensm\\Documents\\PostdocLeiden\\BRAxNLD repository\\Data\\tmp\\test.csv') # debugging only		
@@ -1288,8 +1341,14 @@ def ballPossession(rawDict,attributeDict,attributeLabel,TeamAstring,TeamBstring,
 	elapsed = str(round(time.time() - tDistToBall, 2))
 	print('*****----- Time elapsed during determining distance to ball.vNorm(): %ss' %elapsed)
 
+<<<<<<< HEAD
 	altogether = pd.concat([rawDict,attributeDict], axis=1)
 	altogether.to_csv('D:\\KNVB\\test.csv')
 
 	pdb.set_trace()
 	return attributeDict,attributeLabel
+=======
+	pdb.set_trace()
+	return attributeDict,attributeLabel
+
+>>>>>>> origin/NP_continued

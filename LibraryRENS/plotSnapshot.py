@@ -10,7 +10,11 @@ import matplotlib.patches as patches
 import matplotlib.lines as mlines
 import pdb; #pdb.set_trace()
 from os import listdir, makedirs
+<<<<<<< HEAD
 from os.path import isfile, join, isdir
+=======
+from os.path import isfile, join, isdir 
+>>>>>>> origin/NP_continued
 from warnings import warn
 
 # import CSVimportAsColumns
@@ -31,7 +35,11 @@ def process(outputFilename,currentEvent,teamStrings,TeamAstring,TeamBstring):
 	# timeUnit = 1000 # unit of time as given in dataset in Hertz (i.e., 1000 = milliseconds)
 	# frameRate = 10 # in Hertz (depends on data input)
 	# traceWindow = 1 # in seconds
+<<<<<<< HEAD
 
+=======
+	
+>>>>>>> origin/NP_continued
 	# traceWindowFrames = traceWindow * frameRate
 	# dtCorrection = timeUnit / frameRate
 	# filenameWholeDataset = filename
@@ -39,18 +47,30 @@ def process(outputFilename,currentEvent,teamStrings,TeamAstring,TeamBstring):
 	# # omit '.csv' if necessary
 	# if filename[-4:] == '.csv':
 	#     # print('WARNING: The extension CSV was automatically added to the original filename')
+<<<<<<< HEAD
 	#     filename = filename[:-4]
 
 	# Field parameters
 	x0 = 0
 	x1 = -50
+=======
+	#     filename = filename[:-4]	    
+
+	# Field parameters
+	x0 = 0
+	x1 = -50 
+>>>>>>> origin/NP_continued
 	x2 = 50
 	y0 = 0.1
 	y1 = -32.5
 	y2 = 32.7
 	# NB: Parameters need to be corrected to meters
 
+<<<<<<< HEAD
 	# # Prepare some variables
+=======
+	# # Prepare some variables 
+>>>>>>> origin/NP_continued
 	# tmin = []
 	# firstFrame = []
 	# excerpt = 'False'
@@ -86,9 +106,15 @@ def process(outputFilename,currentEvent,teamStrings,TeamAstring,TeamBstring):
 	# 				firstFrame = tmin
 	# 				lastFrame = tmax
 	# 				excerpt = 'True'
+<<<<<<< HEAD
 	# 				# Just in case there is a 'perfect' excerpt, don't automatically break here
 	# 			# IDEA: Could include a break function if you want to limit going through files
 
+=======
+	# 				# Just in case there is a 'perfect' excerpt, don't automatically break here					
+	# 			# IDEA: Could include a break function if you want to limit going through files
+				
+>>>>>>> origin/NP_continued
 	# else:
 	# 	warn('\nWARNING: Couldnt find excerpts; create excerpts to improve speed\n')
 	# if excerpt == 'False':
@@ -116,7 +142,11 @@ def process(outputFilename,currentEvent,teamStrings,TeamAstring,TeamBstring):
 	# 			# print(i)
 	# 			if  not i == '':
 	# 				X[ind] = np.float64(i)
+<<<<<<< HEAD
 	# 			else: # missing data (empty cell to be precise)
+=======
+	# 			else: # missing data (empty cell to be precise)					
+>>>>>>> origin/NP_continued
 	# 				X[ind] = np.nan
 
 	# 		# X = np.array([])
@@ -131,14 +161,23 @@ def process(outputFilename,currentEvent,teamStrings,TeamAstring,TeamBstring):
 	# 		for ind,i in enumerate(data[idx]):
 	# 			if  not i == '':
 	# 				Y[ind] = np.float64(i)
+<<<<<<< HEAD
 	# 			else: # missing data
+=======
+	# 			else: # missing data					
+>>>>>>> origin/NP_continued
 	# 				Y[ind] = np.nan
 	# 	elif val == 'TeamID': # This should coincidentally work because we're after the seconde 'name'
 	# 		Team = data[idx]
 
 	# if excerpt == 'False':
+<<<<<<< HEAD
 	# 	firstFrame = int(curFrame) - traceWindow * timeUnit
 	# 	lastFrame = int(curFrame) + traceWindow * timeUnit
+=======
+	# 	firstFrame = int(curFrame) - traceWindow * timeUnit	
+	# 	lastFrame = int(curFrame) + traceWindow * timeUnit	
+>>>>>>> origin/NP_continued
 	# 	if firstFrame < float(TsMS[0]):
 	# 		firstFrame = TsMS[0]
 	# 	if lastFrame > float(TsMS[-1]):
@@ -147,7 +186,11 @@ def process(outputFilename,currentEvent,teamStrings,TeamAstring,TeamBstring):
 	# 	lastFrame = str(lastFrame)
 	# if tmin == []:
 	# 	tmin = TsMS[0]
+<<<<<<< HEAD
 	# if firstFrame == []:
+=======
+	# if firstFrame == []:		
+>>>>>>> origin/NP_continued
 	# 	firstFrame	= tmin
 
 	# ##################################################
@@ -277,7 +320,11 @@ def process(outputFilename,currentEvent,teamStrings,TeamAstring,TeamBstring):
 			# 	break
 			plt.plot(X[i-traceWindowFrames:i],Y[i-traceWindowFrames:i],color = 'k',linewidth=.5)
 
+<<<<<<< HEAD
 	# Trace future (both teams black)
+=======
+	# Trace future (both teams black)	
+>>>>>>> origin/NP_continued
 	dtFut = int((int(lastFrame) - int(curFrame)) / dtCorrection) # 100 to convert ms into frames: (1000ms / frameRate) where frameRate = 10Hz
 	if dtFut < traceWindowFrames:
 		# Only plot trace until last frame
@@ -297,7 +344,11 @@ def process(outputFilename,currentEvent,teamStrings,TeamAstring,TeamBstring):
 			plt.plot(X[i:i+traceWindowFrames],Y[i:i+traceWindowFrames],color = 'k',linewidth=.5,linestyle = ':')
 
 	# Create legend
+<<<<<<< HEAD
 
+=======
+	
+>>>>>>> origin/NP_continued
 	red_line = mlines.Line2D([], [], color='r', marker='.',markersize=15, label='Team1')
 	blue_line = mlines.Line2D([], [], color='b', marker='.',markersize=15, label='Team2')
 	plt.legend(handles=[red_line,blue_line])
@@ -306,7 +357,11 @@ def process(outputFilename,currentEvent,teamStrings,TeamAstring,TeamBstring):
 
 	# Save figure
 	# Check if folder exists (otherwise make it)
+<<<<<<< HEAD
 
+=======
+	
+>>>>>>> origin/NP_continued
 	if not folder[-10:]=='Figs\\Temp\\':
 		figTmpFolder = folder + 'Figs\\Temp\\' + 'Snapshots_'+ filenameWholeDataset + '\\'
 	else:
@@ -319,5 +374,9 @@ def process(outputFilename,currentEvent,teamStrings,TeamAstring,TeamBstring):
 
 	# To avoid warnings, you could repeat
 	# plt.close()
+<<<<<<< HEAD
 	# However, that's a bit slower.
+=======
+	# However, that's a bit slower. 
+>>>>>>> origin/NP_continued
 	# I guess that I still don't really understand what I'm closing...

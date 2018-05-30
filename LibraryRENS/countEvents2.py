@@ -17,25 +17,30 @@ import safetyWarning
 
 if __name__ == '__main__':
 
-	goals(window,aggregateEvent,targetEvents,TeamAstring,TeamBstring,exportData,exportDataString,exportFullExplanation)
-	turnovers(window,aggregateEvent,targetEvents,TeamAstring,TeamBstring,exportData,exportDataString,exportFullExplanation)
-	possessions(window,aggregateEvent,targetEvents,TeamAstring,TeamBstring,exportData,exportDataString,exportFullExplanation)
-	passes(window,aggregateEvent,targetEvents,TeamAstring,TeamBstring,exportData,exportDataString,exportFullExplanation)
-	passes2(rowswithinrange,aggregateEvent,rawDict,attributeDict,TeamAstring,TeamBstring,exportData,exportDataString,exportFullExplanation,possessionCharacteristics,targetEvents)
+	goals(window,aggregateEvent,targetEvents,refTeam,othTeam,exportData,exportDataString,exportFullExplanation)
+	turnovers(window,aggregateEvent,targetEvents,refTeam,othTeam,exportData,exportDataString,exportFullExplanation)
+	possessions(window,aggregateEvent,targetEvents,refTeam,othTeam,exportData,exportDataString,exportFullExplanation)
+	passes(window,aggregateEvent,targetEvents,refTeam,othTeam,exportData,exportDataString,exportFullExplanation)
+	passes2(rowswithinrange,aggregateEvent,rawDict,attributeDict,refTeam,othTeam,exportData,exportDataString,exportFullExplanation,possessionCharacteristics,targetEvents)
 
 	# reminder (can be deleted):
 	# targetEvents = {'Goals':[],'Passes':[],'Turnovers':[],'Possession':[]}
-def goals(window,aggregateEvent,targetEvents,TeamAstring,TeamBstring,exportData,exportDataString,exportFullExplanation):
+def goals(window,aggregateEvent,targetEvents,refTeam,othTeam,exportData,exportDataString,exportFullExplanation):
 
 	if targetEvents['Goal'] != []:
 		goals = []
+<<<<<<< HEAD
 		for eventInstant,eventID in targetEvents['Goal']:
+=======
+		for a in targetEvents['Goal']:
+			eventInstant,eventID = a[:2]
+>>>>>>> origin/NP_continued
 			if eventInstant > window[0] and eventInstant <= window[1]:
 				goals.append(eventID)
 
 		goalCount = float(len(goals))
-		goalCountA = float(sum([TeamAstring in i for i in goals]))
-		goalCountB = float(sum([TeamBstring in i for i in goals]))
+		goalCountA = float(sum([refTeam in i for i in goals]))
+		goalCountB = float(sum([othTeam in i for i in goals]))
 		goalsDelta = float(abs(goalCountA - goalCountB))
 
 	else: # no 'goals' information
@@ -50,17 +55,17 @@ def goals(window,aggregateEvent,targetEvents,TeamAstring,TeamBstring,exportData,
 	exportData.append(goalCount)
 	exportFullExplanation.append('Number of goals per %s.' %aggregateEvent)
 
-	exportDataString.append('goalCountA')
+	exportDataString.append('goalCount_ref')
 	exportData.append(goalCountA)
-	exportFullExplanation.append('Number of goals by %s per %s.' %(TeamAstring,aggregateEvent))
+	exportFullExplanation.append('Number of goals by %s per %s.' %(refTeam,aggregateEvent))
 
-	exportDataString.append('goalCountB')
+	exportDataString.append('goalCount_oth')
 	exportData.append(goalCountB)
-	exportFullExplanation.append('Number of goals by %s per %s.' %(TeamBstring,aggregateEvent))
+	exportFullExplanation.append('Number of goals by %s per %s.' %(othTeam,aggregateEvent))
 
 	exportDataString.append('goalsDelta')
 	exportData.append(goalsDelta)
-	exportFullExplanation.append('Absolute difference between number of goals scored by %s and %s, per %s.' %(TeamAstring,TeamBstring,aggregateEvent))
+	exportFullExplanation.append('Absolute difference between number of goals scored by %s and %s, per %s.' %(refTeam,othTeam,aggregateEvent))
 
 	safetyWarning.checkLengthExport(exportData,exportDataString,exportFullExplanation)
 	return exportData,exportDataString,exportFullExplanation
@@ -68,20 +73,27 @@ def goals(window,aggregateEvent,targetEvents,TeamAstring,TeamBstring,exportData,
 #################################################################
 #################################################################
 
-def turnovers(window,aggregateEvent,targetEvents,TeamAstring,TeamBstring,exportData,exportDataString,exportFullExplanation):
+def turnovers(window,aggregateEvent,targetEvents,refTeam,othTeam,exportData,exportDataString,exportFullExplanation):
 	turnoverCharacteristics = []
 
 	if targetEvents['Turnovers'] != []:
 		turnoverCharacteristics = []
-		for eventInstant,eventID in targetEvents['Turnovers']:
+		# if len(targetEvents['Turnovers'][0]) == 8:
+		for a in targetEvents['Turnovers']:
+			eventInstant,eventID = a[:2]
 
 			if eventInstant > window[0] and eventInstant <= window[1]:
 				turnoverCharacteristics.append(eventID)
+		# else:
+		# 	for eventInstant,eventID,a in targetEvents['Turnovers']:
+
+		# 		if eventInstant > window[0] and eventInstant <= window[1]:
+		# 			turnoverCharacteristics.append(eventID)
 
 		# define outcome variables here
 		turnoverCount = len(turnoverCharacteristics)
-		turnoverCountA = len([i for i in turnoverCharacteristics if TeamAstring in i])
-		turnoverCountB = len([i for i in turnoverCharacteristics if TeamBstring in i])
+		turnoverCountA = len([i for i in turnoverCharacteristics if refTeam in i])
+		turnoverCountB = len([i for i in turnoverCharacteristics if othTeam in i])
 		turnoverDelta = abs(turnoverCountA - turnoverCountB)
 	else: # no 'possession' information, outcome should be missing
 		# turnoverCount = None
@@ -96,17 +108,17 @@ def turnovers(window,aggregateEvent,targetEvents,TeamAstring,TeamBstring,exportD
 	exportData.append(turnoverCount)
 	exportFullExplanation.append('Number of turnovers per %s.' %aggregateEvent)
 
-	exportDataString.append('turnoverCountA')
+	exportDataString.append('turnoverCount_ref')
 	exportData.append(turnoverCountA)
-	exportFullExplanation.append('Number of turnovers by %s per %s.' %(TeamAstring,aggregateEvent))
+	exportFullExplanation.append('Number of turnovers by %s per %s.' %(refTeam,aggregateEvent))
 
-	exportDataString.append('turnoverCountB')
+	exportDataString.append('turnoverCount_oth')
 	exportData.append(turnoverCountB)
-	exportFullExplanation.append('Number of turnovers by %s per %s.' %(TeamBstring,aggregateEvent))
+	exportFullExplanation.append('Number of turnovers by %s per %s.' %(othTeam,aggregateEvent))
 
 	exportDataString.append('turnoverDelta')
 	exportData.append(turnoverDelta)
-	exportFullExplanation.append('Absolute difference between number of turnovers by %s and %s, per %s.' %(TeamAstring,TeamBstring,aggregateEvent))
+	exportFullExplanation.append('Absolute difference between number of turnovers by %s and %s, per %s.' %(refTeam,othTeam,aggregateEvent))
 
 	safetyWarning.checkLengthExport(exportData,exportDataString,exportFullExplanation)
 	return exportData,exportDataString,exportFullExplanation
@@ -114,11 +126,22 @@ def turnovers(window,aggregateEvent,targetEvents,TeamAstring,TeamBstring,exportD
 #################################################################
 #################################################################
 
-def possessions(window,aggregateEvent,targetEvents,TeamAstring,TeamBstring,exportData,exportDataString,exportFullExplanation):
+def possessions(window,aggregateEvent,targetEvents,refTeam,othTeam,exportData,exportDataString,exportFullExplanation):
+	NoneAsZero = True
+	if NoneAsZero:
+		exportNone = 0
+	else:
+		exportNone = None
+
 	possessionCharacteristics = []
 	if targetEvents['Possession'] != []:
 		possessionCharacteristics = []
+<<<<<<< HEAD
 		for eventInstantEnd,eventID,eventInstantStart in targetEvents['Possession']:
+=======
+		for a in targetEvents['Possession']:
+			eventInstantEnd,eventID,eventInstantStart = a[:3]
+>>>>>>> origin/NP_continued
 			if eventInstantStart == None or eventInstantEnd == None:
 				# No possession window defined. Skip this event.
 				# NB: This might make all the 'None' possession statistics obsolete.
@@ -129,43 +152,44 @@ def possessions(window,aggregateEvent,targetEvents,TeamAstring,TeamBstring,expor
 
 		# define outcome variables here
 		possessionCount = sum([i[1] != None for i in possessionCharacteristics])
-		possessionCountA = sum([i[1] == TeamAstring for i in possessionCharacteristics])
-		possessionCountB = sum([i[1] == TeamBstring for i in possessionCharacteristics])
+		possessionCountA = sum([i[1] == refTeam for i in possessionCharacteristics])
+		possessionCountB = sum([i[1] == othTeam for i in possessionCharacteristics])
 		possessionCountDelta = abs(possessionCountA-possessionCountB)
 		possessionCountNone = sum([i[1] == None for i in possessionCharacteristics])
 
 		possessionDurationSum = sum(i[0] for i in possessionCharacteristics)
-		possessionDurationSumA = sum(i[0] for i in possessionCharacteristics if i[1] == TeamAstring)
-		possessionDurationSumB = sum(i[0] for i in possessionCharacteristics if i[1] == TeamBstring)
+		possessionDurationSumA = sum(i[0] for i in possessionCharacteristics if i[1] == refTeam)
+		possessionDurationSumB = sum(i[0] for i in possessionCharacteristics if i[1] == othTeam)
 		possessionDurationSumNone = sum(i[0] for i in possessionCharacteristics if i[1] == None)
 
 		if possessionCount != 0:
 			possessionDurationAvg = possessionDurationSum / possessionCount
 			possessionDurationStd = sum(abs(i[0]-possessionDurationAvg) for i in possessionCharacteristics if i[1] != None) / possessionCount
 		else:
-			possessionDurationAvg = None
-			possessionDurationStd = None
+
+			possessionDurationAvg = exportNone
+			possessionDurationStd = exportNone
 
 		if possessionCountA != 0:
 			possessionDurationAvgA = possessionDurationSumA / possessionCountA
-			possessionDurationStdA = sum(abs(i[0]-possessionDurationAvgA) for i in possessionCharacteristics if i[1] == TeamAstring) / possessionCountA
+			possessionDurationStdA = sum(abs(i[0]-possessionDurationAvgA) for i in possessionCharacteristics if i[1] == refTeam) / possessionCountA
 		else:
-			possessionDurationAvgA = None
-			possessionDurationStdA = None
+			possessionDurationAvgA = exportNone
+			possessionDurationStdA = exportNone
 
 		if possessionCountB != 0:
 			possessionDurationAvgB = possessionDurationSumB / possessionCountB
-			possessionDurationStdB = sum(abs(i[0]-possessionDurationAvgB) for i in possessionCharacteristics if i[1] == TeamBstring) / possessionCountB
+			possessionDurationStdB = sum(abs(i[0]-possessionDurationAvgB) for i in possessionCharacteristics if i[1] == othTeam) / possessionCountB
 		else:
-			possessionDurationAvgB = None
-			possessionDurationStdB = None		
+			possessionDurationAvgB = exportNone
+			possessionDurationStdB = exportNone		
 
 		if possessionCountNone != 0:
 			possessionDurationAvgNone = possessionDurationSumNone / possessionCountNone
 			possessionDurationStdNone = sum(abs(i[0]-possessionDurationAvgNone) for i in possessionCharacteristics if i[1] == None) / possessionCountNone
 		else:
-			possessionDurationAvgNone = None
-			possessionDurationStdNone = None
+			possessionDurationAvgNone = exportNone
+			possessionDurationStdNone = exportNone
 
 	else: # no 'possession' information
 		# define missing outcome variables here
@@ -198,17 +222,17 @@ def possessions(window,aggregateEvent,targetEvents,TeamAstring,TeamBstring,expor
 	exportData.append(possessionCount)
 	exportFullExplanation.append('Number of full possessions per %s. NB: <full> refers to from the start until the end of a possession.' %aggregateEvent)
 
-	exportDataString.append('possessionCountA')
+	exportDataString.append('possessionCount_ref')
 	exportData.append(possessionCountA)
-	exportFullExplanation.append('Number full possession %s had per %s. NB: <full> refers to from the start until the end of a possession.' %(TeamAstring,aggregateEvent))
+	exportFullExplanation.append('Number full possession %s had per %s. NB: <full> refers to from the start until the end of a possession.' %(refTeam,aggregateEvent))
 
-	exportDataString.append('possessionCountB')
+	exportDataString.append('possessionCount_oth')
 	exportData.append(possessionCountB)
-	exportFullExplanation.append('Number full possession %s had per %s. NB: <full> refers to from the start until the end of a possession.' %(TeamBstring,aggregateEvent))
+	exportFullExplanation.append('Number full possession %s had per %s. NB: <full> refers to from the start until the end of a possession.' %(othTeam,aggregateEvent))
 
 	exportDataString.append('possessionCountDelta')	
 	exportData.append(possessionCountDelta)
-	exportFullExplanation.append('Absolute difference between number of full possessions by %s and %s, per %s. NB: <full> refers to from the start until the end of a possession.' %(TeamAstring,TeamBstring,aggregateEvent))
+	exportFullExplanation.append('Absolute difference between number of full possessions by %s and %s, per %s. NB: <full> refers to from the start until the end of a possession.' %(refTeam,othTeam,aggregateEvent))
 
 	exportDataString.append('possessionCountNone')
 	exportData.append(possessionCountNone)
@@ -217,15 +241,15 @@ def possessions(window,aggregateEvent,targetEvents,TeamAstring,TeamBstring,expor
 	# possessionDuration (in seconds) --> sum,std,avg,
 	exportDataString.append('possessionDurationSum')
 	exportData.append(possessionDurationSum)
-	exportFullExplanation.append('Total duration (s) of full possessions by %s and %s, per %s. NB: <full> refers to from the start until the end of a possession.' %(TeamAstring,TeamBstring,aggregateEvent))
+	exportFullExplanation.append('Total duration (s) of full possessions by %s and %s, per %s. NB: <full> refers to from the start until the end of a possession.' %(refTeam,othTeam,aggregateEvent))
 
-	exportDataString.append('possessionDurationSumA')
+	exportDataString.append('possessionDurationSum_ref')
 	exportData.append(possessionDurationSumA)
-	exportFullExplanation.append('Total duration (s) of full possessions per %s by %s. NB: <full> refers to from the start until the end of a possession.' %(aggregateEvent,TeamAstring))
+	exportFullExplanation.append('Total duration (s) of full possessions per %s by %s. NB: <full> refers to from the start until the end of a possession.' %(aggregateEvent,refTeam))
 
-	exportDataString.append('possessionDurationSumB')
+	exportDataString.append('possessionDurationSum_oth')
 	exportData.append(possessionDurationSumB)
-	exportFullExplanation.append('Total duration (s) of full possessions per %s by %s. NB: <full> refers to from the start until the end of a possession.' %(aggregateEvent,TeamBstring))
+	exportFullExplanation.append('Total duration (s) of full possessions per %s by %s. NB: <full> refers to from the start until the end of a possession.' %(aggregateEvent,othTeam))
 
 	exportDataString.append('possessionDurationSumNone')
 	exportData.append(possessionDurationSumNone)
@@ -234,15 +258,15 @@ def possessions(window,aggregateEvent,targetEvents,TeamAstring,TeamBstring,expor
 	# Average duration of a possession (until turnover / ball loss / end game)
 	exportDataString.append('possessionDurationAvg')
 	exportData.append(possessionDurationAvg)
-	exportFullExplanation.append('Average duration of a full possession per %s by %s and %s. NB: <full> refers to from the start until the end of a possession.' %(aggregateEvent,TeamAstring,TeamBstring))
+	exportFullExplanation.append('Average duration of a full possession per %s by %s and %s. NB: <full> refers to from the start until the end of a possession.' %(aggregateEvent,refTeam,othTeam))
 
-	exportDataString.append('possessionDurationAvgA')
+	exportDataString.append('possessionDurationAvg_ref')
 	exportData.append(possessionDurationAvgA)
-	exportFullExplanation.append('Average duration of a full possession per %s by %s. NB: <full> refers to from the start until the end of a possession.' %(aggregateEvent,TeamAstring))
+	exportFullExplanation.append('Average duration of a full possession per %s by %s. NB: <full> refers to from the start until the end of a possession.' %(aggregateEvent,refTeam))
 
-	exportDataString.append('possessionDurationAvgB')
+	exportDataString.append('possessionDurationAvg_oth')
 	exportData.append(possessionDurationAvgB)
-	exportFullExplanation.append('Average duration of a full possession per %s by %s. NB: <full> refers to from the start until the end of a possession.' %(aggregateEvent,TeamBstring))
+	exportFullExplanation.append('Average duration of a full possession per %s by %s. NB: <full> refers to from the start until the end of a possession.' %(aggregateEvent,othTeam))
 
 	exportDataString.append('possessionDurationAvgNone')
 	exportData.append(possessionDurationAvgNone)
@@ -251,15 +275,15 @@ def possessions(window,aggregateEvent,targetEvents,TeamAstring,TeamBstring,expor
 	# Standard deviation of a possession
 	exportDataString.append('possessionDurationStd')
 	exportData.append(possessionDurationStd)
-	exportFullExplanation.append('Standard deviation of the duration of a full possession per %s by %s and %s. NB: <full> refers to from the start until the end of a possession.' %(aggregateEvent,TeamAstring,TeamBstring))
+	exportFullExplanation.append('Standard deviation of the duration of a full possession per %s by %s and %s. NB: <full> refers to from the start until the end of a possession.' %(aggregateEvent,refTeam,othTeam))
 	
-	exportDataString.append('possessionDurationStdA')
+	exportDataString.append('possessionDurationStd_ref')
 	exportData.append(possessionDurationStdA)
-	exportFullExplanation.append('Standard deviation of the duration of a full possession per %s by %s. NB: <full> refers to from the start until the end of a possession.' %(aggregateEvent,TeamAstring))
+	exportFullExplanation.append('Standard deviation of the duration of a full possession per %s by %s. NB: <full> refers to from the start until the end of a possession.' %(aggregateEvent,refTeam))
 
-	exportDataString.append('possessionDurationStdB')
+	exportDataString.append('possessionDurationStd_oth')
 	exportData.append(possessionDurationStdB)
-	exportFullExplanation.append('Standard deviation of the duration of a full possession per %s by %s. NB: <full> refers to from the start until the end of a possession.' %(aggregateEvent,TeamBstring))
+	exportFullExplanation.append('Standard deviation of the duration of a full possession per %s by %s. NB: <full> refers to from the start until the end of a possession.' %(aggregateEvent,othTeam))
 
 	exportDataString.append('possessionDurationStdNone')
 	exportData.append(possessionDurationStdNone) 
@@ -272,20 +296,33 @@ def possessions(window,aggregateEvent,targetEvents,TeamAstring,TeamBstring,expor
 #################################################################
 #################################################################
 
-def passes(window,aggregateEvent,targetEvents,TeamAstring,TeamBstring,exportData,exportDataString,exportFullExplanation):
+def passes(window,aggregateEvent,targetEvents,refTeam,othTeam,exportData,exportDataString,exportFullExplanation):
+	NoneAsZero = True
+	if NoneAsZero:
+		exportNone = 0
+	else:
+		exportNone = None
 
 	# window = (80,90)
 	if targetEvents['Passes'] != []:
 		passes = []
 		consecutivePasses = []
-		for eventInstant,eventID,consecutiveEvents in targetEvents['Passes']:
+		# if len(targetEvents['Passes'][0]) == 6:
+		for a in targetEvents['Passes']:
+			eventInstant,eventID,consecutiveEvents = a[:3]
+
 			if eventInstant > window[0] and eventInstant <= window[1]:
 				passes.append(eventID)
 				consecutivePasses.append(consecutiveEvents)
+		# else:
+		# 	for eventInstant,eventID,consecutiveEvents,a in targetEvents['Passes']:
+		# 		if eventInstant > window[0] and eventInstant <= window[1]:
+		# 			passes.append(eventID)
+		# 			consecutivePasses.append(consecutiveEvents)
 
 		passCount = float(len(passes))
-		passCountA = float(sum([TeamAstring in i for i in passes]))
-		passCountB = float(sum([TeamBstring in i for i in passes]))
+		passCountA = float(sum([refTeam in i for i in passes]))
+		passCountB = float(sum([othTeam in i for i in passes]))
 		passDelta = float(abs(passCountA - passCountB))
 
 	else: # no 'passes' information
@@ -302,9 +339,9 @@ def passes(window,aggregateEvent,targetEvents,TeamAstring,TeamBstring,exportData
 		tmp = 1
 		for idx,val in enumerate(consecutivePasses):
 			consecutivePassesPerPossession.append(tmp)
-			if passes[idx] == TeamAstring:
+			if passes[idx] == refTeam:
 				consecutivePassesPerPossessionA.append(tmp)
-			elif passes[idx] == TeamBstring:
+			elif passes[idx] == othTeam:
 				consecutivePassesPerPossessionB.append(tmp)
 			else:
 				warn('\nERROR: Could not identify whose possession: <<%s>>' %passes[idx])
@@ -321,37 +358,37 @@ def passes(window,aggregateEvent,targetEvents,TeamAstring,TeamBstring,exportData
 			avgConsecutivePasses = sum(consecutivePassesPerPossession) / len(consecutivePassesPerPossession)
 			stdConsecutivePasses = sum([abs(i - avgConsecutivePasses) for i in consecutivePassesPerPossession]) / len(consecutivePassesPerPossession)
 		else:
-			maxConsecutivePasses = None
-			avgConsecutivePasses = None
-			stdConsecutivePasses = None
+			maxConsecutivePasses = exportNone
+			avgConsecutivePasses = exportNone
+			stdConsecutivePasses = exportNone
 
 		if consecutivePassesPerPossessionA != []:
 			maxConsecutivePassesA = max(consecutivePassesPerPossessionA)
 			avgConsecutivePassesA = sum(consecutivePassesPerPossessionA) / len(consecutivePassesPerPossessionA)
 			stdConsecutivePassesA = sum([abs(i - avgConsecutivePassesA) for i in consecutivePassesPerPossessionA]) / len(consecutivePassesPerPossessionA)
 		else:
-			maxConsecutivePassesA = None
-			avgConsecutivePassesA = None
-			stdConsecutivePassesA = None
+			maxConsecutivePassesA = exportNone
+			avgConsecutivePassesA = exportNone
+			stdConsecutivePassesA = exportNone
 
 		if consecutivePassesPerPossessionB != []:
 			maxConsecutivePassesB = max(consecutivePassesPerPossessionB)
 			avgConsecutivePassesB = sum(consecutivePassesPerPossessionB) / len(consecutivePassesPerPossessionB)
 			stdConsecutivePassesB = sum([abs(i - avgConsecutivePassesB) for i in consecutivePassesPerPossessionB]) / len(consecutivePassesPerPossessionB)
 		else:
-			maxConsecutivePassesB = None
-			avgConsecutivePassesB = None
-			stdConsecutivePassesB = None		
+			maxConsecutivePassesB = exportNone
+			avgConsecutivePassesB = exportNone
+			stdConsecutivePassesB = exportNone		
 	else:
-		maxConsecutivePasses = None
-		maxConsecutivePassesA = None
-		maxConsecutivePassesB = None
-		avgConsecutivePasses = None
-		avgConsecutivePassesA = None
-		avgConsecutivePassesB = None
-		stdConsecutivePasses = None
-		stdConsecutivePassesA = None
-		stdConsecutivePassesB = None
+		maxConsecutivePasses = exportNone
+		maxConsecutivePassesA = exportNone
+		maxConsecutivePassesB = exportNone
+		avgConsecutivePasses = exportNone
+		avgConsecutivePassesA = exportNone
+		avgConsecutivePassesB = exportNone
+		stdConsecutivePasses = exportNone
+		stdConsecutivePassesA = exportNone
+		stdConsecutivePassesB = exportNone
 
 	# To export:
 	# Pass counts
@@ -359,17 +396,17 @@ def passes(window,aggregateEvent,targetEvents,TeamAstring,TeamBstring,exportData
 	exportData.append(passCount)
 	exportFullExplanation.append('Number of passes per %s.' %aggregateEvent)
 
-	exportDataString.append('passCountA')
+	exportDataString.append('passCount_ref')
 	exportData.append(passCountA)
-	exportFullExplanation.append('Number of passes by %s per %s.' %(TeamAstring,aggregateEvent))
+	exportFullExplanation.append('Number of passes by %s per %s.' %(refTeam,aggregateEvent))
 
-	exportDataString.append('passCountB')
+	exportDataString.append('passCount_oth')
 	exportData.append(passCountB)
-	exportFullExplanation.append('Number of passes by %s per %s.' %(TeamBstring,aggregateEvent))
+	exportFullExplanation.append('Number of passes by %s per %s.' %(othTeam,aggregateEvent))
 
 	exportDataString.append('passDelta')
 	exportData.append(passDelta)
-	exportFullExplanation.append('Absolute difference between number of passes by %s and %s.' %(TeamAstring,TeamBstring))
+	exportFullExplanation.append('Absolute difference between number of passes by %s and %s.' %(refTeam,othTeam))
 
 
 	# Consecutive passes
@@ -378,42 +415,43 @@ def passes(window,aggregateEvent,targetEvents,TeamAstring,TeamBstring,exportData
 	exportData.append(maxConsecutivePasses)
 	exportFullExplanation.append('Maximum number of consecutive passes per %s.' %aggregateEvent)
 
-	exportDataString.append('maxConsecutivePassesA')
+	exportDataString.append('maxConsecutivePasses_ref')
 	exportData.append(maxConsecutivePassesA)
-	exportFullExplanation.append('Maximum number of consecutive passes (during a possession) by %s per %s.' %(TeamAstring,aggregateEvent))
+	exportFullExplanation.append('Maximum number of consecutive passes (during a possession) by %s per %s.' %(refTeam,aggregateEvent))
 
-	exportDataString.append('maxConsecutivePassesB')
+	exportDataString.append('maxConsecutivePasses_oth')
 	exportData.append(maxConsecutivePassesB)
-	exportFullExplanation.append('Maximum number of consecutive passes (during a possession) by %s per %s.' %(TeamBstring,aggregateEvent))
+	exportFullExplanation.append('Maximum number of consecutive passes (during a possession) by %s per %s.' %(othTeam,aggregateEvent))
 
 	# Average per event
 	exportDataString.append('avgConsecutivePasses')
 	exportData.append(avgConsecutivePasses)
 	exportFullExplanation.append('Average number of consecutive passes (during a possession) per %s.' %aggregateEvent)
 
-	exportDataString.append('avgConsecutivePassesA')
+	exportDataString.append('avgConsecutivePasses_ref')
 	exportData.append(avgConsecutivePassesA)
-	exportFullExplanation.append('Average number of consecutive passes (during a possession) by %s per %s.' %(TeamAstring,aggregateEvent))
+	exportFullExplanation.append('Average number of consecutive passes (during a possession) by %s per %s.' %(refTeam,aggregateEvent))
 
-	exportDataString.append('avgConsecutivePassesB')
+	exportDataString.append('avgConsecutivePasses_oth')
 	exportData.append(avgConsecutivePassesB)
-	exportFullExplanation.append('Average number of consecutive passes (during a possession) by %s per %s.' %(TeamBstring,aggregateEvent))
+	exportFullExplanation.append('Average number of consecutive passes (during a possession) by %s per %s.' %(othTeam,aggregateEvent))
 
 	# Std per event
 	exportDataString.append('stdConsecutivePasses')
 	exportData.append(stdConsecutivePasses)
 	exportFullExplanation.append('Standard deviation of number of consecutive passes (during a possession) per %s.' %aggregateEvent)
 
-	exportDataString.append('stdConsecutivePassesA')
+	exportDataString.append('stdConsecutivePasses_ref')
 	exportData.append(stdConsecutivePassesA)
-	exportFullExplanation.append('Standard deviation of number of consecutive passes (during a possession) by %s per %s.' %(TeamAstring,aggregateEvent))
+	exportFullExplanation.append('Standard deviation of number of consecutive passes (during a possession) by %s per %s.' %(refTeam,aggregateEvent))
 
-	exportDataString.append('stdConsecutivePassesB')
+	exportDataString.append('stdConsecutivePasses_oth')
 	exportData.append(stdConsecutivePasses)
-	exportFullExplanation.append('Standard deviation of number of consecutive passes (during a possession) by %s per %s.' %(TeamBstring,aggregateEvent))
+	exportFullExplanation.append('Standard deviation of number of consecutive passes (during a possession) by %s per %s.' %(othTeam,aggregateEvent))
 
 	safetyWarning.checkLengthExport(exportData,exportDataString,exportFullExplanation)
 	return exportData,exportDataString,exportFullExplanation
+<<<<<<< HEAD
 
 # def passes2(rowswithinrange,aggregateEvent,possessionCharacteristics,rawDict,attributeDict,TeamAstring,TeamBstring,exportData,exportDataString,exportFullExplanation):
 	
@@ -536,3 +574,5 @@ def passes(window,aggregateEvent,targetEvents,TeamAstring,TeamBstring,exportData
 # 	return exportData,exportDataString,exportFullExplanation
 # #################################################################
 # #################################################################
+=======
+>>>>>>> origin/NP_continued

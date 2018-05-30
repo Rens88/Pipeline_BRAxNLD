@@ -21,7 +21,11 @@ import pandas as pd
 # import exportCSV
 
 import safetyWarning
+<<<<<<< HEAD
 import student_LT_importEvents
+=======
+import student_XX_importEvents
+>>>>>>> origin/NP_continued
 import time
 
 from os import listdir, path, makedirs, sep
@@ -47,10 +51,22 @@ if __name__ == '__main__':
 	# 3 --> START time of the possession
 
 
+<<<<<<< HEAD
 def process(rawPanda,eventsPanda,TeamAstring,TeamBstring,cleanFname,dataFolder,debuggingMode):
 	tImportEvents = time.time()
 	
+=======
+def process(rawPanda,eventsPanda,TeamAstring,TeamBstring,cleanFname,dataFolder,debuggingMode,skipComputeEvents_curFile):
+	tImportEvents = time.time()
+>>>>>>> origin/NP_continued
 	targetEvents = {}
+
+	if skipComputeEvents_curFile:
+		if debuggingMode:
+			elapsed = str(round(time.time() - tImportEvents, 2))
+			print('***** Time elapsed during importEvents: %ss' %elapsed)
+
+		return targetEvents
 	########################################################################################
 	####### Import existing events ######################################################
 	########################################################################################
@@ -67,17 +83,27 @@ def process(rawPanda,eventsPanda,TeamAstring,TeamBstring,cleanFname,dataFolder,d
 	targetEvents = passes(eventsPanda,TeamAstring,TeamBstring,targetEvents)
 	targetEvents = full(eventsPanda,targetEvents,TeamAstring)
 
+<<<<<<< HEAD
 	# importFromFile = True # temporarily turned off
 	# if importFromFile:
 	# 	targetEvents = fromFile(targetEvents,rawPanda,TeamAstring,TeamBstring,cleanFname,dataFolder)
 
 	targetEvents = \
 	student_LT_importEvents.process(targetEvents,cleanFname,TeamAstring,TeamBstring,dataFolder)
+=======
+	importFromFile = True # temporarily turned off
+	if importFromFile:
+		targetEvents = fromFile(targetEvents,rawPanda,TeamAstring,TeamBstring,cleanFname,dataFolder)
+
+	targetEvents = \
+	student_XX_importEvents.process(targetEvents,cleanFname,TeamAstring,TeamBstring,dataFolder)
+>>>>>>> origin/NP_continued
 
 	if debuggingMode:
 		elapsed = str(round(time.time() - tImportEvents, 2))
 		print('***** Time elapsed during importEvents: %ss' %elapsed)
 
+<<<<<<< HEAD
 	return targetEvents
 
 def fromFile(targetEvents,rawPanda,TeamAstring,TeamBstring,cleanFname,dataFolder):
@@ -411,6 +437,341 @@ def fromFile(targetEvents,rawPanda,TeamAstring,TeamBstring,cleanFname,dataFolder
 
 	return targetEvents
 
+=======
+	return targetEvents
+
+def fromFile(targetEvents,rawPanda,TeamAstring,TeamBstring,cleanFname,dataFolder):
+
+	# it's not so tidy and perhaps not very generic.
+	# This function creates some useful targets.
+
+	if not exists(dataFolder + sep + 'existingTargets'):
+		warn('\nWARNING: folder <existingTargets> in dataFolder <%s> NOT found.\nIf you want to import target events, put them in that folder.' %dataFolder)
+		return targetEvents
+
+	existingTargetsFname = dataFolder + 'existingTargets' + sep + cleanFname[:-12] + '_Event.csv'
+
+	if not isfile(existingTargetsFname):
+		warn('\nWARNING: Although the existingTarget\'s folder existed in dataFolder <%s>, no <%s> found.\nNo existing targets imported.\nSet onlyAnalyzeFilesWithEventData to True in User input if you want to limit the analysis to files that have targetEvents.\n' %(dataFolder,cleanFname[:-12] + '_Event.csv'))
+		return targetEvents
+
+	rawTargetEvents = pd.read_csv(existingTargetsFname, low_memory = False)
+
+	## All events that typically occur: 
+	theseAreTheKnownEvents = ['Near ball', 'Transition A-H', 'BP Home', 'Pass', 'Reception', 'Running with ball', 'Transition H-A', 'BP Away', 'Interception']
+	# Near ball --> all players close to the ball
+	# Transition --> instant new team has possession
+	# Pass --> Pass from 'Player' to 'Target'
+	# Reception --> Not sure. More or less the inverse of Pass. One of 'Player' and 'Target' received and the other gave the pass
+	# Interception --> By 'Player' intercepted from 'Target'
+	importTheseEvents = ['BP Home', 'Pass', 'BP Away', 'Interception']
+
+	## Check if columns exist in csv
+	requiredColumns = ['End_Ts (ms)','Start_Ts (ms)','X','Player','Target','Event']
+	for c in requiredColumns:
+		if not c in rawTargetEvents.keys():
+			warn('\nFATAL WARNING: Required column <%s> not found in rawTargetEvents:\n<%s>.\nThis will result in an error in the for-loop below.\nIf this occurs, you need to make this section more generic.\n' %(c,rawTargetEvents.keys()))
+	#####
+
+	TeamA_Players = rawPanda.loc[rawPanda['TeamID'] == TeamAstring,'PlayerID'].unique()
+	TeamB_Players = rawPanda.loc[rawPanda['TeamID'] == TeamBstring,'PlayerID'].unique()
+	
+	template = False ########################################################################################################################################################################################################################################################################################################################################################################################################
+	if template:
+		tmp = pd.read_csv('C:\\Users\\rensm\\Documents\\SURFDRIVE\\Repositories\\BRAxNLD repository_newStyle\\Data\\Cleaned\\1_EL_XIV_cleaned.csv')
+
+		TeamA_Players = tmp.loc[tmp['TeamID'] == TeamAstring,'PlayerID'].unique()
+		TeamB_Players = tmp.loc[tmp['TeamID'] == TeamBstring,'PlayerID'].unique()
+	
+	# Check if no overlap between players
+	DuplPlayers = [i for i in TeamA_Players if i in TeamB_Players]
+	if DuplPlayers != []:
+		warn('\nFATAL WARNING: The following players exist both in Team A <%s> and Team B <%s>:\n%s\n\nThis is fatally problematic, as some of the assumptions won\'t hold.' %(TeamAstring,TeamBstring,DuplPlayers))
+
+	HomeTeam = []
+	AwayTeam = []
+
+	# Passes = pd.DataFrame([],columns = ['tEvent','refTeam','nthPossession','Passer','Receiver'])
+	Passes = []
+	# Posessions = pd.DataFrame([],columns = ['tEvent','refTeam','tStart'])
+	Possessions = []
+	# Turnovers = pd.DataFrame([],columns = ['tEvent','refTeam','nthPossession','Intercepter','Interceptee'])
+	Turnovers = []
+
+	couldnotfindthese = []
+	skippedTheseInconsistencies = []
+	for idx in rawTargetEvents.index:
+
+		if not rawTargetEvents.loc[idx,'Event'] in importTheseEvents:
+			if not rawTargetEvents.loc[idx,'Event'] in theseAreTheKnownEvents:
+				warn('\nWARNING: Unknown event <%s> encountered in rawTargetEvents.\nScript not set-up to process this event.\nEdit <importTheseEvents> in <importEvents.py>.\n' %rawTargetEvents.loc[idx,'Event'])
+			continue
+
+		curTeam = []
+
+		tEnd = rawTargetEvents.loc[idx,'End_Ts (ms)'] /1000 # conver to seconds
+		tStart = rawTargetEvents.loc[idx,'Start_Ts (ms)'] /1000 # conver to seconds
+		X = rawTargetEvents.loc[idx,'X']
+		Y = rawTargetEvents.loc[idx,'Y']
+		refPlayer = rawTargetEvents.loc[idx,'Player']
+		targetPlayer = rawTargetEvents.loc[idx,'Target']
+		eventString = rawTargetEvents.loc[idx,'Event']
+
+		# Volgens mij worden de events bepaald aan de hand van het veranderen van snelheid en 
+		# richting van de bal in de buurt van een speler. Reception betekent dat een pass 
+		# ontvangen is door een teamgenoot, interception door een tegenstander. BP is de 
+		# start van een bal possession en transition geeft het einde van een possession weer. 
+		# Een possession duurt van het eerste balcontact van team A tot het eerste balcontact 
+		# van team B.  Running with the ball zou overeen moeten komen met een bal en speler 
+		# die in dezelfde richting bewegen in elkaars nabijheid.
+
+		## Check some assumptions (within current event only)
+		
+		# Check who is the current team
+		if refPlayer in TeamA_Players:
+			curTeam = TeamAstring
+
+		if refPlayer in TeamB_Players:
+			if not curTeam == []:
+				warn('\nFATAL WARNING: A player <%s> was linked to both Team A <%s> and Team B <%s>.\nThis will lead to problems later on.\n' %(refPlayer,TeamAstring,TeamBstring))
+			curTeam = TeamBstring
+		
+		# When curTeam is failed to be allocated
+		if curTeam == []:
+			# if home and away team not yet allocated:
+			# Report a warning and continue with the next. (should only be possible if ths happens in the first events)
+			if HomeTeam == []:
+				warn('\nWARNING: A player that could not be allocated to a team was found before Home and Away teams were assigned.\nTherefore, event <%s> was skipped.\n' %rawTargetEvents.loc[idx,'Event'])
+				continue
+
+			# if home and away team already allocated, just use the previous allocation
+			# determine whether current event refers to home or away
+			if eventString in ['Transition A-H', 'BP Home']: 
+				curTeam = HomeTeam
+			else:
+				curTeam = AwayTeam
+
+			addCurPlayer_to_TeamX_players = False # temporarily turned off, but it does work
+			if addCurPlayer_to_TeamX_players:
+				# add curplayer to TeamX_players
+				if curTeam == TeamAstring:
+					TeamA_Players = np.append(TeamA_Players,refPlayer)
+
+				if curTeam == TeamBstring:
+					TeamB_Players = np.append(TeamB_Players,refPlayer)
+			
+			# Export the players that couldnt be found: (printed in a warning after the loop)
+			if not refPlayer in couldnotfindthese:
+				couldnotfindthese.append(refPlayer)
+		# else:
+		# 	print('Found <%s>' %refPlayer)
+
+		# Check who is the home and away team		
+		if eventString in ['Transition A-H', 'BP Home']: 
+			if HomeTeam == []:
+				HomeTeam = curTeam
+				if HomeTeam == TeamAstring:
+					AwayTeam = TeamBstring
+				else:
+					AwayTeam = TeamAstring
+			
+			elif not HomeTeam == curTeam:
+				# warn('\nFATAL WARNING: Inconsistent labelling of Home and Away.\nCurrent \'Home\'-Event referred to refPlayer <%s> of team <%s>.\nBut, previously, an event was used to deduce that team <%s> was the home team...\nThis means that the event refTeam cannot be trusted.\nTo be sure, this event was skipped.\n' %(refPlayer,curTeam,HomeTeam))
+				skippedTheseInconsistencies.append('Event <%s> of refPlayer <%s> and targetPlayer <%s> was skipped.' %(eventString,refPlayer,targetPlayer))
+				continue
+
+		if eventString in ['Transition H-A', 'BP Away']: 
+			if AwayTeam == []:
+				AwayTeam = curTeam
+				if AwayTeam == TeamAstring:
+					HomeTeam = TeamBstring
+				else:
+					HomeTeam = TeamAstring
+			
+			elif not AwayTeam == curTeam:
+				# warn('\nFATAL WARNING: Inconsistent labelling of Home and Away.\nCurrent \'Away\'-Event referred to refPlayer <%s> of team <%s>.\nBut, previously, an event was used to deduce that team <%s> was the away team...\nThis means that the event refTeam cannot be trusted.\nTo be sure, this event was skipped.\n' %(refPlayer,curTeam,AwayTeam))
+				skippedTheseInconsistencies.append('Event <%s> of refPlayer <%s> and targetPlayer <%s> was skipped.' %(eventString,refPlayer,targetPlayer))
+				continue
+
+		# Check the consistency of the interception
+		if eventString == 'Interception':
+			# refPlayer = intercpeter
+			if targetPlayer in TeamA_Players and curTeam == TeamAstring:
+				# warn('\nFATAL WARNING: Inconsistent input of Interception.\nBoth intercepter <%s> and interceptee <%s> are in %s.\nCannot trust assumption made based on who intercepted from whom without additional coding.\n' %(refPlayer,targetPlayer,TeamAstring))
+				skippedTheseInconsistencies.append('Event <%s> of refPlayer <%s> and targetPlayer <%s> was skipped.' %(eventString,refPlayer,targetPlayer))
+				continue
+			if targetPlayer in TeamB_Players and curTeam == TeamBstring:
+				# warn('\nFATAL WARNING: Inconsistent input of Interception.\nBoth intercepter <%s> and interceptee <%s> are in %s.\nCannot trust assumption made based on who intercepted from whom without additional coding.\n' %(refPlayer,targetPlayer,TeamBstring))
+				skippedTheseInconsistencies.append('Event <%s> of refPlayer <%s> and targetPlayer <%s> was skipped.' %(eventString,refPlayer,targetPlayer))
+				continue
+
+		## Export the data
+		if 'BP' in eventString:
+
+			
+			Possessions.append([tEnd,curTeam,tStart])
+			# curPossessions = pd.DataFrame([tEnd,curTeam,tStart],columns = ['tEvent','refTeam','tStart'])
+
+			# Possessions = Posessions.append(curPossessions,ignore_index=True)
+
+			# if len(Possessions) == 3:
+			# 	print(curPossessions)
+			# 	print('---')
+			# 	print(Possessions)
+			# 	pdb.set_trace()
+
+			# For possession, add a duplicate with all possession changes within 16m
+			
+
+			continue
+
+		if 'Pass' == eventString:
+			if curTeam == TeamAstring:
+				if not targetPlayer in TeamA_Players:
+					# targetPlayer in different team, therefore, this pass is a turnover.
+					# Skip it.
+					continue
+			elif curTeam == TeamBstring:
+				if not targetPlayer in TeamB_Players:
+					# targetPlayer in different team, therefore, this pass is a turnover.
+					# Skip it.
+
+					continue
+			nthpossession = None
+			Passes.append([tStart,curTeam,nthpossession,refPlayer,targetPlayer])
+			# curPasses = pd.DataFrame([[tStart,curTeam,nthpossession,refPlayer,targetPlayer]],columns = ['tEvent','refTeam','nthPossession','Passer','Receiver'])
+			# Passes = pd.concat([Passes,curPasses], axis =0)
+
+			# Passes.append((tStart,curTeam,nthpossession,refPlayer,targetPlayer))
+
+			continue
+
+		if 'Interception' == eventString:
+			
+			nthpossession = None
+			Turnovers.append([tStart,curTeam,nthpossession,refPlayer,targetPlayer,(X,Y)])
+			# curTurnovers = pd.DataFrame([[tStart,curTeam,nthpossession,refPlayer,targetPlayer]],columns = ['tEvent','refTeam','nthPossession','Intercepter','Interceptee'])
+			# Turnovers = pd.concat([Turnovers,curTurnovers], axis =0)
+
+			continue
+
+	if not couldnotfindthese == []:
+		warn('\nWARNING: Could not find which team (<%s> or <%s>) the following players belonged to:\n<%s>\n\nAs a temporary work-around I\'ve added the missing players to the home or away team based on which Event they belonged to. THIS MAY LEAD TO FALSE ASSUMPTIONS ETC.\nDefinitely check this one out..\n!!!!!!!!!!!!!' %(TeamAstring,TeamBstring,couldnotfindthese))
+	if not skippedTheseInconsistencies == []:
+		warn('\nWARNING: Skipped the following events because of inconsistent labelling of Home and Away:\n\n%s' %skippedTheseInconsistencies)
+
+	
+	# Check some between-event assumptions:
+	mismatchedPass = []
+	matchedPass = []
+	mismatchedTurnover = []
+	matchedTurnover = []
+	for idx,val in enumerate(Possessions):
+		tStart = val[2]#Possessions.loc[idx,'tStart']
+		tEnd = val[0]#Possessions.loc[idx,'tEvent']
+		refTeam = val[1]#Possessions.loc[idx,'refTeam']
+
+		# Add nth possession
+		nthCurPass = 0
+		lastPass = []
+		for idp,p in enumerate(Passes):
+			tEvent_p = p[0]
+			refTeam_p = p[1]
+
+			if tEvent_p >= tStart and tEvent_p < tEnd:
+
+				nthCurPass = nthCurPass +1
+
+				if Passes[idp][2] == None:
+					Passes[idp][2] = idx # allocated nth possession
+				else:
+					warn('\nFATAL WARNING: Sometings wrong. Pass belongs to multiple possesions.\n')
+					pdb.set_trace()
+				
+				if refTeam != refTeam_p:
+					mismatchedPass.append('Possession refTeam = <%s>, Pass refTeam = <%s>. nth pass = <%s>.' %(refTeam,refTeam_p,nthCurPass))
+					# warn('\nWARNING: refTeam based upon possession <%s> does not correspond with refTeam based on Passes.\n' %val)
+					# print('Mismatched pass: %s' %p)
+					lastPass = 'mismatched'
+				else:
+					matchedPass.append('Possession refTeam = <%s>, Pass refTeam = <%s>. nth pass = <%s>.' %(refTeam,refTeam_p,nthCurPass))
+					lastPass = 'matched'
+					# print('Matched pass: %s' %p)
+
+			elif tEvent_p >= tEnd:
+
+				# print(mismatchedPass[-1])
+			
+				if lastPass == 'mismatched':
+					mismatchedPass[-1] = mismatchedPass[-1] + ' LAST PASS'
+				elif lastPass == 'matched':
+					matchedPass[-1] = matchedPass[-1] + ' LAST PASS'
+
+				break # assumes that data is ordered by time
+
+		for idt,t in enumerate(Turnovers):
+			tEvent_t = t[0]
+			refTeam_t = t[1]
+			if tEvent_t >= tStart and tEvent_t < tEnd:
+				if Turnovers[idt][2] == None:
+					Turnovers[idt][2] = idx # allocated nth possession
+				else:
+					warn('\nFATAL WARNING: Sometings wrong. Turnover belongs to multiple possesions.\n')
+					pdb.set_trace()
+
+				if refTeam != refTeam_t:
+					# warn('\nWARNING: refTeam based upon possession <%s> does not correspond with refTeam based on Turnovers.\n' %val)
+					# print('Mismatched turnover: %s' %t)
+					mismatchedTurnover.append('Possession refTeam = <%s>, Turnover refTeam = <%s>.' %(refTeam,refTeam_t))
+				else:
+					# print('Matched turnover: %s' %t)
+					matchedTurnover.append('Possession refTeam = <%s>, Turnover refTeam = <%s>.' %(refTeam,refTeam_t))
+
+	# Check if the teams match that the event references to.
+	if mismatchedPass != []:
+		mismatchedPassFirst = [m for m in mismatchedPass if 'nth pass = <1>' in m]
+		matchedPassFirst = [m for m in matchedPass if 'nth pass = <1>' in m]
+		mismatchedPassLast = [m for m in mismatchedPass if 'LAST' in m]
+		matchedPassLast = [m for m in matchedPass if 'LAST' in m]
+		warn('\n<%s> out of <%s> passes were mismatched in terms of refTeam.' %(len(mismatchedPass),len(mismatchedPass)+len(matchedPass)))
+		print('\n<%s> out of <%s> FIRST passes were mismatched.' %(len(mismatchedPassFirst),len(mismatchedPassFirst)+len(matchedPassFirst)))
+		print('\n<%s> out of <%s> LAST passes were mismatched.' %(len(mismatchedPassLast),len(mismatchedPassLast)+len(matchedPassLast)))
+	if mismatchedTurnover != []:
+		warn('\n<%s> out of <%s> turnovers were mismatched in terms of refTeam.' %(len(mismatchedTurnover),len(mismatchedTurnover)+len(matchedTurnover)))
+
+
+		## Could also check for consistency with to and from etc.
+		# for pidx in passIdx:
+		# 	# Passer to receiver etc.
+
+	# Change into tuple
+	Possessions_tuple = [tuple(x) for x in Possessions]
+	Passes_tuple = [tuple(x) for x in Passes]
+	Turnovers_tuple = [tuple(x) for x in Turnovers]
+
+	# Add to targetEvents
+	# Check if  targetEvents does not have 'Pass' as an event (with data)
+	if targetEvents['Possession'] != []:
+		warn('\nWARNING: targetEvents[\'Possession\'] was not empty. Possession events imported from CSV stored as Possession_csv.\n')
+		targetEvents = targetEvents.update({'Possession_csv':Possessions_tuple})
+	else:
+		targetEvents['Possession'] = Possessions_tuple
+
+	if targetEvents['Passes'] != []:
+		warn('\nWARNING: targetEvents[\'Passes\'] was not empty. Passes events imported from CSV stored as Passes_csv.\n')
+		targetEvents = targetEvents.update({'Passes_csv':Passes_tuple})
+	else:
+		targetEvents['Passes'] = Passes_tuple
+
+	if targetEvents['Turnovers'] != []:
+		warn('\nWARNING: targetEvents[\'Turnovers\'] was not empty. Turnovers events imported from CSV stored as Turnovers_csv.\n')
+		targetEvents = targetEvents.update({'Turnovers_csv':Turnovers_tuple})
+	else:
+		targetEvents['Turnovers'] = Turnovers_tuple
+
+	return targetEvents
+
+>>>>>>> origin/NP_continued
 def full(eventsPanda,targetEvents,TeamAstring):
 	targetEvents = {**targetEvents,'Full':[]}
 	# If an error occurs here, then this may be a problem with Linux.
