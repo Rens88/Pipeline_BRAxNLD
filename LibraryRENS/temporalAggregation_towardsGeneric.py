@@ -608,12 +608,14 @@ def checkIfDataExists(aggregateLevel,debuggingMode,tTempAgg,exportData,exportDat
 	return eventExcerptPanda
 def cleanUp_ballSpeedAcceleration(rawDict,attributeDict):
 	# something that could be part of clean-up:
-	if not all(np.isnan(attributeDict.loc[rawDict['PlayerID'] == 'ball','Acceleration'])):
-		attributeDict.loc[rawDict['PlayerID'] == 'ball','Acceleration'] = np.nan
-		warn('\nWARN: Some datasets also give the acceleration of the ball.\nTo avoid conflicts, these input values will be overwritten with empty values.\nIf you are in fact interested in Acceleration of the ball, then create a new feature that refers to the ball specifically (ballAcceleration).\n')
-	if not all(np.isnan(attributeDict.loc[rawDict['PlayerID'] == 'ball','Speed'])):
-		attributeDict.loc[rawDict['PlayerID'] == 'ball','Speed'] = np.nan
-		warn('\nWARN: Some datasets also give the Speed of the ball.\nTo avoid conflicts, these input values will be overwritten with empty values.\nIf you are in fact interested in Speed of the ball, then create a new feature that refers to the ball specifically (ballSpeed).\n')
+	if 'Acceleration' in attributeDict.keys():
+		if not all(np.isnan(attributeDict.loc[rawDict['PlayerID'] == 'ball','Acceleration'])):
+			attributeDict.loc[rawDict['PlayerID'] == 'ball','Acceleration'] = np.nan
+			warn('\nWARN: Some datasets also give the acceleration of the ball.\nTo avoid conflicts, these input values will be overwritten with empty values.\nIf you are in fact interested in Acceleration of the ball, then create a new feature that refers to the ball specifically (ballAcceleration).\n')
+	if 'Speed' in attributeDict.keys():
+		if not all(np.isnan(attributeDict.loc[rawDict['PlayerID'] == 'ball','Speed'])):
+			attributeDict.loc[rawDict['PlayerID'] == 'ball','Speed'] = np.nan
+			warn('\nWARN: Some datasets also give the Speed of the ball.\nTo avoid conflicts, these input values will be overwritten with empty values.\nIf you are in fact interested in Speed of the ball, then create a new feature that refers to the ball specifically (ballSpeed).\n')
 	return attributeDict
 
 def prepareExportStrings(exportDataString,aggregateLevel,exportFullExplanation):
