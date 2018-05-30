@@ -234,7 +234,7 @@ for dirtyFname in DirtyDataFiles:
 	## Temporal aggregation
 	exportData,exportDataString,exportFullExplanation,trialEventsSpatAggExcerpt,attrLabel = \
 	temporalAggregation_towardsGeneric.process(targetEvents,aggregateLevel,rawPanda,attrPanda,exportData,exportDataString,exportDataFullExplanation,TeamAstring,TeamBstring,debuggingMode,skipEventAgg_curFile,fileIdentifiers,attrLabel,aggregatePerPlayer,includeEventInterpolation,datasetFramerate)
-	# pdb.set_trace()
+
 	########################################################################################
 	####### EXPORT to CSV ##################################################################
 	########################################################################################

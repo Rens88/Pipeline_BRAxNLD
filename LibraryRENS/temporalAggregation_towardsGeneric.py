@@ -725,6 +725,8 @@ def aggregateTemporallyINCEPTION(population,aggregationOrder,aggrMeth_popLevel,a
 		print('exportCurrentData = %s' %exportCurrentData)
 		print('overallString = %s' %overallString)
 		print('overallExplanation = %s' %overallExplanation)
+		pivotedData_refTeam = curEventExcerptPanda[curContent_refTeam].pivot(index = 'eventTimeIndex', columns = 'PlayerID', values = key)
+
 		pdb.set_trace()
 	# Allplayers of othTeam
 	curContent_othTeam = curEventExcerptPanda['TeamID'] == othTeam

@@ -69,7 +69,7 @@ skipComputeEvents = True #
 
 # If both True, then files are not verified to be analyzed previously
 # If skipToDataSetLevel == False, then it is verified that every match exists in eventAggregate
-skipEventAgg = False # For now, don't skip unless longest window was computed. # Only works if current file already exists in eventAgg. NB: if False, skipToDataSetLevel becomes ineffective.
+skipEventAgg = True # For now, don't skip unless longest window was computed. # Only works if current file already exists in eventAgg. NB: if False, skipToDataSetLevel becomes ineffective.
 skipToDataSetLevel = False # Only works if corresponding AUTOMATIC BACKUP exists. NB: Does not check if all raw data files are in automatic backup. NB2: does not include any changes in cleanup, spatagg, or eventagg NB2: may not work after implementing iteratoverwindows thingy
 
 # Choose between append (= True) or overwrite (= False) (the first time around only of course) the existing (if any) eventAggregate CSV.

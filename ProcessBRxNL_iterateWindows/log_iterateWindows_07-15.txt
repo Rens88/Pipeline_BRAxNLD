@@ -1,0 +1,1422 @@
+/home/meerhoffla/the Pipeline/ProcessBRxNL_iterateWindows/initialization.py:139: UserWarning: 
+WARNING: It could be nicer by even looking for files with larger windows than the one asked for. See below for a start. Remember to export the new window and lag sizes as the filename afeter initialization...
+Short term solution is to include a window and lag from the longer window and lag..
+  warn('\nWARNING: It could be nicer by even looking for files with larger windows than the one asked for. See below for a start. Remember to export the new window and lag sizes as the filename afeter initialization...\nShort term solution is to include a window and lag from the longer window and lag..')
+/home/meerhoffla/the Pipeline/ProcessBRxNL_iterateWindows/initialization.py:214: UserWarning: 
+WARNING: Couldnt find the raw data of event file: <145_ERE_XVI_Event.csv>.
+Therefore, it was excluded.
+  warn('\nWARNING: Couldnt find the raw data of event file: <%s>.\nTherefore, it was excluded.' %f)
+/home/meerhoffla/the Pipeline/ProcessBRxNL_iterateWindows/initialization.py:214: UserWarning: 
+WARNING: Couldnt find the raw data of event file: <30_ERE_XIV_Event.csv>.
+Therefore, it was excluded.
+  warn('\nWARNING: Couldnt find the raw data of event file: <%s>.\nTherefore, it was excluded.' %f)
+/home/meerhoffla/the Pipeline/ProcessBRxNL_iterateWindows/initialization.py:214: UserWarning: 
+WARNING: Couldnt find the raw data of event file: <37_EL_XIV_Event.csv>.
+Therefore, it was excluded.
+  warn('\nWARNING: Couldnt find the raw data of event file: <%s>.\nTherefore, it was excluded.' %f)
+/home/meerhoffla/the Pipeline/ProcessBRxNL_iterateWindows/initialization.py:214: UserWarning: 
+WARNING: Couldnt find the raw data of event file: <45_ERE_XIV_Event.csv>.
+Therefore, it was excluded.
+  warn('\nWARNING: Couldnt find the raw data of event file: <%s>.\nTherefore, it was excluded.' %f)
+/home/meerhoffla/the Pipeline/ProcessBRxNL_iterateWindows/initialization.py:214: UserWarning: 
+WARNING: Couldnt find the raw data of event file: <61_ERE_XIV_Event.csv>.
+Therefore, it was excluded.
+  warn('\nWARNING: Couldnt find the raw data of event file: <%s>.\nTherefore, it was excluded.' %f)
+/home/meerhoffla/the Pipeline/ProcessBRxNL_iterateWindows/initialization.py:214: UserWarning: 
+WARNING: Couldnt find the raw data of event file: <67_ERE_XIV_Event.csv>.
+Therefore, it was excluded.
+  warn('\nWARNING: Couldnt find the raw data of event file: <%s>.\nTherefore, it was excluded.' %f)
+/home/meerhoffla/the Pipeline/ProcessBRxNL_iterateWindows/initialization.py:267: UserWarning: 
+WARNING: Can only skipEventAgg if output already exists, otherwise the iteration over the windows doesnt work.
+  warn('\nWARNING: Can only skipEventAgg if output already exists, otherwise the iteration over the windows doesnt work.')
+/home/meerhoffla/the Pipeline/LibraryRENS/cleanupData.py:81: UserWarning: 
+Continued with previously cleaned and spatially aggregated data.
+If you want to add new spatial aggregates, change <skipSpatAgg> into <False>.
+
+  warn('\nContinued with previously cleaned and spatially aggregated data.\nIf you want to add new spatial aggregates, change <skipSpatAgg> into <False>.\n')
+/home/meerhoffla/the Pipeline/LibraryRENS/cleanupData.py:1026: UserWarning: 
+WARNING: Teamstring had to be determined based on the data.
+TeamAstring = <NL018>
+TeamBstring = <NL004>
+  warn('\nWARNING: Teamstring had to be determined based on the data.\nTeamAstring = <%s>\nTeamBstring = <%s>' %(TeamAstring,TeamBstring))
+/home/meerhoffla/the Pipeline/LibraryRENS/importFieldDimensions.py:28: UserWarning: 
+UPDATE REQUIRED.
+Should embed a rotation of the rawData based on the field dimensions if necessary
+************
+************
+************
+
+  warn('\nUPDATE REQUIRED.\nShould embed a rotation of the rawData based on the field dimensions if necessary\n************\n************\n************\n')
+/home/meerhoffla/the Pipeline/LibraryRENS/importFieldDimensions.py:32: UserWarning: 
+WARNING: no field dimensions found. Taking the default dimensions:
+{'foundIt': False, 'X_bot_left': -50, 'X_top_left': -50, 'X_bot_right': 50, 'X_top_right': 50, 'Y_bot_left': -32.5, 'Y_bot_right': -32.5, 'Y_top_left': 32.7, 'Y_top_right': 32.7}
+
+--------------------
+If you want to specify the fieldDimensions, create a CSV file in the folder /local/rens/Repositories/BRAxNLD repository_newStyle/Data/FieldDimensions with the name <fieldDimensions.csv> that looks like <fieldDimensions.csv>.
+This file should contain a column <Filename> with the string that corresponds to dirtyFname <106_ERE_XV.csv>.
+Furthermore, the file should contain the following columns with the respective coordinates:
+<X_top_left>
+<Y_top_left>
+<X_top_right>
+<Y_top_right>
+<X_bot_left>
+<Y_bot_left>
+<X_bot_right>
+<Y_bot_right>.
+
+  warn('\nWARNING: no field dimensions found. Taking the default dimensions:\n%s\n\n--------------------\nIf you want to specify the fieldDimensions, create a CSV file in the folder %sFieldDimensions with the name <fieldDimensions.csv> that looks like <fieldDimensions.csv>.\nThis file should contain a column <Filename> with the string that corresponds to dirtyFname <%s>.\nFurthermore, the file should contain the following columns with the respective coordinates:\n<X_top_left>\n<Y_top_left>\n<X_top_right>\n<Y_top_right>\n<X_bot_left>\n<Y_bot_left>\n<X_bot_right>\n<Y_bot_right>.\n' %(fieldDimensions,dataFolder,dirtyFname))
+sys:1: DtypeWarning: Columns (2) have mixed types. Specify dtype option on import or set low_memory=False.
+/home/meerhoffla/the Pipeline/LibraryRENS/temporalAggregation_towardsGeneric.py:613: UserWarning: 
+WARN: Some datasets also give the acceleration of the ball.
+To avoid conflicts, these input values will be overwritten with empty values.
+If you are in fact interested in Acceleration of the ball, then create a new feature that refers to the ball specifically (ballAcceleration).
+
+  warn('\nWARN: Some datasets also give the acceleration of the ball.\nTo avoid conflicts, these input values will be overwritten with empty values.\nIf you are in fact interested in Acceleration of the ball, then create a new feature that refers to the ball specifically (ballAcceleration).\n')
+/home/meerhoffla/the Pipeline/LibraryRENS/temporalAggregation_towardsGeneric.py:616: UserWarning: 
+WARN: Some datasets also give the Speed of the ball.
+To avoid conflicts, these input values will be overwritten with empty values.
+If you are in fact interested in Speed of the ball, then create a new feature that refers to the ball specifically (ballSpeed).
+
+  warn('\nWARN: Some datasets also give the Speed of the ball.\nTo avoid conflicts, these input values will be overwritten with empty values.\nIf you are in fact interested in Speed of the ball, then create a new feature that refers to the ball specifically (ballSpeed).\n')
+/home/meerhoffla/the Pipeline/LibraryRENS/temporalAggregation_towardsGeneric.py:623: UserWarning: 
+WARNING: Because for some trials Acceleration and speed are missing, Im creating these columns in advance.
+Good enough for a temporary work-around.\BUT I foresee it will be problematic with any readAttributCols that end up being (partially) missing.
+***
+***
+***
+***
+***
+***
+***
+***
+***
+***
+***
+***
+
+  warn('\nWARNING: Because for some trials Acceleration and speed are missing, Im creating these columns in advance.\nGood enough for a temporary work-around.\BUT I foresee it will be problematic with any readAttributCols that end up being (partially) missing.\n***\n***\n***\n***\n***\n***\n***\n***\n***\n***\n***\n***\n')
+/home/meerhoffla/the Pipeline/LibraryRENS/cleanupData.py:1026: UserWarning: 
+WARNING: Teamstring had to be determined based on the data.
+TeamAstring = <NL004>
+TeamBstring = <NL014>
+  warn('\nWARNING: Teamstring had to be determined based on the data.\nTeamAstring = <%s>\nTeamBstring = <%s>' %(TeamAstring,TeamBstring))
+/home/meerhoffla/the Pipeline/LibraryRENS/importFieldDimensions.py:32: UserWarning: 
+WARNING: no field dimensions found. Taking the default dimensions:
+{'foundIt': False, 'X_bot_left': -50, 'X_top_left': -50, 'X_bot_right': 50, 'X_top_right': 50, 'Y_bot_left': -32.5, 'Y_bot_right': -32.5, 'Y_top_left': 32.7, 'Y_top_right': 32.7}
+
+--------------------
+If you want to specify the fieldDimensions, create a CSV file in the folder /local/rens/Repositories/BRAxNLD repository_newStyle/Data/FieldDimensions with the name <fieldDimensions.csv> that looks like <fieldDimensions.csv>.
+This file should contain a column <Filename> with the string that corresponds to dirtyFname <129_ERE_XVI.csv>.
+Furthermore, the file should contain the following columns with the respective coordinates:
+<X_top_left>
+<Y_top_left>
+<X_top_right>
+<Y_top_right>
+<X_bot_left>
+<Y_bot_left>
+<X_bot_right>
+<Y_bot_right>.
+
+  warn('\nWARNING: no field dimensions found. Taking the default dimensions:\n%s\n\n--------------------\nIf you want to specify the fieldDimensions, create a CSV file in the folder %sFieldDimensions with the name <fieldDimensions.csv> that looks like <fieldDimensions.csv>.\nThis file should contain a column <Filename> with the string that corresponds to dirtyFname <%s>.\nFurthermore, the file should contain the following columns with the respective coordinates:\n<X_top_left>\n<Y_top_left>\n<X_top_right>\n<Y_top_right>\n<X_bot_left>\n<Y_bot_left>\n<X_bot_right>\n<Y_bot_right>.\n' %(fieldDimensions,dataFolder,dirtyFname))
+/usr/lib64/python3.6/site-packages/numpy/lib/arraysetops.py:472: FutureWarning: elementwise comparison failed; returning scalar instead, but in the future will perform elementwise comparison
+  mask |= (ar1 == a)
+/home/meerhoffla/the Pipeline/LibraryRENS/cleanupData.py:1026: UserWarning: 
+WARNING: Teamstring had to be determined based on the data.
+TeamAstring = <NL004>
+TeamBstring = <NL003>
+  warn('\nWARNING: Teamstring had to be determined based on the data.\nTeamAstring = <%s>\nTeamBstring = <%s>' %(TeamAstring,TeamBstring))
+/home/meerhoffla/the Pipeline/LibraryRENS/importFieldDimensions.py:32: UserWarning: 
+WARNING: no field dimensions found. Taking the default dimensions:
+{'foundIt': False, 'X_bot_left': -50, 'X_top_left': -50, 'X_bot_right': 50, 'X_top_right': 50, 'Y_bot_left': -32.5, 'Y_bot_right': -32.5, 'Y_top_left': 32.7, 'Y_top_right': 32.7}
+
+--------------------
+If you want to specify the fieldDimensions, create a CSV file in the folder /local/rens/Repositories/BRAxNLD repository_newStyle/Data/FieldDimensions with the name <fieldDimensions.csv> that looks like <fieldDimensions.csv>.
+This file should contain a column <Filename> with the string that corresponds to dirtyFname <142_ERE_XVI.csv>.
+Furthermore, the file should contain the following columns with the respective coordinates:
+<X_top_left>
+<Y_top_left>
+<X_top_right>
+<Y_top_right>
+<X_bot_left>
+<Y_bot_left>
+<X_bot_right>
+<Y_bot_right>.
+
+  warn('\nWARNING: no field dimensions found. Taking the default dimensions:\n%s\n\n--------------------\nIf you want to specify the fieldDimensions, create a CSV file in the folder %sFieldDimensions with the name <fieldDimensions.csv> that looks like <fieldDimensions.csv>.\nThis file should contain a column <Filename> with the string that corresponds to dirtyFname <%s>.\nFurthermore, the file should contain the following columns with the respective coordinates:\n<X_top_left>\n<Y_top_left>\n<X_top_right>\n<Y_top_right>\n<X_bot_left>\n<Y_bot_left>\n<X_bot_right>\n<Y_bot_right>.\n' %(fieldDimensions,dataFolder,dirtyFname))
+/home/meerhoffla/the Pipeline/LibraryRENS/cleanupData.py:1026: UserWarning: 
+WARNING: Teamstring had to be determined based on the data.
+TeamAstring = <NL023>
+TeamBstring = <NL004>
+  warn('\nWARNING: Teamstring had to be determined based on the data.\nTeamAstring = <%s>\nTeamBstring = <%s>' %(TeamAstring,TeamBstring))
+/home/meerhoffla/the Pipeline/LibraryRENS/importFieldDimensions.py:32: UserWarning: 
+WARNING: no field dimensions found. Taking the default dimensions:
+{'foundIt': False, 'X_bot_left': -50, 'X_top_left': -50, 'X_bot_right': 50, 'X_top_right': 50, 'Y_bot_left': -32.5, 'Y_bot_right': -32.5, 'Y_top_left': 32.7, 'Y_top_right': 32.7}
+
+--------------------
+If you want to specify the fieldDimensions, create a CSV file in the folder /local/rens/Repositories/BRAxNLD repository_newStyle/Data/FieldDimensions with the name <fieldDimensions.csv> that looks like <fieldDimensions.csv>.
+This file should contain a column <Filename> with the string that corresponds to dirtyFname <158_ERE_XVII.csv>.
+Furthermore, the file should contain the following columns with the respective coordinates:
+<X_top_left>
+<Y_top_left>
+<X_top_right>
+<Y_top_right>
+<X_bot_left>
+<Y_bot_left>
+<X_bot_right>
+<Y_bot_right>.
+
+  warn('\nWARNING: no field dimensions found. Taking the default dimensions:\n%s\n\n--------------------\nIf you want to specify the fieldDimensions, create a CSV file in the folder %sFieldDimensions with the name <fieldDimensions.csv> that looks like <fieldDimensions.csv>.\nThis file should contain a column <Filename> with the string that corresponds to dirtyFname <%s>.\nFurthermore, the file should contain the following columns with the respective coordinates:\n<X_top_left>\n<Y_top_left>\n<X_top_right>\n<Y_top_right>\n<X_bot_left>\n<Y_bot_left>\n<X_bot_right>\n<Y_bot_right>.\n' %(fieldDimensions,dataFolder,dirtyFname))
+/home/meerhoffla/the Pipeline/LibraryRENS/temporalAggregation_towardsGeneric.py:1129: UserWarning: 
+WARNING: Encountered an event where there was only data available for 1 team.
+As there was no content for the current key <Acceleration>, it must have been a team feature (IF IT WAS NOT, THEN THIS NEEDS TO BE LOOKED AT).
+The analysis continues by aggregating this feature as a NaN.
+Consider excluding this event listwise.
+
+  warn('\nWARNING: Encountered an event where there was only data available for 1 team.\nAs there was no content for the current key <%s>, it must have been a team feature (IF IT WAS NOT, THEN THIS NEEDS TO BE LOOKED AT).\nThe analysis continues by aggregating this feature as a NaN.\nConsider excluding this event listwise.\n' %key)
+/home/meerhoffla/the Pipeline/LibraryRENS/temporalAggregation_towardsGeneric.py:1129: UserWarning: 
+WARNING: Encountered an event where there was only data available for 1 team.
+As there was no content for the current key <Speed>, it must have been a team feature (IF IT WAS NOT, THEN THIS NEEDS TO BE LOOKED AT).
+The analysis continues by aggregating this feature as a NaN.
+Consider excluding this event listwise.
+
+  warn('\nWARNING: Encountered an event where there was only data available for 1 team.\nAs there was no content for the current key <%s>, it must have been a team feature (IF IT WAS NOT, THEN THIS NEEDS TO BE LOOKED AT).\nThe analysis continues by aggregating this feature as a NaN.\nConsider excluding this event listwise.\n' %key)
+/home/meerhoffla/the Pipeline/LibraryRENS/temporalAggregation_towardsGeneric.py:1129: UserWarning: 
+WARNING: Encountered an event where there was only data available for 1 team.
+As there was no content for the current key <TeamCentXA>, it must have been a team feature (IF IT WAS NOT, THEN THIS NEEDS TO BE LOOKED AT).
+The analysis continues by aggregating this feature as a NaN.
+Consider excluding this event listwise.
+
+  warn('\nWARNING: Encountered an event where there was only data available for 1 team.\nAs there was no content for the current key <%s>, it must have been a team feature (IF IT WAS NOT, THEN THIS NEEDS TO BE LOOKED AT).\nThe analysis continues by aggregating this feature as a NaN.\nConsider excluding this event listwise.\n' %key)
+/home/meerhoffla/the Pipeline/LibraryRENS/temporalAggregation_towardsGeneric.py:1129: UserWarning: 
+WARNING: Encountered an event where there was only data available for 1 team.
+As there was no content for the current key <TeamCentYA>, it must have been a team feature (IF IT WAS NOT, THEN THIS NEEDS TO BE LOOKED AT).
+The analysis continues by aggregating this feature as a NaN.
+Consider excluding this event listwise.
+
+  warn('\nWARNING: Encountered an event where there was only data available for 1 team.\nAs there was no content for the current key <%s>, it must have been a team feature (IF IT WAS NOT, THEN THIS NEEDS TO BE LOOKED AT).\nThe analysis continues by aggregating this feature as a NaN.\nConsider excluding this event listwise.\n' %key)
+/home/meerhoffla/the Pipeline/LibraryRENS/temporalAggregation_towardsGeneric.py:1129: UserWarning: 
+WARNING: Encountered an event where there was only data available for 1 team.
+As there was no content for the current key <LengthA>, it must have been a team feature (IF IT WAS NOT, THEN THIS NEEDS TO BE LOOKED AT).
+The analysis continues by aggregating this feature as a NaN.
+Consider excluding this event listwise.
+
+  warn('\nWARNING: Encountered an event where there was only data available for 1 team.\nAs there was no content for the current key <%s>, it must have been a team feature (IF IT WAS NOT, THEN THIS NEEDS TO BE LOOKED AT).\nThe analysis continues by aggregating this feature as a NaN.\nConsider excluding this event listwise.\n' %key)
+/home/meerhoffla/the Pipeline/LibraryRENS/temporalAggregation_towardsGeneric.py:1129: UserWarning: 
+WARNING: Encountered an event where there was only data available for 1 team.
+As there was no content for the current key <WidthA>, it must have been a team feature (IF IT WAS NOT, THEN THIS NEEDS TO BE LOOKED AT).
+The analysis continues by aggregating this feature as a NaN.
+Consider excluding this event listwise.
+
+  warn('\nWARNING: Encountered an event where there was only data available for 1 team.\nAs there was no content for the current key <%s>, it must have been a team feature (IF IT WAS NOT, THEN THIS NEEDS TO BE LOOKED AT).\nThe analysis continues by aggregating this feature as a NaN.\nConsider excluding this event listwise.\n' %key)
+/home/meerhoffla/the Pipeline/LibraryRENS/temporalAggregation_towardsGeneric.py:1129: UserWarning: 
+WARNING: Encountered an event where there was only data available for 1 team.
+As there was no content for the current key <TeamCentXB>, it must have been a team feature (IF IT WAS NOT, THEN THIS NEEDS TO BE LOOKED AT).
+The analysis continues by aggregating this feature as a NaN.
+Consider excluding this event listwise.
+
+  warn('\nWARNING: Encountered an event where there was only data available for 1 team.\nAs there was no content for the current key <%s>, it must have been a team feature (IF IT WAS NOT, THEN THIS NEEDS TO BE LOOKED AT).\nThe analysis continues by aggregating this feature as a NaN.\nConsider excluding this event listwise.\n' %key)
+/home/meerhoffla/the Pipeline/LibraryRENS/temporalAggregation_towardsGeneric.py:1129: UserWarning: 
+WARNING: Encountered an event where there was only data available for 1 team.
+As there was no content for the current key <TeamCentYB>, it must have been a team feature (IF IT WAS NOT, THEN THIS NEEDS TO BE LOOKED AT).
+The analysis continues by aggregating this feature as a NaN.
+Consider excluding this event listwise.
+
+  warn('\nWARNING: Encountered an event where there was only data available for 1 team.\nAs there was no content for the current key <%s>, it must have been a team feature (IF IT WAS NOT, THEN THIS NEEDS TO BE LOOKED AT).\nThe analysis continues by aggregating this feature as a NaN.\nConsider excluding this event listwise.\n' %key)
+/home/meerhoffla/the Pipeline/LibraryRENS/temporalAggregation_towardsGeneric.py:1129: UserWarning: 
+WARNING: Encountered an event where there was only data available for 1 team.
+As there was no content for the current key <LengthB>, it must have been a team feature (IF IT WAS NOT, THEN THIS NEEDS TO BE LOOKED AT).
+The analysis continues by aggregating this feature as a NaN.
+Consider excluding this event listwise.
+
+  warn('\nWARNING: Encountered an event where there was only data available for 1 team.\nAs there was no content for the current key <%s>, it must have been a team feature (IF IT WAS NOT, THEN THIS NEEDS TO BE LOOKED AT).\nThe analysis continues by aggregating this feature as a NaN.\nConsider excluding this event listwise.\n' %key)
+/home/meerhoffla/the Pipeline/LibraryRENS/temporalAggregation_towardsGeneric.py:1129: UserWarning: 
+WARNING: Encountered an event where there was only data available for 1 team.
+As there was no content for the current key <WidthB>, it must have been a team feature (IF IT WAS NOT, THEN THIS NEEDS TO BE LOOKED AT).
+The analysis continues by aggregating this feature as a NaN.
+Consider excluding this event listwise.
+
+  warn('\nWARNING: Encountered an event where there was only data available for 1 team.\nAs there was no content for the current key <%s>, it must have been a team feature (IF IT WAS NOT, THEN THIS NEEDS TO BE LOOKED AT).\nThe analysis continues by aggregating this feature as a NaN.\nConsider excluding this event listwise.\n' %key)
+/home/meerhoffla/the Pipeline/LibraryRENS/temporalAggregation_towardsGeneric.py:1129: UserWarning: 
+WARNING: Encountered an event where there was only data available for 1 team.
+As there was no content for the current key <distToCent>, it must have been a team feature (IF IT WAS NOT, THEN THIS NEEDS TO BE LOOKED AT).
+The analysis continues by aggregating this feature as a NaN.
+Consider excluding this event listwise.
+
+  warn('\nWARNING: Encountered an event where there was only data available for 1 team.\nAs there was no content for the current key <%s>, it must have been a team feature (IF IT WAS NOT, THEN THIS NEEDS TO BE LOOKED AT).\nThe analysis continues by aggregating this feature as a NaN.\nConsider excluding this event listwise.\n' %key)
+/home/meerhoffla/the Pipeline/LibraryRENS/temporalAggregation_towardsGeneric.py:1129: UserWarning: 
+WARNING: Encountered an event where there was only data available for 1 team.
+As there was no content for the current key <SpreadA>, it must have been a team feature (IF IT WAS NOT, THEN THIS NEEDS TO BE LOOKED AT).
+The analysis continues by aggregating this feature as a NaN.
+Consider excluding this event listwise.
+
+  warn('\nWARNING: Encountered an event where there was only data available for 1 team.\nAs there was no content for the current key <%s>, it must have been a team feature (IF IT WAS NOT, THEN THIS NEEDS TO BE LOOKED AT).\nThe analysis continues by aggregating this feature as a NaN.\nConsider excluding this event listwise.\n' %key)
+/home/meerhoffla/the Pipeline/LibraryRENS/temporalAggregation_towardsGeneric.py:1129: UserWarning: 
+WARNING: Encountered an event where there was only data available for 1 team.
+As there was no content for the current key <stdSpreadA>, it must have been a team feature (IF IT WAS NOT, THEN THIS NEEDS TO BE LOOKED AT).
+The analysis continues by aggregating this feature as a NaN.
+Consider excluding this event listwise.
+
+  warn('\nWARNING: Encountered an event where there was only data available for 1 team.\nAs there was no content for the current key <%s>, it must have been a team feature (IF IT WAS NOT, THEN THIS NEEDS TO BE LOOKED AT).\nThe analysis continues by aggregating this feature as a NaN.\nConsider excluding this event listwise.\n' %key)
+/home/meerhoffla/the Pipeline/LibraryRENS/temporalAggregation_towardsGeneric.py:1129: UserWarning: 
+WARNING: Encountered an event where there was only data available for 1 team.
+As there was no content for the current key <SpreadB>, it must have been a team feature (IF IT WAS NOT, THEN THIS NEEDS TO BE LOOKED AT).
+The analysis continues by aggregating this feature as a NaN.
+Consider excluding this event listwise.
+
+  warn('\nWARNING: Encountered an event where there was only data available for 1 team.\nAs there was no content for the current key <%s>, it must have been a team feature (IF IT WAS NOT, THEN THIS NEEDS TO BE LOOKED AT).\nThe analysis continues by aggregating this feature as a NaN.\nConsider excluding this event listwise.\n' %key)
+/home/meerhoffla/the Pipeline/LibraryRENS/temporalAggregation_towardsGeneric.py:1129: UserWarning: 
+WARNING: Encountered an event where there was only data available for 1 team.
+As there was no content for the current key <stdSpreadB>, it must have been a team feature (IF IT WAS NOT, THEN THIS NEEDS TO BE LOOKED AT).
+The analysis continues by aggregating this feature as a NaN.
+Consider excluding this event listwise.
+
+  warn('\nWARNING: Encountered an event where there was only data available for 1 team.\nAs there was no content for the current key <%s>, it must have been a team feature (IF IT WAS NOT, THEN THIS NEEDS TO BE LOOKED AT).\nThe analysis continues by aggregating this feature as a NaN.\nConsider excluding this event listwise.\n' %key)
+/home/meerhoffla/the Pipeline/LibraryRENS/temporalAggregation_towardsGeneric.py:1129: UserWarning: 
+WARNING: Encountered an event where there was only data available for 1 team.
+As there was no content for the current key <SurfaceA>, it must have been a team feature (IF IT WAS NOT, THEN THIS NEEDS TO BE LOOKED AT).
+The analysis continues by aggregating this feature as a NaN.
+Consider excluding this event listwise.
+
+  warn('\nWARNING: Encountered an event where there was only data available for 1 team.\nAs there was no content for the current key <%s>, it must have been a team feature (IF IT WAS NOT, THEN THIS NEEDS TO BE LOOKED AT).\nThe analysis continues by aggregating this feature as a NaN.\nConsider excluding this event listwise.\n' %key)
+/home/meerhoffla/the Pipeline/LibraryRENS/temporalAggregation_towardsGeneric.py:1129: UserWarning: 
+WARNING: Encountered an event where there was only data available for 1 team.
+As there was no content for the current key <SumVerticesA>, it must have been a team feature (IF IT WAS NOT, THEN THIS NEEDS TO BE LOOKED AT).
+The analysis continues by aggregating this feature as a NaN.
+Consider excluding this event listwise.
+
+  warn('\nWARNING: Encountered an event where there was only data available for 1 team.\nAs there was no content for the current key <%s>, it must have been a team feature (IF IT WAS NOT, THEN THIS NEEDS TO BE LOOKED AT).\nThe analysis continues by aggregating this feature as a NaN.\nConsider excluding this event listwise.\n' %key)
+/home/meerhoffla/the Pipeline/LibraryRENS/temporalAggregation_towardsGeneric.py:1129: UserWarning: 
+WARNING: Encountered an event where there was only data available for 1 team.
+As there was no content for the current key <ShapeRatioA>, it must have been a team feature (IF IT WAS NOT, THEN THIS NEEDS TO BE LOOKED AT).
+The analysis continues by aggregating this feature as a NaN.
+Consider excluding this event listwise.
+
+  warn('\nWARNING: Encountered an event where there was only data available for 1 team.\nAs there was no content for the current key <%s>, it must have been a team feature (IF IT WAS NOT, THEN THIS NEEDS TO BE LOOKED AT).\nThe analysis continues by aggregating this feature as a NaN.\nConsider excluding this event listwise.\n' %key)
+/home/meerhoffla/the Pipeline/LibraryRENS/temporalAggregation_towardsGeneric.py:1129: UserWarning: 
+WARNING: Encountered an event where there was only data available for 1 team.
+As there was no content for the current key <SurfaceB>, it must have been a team feature (IF IT WAS NOT, THEN THIS NEEDS TO BE LOOKED AT).
+The analysis continues by aggregating this feature as a NaN.
+Consider excluding this event listwise.
+
+  warn('\nWARNING: Encountered an event where there was only data available for 1 team.\nAs there was no content for the current key <%s>, it must have been a team feature (IF IT WAS NOT, THEN THIS NEEDS TO BE LOOKED AT).\nThe analysis continues by aggregating this feature as a NaN.\nConsider excluding this event listwise.\n' %key)
+/home/meerhoffla/the Pipeline/LibraryRENS/temporalAggregation_towardsGeneric.py:1129: UserWarning: 
+WARNING: Encountered an event where there was only data available for 1 team.
+As there was no content for the current key <SumVerticesB>, it must have been a team feature (IF IT WAS NOT, THEN THIS NEEDS TO BE LOOKED AT).
+The analysis continues by aggregating this feature as a NaN.
+Consider excluding this event listwise.
+
+  warn('\nWARNING: Encountered an event where there was only data available for 1 team.\nAs there was no content for the current key <%s>, it must have been a team feature (IF IT WAS NOT, THEN THIS NEEDS TO BE LOOKED AT).\nThe analysis continues by aggregating this feature as a NaN.\nConsider excluding this event listwise.\n' %key)
+/home/meerhoffla/the Pipeline/LibraryRENS/temporalAggregation_towardsGeneric.py:1129: UserWarning: 
+WARNING: Encountered an event where there was only data available for 1 team.
+As there was no content for the current key <ShapeRatioB>, it must have been a team feature (IF IT WAS NOT, THEN THIS NEEDS TO BE LOOKED AT).
+The analysis continues by aggregating this feature as a NaN.
+Consider excluding this event listwise.
+
+  warn('\nWARNING: Encountered an event where there was only data available for 1 team.\nAs there was no content for the current key <%s>, it must have been a team feature (IF IT WAS NOT, THEN THIS NEEDS TO BE LOOKED AT).\nThe analysis continues by aggregating this feature as a NaN.\nConsider excluding this event listwise.\n' %key)
+/home/meerhoffla/the Pipeline/LibraryRENS/temporalAggregation_towardsGeneric.py:1129: UserWarning: 
+WARNING: Encountered an event where there was only data available for 1 team.
+As there was no content for the current key <vNorm>, it must have been a team feature (IF IT WAS NOT, THEN THIS NEEDS TO BE LOOKED AT).
+The analysis continues by aggregating this feature as a NaN.
+Consider excluding this event listwise.
+
+  warn('\nWARNING: Encountered an event where there was only data available for 1 team.\nAs there was no content for the current key <%s>, it must have been a team feature (IF IT WAS NOT, THEN THIS NEEDS TO BE LOOKED AT).\nThe analysis continues by aggregating this feature as a NaN.\nConsider excluding this event listwise.\n' %key)
+/home/meerhoffla/the Pipeline/LibraryRENS/temporalAggregation_towardsGeneric.py:1129: UserWarning: 
+WARNING: Encountered an event where there was only data available for 1 team.
+As there was no content for the current key <distFrame>, it must have been a team feature (IF IT WAS NOT, THEN THIS NEEDS TO BE LOOKED AT).
+The analysis continues by aggregating this feature as a NaN.
+Consider excluding this event listwise.
+
+  warn('\nWARNING: Encountered an event where there was only data available for 1 team.\nAs there was no content for the current key <%s>, it must have been a team feature (IF IT WAS NOT, THEN THIS NEEDS TO BE LOOKED AT).\nThe analysis continues by aggregating this feature as a NaN.\nConsider excluding this event listwise.\n' %key)
+/home/meerhoffla/the Pipeline/LibraryRENS/temporalAggregation_towardsGeneric.py:533: UserWarning: 
+WARNING: The following features were previously exported, but not currently:
+<['Acceleration_avg_perTimePerPlayer_all_cnt', 'Acceleration_avg_perTimePerPlayer_all_avg', 'Acceleration_avg_perTimePerPlayer_all_std', 'Acceleration_std_perTimePerPlayer_all_cnt', 'Acceleration_std_perTimePerPlayer_all_avg', 'Acceleration_std_perTimePerPlayer_all_std', 'Acceleration_avg_perTimePerPlayer_ref_cnt', 'Acceleration_avg_perTimePerPlayer_ref_avg', 'Acceleration_avg_perTimePerPlayer_ref_std', 'Acceleration_std_perTimePerPlayer_ref_cnt', 'Acceleration_std_perTimePerPlayer_ref_avg', 'Acceleration_std_perTimePerPlayer_ref_std', 'Acceleration_avg_perTimePerPlayer_oth_cnt', 'Acceleration_avg_perTimePerPlayer_oth_avg', 'Acceleration_avg_perTimePerPlayer_oth_std', 'Acceleration_std_perTimePerPlayer_oth_cnt', 'Acceleration_std_perTimePerPlayer_oth_avg', 'Acceleration_std_perTimePerPlayer_oth_std', 'Speed_avg_perTimePerPlayer_all_cnt', 'Speed_avg_perTimePerPlayer_all_avg', 'Speed_avg_perTimePerPlayer_all_std', 'Speed_std_perTimePerPlayer_all_cnt', 'Speed_std_perTimePerPlayer_all_avg', 'Speed_std_perTimePerPlayer_all_std', 'Speed_avg_perTimePerPlayer_ref_cnt', 'Speed_avg_perTimePerPlayer_ref_avg', 'Speed_avg_perTimePerPlayer_ref_std', 'Speed_std_perTimePerPlayer_ref_cnt', 'Speed_std_perTimePerPlayer_ref_avg', 'Speed_std_perTimePerPlayer_ref_std', 'Speed_avg_perTimePerPlayer_oth_cnt', 'Speed_avg_perTimePerPlayer_oth_avg', 'Speed_avg_perTimePerPlayer_oth_std', 'Speed_std_perTimePerPlayer_oth_cnt', 'Speed_std_perTimePerPlayer_oth_avg', 'Speed_std_perTimePerPlayer_oth_std', 'TeamCentX_oth_cnt', 'TeamCentX_oth_avg', 'TeamCentX_oth_std', 'TeamCentY_oth_cnt', 'TeamCentY_oth_avg', 'TeamCentY_oth_std', 'Length_oth_cnt', 'Length_oth_avg', 'Length_oth_std', 'Width_oth_cnt', 'Width_oth_avg', 'Width_oth_std', 'TeamCentX_ref_cnt', 'TeamCentX_ref_avg', 'TeamCentX_ref_std', 'TeamCentY_ref_cnt', 'TeamCentY_ref_avg', 'TeamCentY_ref_std', 'Length_ref_cnt', 'Length_ref_avg', 'Length_ref_std', 'Width_ref_cnt', 'Width_ref_avg', 'Width_ref_std', 'distToCent_avg_perTimePerPlayer_all_cnt', 'distToCent_avg_perTimePerPlayer_all_avg', 'distToCent_avg_perTimePerPlayer_all_std', 'distToCent_std_perTimePerPlayer_all_cnt', 'distToCent_std_perTimePerPlayer_all_avg', 'distToCent_std_perTimePerPlayer_all_std', 'distToCent_avg_perTimePerPlayer_ref_cnt', 'distToCent_avg_perTimePerPlayer_ref_avg', 'distToCent_avg_perTimePerPlayer_ref_std', 'distToCent_std_perTimePerPlayer_ref_cnt', 'distToCent_std_perTimePerPlayer_ref_avg', 'distToCent_std_perTimePerPlayer_ref_std', 'distToCent_avg_perTimePerPlayer_oth_cnt', 'distToCent_avg_perTimePerPlayer_oth_avg', 'distToCent_avg_perTimePerPlayer_oth_std', 'distToCent_std_perTimePerPlayer_oth_cnt', 'distToCent_std_perTimePerPlayer_oth_avg', 'distToCent_std_perTimePerPlayer_oth_std', 'Spread_oth_cnt', 'Spread_oth_avg', 'Spread_oth_std', 'stdSpread_oth_cnt', 'stdSpread_oth_avg', 'stdSpread_oth_std', 'Spread_ref_cnt', 'Spread_ref_avg', 'Spread_ref_std', 'stdSpread_ref_cnt', 'stdSpread_ref_avg', 'stdSpread_ref_std', 'Surface_oth_cnt', 'Surface_oth_avg', 'Surface_oth_std', 'SumVertices_oth_cnt', 'SumVertices_oth_avg', 'SumVertices_oth_std', 'ShapeRatio_oth_cnt', 'ShapeRatio_oth_avg', 'ShapeRatio_oth_std', 'Surface_ref_cnt', 'Surface_ref_avg', 'Surface_ref_std', 'SumVertices_ref_cnt', 'SumVertices_ref_avg', 'SumVertices_ref_std', 'ShapeRatio_ref_cnt', 'ShapeRatio_ref_avg', 'ShapeRatio_ref_std', 'vNorm_avg_perTimePerPlayer_all_cnt', 'vNorm_avg_perTimePerPlayer_all_avg', 'vNorm_avg_perTimePerPlayer_all_std', 'vNorm_std_perTimePerPlayer_all_cnt', 'vNorm_std_perTimePerPlayer_all_avg', 'vNorm_std_perTimePerPlayer_all_std', 'vNorm_avg_perTimePerPlayer_ref_cnt', 'vNorm_avg_perTimePerPlayer_ref_avg', 'vNorm_avg_perTimePerPlayer_ref_std', 'vNorm_std_perTimePerPlayer_ref_cnt', 'vNorm_std_perTimePerPlayer_ref_avg', 'vNorm_std_perTimePerPlayer_ref_std', 'vNorm_avg_perTimePerPlayer_oth_cnt', 'vNorm_avg_perTimePerPlayer_oth_avg', 'vNorm_avg_perTimePerPlayer_oth_std', 'vNorm_std_perTimePerPlayer_oth_cnt', 'vNorm_std_perTimePerPlayer_oth_avg', 'vNorm_std_perTimePerPlayer_oth_std', 'distFrame_avg_perTimePerPlayer_all_cnt', 'distFrame_avg_perTimePerPlayer_all_avg', 'distFrame_avg_perTimePerPlayer_all_std', 'distFrame_std_perTimePerPlayer_all_cnt', 'distFrame_std_perTimePerPlayer_all_avg', 'distFrame_std_perTimePerPlayer_all_std', 'distFrame_avg_perTimePerPlayer_ref_cnt', 'distFrame_avg_perTimePerPlayer_ref_avg', 'distFrame_avg_perTimePerPlayer_ref_std', 'distFrame_std_perTimePerPlayer_ref_cnt', 'distFrame_std_perTimePerPlayer_ref_avg', 'distFrame_std_perTimePerPlayer_ref_std', 'distFrame_avg_perTimePerPlayer_oth_cnt', 'distFrame_avg_perTimePerPlayer_oth_avg', 'distFrame_avg_perTimePerPlayer_oth_std', 'distFrame_std_perTimePerPlayer_oth_cnt', 'distFrame_std_perTimePerPlayer_oth_avg', 'distFrame_std_perTimePerPlayer_oth_std']>
+The missing values were replaced with <NaN>.
+
+  warn('\nWARNING: The following features were previously exported, but not currently:\n<%s>\nThe missing values were replaced with <NaN>.\n' %missingOutput)
+/home/meerhoffla/the Pipeline/LibraryRENS/temporalAggregation_towardsGeneric.py:537: UserWarning: 
+WARNING: The following features were currently exported, but not previously:
+<['Acceleration_avg_perTimePerPlayer_all_cnt', 'Acceleration_avg_perTimePerPlayer_all_avg', 'Acceleration_avg_perTimePerPlayer_all_std', 'Acceleration_std_perTimePerPlayer_all_cnt', 'Acceleration_std_perTimePerPlayer_all_avg', 'Acceleration_std_perTimePerPlayer_all_std', 'Acceleration_avg_perTimePerPlayer_ref_cnt', 'Acceleration_avg_perTimePerPlayer_ref_avg', 'Acceleration_avg_perTimePerPlayer_ref_std', 'Acceleration_std_perTimePerPlayer_ref_cnt', 'Acceleration_std_perTimePerPlayer_ref_avg', 'Acceleration_std_perTimePerPlayer_ref_std', 'Acceleration_avg_perTimePerPlayer_oth_cnt', 'Acceleration_avg_perTimePerPlayer_oth_avg', 'Acceleration_avg_perTimePerPlayer_oth_std', 'Acceleration_std_perTimePerPlayer_oth_cnt', 'Acceleration_std_perTimePerPlayer_oth_avg', 'Acceleration_std_perTimePerPlayer_oth_std', 'Speed_avg_perTimePerPlayer_all_cnt', 'Speed_avg_perTimePerPlayer_all_avg', 'Speed_avg_perTimePerPlayer_all_std', 'Speed_std_perTimePerPlayer_all_cnt', 'Speed_std_perTimePerPlayer_all_avg', 'Speed_std_perTimePerPlayer_all_std', 'Speed_avg_perTimePerPlayer_ref_cnt', 'Speed_avg_perTimePerPlayer_ref_avg', 'Speed_avg_perTimePerPlayer_ref_std', 'Speed_std_perTimePerPlayer_ref_cnt', 'Speed_std_perTimePerPlayer_ref_avg', 'Speed_std_perTimePerPlayer_ref_std', 'Speed_avg_perTimePerPlayer_oth_cnt', 'Speed_avg_perTimePerPlayer_oth_avg', 'Speed_avg_perTimePerPlayer_oth_std', 'Speed_std_perTimePerPlayer_oth_cnt', 'Speed_std_perTimePerPlayer_oth_avg', 'Speed_std_perTimePerPlayer_oth_std', 'TeamCentX_ref_cnt', 'TeamCentX_ref_avg', 'TeamCentX_ref_std', 'TeamCentY_ref_cnt', 'TeamCentY_ref_avg', 'TeamCentY_ref_std', 'Length_ref_cnt', 'Length_ref_avg', 'Length_ref_std', 'Width_ref_cnt', 'Width_ref_avg', 'Width_ref_std', 'TeamCentX_oth_cnt', 'TeamCentX_oth_avg', 'TeamCentX_oth_std', 'TeamCentY_oth_cnt', 'TeamCentY_oth_avg', 'TeamCentY_oth_std', 'Length_oth_cnt', 'Length_oth_avg', 'Length_oth_std', 'Width_oth_cnt', 'Width_oth_avg', 'Width_oth_std', 'distToCent_avg_perTimePerPlayer_all_cnt', 'distToCent_avg_perTimePerPlayer_all_avg', 'distToCent_avg_perTimePerPlayer_all_std', 'distToCent_std_perTimePerPlayer_all_cnt', 'distToCent_std_perTimePerPlayer_all_avg', 'distToCent_std_perTimePerPlayer_all_std', 'distToCent_avg_perTimePerPlayer_ref_cnt', 'distToCent_avg_perTimePerPlayer_ref_avg', 'distToCent_avg_perTimePerPlayer_ref_std', 'distToCent_std_perTimePerPlayer_ref_cnt', 'distToCent_std_perTimePerPlayer_ref_avg', 'distToCent_std_perTimePerPlayer_ref_std', 'distToCent_avg_perTimePerPlayer_oth_cnt', 'distToCent_avg_perTimePerPlayer_oth_avg', 'distToCent_avg_perTimePerPlayer_oth_std', 'distToCent_std_perTimePerPlayer_oth_cnt', 'distToCent_std_perTimePerPlayer_oth_avg', 'distToCent_std_perTimePerPlayer_oth_std', 'Spread_ref_cnt', 'Spread_ref_avg', 'Spread_ref_std', 'stdSpread_ref_cnt', 'stdSpread_ref_avg', 'stdSpread_ref_std', 'Spread_oth_cnt', 'Spread_oth_avg', 'Spread_oth_std', 'stdSpread_oth_cnt', 'stdSpread_oth_avg', 'stdSpread_oth_std', 'Surface_ref_cnt', 'Surface_ref_avg', 'Surface_ref_std', 'SumVertices_ref_cnt', 'SumVertices_ref_avg', 'SumVertices_ref_std', 'ShapeRatio_ref_cnt', 'ShapeRatio_ref_avg', 'ShapeRatio_ref_std', 'Surface_oth_cnt', 'Surface_oth_avg', 'Surface_oth_std', 'SumVertices_oth_cnt', 'SumVertices_oth_avg', 'SumVertices_oth_std', 'ShapeRatio_oth_cnt', 'ShapeRatio_oth_avg', 'ShapeRatio_oth_std', 'vNorm_avg_perTimePerPlayer_all_cnt', 'vNorm_avg_perTimePerPlayer_all_avg', 'vNorm_avg_perTimePerPlayer_all_std', 'vNorm_std_perTimePerPlayer_all_cnt', 'vNorm_std_perTimePerPlayer_all_avg', 'vNorm_std_perTimePerPlayer_all_std', 'vNorm_avg_perTimePerPlayer_ref_cnt', 'vNorm_avg_perTimePerPlayer_ref_avg', 'vNorm_avg_perTimePerPlayer_ref_std', 'vNorm_std_perTimePerPlayer_ref_cnt', 'vNorm_std_perTimePerPlayer_ref_avg', 'vNorm_std_perTimePerPlayer_ref_std', 'vNorm_avg_perTimePerPlayer_oth_cnt', 'vNorm_avg_perTimePerPlayer_oth_avg', 'vNorm_avg_perTimePerPlayer_oth_std', 'vNorm_std_perTimePerPlayer_oth_cnt', 'vNorm_std_perTimePerPlayer_oth_avg', 'vNorm_std_perTimePerPlayer_oth_std', 'distFrame_avg_perTimePerPlayer_all_cnt', 'distFrame_avg_perTimePerPlayer_all_avg', 'distFrame_avg_perTimePerPlayer_all_std', 'distFrame_std_perTimePerPlayer_all_cnt', 'distFrame_std_perTimePerPlayer_all_avg', 'distFrame_std_perTimePerPlayer_all_std', 'distFrame_avg_perTimePerPlayer_ref_cnt', 'distFrame_avg_perTimePerPlayer_ref_avg', 'distFrame_avg_perTimePerPlayer_ref_std', 'distFrame_std_perTimePerPlayer_ref_cnt', 'distFrame_std_perTimePerPlayer_ref_avg', 'distFrame_std_perTimePerPlayer_ref_std', 'distFrame_avg_perTimePerPlayer_oth_cnt', 'distFrame_avg_perTimePerPlayer_oth_avg', 'distFrame_avg_perTimePerPlayer_oth_std', 'distFrame_std_perTimePerPlayer_oth_cnt', 'distFrame_std_perTimePerPlayer_oth_avg', 'distFrame_std_perTimePerPlayer_oth_std']>
+The missing values were replaced with <NaN>.
+
+  warn('\nWARNING: The following features were currently exported, but not previously:\n<%s>\nThe missing values were replaced with <NaN>.\n' %missingOutput)
+/home/meerhoffla/the Pipeline/LibraryRENS/cleanupData.py:1026: UserWarning: 
+WARNING: Teamstring had to be determined based on the data.
+TeamAstring = <GRK001>
+TeamBstring = <NL001>
+  warn('\nWARNING: Teamstring had to be determined based on the data.\nTeamAstring = <%s>\nTeamBstring = <%s>' %(TeamAstring,TeamBstring))
+/home/meerhoffla/the Pipeline/LibraryRENS/importFieldDimensions.py:32: UserWarning: 
+WARNING: no field dimensions found. Taking the default dimensions:
+{'foundIt': False, 'X_bot_left': -50, 'X_top_left': -50, 'X_bot_right': 50, 'X_top_right': 50, 'Y_bot_left': -32.5, 'Y_bot_right': -32.5, 'Y_top_left': 32.7, 'Y_top_right': 32.7}
+
+--------------------
+If you want to specify the fieldDimensions, create a CSV file in the folder /local/rens/Repositories/BRAxNLD repository_newStyle/Data/FieldDimensions with the name <fieldDimensions.csv> that looks like <fieldDimensions.csv>.
+This file should contain a column <Filename> with the string that corresponds to dirtyFname <29_EL_XIV.csv>.
+Furthermore, the file should contain the following columns with the respective coordinates:
+<X_top_left>
+<Y_top_left>
+<X_top_right>
+<Y_top_right>
+<X_bot_left>
+<Y_bot_left>
+<X_bot_right>
+<Y_bot_right>.
+
+  warn('\nWARNING: no field dimensions found. Taking the default dimensions:\n%s\n\n--------------------\nIf you want to specify the fieldDimensions, create a CSV file in the folder %sFieldDimensions with the name <fieldDimensions.csv> that looks like <fieldDimensions.csv>.\nThis file should contain a column <Filename> with the string that corresponds to dirtyFname <%s>.\nFurthermore, the file should contain the following columns with the respective coordinates:\n<X_top_left>\n<Y_top_left>\n<X_top_right>\n<Y_top_right>\n<X_bot_left>\n<Y_bot_left>\n<X_bot_right>\n<Y_bot_right>.\n' %(fieldDimensions,dataFolder,dirtyFname))
+/home/meerhoffla/the Pipeline/LibraryRENS/temporalAggregation_towardsGeneric.py:322: UserWarning: 
+WARNING: No positional data available for when the requested event occurred.
+As a work-around, this event was skipped.
+This is an indication that the positional data and the event data do not lign up.
+min(Ts) = 0.0
+max(Ts) = 5601.4
+Event:
+(5646.07, 'NL001', 306.0, 'Laa6 4a J946', 'Oa369f B9a8', (1.3, -17.5), 'outside_16m', 23.649999999999643, True)
+  warn('\nWARNING: No positional data available for when the requested event occurred.\nAs a work-around, this event was skipped.\nThis is an indication that the positional data and the event data do not lign up.\nmin(Ts) = %s\nmax(Ts) = %s\nEvent:\n%s' %(min(rawDict['Ts']),max(rawDict['Ts']),currentEvent))
+/home/meerhoffla/the Pipeline/LibraryRENS/temporalAggregation_towardsGeneric.py:322: UserWarning: 
+WARNING: No positional data available for when the requested event occurred.
+As a work-around, this event was skipped.
+This is an indication that the positional data and the event data do not lign up.
+min(Ts) = 0.0
+max(Ts) = 5601.4
+Event:
+(5651.42, 'GRK001', 307.0, 'Oa369f B9a8', 'La29349 N3g6946g', (-13.9, 1.5), 'outside_16m', 5.350000000000363, True)
+  warn('\nWARNING: No positional data available for when the requested event occurred.\nAs a work-around, this event was skipped.\nThis is an indication that the positional data and the event data do not lign up.\nmin(Ts) = %s\nmax(Ts) = %s\nEvent:\n%s' %(min(rawDict['Ts']),max(rawDict['Ts']),currentEvent))
+/home/meerhoffla/the Pipeline/LibraryRENS/temporalAggregation_towardsGeneric.py:322: UserWarning: 
+WARNING: No positional data available for when the requested event occurred.
+As a work-around, this event was skipped.
+This is an indication that the positional data and the event data do not lign up.
+min(Ts) = 0.0
+max(Ts) = 5601.4
+Event:
+(5653.07, 'NL001', 309.0, 'Maf6g96 Da638', 'Oa369f B9a8', (-15.2, -0.4), 'outside_16m', 1.6499999999996362, True)
+  warn('\nWARNING: No positional data available for when the requested event occurred.\nAs a work-around, this event was skipped.\nThis is an indication that the positional data and the event data do not lign up.\nmin(Ts) = %s\nmax(Ts) = %s\nEvent:\n%s' %(min(rawDict['Ts']),max(rawDict['Ts']),currentEvent))
+/home/meerhoffla/the Pipeline/LibraryRENS/temporalAggregation_towardsGeneric.py:322: UserWarning: 
+WARNING: No positional data available for when the requested event occurred.
+As a work-around, this event was skipped.
+This is an indication that the positional data and the event data do not lign up.
+min(Ts) = 0.0
+max(Ts) = 5601.4
+Event:
+(5653.42, 'GRK001', 309.0, 'Cgg96p96 D9496', 'Maf6g96 Da638', (-16.0, -2.2), 'outside_16m', 0.3500000000003638, True)
+  warn('\nWARNING: No positional data available for when the requested event occurred.\nAs a work-around, this event was skipped.\nThis is an indication that the positional data and the event data do not lign up.\nmin(Ts) = %s\nmax(Ts) = %s\nEvent:\n%s' %(min(rawDict['Ts']),max(rawDict['Ts']),currentEvent))
+/home/meerhoffla/the Pipeline/LibraryRENS/temporalAggregation_towardsGeneric.py:322: UserWarning: 
+WARNING: No positional data available for when the requested event occurred.
+As a work-around, this event was skipped.
+This is an indication that the positional data and the event data do not lign up.
+min(Ts) = 0.0
+max(Ts) = 5601.4
+Event:
+(5655.96, 'NL001', 310.0, 'A43f M3gag', 'Cgg96p96 D9496', (-12.2, 12.3), 'outside_16m', 2.539999999999964, True)
+  warn('\nWARNING: No positional data available for when the requested event occurred.\nAs a work-around, this event was skipped.\nThis is an indication that the positional data and the event data do not lign up.\nmin(Ts) = %s\nmax(Ts) = %s\nEvent:\n%s' %(min(rawDict['Ts']),max(rawDict['Ts']),currentEvent))
+/home/meerhoffla/the Pipeline/LibraryRENS/temporalAggregation_towardsGeneric.py:322: UserWarning: 
+WARNING: No positional data available for when the requested event occurred.
+As a work-around, this event was skipped.
+This is an indication that the positional data and the event data do not lign up.
+min(Ts) = 0.0
+max(Ts) = 5601.4
+Event:
+(5656.27, 'GRK001', 311.0, 'G9g494 S2g914a47a14', 'A43f M3gag', (-24.6, 2.9), 'outside_16m', 0.3100000000004002, True)
+  warn('\nWARNING: No positional data available for when the requested event occurred.\nAs a work-around, this event was skipped.\nThis is an indication that the positional data and the event data do not lign up.\nmin(Ts) = %s\nmax(Ts) = %s\nEvent:\n%s' %(min(rawDict['Ts']),max(rawDict['Ts']),currentEvent))
+/home/meerhoffla/the Pipeline/LibraryRENS/temporalAggregation_towardsGeneric.py:322: UserWarning: 
+WARNING: No positional data available for when the requested event occurred.
+As a work-around, this event was skipped.
+This is an indication that the positional data and the event data do not lign up.
+min(Ts) = 0.0
+max(Ts) = 5601.4
+Event:
+(5659.05, 'NL001', 312.0, 'Laa6 4a J946', 'G9g494 S2g914a47a14', (-32.3, 3.3), 'outside_16m', 2.7799999999997453, True)
+  warn('\nWARNING: No positional data available for when the requested event occurred.\nAs a work-around, this event was skipped.\nThis is an indication that the positional data and the event data do not lign up.\nmin(Ts) = %s\nmax(Ts) = %s\nEvent:\n%s' %(min(rawDict['Ts']),max(rawDict['Ts']),currentEvent))
+/home/meerhoffla/the Pipeline/LibraryRENS/temporalAggregation_towardsGeneric.py:322: UserWarning: 
+WARNING: No positional data available for when the requested event occurred.
+As a work-around, this event was skipped.
+This is an indication that the positional data and the event data do not lign up.
+min(Ts) = 0.0
+max(Ts) = 5601.4
+Event:
+(5660.55, 'GRK001', 313.0, '43c94 fa44a6', 'Laa6 4a J946', (-34.6, 0.4), 'inside_16m', 1.5, True)
+  warn('\nWARNING: No positional data available for when the requested event occurred.\nAs a work-around, this event was skipped.\nThis is an indication that the positional data and the event data do not lign up.\nmin(Ts) = %s\nmax(Ts) = %s\nEvent:\n%s' %(min(rawDict['Ts']),max(rawDict['Ts']),currentEvent))
+/home/meerhoffla/the Pipeline/LibraryRENS/temporalAggregation_towardsGeneric.py:322: UserWarning: 
+WARNING: No positional data available for when the requested event occurred.
+As a work-around, this event was skipped.
+This is an indication that the positional data and the event data do not lign up.
+min(Ts) = 0.0
+max(Ts) = 5601.4
+Event:
+(5724.12, 'NL001', 314.0, 'Japg9 W911af6', 'D349ga1 Pg34g92', (-49.6, -33.1), 'outside_16m', 63.569999999999716, False)
+  warn('\nWARNING: No positional data available for when the requested event occurred.\nAs a work-around, this event was skipped.\nThis is an indication that the positional data and the event data do not lign up.\nmin(Ts) = %s\nmax(Ts) = %s\nEvent:\n%s' %(min(rawDict['Ts']),max(rawDict['Ts']),currentEvent))
+/home/meerhoffla/the Pipeline/LibraryRENS/temporalAggregation_towardsGeneric.py:322: UserWarning: 
+WARNING: No positional data available for when the requested event occurred.
+As a work-around, this event was skipped.
+This is an indication that the positional data and the event data do not lign up.
+min(Ts) = 0.0
+max(Ts) = 5601.4
+Event:
+(5748.47, 'GRK001', 315.0, 'Oa369f B9a8', 'Japg9 W911af6', (-24.5, 3.2), 'outside_16m', 24.350000000000364, True)
+  warn('\nWARNING: No positional data available for when the requested event occurred.\nAs a work-around, this event was skipped.\nThis is an indication that the positional data and the event data do not lign up.\nmin(Ts) = %s\nmax(Ts) = %s\nEvent:\n%s' %(min(rawDict['Ts']),max(rawDict['Ts']),currentEvent))
+/home/meerhoffla/the Pipeline/LibraryRENS/temporalAggregation_towardsGeneric.py:322: UserWarning: 
+WARNING: No positional data available for when the requested event occurred.
+As a work-around, this event was skipped.
+This is an indication that the positional data and the event data do not lign up.
+min(Ts) = 0.0
+max(Ts) = 5601.4
+Event:
+(5797.97, 'NL001', 316.0, 'Laa6 4a J946', '43c94 fa44a6', (0.8, -16.6), 'outside_16m', 49.5, False)
+  warn('\nWARNING: No positional data available for when the requested event occurred.\nAs a work-around, this event was skipped.\nThis is an indication that the positional data and the event data do not lign up.\nmin(Ts) = %s\nmax(Ts) = %s\nEvent:\n%s' %(min(rawDict['Ts']),max(rawDict['Ts']),currentEvent))
+/home/meerhoffla/the Pipeline/LibraryRENS/temporalAggregation_towardsGeneric.py:322: UserWarning: 
+WARNING: No positional data available for when the requested event occurred.
+As a work-around, this event was skipped.
+This is an indication that the positional data and the event data do not lign up.
+min(Ts) = 0.0
+max(Ts) = 5601.4
+Event:
+(5871.04, 'GRK001', 317.0, 'N349', 'K3g9f Ra696', (-18.3, 15.0), 'outside_16m', 73.06999999999971, False)
+  warn('\nWARNING: No positional data available for when the requested event occurred.\nAs a work-around, this event was skipped.\nThis is an indication that the positional data and the event data do not lign up.\nmin(Ts) = %s\nmax(Ts) = %s\nEvent:\n%s' %(min(rawDict['Ts']),max(rawDict['Ts']),currentEvent))
+/home/meerhoffla/the Pipeline/LibraryRENS/temporalAggregation_towardsGeneric.py:322: UserWarning: 
+WARNING: No positional data available for when the requested event occurred.
+As a work-around, this event was skipped.
+This is an indication that the positional data and the event data do not lign up.
+min(Ts) = 0.0
+max(Ts) = 5601.4
+Event:
+(5871.39, 'NL001', 318.0, 'La29349 N3g6946g', 'N349', (-18.3, 15.0), 'outside_16m', 0.3500000000003638, True)
+  warn('\nWARNING: No positional data available for when the requested event occurred.\nAs a work-around, this event was skipped.\nThis is an indication that the positional data and the event data do not lign up.\nmin(Ts) = %s\nmax(Ts) = %s\nEvent:\n%s' %(min(rawDict['Ts']),max(rawDict['Ts']),currentEvent))
+/home/meerhoffla/the Pipeline/LibraryRENS/temporalAggregation_towardsGeneric.py:322: UserWarning: 
+WARNING: No positional data available for when the requested event occurred.
+As a work-around, this event was skipped.
+This is an indication that the positional data and the event data do not lign up.
+min(Ts) = 0.0
+max(Ts) = 5601.4
+Event:
+(5872.51, 'GRK001', 319.0, 'Cgg96p96 D9496', 'La29349 N3g6946g', (-13.1, 1.6), 'outside_16m', 1.1199999999998909, True)
+  warn('\nWARNING: No positional data available for when the requested event occurred.\nAs a work-around, this event was skipped.\nThis is an indication that the positional data and the event data do not lign up.\nmin(Ts) = %s\nmax(Ts) = %s\nEvent:\n%s' %(min(rawDict['Ts']),max(rawDict['Ts']),currentEvent))
+/home/meerhoffla/the Pipeline/LibraryRENS/temporalAggregation_towardsGeneric.py:322: UserWarning: 
+WARNING: No positional data available for when the requested event occurred.
+As a work-around, this event was skipped.
+This is an indication that the positional data and the event data do not lign up.
+min(Ts) = 0.0
+max(Ts) = 5601.4
+Event:
+(5875.0, 'NL001', 320.0, 'Maf6g96 Da638', 'Cgg96p96 D9496', (-17.0, -17.2), 'outside_16m', 2.4899999999997817, True)
+  warn('\nWARNING: No positional data available for when the requested event occurred.\nAs a work-around, this event was skipped.\nThis is an indication that the positional data and the event data do not lign up.\nmin(Ts) = %s\nmax(Ts) = %s\nEvent:\n%s' %(min(rawDict['Ts']),max(rawDict['Ts']),currentEvent))
+/home/meerhoffla/the Pipeline/LibraryRENS/temporalAggregation_towardsGeneric.py:322: UserWarning: 
+WARNING: No positional data available for when the requested event occurred.
+As a work-around, this event was skipped.
+This is an indication that the positional data and the event data do not lign up.
+min(Ts) = 0.0
+max(Ts) = 5601.4
+Event:
+(5875.35, 'GRK001', 321.0, 'K946p34p9496 Tg934p37811969a196', 'Maf6g96 Da638', (-17.8, -18.2), 'outside_16m', 0.3500000000003638, True)
+  warn('\nWARNING: No positional data available for when the requested event occurred.\nAs a work-around, this event was skipped.\nThis is an indication that the positional data and the event data do not lign up.\nmin(Ts) = %s\nmax(Ts) = %s\nEvent:\n%s' %(min(rawDict['Ts']),max(rawDict['Ts']),currentEvent))
+/home/meerhoffla/the Pipeline/LibraryRENS/temporalAggregation_towardsGeneric.py:322: UserWarning: 
+WARNING: No positional data available for when the requested event occurred.
+As a work-around, this event was skipped.
+This is an indication that the positional data and the event data do not lign up.
+min(Ts) = 0.0
+max(Ts) = 5601.4
+Event:
+(5877.07, 'NL001', 322.0, 'Maf6g96 Da638', 'K946p34p9496 Tg934p37811969a196', (-23.2, -16.6), 'outside_16m', 1.7199999999993452, True)
+  warn('\nWARNING: No positional data available for when the requested event occurred.\nAs a work-around, this event was skipped.\nThis is an indication that the positional data and the event data do not lign up.\nmin(Ts) = %s\nmax(Ts) = %s\nEvent:\n%s' %(min(rawDict['Ts']),max(rawDict['Ts']),currentEvent))
+/home/meerhoffla/the Pipeline/LibraryRENS/temporalAggregation_towardsGeneric.py:322: UserWarning: 
+WARNING: No positional data available for when the requested event occurred.
+As a work-around, this event was skipped.
+This is an indication that the positional data and the event data do not lign up.
+min(Ts) = 0.0
+max(Ts) = 5601.4
+Event:
+(5878.56, 'GRK001', 323.0, '43c94 fa44a6', 'Maf6g96 Da638', (-28.1, -12.6), 'outside_16m', 1.4900000000006912, True)
+  warn('\nWARNING: No positional data available for when the requested event occurred.\nAs a work-around, this event was skipped.\nThis is an indication that the positional data and the event data do not lign up.\nmin(Ts) = %s\nmax(Ts) = %s\nEvent:\n%s' %(min(rawDict['Ts']),max(rawDict['Ts']),currentEvent))
+/home/meerhoffla/the Pipeline/LibraryRENS/temporalAggregation_towardsGeneric.py:322: UserWarning: 
+WARNING: No positional data available for when the requested event occurred.
+As a work-around, this event was skipped.
+This is an indication that the positional data and the event data do not lign up.
+min(Ts) = 0.0
+max(Ts) = 5601.4
+Event:
+(5894.86, 'NL001', 324.0, 'La29349 N3g6946g', 'La6a Spaa1a', (3.8, 21.1), 'outside_16m', 16.299999999999272, True)
+  warn('\nWARNING: No positional data available for when the requested event occurred.\nAs a work-around, this event was skipped.\nThis is an indication that the positional data and the event data do not lign up.\nmin(Ts) = %s\nmax(Ts) = %s\nEvent:\n%s' %(min(rawDict['Ts']),max(rawDict['Ts']),currentEvent))
+/home/meerhoffla/the Pipeline/LibraryRENS/temporalAggregation_towardsGeneric.py:322: UserWarning: 
+WARNING: No positional data available for when the requested event occurred.
+As a work-around, this event was skipped.
+This is an indication that the positional data and the event data do not lign up.
+min(Ts) = 0.0
+max(Ts) = 5601.4
+Event:
+(5907.58, 'GRK001', 325.0, '43c94 fa44a6', 'S34p9369 Ag936', (-27.2, 12.1), 'outside_16m', 12.720000000000255, True)
+  warn('\nWARNING: No positional data available for when the requested event occurred.\nAs a work-around, this event was skipped.\nThis is an indication that the positional data and the event data do not lign up.\nmin(Ts) = %s\nmax(Ts) = %s\nEvent:\n%s' %(min(rawDict['Ts']),max(rawDict['Ts']),currentEvent))
+/home/meerhoffla/the Pipeline/LibraryRENS/temporalAggregation_towardsGeneric.py:322: UserWarning: 
+WARNING: No positional data available for when the requested event occurred.
+As a work-around, this event was skipped.
+This is an indication that the positional data and the event data do not lign up.
+min(Ts) = 0.0
+max(Ts) = 5601.4
+Event:
+(5954.0, 'NL001', 326.0, 'A43f M3gag', 'N9691396 K3ga196', (20.2, 11.3), 'outside_16m', 46.420000000000066, False)
+  warn('\nWARNING: No positional data available for when the requested event occurred.\nAs a work-around, this event was skipped.\nThis is an indication that the positional data and the event data do not lign up.\nmin(Ts) = %s\nmax(Ts) = %s\nEvent:\n%s' %(min(rawDict['Ts']),max(rawDict['Ts']),currentEvent))
+/home/meerhoffla/the Pipeline/LibraryRENS/temporalAggregation_towardsGeneric.py:322: UserWarning: 
+WARNING: No positional data available for when the requested event occurred.
+As a work-around, this event was skipped.
+This is an indication that the positional data and the event data do not lign up.
+min(Ts) = 0.0
+max(Ts) = 5601.4
+Event:
+(5981.5, 'GRK001', 327.0, 'Oa369f B9a8', 'Japg9 W911af6', (-18.7, -11.8), 'outside_16m', 27.5, True)
+  warn('\nWARNING: No positional data available for when the requested event occurred.\nAs a work-around, this event was skipped.\nThis is an indication that the positional data and the event data do not lign up.\nmin(Ts) = %s\nmax(Ts) = %s\nEvent:\n%s' %(min(rawDict['Ts']),max(rawDict['Ts']),currentEvent))
+/home/meerhoffla/the Pipeline/LibraryRENS/temporalAggregation_towardsGeneric.py:322: UserWarning: 
+WARNING: No positional data available for when the requested event occurred.
+As a work-around, this event was skipped.
+This is an indication that the positional data and the event data do not lign up.
+min(Ts) = 0.0
+max(Ts) = 5601.4
+Event:
+(5992.72, 'NL001', 328.0, 'K3g9f Ra696', 'J96a Za23', (18.3, -26.3), 'outside_16m', 11.220000000000255, True)
+  warn('\nWARNING: No positional data available for when the requested event occurred.\nAs a work-around, this event was skipped.\nThis is an indication that the positional data and the event data do not lign up.\nmin(Ts) = %s\nmax(Ts) = %s\nEvent:\n%s' %(min(rawDict['Ts']),max(rawDict['Ts']),currentEvent))
+/home/meerhoffla/the Pipeline/LibraryRENS/temporalAggregation_towardsGeneric.py:322: UserWarning: 
+WARNING: No positional data available for when the requested event occurred.
+As a work-around, this event was skipped.
+This is an indication that the positional data and the event data do not lign up.
+min(Ts) = 0.0
+max(Ts) = 5601.4
+Event:
+(6016.41, 'GRK001', 329.0, 'G9g494 S2g914a47a14', 'Japg9 W911af6', (14.8, -29.6), 'outside_16m', 23.6899999999996, True)
+  warn('\nWARNING: No positional data available for when the requested event occurred.\nAs a work-around, this event was skipped.\nThis is an indication that the positional data and the event data do not lign up.\nmin(Ts) = %s\nmax(Ts) = %s\nEvent:\n%s' %(min(rawDict['Ts']),max(rawDict['Ts']),currentEvent))
+/home/meerhoffla/the Pipeline/LibraryRENS/temporalAggregation_towardsGeneric.py:322: UserWarning: 
+WARNING: No positional data available for when the requested event occurred.
+As a work-around, this event was skipped.
+This is an indication that the positional data and the event data do not lign up.
+min(Ts) = 0.0
+max(Ts) = 5601.4
+Event:
+(6038.04, 'NL001', 330.0, 'A44ga6 Ga3g4349', 'G9g494 S2g914a47a14', (33.5, -16.8), 'inside_16m', 21.63000000000011, True)
+  warn('\nWARNING: No positional data available for when the requested event occurred.\nAs a work-around, this event was skipped.\nThis is an indication that the positional data and the event data do not lign up.\nmin(Ts) = %s\nmax(Ts) = %s\nEvent:\n%s' %(min(rawDict['Ts']),max(rawDict['Ts']),currentEvent))
+/home/meerhoffla/the Pipeline/LibraryRENS/temporalAggregation_towardsGeneric.py:322: UserWarning: 
+WARNING: No positional data available for when the requested event occurred.
+As a work-around, this event was skipped.
+This is an indication that the positional data and the event data do not lign up.
+min(Ts) = 0.0
+max(Ts) = 5601.4
+Event:
+(6092.43, 'GRK001', 331.0, '43c94 fa44a6', 'K3g9f Ra696', (-8.7, 2.3), 'outside_16m', 54.39000000000033, False)
+  warn('\nWARNING: No positional data available for when the requested event occurred.\nAs a work-around, this event was skipped.\nThis is an indication that the positional data and the event data do not lign up.\nmin(Ts) = %s\nmax(Ts) = %s\nEvent:\n%s' %(min(rawDict['Ts']),max(rawDict['Ts']),currentEvent))
+/home/meerhoffla/the Pipeline/LibraryRENS/temporalAggregation_towardsGeneric.py:322: UserWarning: 
+WARNING: No positional data available for when the requested event occurred.
+As a work-around, this event was skipped.
+This is an indication that the positional data and the event data do not lign up.
+min(Ts) = 0.0
+max(Ts) = 5601.4
+Event:
+(6106.49, 'NL001', 332.0, 'K3g9f Ra696', 'K946p34p9496 Tg934p37811969a196', (46.5, -5.9), 'inside_16m', 14.059999999999489, True)
+  warn('\nWARNING: No positional data available for when the requested event occurred.\nAs a work-around, this event was skipped.\nThis is an indication that the positional data and the event data do not lign up.\nmin(Ts) = %s\nmax(Ts) = %s\nEvent:\n%s' %(min(rawDict['Ts']),max(rawDict['Ts']),currentEvent))
+/home/meerhoffla/the Pipeline/LibraryRENS/temporalAggregation_towardsGeneric.py:322: UserWarning: 
+WARNING: No positional data available for when the requested event occurred.
+As a work-around, this event was skipped.
+This is an indication that the positional data and the event data do not lign up.
+min(Ts) = 0.0
+max(Ts) = 5601.4
+Event:
+(6108.03, 'GRK001', 333.0, 'J96a Za23', 'K3g9f Ra696', (29.3, -21.5), 'outside_16m', 1.5399999999999636, True)
+  warn('\nWARNING: No positional data available for when the requested event occurred.\nAs a work-around, this event was skipped.\nThis is an indication that the positional data and the event data do not lign up.\nmin(Ts) = %s\nmax(Ts) = %s\nEvent:\n%s' %(min(rawDict['Ts']),max(rawDict['Ts']),currentEvent))
+/home/meerhoffla/the Pipeline/LibraryRENS/temporalAggregation_towardsGeneric.py:322: UserWarning: 
+WARNING: No positional data available for when the requested event occurred.
+As a work-around, this event was skipped.
+This is an indication that the positional data and the event data do not lign up.
+min(Ts) = 0.0
+max(Ts) = 5601.4
+Event:
+(6117.75, 'NL001', 334.0, 'S34p9369 Ag936', 'K946p34p9496 Tg934p37811969a196', (35.8, 14.8), 'inside_16m', 9.720000000000256, True)
+  warn('\nWARNING: No positional data available for when the requested event occurred.\nAs a work-around, this event was skipped.\nThis is an indication that the positional data and the event data do not lign up.\nmin(Ts) = %s\nmax(Ts) = %s\nEvent:\n%s' %(min(rawDict['Ts']),max(rawDict['Ts']),currentEvent))
+/home/meerhoffla/the Pipeline/LibraryRENS/temporalAggregation_towardsGeneric.py:322: UserWarning: 
+WARNING: No positional data available for when the requested event occurred.
+As a work-around, this event was skipped.
+This is an indication that the positional data and the event data do not lign up.
+min(Ts) = 0.0
+max(Ts) = 5601.4
+Event:
+(6133.72, 'GRK001', 335.0, 'K946p34p9496 Tg934p37811969a196', 'A44ga6 Ga3g4349', (-17.5, -1.9), 'outside_16m', 15.970000000000255, True)
+  warn('\nWARNING: No positional data available for when the requested event occurred.\nAs a work-around, this event was skipped.\nThis is an indication that the positional data and the event data do not lign up.\nmin(Ts) = %s\nmax(Ts) = %s\nEvent:\n%s' %(min(rawDict['Ts']),max(rawDict['Ts']),currentEvent))
+/home/meerhoffla/the Pipeline/LibraryRENS/temporalAggregation_towardsGeneric.py:322: UserWarning: 
+WARNING: No positional data available for when the requested event occurred.
+As a work-around, this event was skipped.
+This is an indication that the positional data and the event data do not lign up.
+min(Ts) = 0.0
+max(Ts) = 5601.4
+Event:
+(6135.54, 'NL001', 336.0, 'Laa6 4a J946', 'K946p34p9496 Tg934p37811969a196', (-22.1, -13.5), 'outside_16m', 1.8199999999997092, True)
+  warn('\nWARNING: No positional data available for when the requested event occurred.\nAs a work-around, this event was skipped.\nThis is an indication that the positional data and the event data do not lign up.\nmin(Ts) = %s\nmax(Ts) = %s\nEvent:\n%s' %(min(rawDict['Ts']),max(rawDict['Ts']),currentEvent))
+/home/meerhoffla/the Pipeline/LibraryRENS/temporalAggregation_towardsGeneric.py:322: UserWarning: 
+WARNING: No positional data available for when the requested event occurred.
+As a work-around, this event was skipped.
+This is an indication that the positional data and the event data do not lign up.
+min(Ts) = 0.0
+max(Ts) = 5601.4
+Event:
+(6183.37, 'GRK001', 337.0, 'J96a Za23', 'Laa6 4a J946', (-7.6, -15.9), 'outside_16m', 47.829999999999934, False)
+  warn('\nWARNING: No positional data available for when the requested event occurred.\nAs a work-around, this event was skipped.\nThis is an indication that the positional data and the event data do not lign up.\nmin(Ts) = %s\nmax(Ts) = %s\nEvent:\n%s' %(min(rawDict['Ts']),max(rawDict['Ts']),currentEvent))
+/home/meerhoffla/the Pipeline/LibraryRENS/temporalAggregation_towardsGeneric.py:322: UserWarning: 
+WARNING: No positional data available for when the requested event occurred.
+As a work-around, this event was skipped.
+This is an indication that the positional data and the event data do not lign up.
+min(Ts) = 0.0
+max(Ts) = 5601.4
+Event:
+(6232.83, 'NL001', 338.0, 'Jag9a4 Z9ap', 'N349', (47.9, 5.1), 'inside_16m', 49.460000000000036, False)
+  warn('\nWARNING: No positional data available for when the requested event occurred.\nAs a work-around, this event was skipped.\nThis is an indication that the positional data and the event data do not lign up.\nmin(Ts) = %s\nmax(Ts) = %s\nEvent:\n%s' %(min(rawDict['Ts']),max(rawDict['Ts']),currentEvent))
+/home/meerhoffla/the Pipeline/LibraryRENS/temporalAggregation_towardsGeneric.py:322: UserWarning: 
+WARNING: No positional data available for when the requested event occurred.
+As a work-around, this event was skipped.
+This is an indication that the positional data and the event data do not lign up.
+min(Ts) = 0.0
+max(Ts) = 5601.4
+Event:
+(6237.09, 'GRK001', 339.0, 'K946p34p9496 Tg934p37811969a196', 'Laa6 4a J946', (-7.4, -22.8), 'outside_16m', 4.260000000000218, True)
+  warn('\nWARNING: No positional data available for when the requested event occurred.\nAs a work-around, this event was skipped.\nThis is an indication that the positional data and the event data do not lign up.\nmin(Ts) = %s\nmax(Ts) = %s\nEvent:\n%s' %(min(rawDict['Ts']),max(rawDict['Ts']),currentEvent))
+/home/meerhoffla/the Pipeline/LibraryRENS/temporalAggregation_towardsGeneric.py:322: UserWarning: 
+WARNING: No positional data available for when the requested event occurred.
+As a work-around, this event was skipped.
+This is an indication that the positional data and the event data do not lign up.
+min(Ts) = 0.0
+max(Ts) = 5601.4
+Event:
+(6238.21, 'NL001', 340.0, 'Laa6 4a J946', 'Oa369f B9a8', (-3.1, -21.2), 'outside_16m', 1.1199999999998909, True)
+  warn('\nWARNING: No positional data available for when the requested event occurred.\nAs a work-around, this event was skipped.\nThis is an indication that the positional data and the event data do not lign up.\nmin(Ts) = %s\nmax(Ts) = %s\nEvent:\n%s' %(min(rawDict['Ts']),max(rawDict['Ts']),currentEvent))
+/home/meerhoffla/the Pipeline/LibraryRENS/temporalAggregation_towardsGeneric.py:322: UserWarning: 
+WARNING: No positional data available for when the requested event occurred.
+As a work-around, this event was skipped.
+This is an indication that the positional data and the event data do not lign up.
+min(Ts) = 0.0
+max(Ts) = 5601.4
+Event:
+(6239.43, 'GRK001', 341.0, 'K946p34p9496 Tg934p37811969a196', 'Laa6 4a J946', (-4.6, -26.5), 'outside_16m', 1.2200000000002549, True)
+  warn('\nWARNING: No positional data available for when the requested event occurred.\nAs a work-around, this event was skipped.\nThis is an indication that the positional data and the event data do not lign up.\nmin(Ts) = %s\nmax(Ts) = %s\nEvent:\n%s' %(min(rawDict['Ts']),max(rawDict['Ts']),currentEvent))
+/home/meerhoffla/the Pipeline/LibraryRENS/temporalAggregation_towardsGeneric.py:322: UserWarning: 
+WARNING: No positional data available for when the requested event occurred.
+As a work-around, this event was skipped.
+This is an indication that the positional data and the event data do not lign up.
+min(Ts) = 0.0
+max(Ts) = 5601.4
+Event:
+(6242.11, 'NL001', 343.0, 'Maf6g96 Da638', 'K946p34p9496 Tg934p37811969a196', (-4.4, -25.1), 'outside_16m', 2.679999999999381, True)
+  warn('\nWARNING: No positional data available for when the requested event occurred.\nAs a work-around, this event was skipped.\nThis is an indication that the positional data and the event data do not lign up.\nmin(Ts) = %s\nmax(Ts) = %s\nEvent:\n%s' %(min(rawDict['Ts']),max(rawDict['Ts']),currentEvent))
+/home/meerhoffla/the Pipeline/LibraryRENS/temporalAggregation_towardsGeneric.py:322: UserWarning: 
+WARNING: No positional data available for when the requested event occurred.
+As a work-around, this event was skipped.
+This is an indication that the positional data and the event data do not lign up.
+min(Ts) = 0.0
+max(Ts) = 5601.4
+Event:
+(6243.25, 'GRK001', 343.0, '43c94 fa44a6', 'Maf6g96 Da638', (-10.2, -19.0), 'outside_16m', 1.1400000000003274, True)
+  warn('\nWARNING: No positional data available for when the requested event occurred.\nAs a work-around, this event was skipped.\nThis is an indication that the positional data and the event data do not lign up.\nmin(Ts) = %s\nmax(Ts) = %s\nEvent:\n%s' %(min(rawDict['Ts']),max(rawDict['Ts']),currentEvent))
+/home/meerhoffla/the Pipeline/LibraryRENS/temporalAggregation_towardsGeneric.py:322: UserWarning: 
+WARNING: No positional data available for when the requested event occurred.
+As a work-around, this event was skipped.
+This is an indication that the positional data and the event data do not lign up.
+min(Ts) = 0.0
+max(Ts) = 5601.4
+Event:
+(6255.88, 'NL001', 344.0, 'A44ga6 Ga3g4349', 'N9691396 K3ga196', (28.4, -0.3), 'outside_16m', 12.63000000000011, True)
+  warn('\nWARNING: No positional data available for when the requested event occurred.\nAs a work-around, this event was skipped.\nThis is an indication that the positional data and the event data do not lign up.\nmin(Ts) = %s\nmax(Ts) = %s\nEvent:\n%s' %(min(rawDict['Ts']),max(rawDict['Ts']),currentEvent))
+/home/meerhoffla/the Pipeline/LibraryRENS/temporalAggregation_towardsGeneric.py:322: UserWarning: 
+WARNING: No positional data available for when the requested event occurred.
+As a work-around, this event was skipped.
+This is an indication that the positional data and the event data do not lign up.
+min(Ts) = 0.0
+max(Ts) = 5601.4
+Event:
+(6258.3, 'GRK001', 345.0, 'N9691396 K3ga196', 'A43f M3gag', (17.6, -1.4), 'outside_16m', 2.4200000000000728, True)
+  warn('\nWARNING: No positional data available for when the requested event occurred.\nAs a work-around, this event was skipped.\nThis is an indication that the positional data and the event data do not lign up.\nmin(Ts) = %s\nmax(Ts) = %s\nEvent:\n%s' %(min(rawDict['Ts']),max(rawDict['Ts']),currentEvent))
+/home/meerhoffla/the Pipeline/LibraryRENS/temporalAggregation_towardsGeneric.py:322: UserWarning: 
+WARNING: No positional data available for when the requested event occurred.
+As a work-around, this event was skipped.
+This is an indication that the positional data and the event data do not lign up.
+min(Ts) = 0.0
+max(Ts) = 5601.4
+Event:
+(6267.61, 'NL001', 346.0, 'Maf6g96 Da638', 'Cgg96p96 D9496', (16.9, -2.0), 'outside_16m', 9.309999999999489, True)
+  warn('\nWARNING: No positional data available for when the requested event occurred.\nAs a work-around, this event was skipped.\nThis is an indication that the positional data and the event data do not lign up.\nmin(Ts) = %s\nmax(Ts) = %s\nEvent:\n%s' %(min(rawDict['Ts']),max(rawDict['Ts']),currentEvent))
+/home/meerhoffla/the Pipeline/LibraryRENS/temporalAggregation_towardsGeneric.py:322: UserWarning: 
+WARNING: No positional data available for when the requested event occurred.
+As a work-around, this event was skipped.
+This is an indication that the positional data and the event data do not lign up.
+min(Ts) = 0.0
+max(Ts) = 5601.4
+Event:
+(6272.08, 'GRK001', 347.0, 'J96a Za23', 'Maf6g96 Da638', (15.3, -2.3), 'outside_16m', 4.4700000000002555, True)
+  warn('\nWARNING: No positional data available for when the requested event occurred.\nAs a work-around, this event was skipped.\nThis is an indication that the positional data and the event data do not lign up.\nmin(Ts) = %s\nmax(Ts) = %s\nEvent:\n%s' %(min(rawDict['Ts']),max(rawDict['Ts']),currentEvent))
+/home/meerhoffla/the Pipeline/LibraryRENS/temporalAggregation_towardsGeneric.py:322: UserWarning: 
+WARNING: No positional data available for when the requested event occurred.
+As a work-around, this event was skipped.
+This is an indication that the positional data and the event data do not lign up.
+min(Ts) = 0.0
+max(Ts) = 5601.4
+Event:
+(6306.81, 'NL001', 348.0, 'Maf6g96 Da638', 'J96a Za23', (39.3, -16.9), 'inside_16m', 34.730000000000466, False)
+  warn('\nWARNING: No positional data available for when the requested event occurred.\nAs a work-around, this event was skipped.\nThis is an indication that the positional data and the event data do not lign up.\nmin(Ts) = %s\nmax(Ts) = %s\nEvent:\n%s' %(min(rawDict['Ts']),max(rawDict['Ts']),currentEvent))
+/home/meerhoffla/the Pipeline/LibraryRENS/temporalAggregation_towardsGeneric.py:322: UserWarning: 
+WARNING: No positional data available for when the requested event occurred.
+As a work-around, this event was skipped.
+This is an indication that the positional data and the event data do not lign up.
+min(Ts) = 0.0
+max(Ts) = 5601.4
+Event:
+(6307.98, 'GRK001', 349.0, 'N9691396 K3ga196', 'Maf6g96 Da638', (39.6, -20.9), 'outside_16m', 1.1699999999991633, True)
+  warn('\nWARNING: No positional data available for when the requested event occurred.\nAs a work-around, this event was skipped.\nThis is an indication that the positional data and the event data do not lign up.\nmin(Ts) = %s\nmax(Ts) = %s\nEvent:\n%s' %(min(rawDict['Ts']),max(rawDict['Ts']),currentEvent))
+/home/meerhoffla/the Pipeline/LibraryRENS/temporalAggregation_towardsGeneric.py:322: UserWarning: 
+WARNING: No positional data available for when the requested event occurred.
+As a work-around, this event was skipped.
+This is an indication that the positional data and the event data do not lign up.
+min(Ts) = 0.0
+max(Ts) = 5601.4
+Event:
+(6308.71, 'NL001', 350.0, 'Maf6g96 Da638', 'N9691396 K3ga196', (36.8, -26.5), 'outside_16m', 0.7300000000004729, True)
+  warn('\nWARNING: No positional data available for when the requested event occurred.\nAs a work-around, this event was skipped.\nThis is an indication that the positional data and the event data do not lign up.\nmin(Ts) = %s\nmax(Ts) = %s\nEvent:\n%s' %(min(rawDict['Ts']),max(rawDict['Ts']),currentEvent))
+/home/meerhoffla/the Pipeline/LibraryRENS/temporalAggregation_towardsGeneric.py:322: UserWarning: 
+WARNING: No positional data available for when the requested event occurred.
+As a work-around, this event was skipped.
+This is an indication that the positional data and the event data do not lign up.
+min(Ts) = 0.0
+max(Ts) = 5601.4
+Event:
+(6608.79, 'GRK001', 351.0, 'K946p34p9496 Tg934p37811969a196', 'A43f M3gag', (2.5, -29.4), 'outside_16m', 300.07999999999987, False)
+  warn('\nWARNING: No positional data available for when the requested event occurred.\nAs a work-around, this event was skipped.\nThis is an indication that the positional data and the event data do not lign up.\nmin(Ts) = %s\nmax(Ts) = %s\nEvent:\n%s' %(min(rawDict['Ts']),max(rawDict['Ts']),currentEvent))
+/home/meerhoffla/the Pipeline/LibraryRENS/temporalAggregation_towardsGeneric.py:322: UserWarning: 
+WARNING: No positional data available for when the requested event occurred.
+As a work-around, this event was skipped.
+This is an indication that the positional data and the event data do not lign up.
+min(Ts) = 0.0
+max(Ts) = 5601.4
+Event:
+(6610.33, 'NL001', 352.0, 'Maf6g96 Da638', 'K946p34p9496 Tg934p37811969a196', (7.0, -29.4), 'outside_16m', 1.5399999999999636, True)
+  warn('\nWARNING: No positional data available for when the requested event occurred.\nAs a work-around, this event was skipped.\nThis is an indication that the positional data and the event data do not lign up.\nmin(Ts) = %s\nmax(Ts) = %s\nEvent:\n%s' %(min(rawDict['Ts']),max(rawDict['Ts']),currentEvent))
+/home/meerhoffla/the Pipeline/LibraryRENS/temporalAggregation_towardsGeneric.py:322: UserWarning: 
+WARNING: No positional data available for when the requested event occurred.
+As a work-around, this event was skipped.
+This is an indication that the positional data and the event data do not lign up.
+min(Ts) = 0.0
+max(Ts) = 5601.4
+Event:
+(6626.28, 'GRK001', 353.0, '43c94 fa44a6', 'J9gg9p Ha44g94', (-29.8, -9.5), 'outside_16m', 15.949999999999818, True)
+  warn('\nWARNING: No positional data available for when the requested event occurred.\nAs a work-around, this event was skipped.\nThis is an indication that the positional data and the event data do not lign up.\nmin(Ts) = %s\nmax(Ts) = %s\nEvent:\n%s' %(min(rawDict['Ts']),max(rawDict['Ts']),currentEvent))
+/home/meerhoffla/the Pipeline/LibraryRENS/temporalAggregation_towardsGeneric.py:322: UserWarning: 
+WARNING: No positional data available for when the requested event occurred.
+As a work-around, this event was skipped.
+This is an indication that the positional data and the event data do not lign up.
+min(Ts) = 0.0
+max(Ts) = 5601.4
+Event:
+(6626.44, 'NL001', 354.0, 'Laa6 4a J946', '43c94 fa44a6', (-30.6, -8.4), 'outside_16m', 0.15999999999985448, True)
+  warn('\nWARNING: No positional data available for when the requested event occurred.\nAs a work-around, this event was skipped.\nThis is an indication that the positional data and the event data do not lign up.\nmin(Ts) = %s\nmax(Ts) = %s\nEvent:\n%s' %(min(rawDict['Ts']),max(rawDict['Ts']),currentEvent))
+/home/meerhoffla/the Pipeline/LibraryRENS/temporalAggregation_towardsGeneric.py:322: UserWarning: 
+WARNING: No positional data available for when the requested event occurred.
+As a work-around, this event was skipped.
+This is an indication that the positional data and the event data do not lign up.
+min(Ts) = 0.0
+max(Ts) = 5601.4
+Event:
+(6635.63, 'GRK001', 355.0, 'Cgg96p96 D9496', 'A43f M3gag', (-37.7, -33.6), 'outside_16m', 9.190000000000511, True)
+  warn('\nWARNING: No positional data available for when the requested event occurred.\nAs a work-around, this event was skipped.\nThis is an indication that the positional data and the event data do not lign up.\nmin(Ts) = %s\nmax(Ts) = %s\nEvent:\n%s' %(min(rawDict['Ts']),max(rawDict['Ts']),currentEvent))
+/home/meerhoffla/the Pipeline/LibraryRENS/temporalAggregation_towardsGeneric.py:322: UserWarning: 
+WARNING: No positional data available for when the requested event occurred.
+As a work-around, this event was skipped.
+This is an indication that the positional data and the event data do not lign up.
+min(Ts) = 0.0
+max(Ts) = 5601.4
+Event:
+(6671.29, 'NL001', 356.0, 'Laa6 4a J946', 'G9g494 S2g914a47a14', (-0.7, -27.0), 'outside_16m', 35.659999999999854, False)
+  warn('\nWARNING: No positional data available for when the requested event occurred.\nAs a work-around, this event was skipped.\nThis is an indication that the positional data and the event data do not lign up.\nmin(Ts) = %s\nmax(Ts) = %s\nEvent:\n%s' %(min(rawDict['Ts']),max(rawDict['Ts']),currentEvent))
+/home/meerhoffla/the Pipeline/LibraryRENS/temporalAggregation_towardsGeneric.py:322: UserWarning: 
+WARNING: No positional data available for when the requested event occurred.
+As a work-around, this event was skipped.
+This is an indication that the positional data and the event data do not lign up.
+min(Ts) = 0.0
+max(Ts) = 5601.4
+Event:
+(6672.93, 'GRK001', 357.0, 'Oa369f B9a8', 'Laa6 4a J946', (-0.3, -18.4), 'outside_16m', 1.6400000000003274, True)
+  warn('\nWARNING: No positional data available for when the requested event occurred.\nAs a work-around, this event was skipped.\nThis is an indication that the positional data and the event data do not lign up.\nmin(Ts) = %s\nmax(Ts) = %s\nEvent:\n%s' %(min(rawDict['Ts']),max(rawDict['Ts']),currentEvent))
+/home/meerhoffla/the Pipeline/LibraryRENS/temporalAggregation_towardsGeneric.py:322: UserWarning: 
+WARNING: No positional data available for when the requested event occurred.
+As a work-around, this event was skipped.
+This is an indication that the positional data and the event data do not lign up.
+min(Ts) = 0.0
+max(Ts) = 5601.4
+Event:
+(6674.28, 'NL001', 358.0, 'Ga9g69499 W9g4314af', 'Oa369f B9a8', (4.0, -12.7), 'outside_16m', 1.3499999999994543, True)
+  warn('\nWARNING: No positional data available for when the requested event occurred.\nAs a work-around, this event was skipped.\nThis is an indication that the positional data and the event data do not lign up.\nmin(Ts) = %s\nmax(Ts) = %s\nEvent:\n%s' %(min(rawDict['Ts']),max(rawDict['Ts']),currentEvent))
+/home/meerhoffla/the Pipeline/LibraryRENS/temporalAggregation_towardsGeneric.py:322: UserWarning: 
+WARNING: No positional data available for when the requested event occurred.
+As a work-around, this event was skipped.
+This is an indication that the positional data and the event data do not lign up.
+min(Ts) = 0.0
+max(Ts) = 5601.4
+Event:
+(6696.09, 'GRK001', 359.0, 'N349', 'Ga9g69499 W9g4314af', (-32.9, 25.9), 'outside_16m', 21.8100000000004, True)
+  warn('\nWARNING: No positional data available for when the requested event occurred.\nAs a work-around, this event was skipped.\nThis is an indication that the positional data and the event data do not lign up.\nmin(Ts) = %s\nmax(Ts) = %s\nEvent:\n%s' %(min(rawDict['Ts']),max(rawDict['Ts']),currentEvent))
+/home/meerhoffla/the Pipeline/LibraryRENS/temporalAggregation_towardsGeneric.py:322: UserWarning: 
+WARNING: No positional data available for when the requested event occurred.
+As a work-around, this event was skipped.
+This is an indication that the positional data and the event data do not lign up.
+min(Ts) = 0.0
+max(Ts) = 5601.4
+Event:
+(6842.77, 'NL001', 360.0, 'Ga9g69499 W9g4314af', 'D349ga1 Pg34g92', (16.7, -26.8), 'outside_16m', 146.6800000000003, False)
+  warn('\nWARNING: No positional data available for when the requested event occurred.\nAs a work-around, this event was skipped.\nThis is an indication that the positional data and the event data do not lign up.\nmin(Ts) = %s\nmax(Ts) = %s\nEvent:\n%s' %(min(rawDict['Ts']),max(rawDict['Ts']),currentEvent))
+/home/meerhoffla/the Pipeline/LibraryRENS/temporalAggregation_towardsGeneric.py:322: UserWarning: 
+WARNING: No positional data available for when the requested event occurred.
+As a work-around, this event was skipped.
+This is an indication that the positional data and the event data do not lign up.
+min(Ts) = 0.0
+max(Ts) = 5601.4
+Event:
+(6844.05, 'GRK001', 361.0, 'K946p34p9496 Tg934p37811969a196', 'Ga9g69499 W9g4314af', (14.7, -30.1), 'outside_16m', 1.2799999999997451, True)
+  warn('\nWARNING: No positional data available for when the requested event occurred.\nAs a work-around, this event was skipped.\nThis is an indication that the positional data and the event data do not lign up.\nmin(Ts) = %s\nmax(Ts) = %s\nEvent:\n%s' %(min(rawDict['Ts']),max(rawDict['Ts']),currentEvent))
+/home/meerhoffla/the Pipeline/LibraryRENS/temporalAggregation_towardsGeneric.py:322: UserWarning: 
+WARNING: No positional data available for when the requested event occurred.
+As a work-around, this event was skipped.
+This is an indication that the positional data and the event data do not lign up.
+min(Ts) = 0.0
+max(Ts) = 5601.4
+Event:
+(6844.42, 'NL001', 362.0, 'Ga9g69499 W9g4314af', 'K946p34p9496 Tg934p37811969a196', (15.2, -29.2), 'outside_16m', 0.3699999999998909, True)
+  warn('\nWARNING: No positional data available for when the requested event occurred.\nAs a work-around, this event was skipped.\nThis is an indication that the positional data and the event data do not lign up.\nmin(Ts) = %s\nmax(Ts) = %s\nEvent:\n%s' %(min(rawDict['Ts']),max(rawDict['Ts']),currentEvent))
+/home/meerhoffla/the Pipeline/LibraryRENS/temporalAggregation_towardsGeneric.py:322: UserWarning: 
+WARNING: No positional data available for when the requested event occurred.
+As a work-around, this event was skipped.
+This is an indication that the positional data and the event data do not lign up.
+min(Ts) = 0.0
+max(Ts) = 5601.4
+Event:
+(6845.53, 'GRK001', 363.0, 'K946p34p9496 Tg934p37811969a196', 'Ga9g69499 W9g4314af', (23.4, -31.4), 'outside_16m', 1.1099999999996726, True)
+  warn('\nWARNING: No positional data available for when the requested event occurred.\nAs a work-around, this event was skipped.\nThis is an indication that the positional data and the event data do not lign up.\nmin(Ts) = %s\nmax(Ts) = %s\nEvent:\n%s' %(min(rawDict['Ts']),max(rawDict['Ts']),currentEvent))
+/home/meerhoffla/the Pipeline/LibraryRENS/temporalAggregation_towardsGeneric.py:322: UserWarning: 
+WARNING: No positional data available for when the requested event occurred.
+As a work-around, this event was skipped.
+This is an indication that the positional data and the event data do not lign up.
+min(Ts) = 0.0
+max(Ts) = 5601.4
+Event:
+(6846.84, 'NL001', 364.0, 'Maf6g96 Da638', 'K946p34p9496 Tg934p37811969a196', (31.1, -30.4), 'outside_16m', 1.3100000000004002, True)
+  warn('\nWARNING: No positional data available for when the requested event occurred.\nAs a work-around, this event was skipped.\nThis is an indication that the positional data and the event data do not lign up.\nmin(Ts) = %s\nmax(Ts) = %s\nEvent:\n%s' %(min(rawDict['Ts']),max(rawDict['Ts']),currentEvent))
+/home/meerhoffla/the Pipeline/LibraryRENS/temporalAggregation_towardsGeneric.py:322: UserWarning: 
+WARNING: No positional data available for when the requested event occurred.
+As a work-around, this event was skipped.
+This is an indication that the positional data and the event data do not lign up.
+min(Ts) = 0.0
+max(Ts) = 5601.4
+Event:
+(6850.62, 'GRK001', 365.0, 'K946p34p9496 Tg934p37811969a196', 'J9gg9p Ha44g94', (46.0, -23.1), 'outside_16m', 3.779999999999745, True)
+  warn('\nWARNING: No positional data available for when the requested event occurred.\nAs a work-around, this event was skipped.\nThis is an indication that the positional data and the event data do not lign up.\nmin(Ts) = %s\nmax(Ts) = %s\nEvent:\n%s' %(min(rawDict['Ts']),max(rawDict['Ts']),currentEvent))
+/home/meerhoffla/the Pipeline/LibraryRENS/temporalAggregation_towardsGeneric.py:322: UserWarning: 
+WARNING: No positional data available for when the requested event occurred.
+As a work-around, this event was skipped.
+This is an indication that the positional data and the event data do not lign up.
+min(Ts) = 0.0
+max(Ts) = 5601.4
+Event:
+(6852.84, 'NL001', 366.0, 'K3g9f Ra696', 'K946p34p9496 Tg934p37811969a196', (44.5, -14.3), 'inside_16m', 2.2200000000002547, True)
+  warn('\nWARNING: No positional data available for when the requested event occurred.\nAs a work-around, this event was skipped.\nThis is an indication that the positional data and the event data do not lign up.\nmin(Ts) = %s\nmax(Ts) = %s\nEvent:\n%s' %(min(rawDict['Ts']),max(rawDict['Ts']),currentEvent))
+/home/meerhoffla/the Pipeline/LibraryRENS/temporalAggregation_towardsGeneric.py:322: UserWarning: 
+WARNING: No positional data available for when the requested event occurred.
+As a work-around, this event was skipped.
+This is an indication that the positional data and the event data do not lign up.
+min(Ts) = 0.0
+max(Ts) = 5601.4
+Event:
+(6852.91, 'GRK001', 367.0, 'K946p34p9496 Tg934p37811969a196', 'K3g9f Ra696', (44.1, -15.8), 'outside_16m', 0.06999999999970896, True)
+  warn('\nWARNING: No positional data available for when the requested event occurred.\nAs a work-around, this event was skipped.\nThis is an indication that the positional data and the event data do not lign up.\nmin(Ts) = %s\nmax(Ts) = %s\nEvent:\n%s' %(min(rawDict['Ts']),max(rawDict['Ts']),currentEvent))
+/home/meerhoffla/the Pipeline/LibraryRENS/temporalAggregation_towardsGeneric.py:322: UserWarning: 
+WARNING: No positional data available for when the requested event occurred.
+As a work-around, this event was skipped.
+This is an indication that the positional data and the event data do not lign up.
+min(Ts) = 0.0
+max(Ts) = 5601.4
+Event:
+(6853.5, 'NL001', 368.0, 'Jag9a4 Z9ap', 'K946p34p9496 Tg934p37811969a196', (48.3, -3.5), 'inside_16m', 0.5900000000001455, True)
+  warn('\nWARNING: No positional data available for when the requested event occurred.\nAs a work-around, this event was skipped.\nThis is an indication that the positional data and the event data do not lign up.\nmin(Ts) = %s\nmax(Ts) = %s\nEvent:\n%s' %(min(rawDict['Ts']),max(rawDict['Ts']),currentEvent))
+/home/meerhoffla/the Pipeline/LibraryRENS/temporalAggregation_towardsGeneric.py:322: UserWarning: 
+WARNING: No positional data available for when the requested event occurred.
+As a work-around, this event was skipped.
+This is an indication that the positional data and the event data do not lign up.
+min(Ts) = 0.0
+max(Ts) = 5601.4
+Event:
+(6934.41, 'GRK001', nan, 'G9g494 S2g914a47a14', 'Maf6g96 Da638', (-25.0, -4.9), 'outside_16m', 80.90999999999985, False)
+  warn('\nWARNING: No positional data available for when the requested event occurred.\nAs a work-around, this event was skipped.\nThis is an indication that the positional data and the event data do not lign up.\nmin(Ts) = %s\nmax(Ts) = %s\nEvent:\n%s' %(min(rawDict['Ts']),max(rawDict['Ts']),currentEvent))
+/home/meerhoffla/the Pipeline/LibraryRENS/exportCSV.py:222: UserWarning: 
+WARNING: <LengthA> existed in the data, but was not given in columnOrder.
+Therefore, it was added to the end of columnOrder.
+  warn('\nWARNING: <%s> existed in the data, but was not given in columnOrder.\nTherefore, it was added to the end of columnOrder.' %ikey)
+/home/meerhoffla/the Pipeline/LibraryRENS/exportCSV.py:222: UserWarning: 
+WARNING: <LengthB> existed in the data, but was not given in columnOrder.
+Therefore, it was added to the end of columnOrder.
+  warn('\nWARNING: <%s> existed in the data, but was not given in columnOrder.\nTherefore, it was added to the end of columnOrder.' %ikey)
+/home/meerhoffla/the Pipeline/LibraryRENS/exportCSV.py:222: UserWarning: 
+WARNING: <ShapeRatioA> existed in the data, but was not given in columnOrder.
+Therefore, it was added to the end of columnOrder.
+  warn('\nWARNING: <%s> existed in the data, but was not given in columnOrder.\nTherefore, it was added to the end of columnOrder.' %ikey)
+/home/meerhoffla/the Pipeline/LibraryRENS/exportCSV.py:222: UserWarning: 
+WARNING: <ShapeRatioB> existed in the data, but was not given in columnOrder.
+Therefore, it was added to the end of columnOrder.
+  warn('\nWARNING: <%s> existed in the data, but was not given in columnOrder.\nTherefore, it was added to the end of columnOrder.' %ikey)
+/home/meerhoffla/the Pipeline/LibraryRENS/exportCSV.py:222: UserWarning: 
+WARNING: <SpreadA> existed in the data, but was not given in columnOrder.
+Therefore, it was added to the end of columnOrder.
+  warn('\nWARNING: <%s> existed in the data, but was not given in columnOrder.\nTherefore, it was added to the end of columnOrder.' %ikey)
+/home/meerhoffla/the Pipeline/LibraryRENS/exportCSV.py:222: UserWarning: 
+WARNING: <SpreadB> existed in the data, but was not given in columnOrder.
+Therefore, it was added to the end of columnOrder.
+  warn('\nWARNING: <%s> existed in the data, but was not given in columnOrder.\nTherefore, it was added to the end of columnOrder.' %ikey)
+/home/meerhoffla/the Pipeline/LibraryRENS/exportCSV.py:222: UserWarning: 
+WARNING: <SumVerticesA> existed in the data, but was not given in columnOrder.
+Therefore, it was added to the end of columnOrder.
+  warn('\nWARNING: <%s> existed in the data, but was not given in columnOrder.\nTherefore, it was added to the end of columnOrder.' %ikey)
+/home/meerhoffla/the Pipeline/LibraryRENS/exportCSV.py:222: UserWarning: 
+WARNING: <SumVerticesB> existed in the data, but was not given in columnOrder.
+Therefore, it was added to the end of columnOrder.
+  warn('\nWARNING: <%s> existed in the data, but was not given in columnOrder.\nTherefore, it was added to the end of columnOrder.' %ikey)
+/home/meerhoffla/the Pipeline/LibraryRENS/exportCSV.py:222: UserWarning: 
+WARNING: <SurfaceA> existed in the data, but was not given in columnOrder.
+Therefore, it was added to the end of columnOrder.
+  warn('\nWARNING: <%s> existed in the data, but was not given in columnOrder.\nTherefore, it was added to the end of columnOrder.' %ikey)
+/home/meerhoffla/the Pipeline/LibraryRENS/exportCSV.py:222: UserWarning: 
+WARNING: <SurfaceB> existed in the data, but was not given in columnOrder.
+Therefore, it was added to the end of columnOrder.
+  warn('\nWARNING: <%s> existed in the data, but was not given in columnOrder.\nTherefore, it was added to the end of columnOrder.' %ikey)
+/home/meerhoffla/the Pipeline/LibraryRENS/exportCSV.py:222: UserWarning: 
+WARNING: <TeamCentXA> existed in the data, but was not given in columnOrder.
+Therefore, it was added to the end of columnOrder.
+  warn('\nWARNING: <%s> existed in the data, but was not given in columnOrder.\nTherefore, it was added to the end of columnOrder.' %ikey)
+/home/meerhoffla/the Pipeline/LibraryRENS/exportCSV.py:222: UserWarning: 
+WARNING: <TeamCentXB> existed in the data, but was not given in columnOrder.
+Therefore, it was added to the end of columnOrder.
+  warn('\nWARNING: <%s> existed in the data, but was not given in columnOrder.\nTherefore, it was added to the end of columnOrder.' %ikey)
+/home/meerhoffla/the Pipeline/LibraryRENS/exportCSV.py:222: UserWarning: 
+WARNING: <TeamCentYA> existed in the data, but was not given in columnOrder.
+Therefore, it was added to the end of columnOrder.
+  warn('\nWARNING: <%s> existed in the data, but was not given in columnOrder.\nTherefore, it was added to the end of columnOrder.' %ikey)
+/home/meerhoffla/the Pipeline/LibraryRENS/exportCSV.py:222: UserWarning: 
+WARNING: <TeamCentYB> existed in the data, but was not given in columnOrder.
+Therefore, it was added to the end of columnOrder.
+  warn('\nWARNING: <%s> existed in the data, but was not given in columnOrder.\nTherefore, it was added to the end of columnOrder.' %ikey)
+/home/meerhoffla/the Pipeline/LibraryRENS/exportCSV.py:222: UserWarning: 
+WARNING: <WidthA> existed in the data, but was not given in columnOrder.
+Therefore, it was added to the end of columnOrder.
+  warn('\nWARNING: <%s> existed in the data, but was not given in columnOrder.\nTherefore, it was added to the end of columnOrder.' %ikey)
+/home/meerhoffla/the Pipeline/LibraryRENS/exportCSV.py:222: UserWarning: 
+WARNING: <WidthB> existed in the data, but was not given in columnOrder.
+Therefore, it was added to the end of columnOrder.
+  warn('\nWARNING: <%s> existed in the data, but was not given in columnOrder.\nTherefore, it was added to the end of columnOrder.' %ikey)
+/home/meerhoffla/the Pipeline/LibraryRENS/exportCSV.py:222: UserWarning: 
+WARNING: <stdSpreadA> existed in the data, but was not given in columnOrder.
+Therefore, it was added to the end of columnOrder.
+  warn('\nWARNING: <%s> existed in the data, but was not given in columnOrder.\nTherefore, it was added to the end of columnOrder.' %ikey)
+/home/meerhoffla/the Pipeline/LibraryRENS/exportCSV.py:222: UserWarning: 
+WARNING: <stdSpreadB> existed in the data, but was not given in columnOrder.
+Therefore, it was added to the end of columnOrder.
+  warn('\nWARNING: <%s> existed in the data, but was not given in columnOrder.\nTherefore, it was added to the end of columnOrder.' %ikey)
+/home/meerhoffla/the Pipeline/LibraryRENS/cleanupData.py:77: UserWarning: 
+WARNING: Although skipComputeEvents was requested, no targetEventsFname with name </local/rens/Repositories/BRAxNLD repository_newStyle/Data//existingTargets/preComputed/44_ERE_XIV_preComputed_Event_Turnovers.csv> was found. Therefore, it couldnt be skipped.
+  warn('\nWARNING: Although skipComputeEvents was requested, no targetEventsFname with name <%s> was found. Therefore, it couldnt be skipped.' %targetEventsFname)
+/home/meerhoffla/the Pipeline/LibraryRENS/cleanupData.py:1026: UserWarning: 
+WARNING: Teamstring had to be determined based on the data.
+TeamAstring = <NL004>
+TeamBstring = <NL001>
+  warn('\nWARNING: Teamstring had to be determined based on the data.\nTeamAstring = <%s>\nTeamBstring = <%s>' %(TeamAstring,TeamBstring))
+/home/meerhoffla/the Pipeline/LibraryRENS/importFieldDimensions.py:32: UserWarning: 
+WARNING: no field dimensions found. Taking the default dimensions:
+{'foundIt': False, 'X_bot_left': -50, 'X_top_left': -50, 'X_bot_right': 50, 'X_top_right': 50, 'Y_bot_left': -32.5, 'Y_bot_right': -32.5, 'Y_top_left': 32.7, 'Y_top_right': 32.7}
+
+--------------------
+If you want to specify the fieldDimensions, create a CSV file in the folder /local/rens/Repositories/BRAxNLD repository_newStyle/Data/FieldDimensions with the name <fieldDimensions.csv> that looks like <fieldDimensions.csv>.
+This file should contain a column <Filename> with the string that corresponds to dirtyFname <44_ERE_XIV.csv>.
+Furthermore, the file should contain the following columns with the respective coordinates:
+<X_top_left>
+<Y_top_left>
+<X_top_right>
+<Y_top_right>
+<X_bot_left>
+<Y_bot_left>
+<X_bot_right>
+<Y_bot_right>.
+
+  warn('\nWARNING: no field dimensions found. Taking the default dimensions:\n%s\n\n--------------------\nIf you want to specify the fieldDimensions, create a CSV file in the folder %sFieldDimensions with the name <fieldDimensions.csv> that looks like <fieldDimensions.csv>.\nThis file should contain a column <Filename> with the string that corresponds to dirtyFname <%s>.\nFurthermore, the file should contain the following columns with the respective coordinates:\n<X_top_left>\n<Y_top_left>\n<X_top_right>\n<Y_top_right>\n<X_bot_left>\n<Y_bot_left>\n<X_bot_right>\n<Y_bot_right>.\n' %(fieldDimensions,dataFolder,dirtyFname))
+/home/meerhoffla/the Pipeline/LibraryRENS/importEvents.py:386: UserWarning: 
+<16> out of <441> turnovers were mismatched in terms of refTeam.
+  warn('\n<%s> out of <%s> turnovers were mismatched in terms of refTeam.' %(len(mismatchedTurnover),len(mismatchedTurnover)+len(matchedTurnover)))
+/home/meerhoffla/the Pipeline/LibraryRENS/computeEvents.py:95: UserWarning: 
+WARNING: I'm not (yet) taking field dimensions into account.
+Penalty box is based on generic measures (same as in plotSnapshot)
+
+  warn('\nWARNING: I\'m not (yet) taking field dimensions into account.\nPenalty box is based on generic measures (same as in plotSnapshot)\n')
+/home/meerhoffla/the Pipeline/LibraryRENS/computeEvents.py:96: UserWarning: 
+WARNING: At computEvents, I'm now only very crudely verifying if the Turnovers happened on the refTeam's side of the pitch.
+
+  warn('\nWARNING: At computEvents, I\'m now only very crudely verifying if the Turnovers happened on the refTeam\'s side of the pitch.\n')
+/home/meerhoffla/the Pipeline/LibraryRENS/computeEvents.py:110: UserWarning: 
+WARNING: Suspected turnover on own half.
+Check event data and mismatches in Turnovers.
+Currently, these event labels are overwritten as <outside_16m>.
+
+  warn('\nWARNING: Suspected turnover on own half.\nCheck event data and mismatches in Turnovers.\nCurrently, these event labels are overwritten as <outside_16m>.\n')
+/home/meerhoffla/the Pipeline/LibraryRENS/computeEvents.py:105: UserWarning: 
+WARNING: Suspected turnover on own half.
+Check event data and mismatches in Turnovers.
+Currently, these event labels are overwritten as <outside_16m>.
+
+  warn('\nWARNING: Suspected turnover on own half.\nCheck event data and mismatches in Turnovers.\nCurrently, these event labels are overwritten as <outside_16m>.\n')
+/home/meerhoffla/the Pipeline/LibraryRENS/cleanupData.py:1026: UserWarning: 
+WARNING: Teamstring had to be determined based on the data.
+TeamAstring = <NL004>
+TeamBstring = <NL010>
+  warn('\nWARNING: Teamstring had to be determined based on the data.\nTeamAstring = <%s>\nTeamBstring = <%s>' %(TeamAstring,TeamBstring))
+/home/meerhoffla/the Pipeline/LibraryRENS/importFieldDimensions.py:32: UserWarning: 
+WARNING: no field dimensions found. Taking the default dimensions:
+{'foundIt': False, 'X_bot_left': -50, 'X_top_left': -50, 'X_bot_right': 50, 'X_top_right': 50, 'Y_bot_left': -32.5, 'Y_bot_right': -32.5, 'Y_top_left': 32.7, 'Y_top_right': 32.7}
+
+--------------------
+If you want to specify the fieldDimensions, create a CSV file in the folder /local/rens/Repositories/BRAxNLD repository_newStyle/Data/FieldDimensions with the name <fieldDimensions.csv> that looks like <fieldDimensions.csv>.
+This file should contain a column <Filename> with the string that corresponds to dirtyFname <62_ERE_XIV.csv>.
+Furthermore, the file should contain the following columns with the respective coordinates:
+<X_top_left>
+<Y_top_left>
+<X_top_right>
+<Y_top_right>
+<X_bot_left>
+<Y_bot_left>
+<X_bot_right>
+<Y_bot_right>.
+
+  warn('\nWARNING: no field dimensions found. Taking the default dimensions:\n%s\n\n--------------------\nIf you want to specify the fieldDimensions, create a CSV file in the folder %sFieldDimensions with the name <fieldDimensions.csv> that looks like <fieldDimensions.csv>.\nThis file should contain a column <Filename> with the string that corresponds to dirtyFname <%s>.\nFurthermore, the file should contain the following columns with the respective coordinates:\n<X_top_left>\n<Y_top_left>\n<X_top_right>\n<Y_top_right>\n<X_bot_left>\n<Y_bot_left>\n<X_bot_right>\n<Y_bot_right>.\n' %(fieldDimensions,dataFolder,dirtyFname))
+parallelProcess = 7 of 15
+nFiles = 137
+
+FILE: << 106_ERE_XV >>
+0 out of 9 files (0%) analyzed in 0.0s.
+Estimated time remaining: Unknown
+-------------------------------
+
+***** Time elapsed during dissectFilename: 0.0s
+***** Time elapsed during cleanupData: 12.59s
+***** Time elapsed during importFieldDimensions: 0.0s
+***** Time elapsed during imporTimeseries: 53.39s
+***** Time elapsed during importEvents: 0.0s
+*****----- Time elapsed during spatialAggregation.teamCentroid_panda(): 0.0s
+*****----- Time elapsed during spatialAggregation.distanceToCentroid(): 0.0s
+*****----- Time elapsed during spatialAggregation.teamSpread_asPanda(): 0.0s
+*****----- Time elapsed during spatialAggregation.teamSurface_asPanda(): 0.0s
+*****----- Time elapsed during spatialAggregation.vNorm(): 0.0s
+*****----- Time elapsed during spatialAggregation.student_XX_spatialAggregation(): 0.0s
+***** Time elapsed during spatialAggregation: 118.09s
+***** Time elapsed during computeEvents: 0.56s
+***** Time elapsed during temporalAggregation: 8928.58s
+***** Time elapsed during exportCSV: 364.18s
+
+FILE: << 129_ERE_XVI >>
+1 out of 9 files (11.11%) analyzed in 9477.51s.
+Estimated time remaining: 21:03:40
+-------------------------------
+
+***** Time elapsed during dissectFilename: 0.0s
+***** Time elapsed during cleanupData: 5.1s
+***** Time elapsed during importFieldDimensions: 0.0s
+***** Time elapsed during imporTimeseries: 30.77s
+***** Time elapsed during importEvents: 0.0s
+*****----- Time elapsed during spatialAggregation.teamCentroid_panda(): 0.0s
+*****----- Time elapsed during spatialAggregation.distanceToCentroid(): 0.0s
+*****----- Time elapsed during spatialAggregation.teamSpread_asPanda(): 0.0s
+*****----- Time elapsed during spatialAggregation.teamSurface_asPanda(): 0.0s
+*****----- Time elapsed during spatialAggregation.vNorm(): 0.0s
+*****----- Time elapsed during spatialAggregation.student_XX_spatialAggregation(): 0.0s
+***** Time elapsed during spatialAggregation: 134.08s
+***** Time elapsed during computeEvents: 0.89s
+***** Time elapsed during temporalAggregation: 8855.78s
+***** Time elapsed during exportCSV: 891.13s
+
+FILE: << 142_ERE_XVI >>
+2 out of 9 files (22.22%) analyzed in 19395.83s.
+Estimated time remaining: 18:51:25
+-------------------------------
+
+***** Time elapsed during dissectFilename: 0.0s
+***** Time elapsed during cleanupData: 6.03s
+***** Time elapsed during importFieldDimensions: 0.0s
+***** Time elapsed during imporTimeseries: 34.82s
+***** Time elapsed during importEvents: 0.0s
+*****----- Time elapsed during spatialAggregation.teamCentroid_panda(): 0.0s
+*****----- Time elapsed during spatialAggregation.distanceToCentroid(): 0.0s
+*****----- Time elapsed during spatialAggregation.teamSpread_asPanda(): 0.0s
+*****----- Time elapsed during spatialAggregation.teamSurface_asPanda(): 0.0s
+*****----- Time elapsed during spatialAggregation.vNorm(): 0.0s
+*****----- Time elapsed during spatialAggregation.student_XX_spatialAggregation(): 0.0s
+***** Time elapsed during spatialAggregation: 135.56s
+***** Time elapsed during computeEvents: 1.0s
+***** Time elapsed during temporalAggregation: 11760.75s
+***** Time elapsed during exportCSV: 1275.04s
+
+FILE: << 158_ERE_XVII >>
+3 out of 9 files (33.33%) analyzed in 32609.89s.
+Estimated time remaining: 18:06:59
+-------------------------------
+
+***** Time elapsed during dissectFilename: 0.0s
+***** Time elapsed during cleanupData: 3.5s
+***** Time elapsed during importFieldDimensions: 0.0s
+***** Time elapsed during imporTimeseries: 30.76s
+***** Time elapsed during importEvents: 0.0s
+*****----- Time elapsed during spatialAggregation.teamCentroid_panda(): 0.0s
+*****----- Time elapsed during spatialAggregation.distanceToCentroid(): 0.0s
+*****----- Time elapsed during spatialAggregation.teamSpread_asPanda(): 0.0s
+*****----- Time elapsed during spatialAggregation.teamSurface_asPanda(): 0.0s
+*****----- Time elapsed during spatialAggregation.vNorm(): 0.0s
+*****----- Time elapsed during spatialAggregation.student_XX_spatialAggregation(): 0.0s
+***** Time elapsed during spatialAggregation: 120.19s
+***** Time elapsed during computeEvents: 0.51s
+***** Time elapsed during temporalAggregation: 6827.55s
+***** Time elapsed during exportCSV: 1901.46s
+
+FILE: << 29_EL_XIV >>
+4 out of 9 files (44.44%) analyzed in 41494.54s.
+Estimated time remaining: 14:24:28
+-------------------------------
+
+***** Time elapsed during dissectFilename: 0.0s
+***** Time elapsed during cleanupData: 3.22s
+***** Time elapsed during importFieldDimensions: 0.0s
+***** Time elapsed during imporTimeseries: 21.62s
+***** Time elapsed during importEvents: 0.0s
+*****----- Time elapsed during spatialAggregation.teamCentroid_panda(): 0.0s
+*****----- Time elapsed during spatialAggregation.distanceToCentroid(): 0.0s
+*****----- Time elapsed during spatialAggregation.teamSpread_asPanda(): 0.0s
+*****----- Time elapsed during spatialAggregation.teamSurface_asPanda(): 0.0s
+*****----- Time elapsed during spatialAggregation.vNorm(): 0.0s
+*****----- Time elapsed during spatialAggregation.student_XX_spatialAggregation(): 0.0s
+***** Time elapsed during spatialAggregation: 95.03s
+***** Time elapsed during computeEvents: 0.59s
+***** Time elapsed during temporalAggregation: 5203.82s
+***** Time elapsed during exportCSV: 2751.04s
+
+FILE: << 44_ERE_XIV >>
+5 out of 9 files (55.56%) analyzed in 49570.6s.
+Estimated time remaining: 11:00:56
+-------------------------------
+
+***** Time elapsed during dissectFilename: 0.0s
+***** Time elapsed during cleanupData: 4.61s
+***** Time elapsed during importFieldDimensions: 0.0s
+***** Time elapsed during imporTimeseries: 31.96s
+***** Time elapsed during importEvents: 3.01s
+*****----- Time elapsed during spatialAggregation.teamCentroid_panda(): 0.0s
+*****----- Time elapsed during spatialAggregation.distanceToCentroid(): 0.0s
+*****----- Time elapsed during spatialAggregation.teamSpread_asPanda(): 0.0s
+*****----- Time elapsed during spatialAggregation.teamSurface_asPanda(): 0.0s
+*****----- Time elapsed during spatialAggregation.vNorm(): 0.0s
+*****----- Time elapsed during spatialAggregation.student_XX_spatialAggregation(): 0.0s
+***** Time elapsed during spatialAggregation: 121.78s
+***** Time elapsed during computeEvents: 286.66s
+***** Time elapsed during temporalAggregation: 9164.62s
+***** Time elapsed during exportCSV: 2728.89s
+
+FILE: << 62_ERE_XIV >>
+6 out of 9 files (66.67%) analyzed in 61912.54s.
+Estimated time remaining: 08:35:56
+-------------------------------
+
+***** Time elapsed during dissectFilename: 0.0s
+***** Time elapsed during cleanupData: 3.45s
+***** Time elapsed during importFieldDimensions: 0.0s
+***** Time elapsed during imporTimeseries: 23.46s
+***** Time elapsed during importEvents: 0.0s
+*****----- Time elapsed during spatialAggregation.teamCentroid_panda(): 0.0s
+*****----- Time elapsed during spatialAggregation.distanceToCentroid(): 0.0s
+*****----- Time elapsed during spatialAggregation.teamSpread_asPanda(): 0.0s
+*****----- Time elapsed during spatialAggregation.teamSurface_asPanda(): 0.0s
+*****----- Time elapsed during spatialAggregation.vNorm(): 0.0s
+*****----- Time elapsed during spatialAggregation.student_XX_spatialAggregation(): 0.0s
+***** Time elapsed during spatialAggregation: 101.3s
+***** Time elapsed during computeEvents: 0.45s
+***** Time elapsed during temporalAggregation: 7904.58s
+***** Time elapsed during exportCSV: 2992.11s
+
+FILE: << 77_ERE-P_XIV >>
+7 out of 9 files (77.78%) analyzed in 72938.36s.
+Estimated time remaining: 05:47:19
+-------------------------------
+
+***** Time elapsed during dissectFilename: 0.0s
+***** Time elapsed during cleanupData: 3.79s
+***** Time elapsed during importFieldDimensions: 0.0s
+***** Time elapsed during imporTimeseries: 22.04s
+***** Time elapsed during importEvents: 0.0s
+*****----- Time elapsed during spatialAggregation.teamCentroid_panda(): 0.0s
+*****----- Time elapsed during spatialAggregation.distanceToCentroid(): 0.0s
+*****----- Time elapsed during spatialAggregation.teamSpread_asPanda(): 0.0s
+*****----- Time elapsed during spatialAggregation.teamSurface_asPanda(): 0.0s
+*****----- Time elapsed during spatialAggregation.vNorm(): 0.0s
+*****----- Time elapsed during spatialAggregation.student_XX_spatialAggregation(): 0.0s/home/meerhoffla/the Pipeline/LibraryRENS/cleanupData.py:1026: UserWarning: 
+WARNING: Teamstring had to be determined based on the data.
+TeamAstring = <NL004>
+TeamBstring = <NL005>
+  warn('\nWARNING: Teamstring had to be determined based on the data.\nTeamAstring = <%s>\nTeamBstring = <%s>' %(TeamAstring,TeamBstring))
+/home/meerhoffla/the Pipeline/LibraryRENS/importFieldDimensions.py:32: UserWarning: 
+WARNING: no field dimensions found. Taking the default dimensions:
+{'foundIt': False, 'X_bot_left': -50, 'X_top_left': -50, 'X_bot_right': 50, 'X_top_right': 50, 'Y_bot_left': -32.5, 'Y_bot_right': -32.5, 'Y_top_left': 32.7, 'Y_top_right': 32.7}
+
+--------------------
+If you want to specify the fieldDimensions, create a CSV file in the folder /local/rens/Repositories/BRAxNLD repository_newStyle/Data/FieldDimensions with the name <fieldDimensions.csv> that looks like <fieldDimensions.csv>.
+This file should contain a column <Filename> with the string that corresponds to dirtyFname <77_ERE-P_XIV.csv>.
+Furthermore, the file should contain the following columns with the respective coordinates:
+<X_top_left>
+<Y_top_left>
+<X_top_right>
+<Y_top_right>
+<X_bot_left>
+<Y_bot_left>
+<X_bot_right>
+<Y_bot_right>.
+
+  warn('\nWARNING: no field dimensions found. Taking the default dimensions:\n%s\n\n--------------------\nIf you want to specify the fieldDimensions, create a CSV file in the folder %sFieldDimensions with the name <fieldDimensions.csv> that looks like <fieldDimensions.csv>.\nThis file should contain a column <Filename> with the string that corresponds to dirtyFname <%s>.\nFurthermore, the file should contain the following columns with the respective coordinates:\n<X_top_left>\n<Y_top_left>\n<X_top_right>\n<Y_top_right>\n<X_bot_left>\n<Y_bot_left>\n<X_bot_right>\n<Y_bot_right>.\n' %(fieldDimensions,dataFolder,dirtyFname))
+/usr/lib64/python3.6/site-packages/numpy/core/_methods.py:135: RuntimeWarning: Degrees of freedom <= 0 for slice
+  keepdims=keepdims)
+/home/meerhoffla/the Pipeline/LibraryRENS/temporalAggregation_towardsGeneric.py:1129: UserWarning: 
+WARNING: Encountered an event where there was only data available for 1 team.
+As there was no content for the current key <TeamCentX_ref>, it must have been a team feature (IF IT WAS NOT, THEN THIS NEEDS TO BE LOOKED AT).
+The analysis continues by aggregating this feature as a NaN.
+Consider excluding this event listwise.
+
+  warn('\nWARNING: Encountered an event where there was only data available for 1 team.\nAs there was no content for the current key <%s>, it must have been a team feature (IF IT WAS NOT, THEN THIS NEEDS TO BE LOOKED AT).\nThe analysis continues by aggregating this feature as a NaN.\nConsider excluding this event listwise.\n' %key)
+/home/meerhoffla/the Pipeline/LibraryRENS/temporalAggregation_towardsGeneric.py:1129: UserWarning: 
+WARNING: Encountered an event where there was only data available for 1 team.
+As there was no content for the current key <TeamCentY_ref>, it must have been a team feature (IF IT WAS NOT, THEN THIS NEEDS TO BE LOOKED AT).
+The analysis continues by aggregating this feature as a NaN.
+Consider excluding this event listwise.
+
+  warn('\nWARNING: Encountered an event where there was only data available for 1 team.\nAs there was no content for the current key <%s>, it must have been a team feature (IF IT WAS NOT, THEN THIS NEEDS TO BE LOOKED AT).\nThe analysis continues by aggregating this feature as a NaN.\nConsider excluding this event listwise.\n' %key)
+/home/meerhoffla/the Pipeline/LibraryRENS/temporalAggregation_towardsGeneric.py:1129: UserWarning: 
+WARNING: Encountered an event where there was only data available for 1 team.
+As there was no content for the current key <Length_ref>, it must have been a team feature (IF IT WAS NOT, THEN THIS NEEDS TO BE LOOKED AT).
+The analysis continues by aggregating this feature as a NaN.
+Consider excluding this event listwise.
+
+  warn('\nWARNING: Encountered an event where there was only data available for 1 team.\nAs there was no content for the current key <%s>, it must have been a team feature (IF IT WAS NOT, THEN THIS NEEDS TO BE LOOKED AT).\nThe analysis continues by aggregating this feature as a NaN.\nConsider excluding this event listwise.\n' %key)
+/home/meerhoffla/the Pipeline/LibraryRENS/temporalAggregation_towardsGeneric.py:1129: UserWarning: 
+WARNING: Encountered an event where there was only data available for 1 team.
+As there was no content for the current key <Width_ref>, it must have been a team feature (IF IT WAS NOT, THEN THIS NEEDS TO BE LOOKED AT).
+The analysis continues by aggregating this feature as a NaN.
+Consider excluding this event listwise.
+
+  warn('\nWARNING: Encountered an event where there was only data available for 1 team.\nAs there was no content for the current key <%s>, it must have been a team feature (IF IT WAS NOT, THEN THIS NEEDS TO BE LOOKED AT).\nThe analysis continues by aggregating this feature as a NaN.\nConsider excluding this event listwise.\n' %key)
+/home/meerhoffla/the Pipeline/LibraryRENS/temporalAggregation_towardsGeneric.py:1129: UserWarning: 
+WARNING: Encountered an event where there was only data available for 1 team.
+As there was no content for the current key <Spread_ref>, it must have been a team feature (IF IT WAS NOT, THEN THIS NEEDS TO BE LOOKED AT).
+The analysis continues by aggregating this feature as a NaN.
+Consider excluding this event listwise.
+
+  warn('\nWARNING: Encountered an event where there was only data available for 1 team.\nAs there was no content for the current key <%s>, it must have been a team feature (IF IT WAS NOT, THEN THIS NEEDS TO BE LOOKED AT).\nThe analysis continues by aggregating this feature as a NaN.\nConsider excluding this event listwise.\n' %key)
+/home/meerhoffla/the Pipeline/LibraryRENS/temporalAggregation_towardsGeneric.py:1129: UserWarning: 
+WARNING: Encountered an event where there was only data available for 1 team.
+As there was no content for the current key <stdSpread_ref>, it must have been a team feature (IF IT WAS NOT, THEN THIS NEEDS TO BE LOOKED AT).
+The analysis continues by aggregating this feature as a NaN.
+Consider excluding this event listwise.
+
+  warn('\nWARNING: Encountered an event where there was only data available for 1 team.\nAs there was no content for the current key <%s>, it must have been a team feature (IF IT WAS NOT, THEN THIS NEEDS TO BE LOOKED AT).\nThe analysis continues by aggregating this feature as a NaN.\nConsider excluding this event listwise.\n' %key)
+/home/meerhoffla/the Pipeline/LibraryRENS/temporalAggregation_towardsGeneric.py:1129: UserWarning: 
+WARNING: Encountered an event where there was only data available for 1 team.
+As there was no content for the current key <Surface_ref>, it must have been a team feature (IF IT WAS NOT, THEN THIS NEEDS TO BE LOOKED AT).
+The analysis continues by aggregating this feature as a NaN.
+Consider excluding this event listwise.
+
+  warn('\nWARNING: Encountered an event where there was only data available for 1 team.\nAs there was no content for the current key <%s>, it must have been a team feature (IF IT WAS NOT, THEN THIS NEEDS TO BE LOOKED AT).\nThe analysis continues by aggregating this feature as a NaN.\nConsider excluding this event listwise.\n' %key)
+/home/meerhoffla/the Pipeline/LibraryRENS/temporalAggregation_towardsGeneric.py:1129: UserWarning: 
+WARNING: Encountered an event where there was only data available for 1 team.
+As there was no content for the current key <SumVertices_ref>, it must have been a team feature (IF IT WAS NOT, THEN THIS NEEDS TO BE LOOKED AT).
+The analysis continues by aggregating this feature as a NaN.
+Consider excluding this event listwise.
+
+  warn('\nWARNING: Encountered an event where there was only data available for 1 team.\nAs there was no content for the current key <%s>, it must have been a team feature (IF IT WAS NOT, THEN THIS NEEDS TO BE LOOKED AT).\nThe analysis continues by aggregating this feature as a NaN.\nConsider excluding this event listwise.\n' %key)
+/home/meerhoffla/the Pipeline/LibraryRENS/temporalAggregation_towardsGeneric.py:1129: UserWarning: 
+WARNING: Encountered an event where there was only data available for 1 team.
+As there was no content for the current key <ShapeRatio_ref>, it must have been a team feature (IF IT WAS NOT, THEN THIS NEEDS TO BE LOOKED AT).
+The analysis continues by aggregating this feature as a NaN.
+Consider excluding this event listwise.
+
+  warn('\nWARNING: Encountered an event where there was only data available for 1 team.\nAs there was no content for the current key <%s>, it must have been a team feature (IF IT WAS NOT, THEN THIS NEEDS TO BE LOOKED AT).\nThe analysis continues by aggregating this feature as a NaN.\nConsider excluding this event listwise.\n' %key)
+/home/meerhoffla/the Pipeline/LibraryRENS/temporalAggregation_towardsGeneric.py:1129: UserWarning: 
+WARNING: Encountered an event where there was only data available for 1 team.
+As there was no content for the current key <TeamCentX_oth>, it must have been a team feature (IF IT WAS NOT, THEN THIS NEEDS TO BE LOOKED AT).
+The analysis continues by aggregating this feature as a NaN.
+Consider excluding this event listwise.
+
+  warn('\nWARNING: Encountered an event where there was only data available for 1 team.\nAs there was no content for the current key <%s>, it must have been a team feature (IF IT WAS NOT, THEN THIS NEEDS TO BE LOOKED AT).\nThe analysis continues by aggregating this feature as a NaN.\nConsider excluding this event listwise.\n' %key)
+/home/meerhoffla/the Pipeline/LibraryRENS/temporalAggregation_towardsGeneric.py:1129: UserWarning: 
+WARNING: Encountered an event where there was only data available for 1 team.
+As there was no content for the current key <TeamCentY_oth>, it must have been a team feature (IF IT WAS NOT, THEN THIS NEEDS TO BE LOOKED AT).
+The analysis continues by aggregating this feature as a NaN.
+Consider excluding this event listwise.
+
+  warn('\nWARNING: Encountered an event where there was only data available for 1 team.\nAs there was no content for the current key <%s>, it must have been a team feature (IF IT WAS NOT, THEN THIS NEEDS TO BE LOOKED AT).\nThe analysis continues by aggregating this feature as a NaN.\nConsider excluding this event listwise.\n' %key)
+/home/meerhoffla/the Pipeline/LibraryRENS/temporalAggregation_towardsGeneric.py:1129: UserWarning: 
+WARNING: Encountered an event where there was only data available for 1 team.
+As there was no content for the current key <Length_oth>, it must have been a team feature (IF IT WAS NOT, THEN THIS NEEDS TO BE LOOKED AT).
+The analysis continues by aggregating this feature as a NaN.
+Consider excluding this event listwise.
+
+  warn('\nWARNING: Encountered an event where there was only data available for 1 team.\nAs there was no content for the current key <%s>, it must have been a team feature (IF IT WAS NOT, THEN THIS NEEDS TO BE LOOKED AT).\nThe analysis continues by aggregating this feature as a NaN.\nConsider excluding this event listwise.\n' %key)
+/home/meerhoffla/the Pipeline/LibraryRENS/temporalAggregation_towardsGeneric.py:1129: UserWarning: 
+WARNING: Encountered an event where there was only data available for 1 team.
+As there was no content for the current key <Width_oth>, it must have been a team feature (IF IT WAS NOT, THEN THIS NEEDS TO BE LOOKED AT).
+The analysis continues by aggregating this feature as a NaN.
+Consider excluding this event listwise.
+
+  warn('\nWARNING: Encountered an event where there was only data available for 1 team.\nAs there was no content for the current key <%s>, it must have been a team feature (IF IT WAS NOT, THEN THIS NEEDS TO BE LOOKED AT).\nThe analysis continues by aggregating this feature as a NaN.\nConsider excluding this event listwise.\n' %key)
+/home/meerhoffla/the Pipeline/LibraryRENS/temporalAggregation_towardsGeneric.py:1129: UserWarning: 
+WARNING: Encountered an event where there was only data available for 1 team.
+As there was no content for the current key <Spread_oth>, it must have been a team feature (IF IT WAS NOT, THEN THIS NEEDS TO BE LOOKED AT).
+The analysis continues by aggregating this feature as a NaN.
+Consider excluding this event listwise.
+
+  warn('\nWARNING: Encountered an event where there was only data available for 1 team.\nAs there was no content for the current key <%s>, it must have been a team feature (IF IT WAS NOT, THEN THIS NEEDS TO BE LOOKED AT).\nThe analysis continues by aggregating this feature as a NaN.\nConsider excluding this event listwise.\n' %key)
+/home/meerhoffla/the Pipeline/LibraryRENS/temporalAggregation_towardsGeneric.py:1129: UserWarning: 
+WARNING: Encountered an event where there was only data available for 1 team.
+As there was no content for the current key <stdSpread_oth>, it must have been a team feature (IF IT WAS NOT, THEN THIS NEEDS TO BE LOOKED AT).
+The analysis continues by aggregating this feature as a NaN.
+Consider excluding this event listwise.
+
+  warn('\nWARNING: Encountered an event where there was only data available for 1 team.\nAs there was no content for the current key <%s>, it must have been a team feature (IF IT WAS NOT, THEN THIS NEEDS TO BE LOOKED AT).\nThe analysis continues by aggregating this feature as a NaN.\nConsider excluding this event listwise.\n' %key)
+/home/meerhoffla/the Pipeline/LibraryRENS/temporalAggregation_towardsGeneric.py:1129: UserWarning: 
+WARNING: Encountered an event where there was only data available for 1 team.
+As there was no content for the current key <Surface_oth>, it must have been a team feature (IF IT WAS NOT, THEN THIS NEEDS TO BE LOOKED AT).
+The analysis continues by aggregating this feature as a NaN.
+Consider excluding this event listwise.
+
+  warn('\nWARNING: Encountered an event where there was only data available for 1 team.\nAs there was no content for the current key <%s>, it must have been a team feature (IF IT WAS NOT, THEN THIS NEEDS TO BE LOOKED AT).\nThe analysis continues by aggregating this feature as a NaN.\nConsider excluding this event listwise.\n' %key)
+/home/meerhoffla/the Pipeline/LibraryRENS/temporalAggregation_towardsGeneric.py:1129: UserWarning: 
+WARNING: Encountered an event where there was only data available for 1 team.
+As there was no content for the current key <SumVertices_oth>, it must have been a team feature (IF IT WAS NOT, THEN THIS NEEDS TO BE LOOKED AT).
+The analysis continues by aggregating this feature as a NaN.
+Consider excluding this event listwise.
+
+  warn('\nWARNING: Encountered an event where there was only data available for 1 team.\nAs there was no content for the current key <%s>, it must have been a team feature (IF IT WAS NOT, THEN THIS NEEDS TO BE LOOKED AT).\nThe analysis continues by aggregating this feature as a NaN.\nConsider excluding this event listwise.\n' %key)
+/home/meerhoffla/the Pipeline/LibraryRENS/temporalAggregation_towardsGeneric.py:1129: UserWarning: 
+WARNING: Encountered an event where there was only data available for 1 team.
+As there was no content for the current key <ShapeRatio_oth>, it must have been a team feature (IF IT WAS NOT, THEN THIS NEEDS TO BE LOOKED AT).
+The analysis continues by aggregating this feature as a NaN.
+Consider excluding this event listwise.
+
+  warn('\nWARNING: Encountered an event where there was only data available for 1 team.\nAs there was no content for the current key <%s>, it must have been a team feature (IF IT WAS NOT, THEN THIS NEEDS TO BE LOOKED AT).\nThe analysis continues by aggregating this feature as a NaN.\nConsider excluding this event listwise.\n' %key)
+/home/meerhoffla/the Pipeline/LibraryRENS/cleanupData.py:77: UserWarning: 
+WARNING: Although skipComputeEvents was requested, no targetEventsFname with name </local/rens/Repositories/BRAxNLD repository_newStyle/Data//existingTargets/preComputed/90_ERE_XV_preComputed_Event_Turnovers.csv> was found. Therefore, it couldnt be skipped.
+  warn('\nWARNING: Although skipComputeEvents was requested, no targetEventsFname with name <%s> was found. Therefore, it couldnt be skipped.' %targetEventsFname)
+/home/meerhoffla/the Pipeline/LibraryRENS/importFieldDimensions.py:32: UserWarning: 
+WARNING: no field dimensions found. Taking the default dimensions:
+{'foundIt': False, 'X_bot_left': -50, 'X_top_left': -50, 'X_bot_right': 50, 'X_top_right': 50, 'Y_bot_left': -32.5, 'Y_bot_right': -32.5, 'Y_top_left': 32.7, 'Y_top_right': 32.7}
+
+--------------------
+If you want to specify the fieldDimensions, create a CSV file in the folder /local/rens/Repositories/BRAxNLD repository_newStyle/Data/FieldDimensions with the name <fieldDimensions.csv> that looks like <fieldDimensions.csv>.
+This file should contain a column <Filename> with the string that corresponds to dirtyFname <90_ERE_XV.csv>.
+Furthermore, the file should contain the following columns with the respective coordinates:
+<X_top_left>
+<Y_top_left>
+<X_top_right>
+<Y_top_right>
+<X_bot_left>
+<Y_bot_left>
+<X_bot_right>
+<Y_bot_right>.
+
+  warn('\nWARNING: no field dimensions found. Taking the default dimensions:\n%s\n\n--------------------\nIf you want to specify the fieldDimensions, create a CSV file in the folder %sFieldDimensions with the name <fieldDimensions.csv> that looks like <fieldDimensions.csv>.\nThis file should contain a column <Filename> with the string that corresponds to dirtyFname <%s>.\nFurthermore, the file should contain the following columns with the respective coordinates:\n<X_top_left>\n<Y_top_left>\n<X_top_right>\n<Y_top_right>\n<X_bot_left>\n<Y_bot_left>\n<X_bot_right>\n<Y_bot_right>.\n' %(fieldDimensions,dataFolder,dirtyFname))

@@ -35,6 +35,10 @@ def process(studentFolder,folder,aggregateEvent,allWindows_and_Lags,skipToDataSe
 	checkFolders(folder,aggregateEvent,aggregateWindow,aggregateLag,onlyAnalyzeFilesWithEventData,parallelProcess)
 
 	# WARNING: any edits made to DirtyDataFiles in skipPartsOfPipeline will NOT apply to the back-up
+	if '35_ERE_XIV.csv' in DirtyDataFiles:
+		DirtyDataFiles.remove('35_ERE_XIV.csv')
+		warn('\nWARNING: Hard-coded to skip Match 35_ERE_XIV. This match has something weird with duplicate players that messes up the temporal aggregation.')
+
 	DirtyDataFiles_backup = DirtyDataFiles.copy()
 
 	t,skipToDataSetLevel,skipCleanup,skipSpatAgg,skipEventAgg,includeTrialVisualization,DirtyDataFiles,skipComputeEvents =\
