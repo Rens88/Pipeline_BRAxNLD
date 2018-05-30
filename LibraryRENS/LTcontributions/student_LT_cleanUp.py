@@ -124,8 +124,8 @@ def KNVB(fname,cleanFname,dataFolder,cleanedFolder,headers,readAttributeCols,deb
 	return df_cleaned, df_omitted,fatalTeamIDissue
 
 def setPlayerID(df,ID,Tid,TeamBstring):
-	#Copy shirtnumbers of opponnents to PlayerID's and multiply with -1
-	teamOppIdx = df[Tid] == TeamBstring
+	#Copy shirtnumbers of opponnents to PlayerID's and multiply with -1 if they don't have a PlayerID
+	teamOppIdx = (df[Tid] == TeamBstring) & (df[ID] == 0)
 	df.loc[teamOppIdx,ID] = df.loc[teamOppIdx,'Shirt'] * -1
 
 	#Set ball

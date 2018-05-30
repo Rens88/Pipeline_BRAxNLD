@@ -54,7 +54,7 @@ aggregatePerPlayer = ['dangerousity','zone','control','pressure','density'] # a 
 # plotTheseAttributes = ['vNorm',('Surface_ref','Surface_oth')]#,('Spread_ref','Spread_oth'),('stdSpread_ref','stdSpread_oth'),'vNorm']#,'LengthB',('LengthA','LengthB'),('SurfaceA','SurfaceB'),('SpreadA','SpreadB'),('WidthA','WidthB')] # [('LengthA','LengthB'),('WidthA','WidthB'),('SurfaceA','SurfaceB'),('SpreadA','SpreadB')] # teams that need to be compared as tuple
 # This trialVisualization plots the selected outcome variables variable for the given window for the temporal aggregation. Useful to verify if your variables are as excpected.
 includeTrialVisualization = True
-plotTheseAttributes_atTrialLevel = [] #
+plotTheseAttributes_atTrialLevel = ['dangerousity','zone','control','pressure','density'] #
 # This datasetVisualization compares all events of all files in the dataset. Useful for datasetlevel comparisons
 includeDatasetVisualization = True
 plotTheseAttributes_atDatasetLevel = ['dangerousity','zone','control','pressure','density']
@@ -191,6 +191,9 @@ for dirtyFname in DirtyDataFiles:
 	########################################################################################
 
 	attrPanda,attrLabel = spatialAggregation.process(rawPanda,attrPanda,attrLabel,TeamAstring,TeamBstring,skipSpatAgg_curFile,eventsPanda,spatAggFolder,spatAggFname,debuggingMode)
+
+	#LT: toegevoegd. alleen even spatialagg draaien
+	# continue 
 
 	# NB: targetEVents is a dictionary with the key corresponding to the type of event.
 	# For each key, there is a tuple that contains (timeOfEvent,TeamID,..) 

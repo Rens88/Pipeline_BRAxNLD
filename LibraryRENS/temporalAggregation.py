@@ -67,6 +67,8 @@ def process(targetEvents,aggregateLevel,rawDict,attributeDict,exportData,exportD
 		if not all(np.isnan(attributeDict.loc[rawDict['PlayerID'] == 'ball','Speed'])):
 			attributeDict.loc[rawDict['PlayerID'] == 'ball','Speed'] = np.nan
 			warn('\nWARN: Some datasets also give the Speed of the ball.\nTo avoid conflicts, these input values will be overwritten with empty values.\nIf you are in fact interested in Speed of the ball, then create a new feature that refers to the ball specifically (ballSpeed).\n')
+	else:
+		warn('\nWARN: Speed not included in the targetEvents.\n') #LT: added!
 
 	## user inputs, could easily lift this out of function
 	freqInterpolatedData = 10 # in Hz
@@ -693,7 +695,7 @@ def process(targetEvents,aggregateLevel,rawDict,attributeDict,exportData,exportD
 					print('rowswithinrange = %s' %rowswithinrange)
 					print('number of players of team A within the excerpt nPlA = %s' %nPlA)
 					print('number of players of team B within the excerpt nPlB = %s' %nPlB)
-					pdb.set_trace()
+					# pdb.set_trace()
 					exit()
 					# To avoid errors: either separate variables covering multiple sets, or add code here that joins targetGroups..
 			

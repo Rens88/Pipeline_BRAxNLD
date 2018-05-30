@@ -101,11 +101,11 @@ def process(rawDict,attributeDict,attributeLabel,TeamAstring,TeamBstring,skipSpa
 	attributeDict,attributeLabel = \
 	dangerousity(rawDict,attributeDict,attributeLabel,TeamAstring,TeamBstring)
 
-	# attributeDict,attributeLabel = \
-	# dangerousityPerInterval(rawDict,attributeDict,attributeLabel,TeamAstring,TeamBstring)
+	attributeDict,attributeLabel = \
+	dangerousityPerInterval(rawDict,attributeDict,attributeLabel,TeamAstring,TeamBstring)
 
-	# attributeDict,attributeLabel = \
-	# matchPerformance(rawDict,attributeDict,attributeLabel,TeamAstring,TeamBstring)
+	attributeDict,attributeLabel = \
+	matchPerformance(rawDict,attributeDict,attributeLabel,TeamAstring,TeamBstring)
 
 	# NB: Centroid and distance to centroid are stored in example variables that are not exported
 	# when 'process' is finished, because these features are already embedded in the main pipeline.
@@ -386,7 +386,7 @@ def switchSides(goal_A_X,goal_B_X,zoneA,zoneB,zoneMin_A_X,zoneMax_A_X,zoneMin_B_
 
 
 def determineFinalThird(leftSide,TeamAstring,TeamBstring,goal_A_X,goal_B_X):
-	beginZone = 34
+	beginZone = 35
 	zoneMin_X = fieldLength / 2 - beginZone
 	if(leftSide == TeamAstring):
 		zoneA = -1
@@ -480,8 +480,8 @@ def zone(rawDict,attributeDict,attributeLabel,TeamAstring,TeamBstring):#,secondH
 	attributeDict = pd.concat([attributeDict, newAttributes], axis=1)
 
 	##### THE STRINGS #####
-	tmpZone = 'Value of player with ball in the zone (last' + str(beginZone) + 'meters).'
-	tmpInZone = 'Is player with ball in the zone (last' + str(beginZone) + 'meters)?'
+	tmpZone = 'Value of player with ball in the final third (last ' + str(beginZone) + ' meters).'
+	tmpInZone = 'Is player with ball in the final third (last ' + str(beginZone) + ' meters)?'
 
 	attributeLabel_tmp = {'zone': tmpZone, 'inZone': tmpInZone}
 	attributeLabel.update(attributeLabel_tmp)
@@ -576,8 +576,13 @@ def control(rawDict,attributeDict,attributeLabel,TeamAstring,TeamBstring):
 		control[control < 0] = 0
 
 		# Put compute values in the right place in the dataFrame
+		#LT: hoe met loc weg te schrijven? Aan Rens vragen.
+		# try:
 		newAttributes['velRelToBall'][curPlayer.index] = curPlayer_velRelToBall[curPlayerDict.index]
-		newAttributes['control'][curPlayer.index] = control
+		# print(curPlayer,control)
+		newAttributes['control'][curPlayer.index] = control[curPlayerDict.index]
+		# except:
+		# 	continue
 
 	attributeDict = pd.concat([attributeDict, newAttributes], axis=1)
 
@@ -865,12 +870,12 @@ def density(rawDict,attributeDict,attributeLabel,TeamAstring,TeamBstring):#,seco
 		return np.sqrt((X_1 - X_2)**2 + (Y_1 - Y_2)**2)
 
 	#variables
-	goalBZWidth = 10 #2.7 meters next to the goal
+	goalBZWidth = 5 #2.68 meters next to the goalposts
 	distInPossessBZ = 2 #distance from player with ball for blocking zone in both sides
 	angleInPossessBZ = 90 #angle for the sides of distInPossessBZ
 	IZWidth = 11 #width of the Interception Zone
-	goalIZNearestWidth = 12
-	goalIZFurthestWidth = 17
+	goalIZNearestWidth = 9 #about the size of the goal area
+	goalIZFurthestWidth = 14 #about 10 meters next to the goalpost
 
 	leftSide, goal_A_X, goal_B_X, goal_Y = determineSide(rawDict,attributeDict,attributeLabel,TeamAstring,TeamBstring)
 	beginZone,zoneMin_X,zoneA,zoneB,zoneMin_A_X,zoneMax_A_X,zoneMin_B_X,zoneMax_B_X,zoneMin_Y,zoneMax_Y = determineFinalThird(leftSide,TeamAstring,TeamBstring,goal_A_X,goal_B_X)
@@ -1044,14 +1049,15 @@ def dangerousity(rawDict,attributeDict,attributeLabel,TeamAstring,TeamBstring):
 	inZone = attributeDict[attributeDict['inZone'] == 1]
 
 	#LT: how to determine?
-	constant = 2
+	constant = 5
 
 	for idx,i in enumerate(pd.unique(inZone['Ts'])):
 		# curTime = inZone['Ts'][idx]
-		zone = inZone['zone'][inZone['Ts'] == i]
-		control = inZone['control'][inZone['Ts'] == i]
-		pressure = inZone['pressureOnPlayerWithBall'][inZone['Ts'] == i]
-		density = inZone['densityForPlayerWithBall'][inZone['Ts'] == i]
+		inZoneIdx = inZone['Ts'] == i
+		zone = inZone.loc[inZoneIdx,'zone']
+		control = inZone.loc[inZoneIdx,'control']
+		pressure = inZone.loc[inZoneIdx,'pressureOnPlayerWithBall']
+		density = inZone.loc[inZoneIdx,'densityForPlayerWithBall']
 		dangerousity = zone * (1 - (1 - control + pressure + density) / constant)
 		newAttributes.loc[zone.index,'dangerousity'] = dangerousity
 
@@ -1062,7 +1068,7 @@ def dangerousity(rawDict,attributeDict,attributeLabel,TeamAstring,TeamBstring):
 	attributeLabel_tmp = {'dangerousity': tmpDangerousity}
 	attributeLabel.update(attributeLabel_tmp)
 	# altogether = pd.concat([rawDict,attributeDict], axis=1)
-	# altogether.to_csv('D:\\KNVB\\test2.csv')
+	# altogether.to_csv('D:\\KNVB\\Output\\Alle Output ' + TeamAstring + '-'+ TeamBstring + '.csv')
 
 	# pdb.set_trace()
 
@@ -1071,7 +1077,7 @@ def dangerousity(rawDict,attributeDict,attributeLabel,TeamAstring,TeamBstring):
 @timing
 def dangerousityPerInterval(rawDict,attributeDict,attributeLabel,TeamAstring,TeamBstring):
 	intervalMax = 5 #seconds
-	intervalSum = 10#300 #seconds = 5 minutes
+	intervalSum = 300 #seconds = 5 minutes
 
 	# dangerousity = attributeDict[attributeDict['dangerousity'] > 0]
 
@@ -1087,11 +1093,12 @@ def dangerousityPerInterval(rawDict,attributeDict,attributeLabel,TeamAstring,Tea
 	dangerList = []
 	#LT: Timestamp moet nog goed gesorteerd worden
 	for idx,i in enumerate(pd.unique(allDict['Ts_raw'])):
-		curTime = allDict.iloc[idx]['Ts_raw']
+		curTime = i #allDict.iloc[idx]['Ts_raw']
 		if(curTime % intervalMax == 0):
 			# print(i, curTime, intervalMax)
 			curPlayer = players[players['Ts_raw'] == curTime]
 			for jdx, j in enumerate(pd.unique(curPlayer['PlayerID'])):
+				# print(curTime,i,j)
 				try:
 					maxDangerousity = max(allDict['dangerousity'][(allDict['PlayerID'] == j) & (allDict['Ts_raw'] >= curTime - intervalMax) & (allDict['Ts_raw'] < curTime)])
 				except:
@@ -1101,14 +1108,15 @@ def dangerousityPerInterval(rawDict,attributeDict,attributeLabel,TeamAstring,Tea
 				playerList.append(j)
 				dangerList.append(maxDangerousity)
 
-
+	# print(dangerList)
+	# pdb.set_trace()
 	df = pd.DataFrame({'Time':timeList,'PlayerID':playerList,'Dangerousity':dangerList})
 
 	timeList2 = []
 	playerList2 = []
 	dangerList2 = []
 	for idx,i in enumerate(pd.unique(allDict['Ts_raw'])):
-		curTime = allDict.iloc[idx]['Ts_raw']
+		curTime = i #allDict.iloc[idx]['Ts_raw']
 		if(curTime % intervalSum == 0):
 			curPlayer = players[players['Ts_raw'] == curTime]
 			for jdx, j in enumerate(pd.unique(curPlayer['PlayerID'])):
@@ -1122,13 +1130,16 @@ def dangerousityPerInterval(rawDict,attributeDict,attributeLabel,TeamAstring,Tea
 				dangerList2.append(sumDangerousity)
 
 	df2 = pd.DataFrame({'Time':timeList2,'PlayerID':playerList2,'Dangerousity':dangerList2})
-	df2.to_csv('D:\\KNVB\\Output per speler.csv')
+	pivotedData = pd.pivot_table(df2, index = 'Time', columns = 'PlayerID', values = 'Dangerousity')
+	pivotedData.to_csv('D:\\KNVB\\Output\\Speler ' + TeamAstring + '-'+ TeamBstring + '.csv')
+	# df2.to_csv('D:\\KNVB\\Output\\Speler df2 ' + TeamAstring + '-'+ TeamBstring + '.csv')
+	# pdb.set_trace()
 	return attributeDict,attributeLabel
 
 #LT: samenvoegen met hierboven
 def matchPerformance(rawDict,attributeDict,attributeLabel,TeamAstring,TeamBstring):
 	intervalMax = 5 #seconds
-	intervalSum = 10#300 #seconds = 5 minutes
+	intervalSum = 300 #seconds = 5 minutes
 
 	# dangerousity = attributeDict[attributeDict['dangerousity'] > 0]
 
@@ -1139,45 +1150,65 @@ def matchPerformance(rawDict,attributeDict,attributeLabel,TeamAstring,TeamBstrin
 	players = allDict[(allDict['PlayerID'] != 'ball') & (allDict['PlayerID'] != 'groupRow')]
 
 	timeList = []
-	playerList = []
-	dangerList = []
+	# teamList = []
+	dangerListA = []
+	dangerListB = []
 	for idx,i in enumerate(pd.unique(allDict['Ts_raw'])):
-		curTime = allDict.iloc[idx]['Ts_raw']
+		curTime = i #allDict.iloc[idx]['Ts_raw']
 		if(curTime % intervalMax == 0):
 			curPlayer = players[players['Ts_raw'] == curTime]
 			for jdx, j in enumerate(pd.unique(curPlayer['TeamID'])):
 				try:
-					maxDangerousity = max(allDict['dangerousity'][(allDict['TeamID'] == j) & (allDict['Ts_raw'] >= curTime - intervalMax) & (allDict['Ts_raw'] < curTime)])
+					if j == TeamAstring:
+						maxDangerousityA = max(allDict['dangerousity'][(allDict['TeamID'] == j) & (allDict['Ts_raw'] >= curTime - intervalMax) & (allDict['Ts_raw'] < curTime)])
+						# maxDangerousityB = 0
+					elif j == TeamBstring:
+						# maxDangerousityA = 0
+						maxDangerousityB = max(allDict['dangerousity'][(allDict['TeamID'] == j) & (allDict['Ts_raw'] >= curTime - intervalMax) & (allDict['Ts_raw'] < curTime)])
 				except:
-					maxDangerousity = 0
+					maxDangerousityA = 0
+					maxDangerousityB = 0
 
-				timeList.append(i)
-				playerList.append(j)
-				dangerList.append(maxDangerousity)
+			timeList.append(i)
+			# teamList.append(j)
+			dangerListA.append(maxDangerousityA)
+			dangerListB.append(maxDangerousityB)
 
 
-	df = pd.DataFrame({'Time':timeList,'TeamID':playerList,'Dangerousity':dangerList})
+	df = pd.DataFrame({'Time':timeList,TeamAstring:dangerListA,TeamBstring:dangerListB})
+	# print(df)
+	# pdb.set_trace()
 
 	timeList2 = []
-	playerList2 = []
-	dangerList2 = []
+	# teamList2 = []
+	dangerListA2 = []
+	dangerListB2 = []
 	for idx,i in enumerate(pd.unique(allDict['Ts_raw'])):
-		curTime = allDict.iloc[idx]['Ts_raw']
+		curTime = i #allDict.iloc[idx]['Ts_raw']
 		if(curTime % intervalSum == 0):
 			curPlayer = players[players['Ts_raw'] == curTime]
 			for jdx, j in enumerate(pd.unique(curPlayer['TeamID'])):
 				try:
-					sumDangerousity = sum(df['Dangerousity'][(df['TeamID'] == j) & (df['Time'] > curTime - intervalSum) & (df['Time'] <= curTime)])
+					if j == TeamAstring:
+						sumDangerousityA = sum(df[TeamAstring][(df['Time'] > curTime - intervalSum) & (df['Time'] <= curTime)])
+						# sumDangerousityB = 0
+					elif j == TeamBstring:
+						# sumDangerousityA = 0
+						sumDangerousityB = sum(df[TeamBstring][(df['Time'] > curTime - intervalSum) & (df['Time'] <= curTime)])
 				except:
-					sumDangerousity = 0
+					sumDangerousityA = 0
+					sumDangerousityB = 0
 
-				timeList2.append(i)
-				playerList2.append(j)
-				dangerList2.append(sumDangerousity)
+			timeList2.append(i)
+			# teamList2.append(j)
+			dangerListA2.append(sumDangerousityA)
+			dangerListB2.append(sumDangerousityB)
 
-	df2 = pd.DataFrame({'Time':timeList2,'TeamID':playerList2,'Dangerousity':dangerList2})
-	df2.to_csv('D:\\KNVB\\Output per team.csv')
-	pdb.set_trace()
+	df2 = pd.DataFrame({'Time':timeList2,TeamAstring:dangerListA2,TeamBstring:dangerListB2})
+	# print(df2)
+	# pdb.set_trace()
+	df2.to_csv('D:\\KNVB\\Output\\Team ' + TeamAstring + '-'+ TeamBstring + '.csv')
+	# pdb.set_trace()
 	return attributeDict,attributeLabel
 
 
