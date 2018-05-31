@@ -209,7 +209,7 @@ def checkFolders(folder,aggregateEvent,aggregateWindow,aggregateLag,onlyAnalyzeF
 				makedirs(preComputed_targetEventsFolder)
 
 			DirtyEventFiles = [f for f in listdir(eventFolder) if isfile(join(eventFolder, f)) if '.csv' in f]				
-			if DirtyDataFiles == []:
+			if DirtyEventFiles == []:
 				# if no csv files, then look for .xml files:
 				DirtyEventFiles = [f for f in listdir(eventFolder) if isfile(join(eventFolder, f)) if '.xml' in f]				
 			
