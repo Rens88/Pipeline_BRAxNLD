@@ -1166,7 +1166,7 @@ def aggregateCurrentEvent(attrDictCols_numeric,window,interpolatedCurEventExcerp
 				rawDict.to_csv('rawDict_complete.csv')
 				attributeDict.loc[rowswithinrange].to_csv('attributeDict_rowswithinrange.csv')
 				attributeDict.to_csv('attributeDict_complete.csv')
-				attributeDict.loc[attributeDict['PlayerID'] == 'groupRow'].to_csv('attributeDict_allGropuRows.csv')
+				attributeDict.loc[rawDict['PlayerID'] == 'groupRow'].to_csv('attributeDict_allGropuRows.csv')
 				print('Apparently, targetGroup has already been allocated as a grouprow:' )
 				print('targetGroup = %s' %targetGroup)
 				print('----')

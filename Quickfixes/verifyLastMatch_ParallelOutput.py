@@ -5,7 +5,7 @@ import numpy as np
 import pdb; #pdb.set_trace()
 
 
-outputFolders = ['C:\\Users\\rensm\\Documents\\SURFDRIVE\\Repositories\\BRAxNLD repository_newStyle\\Output\\29-05-2018\\']
+outputFolders = ['C:\\Users\\rensm\\Documents\\SURFDRIVE\\Repositories\\BRAxNLD repository_newStyle\\Output\\Turnovers 05s\\']
 
 # outputFolders = ['C:\\Users\\rensm\\Documents\\SURFDRIVE\\Repositories\\BRAxNLD repository_newStyle\\Output\\Turnovers 05s\\',\
 # 'C:\\Users\\rensm\\Documents\\SURFDRIVE\\Repositories\\BRAxNLD repository_newStyle\\Output\\Turnovers 10s\\',\
@@ -76,13 +76,13 @@ for outputFolder in outputFolders:
 		totalMatches = totalMatches + nMatches
 		totalEvents = totalEvents + df.shape[0]
 		totalNlonger = totalNlonger + nLonger
-		totalNinsideLonger = totalNinsideLonger + nLonger
+		totalNinsideLonger = totalNinsideLonger + nInsideLonger
 		totalNinside = totalNinside + nInside
 
 	totalNinside_pct = np.round(totalNinside / totalEvents * 100)
-	totalNinsideLonger_pct = np.round(totalNinsideLonger / totalEvents * 100)
-
-	logText.append('\nIn total, <%s> events were recorded (<%s%%> inside 16m), of which:\n<%s> were longer than <%ss> (<%s%%> inside 16m).' %(totalEvents, totalNinside_pct,totalNlonger,totalNinsideLonger_pct,threshold))
+	totalNinsideLonger_pct = np.round(totalNinsideLonger / totalNlonger * 100)
+	totalNlonger_pct = np.round(totalNlonger / totalEvents * 100)
+	logText.append('\nIn total, <%s> events were recorded (<%s%%> inside 16m), of which:\n<%s> (<%s%%>) were longer than <%ss> (<%s%%> inside 16m).' %(totalEvents, totalNinside_pct,totalNlonger,totalNlonger_pct,threshold,totalNinsideLonger_pct))
 	logText.append('In total, <%s> matches were analyzed in <%s> batches.' %(totalMatches,len(parallelOutputFiles)))
 
 	logFname = outputFolder + 'log_combinineParallelOutput.txt'

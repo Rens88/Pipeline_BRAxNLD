@@ -70,7 +70,8 @@ skipComputeEvents = True #
 # If both True, then files are not verified to be analyzed previously
 # If skipToDataSetLevel == False, then it is verified that every match exists in eventAggregate
 skipEventAgg = True # For now, don't skip unless longest window was computed. # Only works if current file already exists in eventAgg. NB: if False, skipToDataSetLevel becomes ineffective.
-skipToDataSetLevel = False # Only works if corresponding AUTOMATIC BACKUP exists. NB: Does not check if all raw data files are in automatic backup. NB2: does not include any changes in cleanup, spatagg, or eventagg NB2: may not work after implementing iteratoverwindows thingy
+skipEventAgg_MatchVerification = True # As it can be memory heavy and time-consuming AND as the verification only works if the eventAgg file was created with the same operating system (the file order changes.. need to work on that), the option exists to skip the verification, with the risk that you're creating an output that does not belong to the curent batch. Although this should be picked-up on when combining them (duplicate events..)
+skipToDataSetLevel = True # Only works if corresponding AUTOMATIC BACKUP exists. NB: Does not check if all raw data files are in automatic backup. NB2: does not include any changes in cleanup, spatagg, or eventagg NB2: may not work after implementing iteratoverwindows thingy
 
 # Choose between append (= True) or overwrite (= False) (the first time around only of course) the existing (if any) eventAggregate CSV.
 # NB: This could risk in adding duplicate data. There is no warning for that at the moment (could use code from cleanupData that checks if current file already exist in eventAggregate)
@@ -116,7 +117,7 @@ import initialization
 # This allows Python to import the custom modules in our library. 
 # If you add new subfolders in the library, they need to be added in addLibary (in initialization.py) as well.
 dataFolder,tmpFigFolder,outputFolder,cleanedFolder,spatAggFolder,eventAggFolder,aggregatedOutputFilename,outputDescriptionFilename,eventAggFname,backupEventAggFname,DirtyDataFiles,aggregateLevel,t,skipToDataSetLevel,skipCleanup,skipSpatAgg,skipEventAgg,includeTrialVisualization,rawHeaders, attrLabel,skipComputeEvents,DirtyDataFiles_backup = \
-initialization.process(studentFolder,folder,aggregateEvent,allWindows_and_Lags,skipToDataSetLevel,skipCleanup,skipSpatAgg,skipEventAgg,includeTrialVisualization,timestampString,PlayerIDstring,TeamIDstring,XPositionString,YPositionString,readAttributeCols,readAttributeLabels,onlyAnalyzeFilesWithEventData,parallelProcess,skipComputeEvents)
+initialization.process(studentFolder,folder,aggregateEvent,allWindows_and_Lags,skipToDataSetLevel,skipCleanup,skipSpatAgg,skipEventAgg,includeTrialVisualization,timestampString,PlayerIDstring,TeamIDstring,XPositionString,YPositionString,readAttributeCols,readAttributeLabels,onlyAnalyzeFilesWithEventData,parallelProcess,skipComputeEvents,skipEventAgg_MatchVerification = skipEventAgg_MatchVerification)
 
 # Custom modules (from LibrarRENS)
 import datasetVisualization
@@ -234,7 +235,7 @@ for dirtyFname in DirtyDataFiles:
 	## Temporal aggregation
 	exportData,exportDataString,exportFullExplanation,trialEventsSpatAggExcerpt,attrLabel = \
 	temporalAggregation_towardsGeneric.process(targetEvents,aggregateLevel,rawPanda,attrPanda,exportData,exportDataString,exportDataFullExplanation,TeamAstring,TeamBstring,debuggingMode,skipEventAgg_curFile,fileIdentifiers,attrLabel,aggregatePerPlayer,includeEventInterpolation,datasetFramerate)
-	# pdb.set_trace()
+
 	########################################################################################
 	####### EXPORT to CSV ##################################################################
 	########################################################################################
@@ -280,28 +281,67 @@ if not isfile(backupEventAggFname):
 	warn('\nFATAL WARNING: Could not find backupEventAggFname:\n%s' %backupEventAggFname)
 	exit()
 
-# Load the datasetEventsSpatAggExcerpt
-datasetEventsSpatAggExcerpt = pd.read_csv(backupEventAggFname, low_memory = True, index_col = 'DataSetIndex')
+##########
+
 attrLabel_asPanda = pd.read_csv(outputFolder+'attributeLabel.csv',low_memory=True, index_col = 'Unnamed: 0') # index_col added last. Should work. Otherwise use the next line
+# update this with memory issue
 
-########### can be embedded in a function?
-# Necessary to double check whether there are only files in the backed up file that were also in DirtyDataFiles
-# Need to make sure that there are only files in here that were in fact requested
-# See also, initialization
-uniqueMatches = datasetEventsSpatAggExcerpt['MatchID'].unique()
-warn('\nWARNING: Currently, Im using something non-generic. It only works if your file has a MatchID column.\nTo make it more generic, I should store the filename of the match as a column and refer to that instead.\n!!!!!!!!!!!!\n!!!!!!!!!!!!!!!!!\n')
+# Load data in chunks
+print('READING CHUNKS...')
+chunkedDf = pd.read_csv(backupEventAggFname, index_col = 'DataSetIndex',low_memory=True,chunksize = 1000000)
 
-for i in uniqueMatches:
-	# Is True when a unique match in eventAggrgate does not exist the dirtyDataFiles
-	# This match should be dropped from the backup
-	doesItExistIn_DDF = [True for j in DirtyDataFiles_backup if str(i) in j]
-	if not any(doesItExistIn_DDF):
-		# drop this uniqueMatch from the eventAggregate automatic backup file
-		warn('\nWARNING: Dropped MatchID <%s> from eventAggregate backup as it did not exist in DirtyDataFiles.\nNote that it was only dropped from the working memory, the stored CSV still has the data.\n' %i)
-		### datasetEventsSpatAggExcerpt = datasetEventsSpatAggExcerpt.loc[datasetEventsSpatAggExcerpt['MatchID'] != i]
-		# Memory error with line above, perhaps this works:
-		datasetEventsSpatAggExcerpt = datasetEventsSpatAggExcerpt.drop(datasetEventsSpatAggExcerpt[datasetEventsSpatAggExcerpt['MatchID'] != i].index)
-########### can be embedded in a function?
+datasetEventsSpatAggExcerpt = pd.DataFrame([])
+# uniqueMatches = []
+
+print('CONCATENATING CHUNKS...')
+for chunk in chunkedDf:
+	if not skipEventAgg_MatchVerification:
+		# SEE SIMILAR CODE IN Initialization.py
+		# If you find any mistakes here, it is likely, the also exist in Initialization.py
+		umCurChunk = chunk['MatchID'].unique()
+		# This needs to be skipped per chunk (so based on curUM and not uniqueMatches)
+		for i in umCurChunk:
+			# doesItExistIn_DDF = [True for j in DirtyDataFiles_backup if str(i) in j]
+			# More specific:
+			doesItExistIn_DDF = [True for j in DirtyDataFiles_backup if str(i) == str(j.split('_')[0])]
+			if not any(doesItExistIn_DDF):
+				warn('\nWARNING: Dropped MatchID <%s> from eventAggregate backup as it did not exist in DirtyDataFiles.\nNote that it was only dropped from the automatic backup, in the original file the match can still be accessed.\n' %i)
+				chunk = chunk.drop(chunk[chunk['MatchID'] != i].index)
+
+	# Store chunk
+	datasetEventsSpatAggExcerpt = pd.concat([datasetEventsSpatAggExcerpt, chunk])#, ignore_index = True)
+print('ITERATING OVER WINDOWS....')
+## BEFORE MEMORY ERROR
+# # Load the datasetEventsSpatAggExcerpt
+# datasetEventsSpatAggExcerpt = pd.read_csv(backupEventAggFname, low_memory = True, index_col = 'DataSetIndex')
+# attrLabel_asPanda = pd.read_csv(outputFolder+'attributeLabel.csv',low_memory=True, index_col = 'Unnamed: 0') # index_col added last. Should work. Otherwise use the next line
+
+# ########### can be embedded in a function?
+# # Necessary to double check whether there are only files in the backed up file that were also in DirtyDataFiles
+# # Need to make sure that there are only files in here that were in fact requested
+# # See also, initialization
+# uniqueMatches = datasetEventsSpatAggExcerpt['MatchID'].unique()
+# warn('\nWARNING: Currently, Im using something non-generic. It only works if your file has a MatchID column.\nTo make it more generic, I should store the filename of the match as a column and refer to that instead.\n!!!!!!!!!!!!\n!!!!!!!!!!!!!!!!!\n')
+
+# for i in uniqueMatches:
+# 	# Is True when a unique match in eventAggrgate does not exist the dirtyDataFiles
+# 	# This match should be dropped from the backup
+# 	doesItExistIn_DDF = [True for j in DirtyDataFiles_backup if str(i) in j]
+# 	if not any(doesItExistIn_DDF):
+# 		# drop this uniqueMatch from the eventAggregate automatic backup file
+# 		warn('\nWARNING: Dropped MatchID <%s> from eventAggregate backup as it did not exist in DirtyDataFiles.\nNote that it was only dropped from the working memory, the stored CSV still has the data.\n' %i)
+# 		### datasetEventsSpatAggExcerpt = datasetEventsSpatAggExcerpt.loc[datasetEventsSpatAggExcerpt['MatchID'] != i]
+# 		# Memory error with line above, perhaps this works:
+# 		datasetEventsSpatAggExcerpt = datasetEventsSpatAggExcerpt.drop(datasetEventsSpatAggExcerpt[datasetEventsSpatAggExcerpt['MatchID'] != i].index)
+# ########### can be embedded in a function?
+
+
+##########
+
+
+
+
+
 
 # Iterate over the remaining windows
 ###iterateWindowsOverEventAgg.process(aggregateLevel,eventAggFolder,aggregateEvent,allWindows_and_Lags,eventAggFname,aggregatePerPlayer,outputFolder,debuggingMode,dataFolder,parallelProcess)
