@@ -95,8 +95,9 @@ def importFromXML(targetEvents,cleanFname,TeamAstring,TeamBstring,dataFolder):
 	# print(dfEvents['Time'].count())
 	# print(dfEvents[dfEvents.index.duplicated()])
 
-	dfBallEvents.to_csv('D:\\KNVB\\ballevents.csv')
-	dfMatchEvents.to_csv('D:\\KNVB\\matchevents.csv')
+	# dfBallEvents.to_csv('D:\\KNVB\\ballevents.csv')
+	# dfMatchEvents.to_csv('D:\\KNVB\\matchevents.csv')
+	# pdb.set_trace()
 
 	#read Team and Players
 	dfList = []

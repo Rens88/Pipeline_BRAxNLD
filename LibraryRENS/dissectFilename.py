@@ -12,14 +12,8 @@ from os.path import isfile, join, isdir, exists
 from os import listdir, path, makedirs, sep
 import re
 import pandas as pd
-<<<<<<< HEAD
 import student_LT_dissectFilename
 import time
-=======
-import student_XX_dissectFilename
-import time
-
->>>>>>> origin/NP_continued
 
 if __name__ == '__main__':
 
@@ -40,14 +34,10 @@ def process(fname,dataType,TeamAstring,TeamBstring,debuggingMode):
 
 	elif dataType == "FDP":
 		exportData, exportDataString, exportDataFullExplanation,cleanFname,TeamAstring,TeamBstring = FDP(fname)
-<<<<<<< HEAD
 	elif dataType == "KNVB":
 		exportData, exportDataString, exportDataFullExplanation,cleanFname,TeamAstring,TeamBstring = \
 		student_LT_dissectFilename.process(fname,dataType,TeamAstring,TeamBstring)
 		# exportData, exportDataString, exportDataFullExplanation,cleanFname = default(fname)
-=======
-
->>>>>>> origin/NP_continued
 	else:
 		exportData, exportDataString, exportDataFullExplanation,cleanFname = \
 		student_LT_dissectFilename.process(fname,dataType,TeamAstring,TeamBstring)
@@ -63,16 +53,10 @@ def process(fname,dataType,TeamAstring,TeamBstring,debuggingMode):
 		print('***** Time elapsed during dissectFilename: %ss' %elapsed)
 	return exportData, exportDataString, exportDataFullExplanation,cleanFname,spatAggFname,TeamAstring,TeamBstring
 
-<<<<<<< HEAD
-def FDP(fname):
-	# Using regular expression to extract info from filename
-=======
+
 def FDP(fname):	
-
 	cleanFname = fname[:-4] + '_cleaned.csv'
-
 	# Using regular expression to extract info from filename		
->>>>>>> origin/NP_continued
 	regex = r'([a-zA-Z]{1})([a-zA-Z]{1})(\d+)_([a-zA-Z]{1})([a-zA-Z]{1})(\d{1})(\d{3})_v_([a-zA-Z]{1})([a-zA-Z]{1})(\d{1})(\d{3})'
 	match = re.search(regex,fname)
 	if match:
@@ -142,11 +126,7 @@ def NP(fname):
 			elif Class in ['1E1', '1E2']:
 				Exp = 'LP'
 			else:
-<<<<<<< HEAD
-				warn('\nWARNING: Could not identify experimental gruop: <%s>' %fname)
-=======
 				warn('\nWARNING: Could not identify experimental gruop: <%s>' %fname)				
->>>>>>> origin/NP_continued
 
 		else:
 			warn('\nWARNING: Could not identify class: <%s>' %fname)
@@ -167,11 +147,6 @@ def NP(fname):
 
 	else:
 		warn('\nWARNING: Could not identify School: <%s>' %fname)
-<<<<<<< HEAD
-
-=======
-	
->>>>>>> origin/NP_continued
 	# Test
 	if re.search('ret',fname, re.IGNORECASE):
 		Test = 'RET'

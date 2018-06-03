@@ -9,27 +9,12 @@ import pdb; #pdb.set_trace()
 from warnings import warn
 import time
 import numpy as np
-<<<<<<< HEAD
-=======
 import re
-
->>>>>>> origin/NP_continued
 
 if __name__ == '__main__':
 	addLibrary()
 	checkFolders(folder,aggregateEvent)
 
-<<<<<<< HEAD
-def process(studentFolder,folder,aggregateEvent,aggregateWindow,aggregateLag,skipToDataSetLevel,skipCleanup,skipSpatAgg,skipEventAgg,includeTrialVisualization,timestampString,PlayerIDstring,TeamIDstring,XPositionString,YPositionString,readAttributeCols,readAttributeLabels,onlyAnalyzeFilesWithEventData,parallelProcess):
-
-	addLibrary(studentFolder)
-	
-	dataFolder,tmpFigFolder,outputFolder,cleanedFolder,spatAggFolder,eventAggFolder,aggregatedOutputFilename,outputDescriptionFilename,eventAggFname,backupEventAggFname,DirtyDataFiles,aggregateLevel = \
-	checkFolders(folder,aggregateEvent,aggregateWindow,aggregateLag,onlyAnalyzeFilesWithEventData,parallelProcess)
-
-	t,skipToDataSetLevel,skipCleanup,skipSpatAgg,skipEventAgg,includeTrialVisualization =\
-	skipPartsOfPipeline(backupEventAggFname,DirtyDataFiles,skipToDataSetLevel,skipCleanup,skipSpatAgg,skipEventAgg,includeTrialVisualization)
-=======
 def process(studentFolder,folder,aggregateEvent,allWindows_and_Lags,skipToDataSetLevel,skipCleanup,skipSpatAgg,skipEventAgg,includeTrialVisualization,timestampString,PlayerIDstring,TeamIDstring,XPositionString,YPositionString,readAttributeCols,readAttributeLabels,onlyAnalyzeFilesWithEventData,parallelProcess,skipComputeEvents):
 
 	addLibrary(studentFolder)
@@ -57,14 +42,10 @@ def process(studentFolder,folder,aggregateEvent,allWindows_and_Lags,skipToDataSe
 
 	t,skipToDataSetLevel,skipCleanup,skipSpatAgg,skipEventAgg,includeTrialVisualization,DirtyDataFiles,skipComputeEvents =\
 	skipPartsOfPipeline(backupEventAggFname,DirtyDataFiles,skipToDataSetLevel,skipCleanup,skipSpatAgg,skipEventAgg,includeTrialVisualization,eventAggFolder,eventAggFname,skipComputeEvents,cleanedFolder)
->>>>>>> origin/NP_continued
 	
 	rawHeaders, attrLabel =\
 	processUserInput(timestampString,PlayerIDstring,TeamIDstring,XPositionString,YPositionString,readAttributeCols,readAttributeLabels)
 
-<<<<<<< HEAD
-	return dataFolder,tmpFigFolder,outputFolder,cleanedFolder,spatAggFolder,eventAggFolder,aggregatedOutputFilename,outputDescriptionFilename,eventAggFname,backupEventAggFname,DirtyDataFiles,aggregateLevel,t,skipToDataSetLevel,skipCleanup,skipSpatAgg,skipEventAgg,includeTrialVisualization,rawHeaders, attrLabel
-=======
 	# Check if first DirtyDataFile did not have an empty clean
 	# if skipCleanup:
 	# 	firstDataFile = DirtyDataFiles[0]
@@ -78,7 +59,6 @@ def process(studentFolder,folder,aggregateEvent,allWindows_and_Lags,skipToDataSe
 	# pdb.set_trace()
 
 	return dataFolder,tmpFigFolder,outputFolder,cleanedFolder,spatAggFolder,eventAggFolder,aggregatedOutputFilename,outputDescriptionFilename,eventAggFname,backupEventAggFname,DirtyDataFiles,aggregateLevel,t,skipToDataSetLevel,skipCleanup,skipSpatAgg,skipEventAgg,includeTrialVisualization,rawHeaders, attrLabel,skipComputeEvents,DirtyDataFiles_backup
->>>>>>> origin/NP_continued
 
 def addLibrary(studentFolder):
 
@@ -155,13 +135,11 @@ def checkFolders(folder,aggregateEvent,aggregateWindow,aggregateLag,onlyAnalyzeF
 	eventAggFname = 'eventExcerpt_' + aggregateLevel[0] + '_window(' + str(aggregateLevel[1]) + ')_lag(' + str(aggregateLevel[2]) + ')_' + str(parallelProcess[0]) + 'of' + str(parallelProcess[1]) + '.csv'
 	backupEventAggFname = eventAggFolder + 'eventExcerpt_' + aggregateLevel[0] + '_window(' + str(aggregateLevel[1]) + ')_lag(' + str(aggregateLevel[2]) + ')_' + str(parallelProcess[0]) + 'of' + str(parallelProcess[1]) + '- AUTOMATIC BACKUP.csv'
 
-<<<<<<< HEAD
-=======
 	# Check whether old eventAgg files were removed to avoid memory issues
 
 	duplSubString = 'eventExcerpt_' + aggregateLevel[0] + '_window(' + str(aggregateLevel[1]) + ')_lag(' + str(aggregateLevel[2]) + ')'
 	theseFilesNeedToBeRemoved = [f for f in listdir(eventAggFolder) if not duplSubString in f]
-	warn('\nWARNING: It could be nicer by even looking for files with larger windows than the one asked for. See below for a start. Remember to export the new window and lag sizes as the filename afeter initialization...\nShort term solution is to include a window and lag from the longer window and lag..')
+	warn('\nWARNING: It could be nicer by even looking for files with larger windows than the one asked for. See below for a start. Remember to export the new window and lag sizes as the filename after initialization...\nShort term solution is to include a window and lag from the longer window and lag..')
 	# ## to be more precise:
 	# # if lag from existing files is larger than newly requested lag
 	# # if existing -(lag + window) > newly requested -(lag+window)
@@ -177,7 +155,6 @@ def checkFolders(folder,aggregateEvent,aggregateWindow,aggregateLag,onlyAnalyzeF
 		[print(t) for t in theseFilesNeedToBeRemoved]
 		print()
 		exit()
->>>>>>> origin/NP_continued
 
 	# if BRAxNLD:
 	# 	# basically, this is a work-around for when the data is in subfolders
@@ -210,11 +187,6 @@ def checkFolders(folder,aggregateEvent,aggregateWindow,aggregateLag,onlyAnalyzeF
 	# 	# And eventfiles?
 
 	# 	# pdb.set_trace()
-<<<<<<< HEAD
-	if onlyAnalyzeFilesWithEventData:
-		# Check if target events already exist
-		if not exists(dataFolder + sep + 'existingTargets'):
-=======
 	eventFolder = dataFolder + sep + 'existingTargets' + sep
 	preComputed_targetEventsFolder = eventFolder + 'preComputed' + sep
 	
@@ -222,21 +194,12 @@ def checkFolders(folder,aggregateEvent,aggregateWindow,aggregateLag,onlyAnalyzeF
 
 		# Check if target events already exist
 		if not exists(eventFolder):
->>>>>>> origin/NP_continued
 			warn('\nWARNING: Can only restrict analysis to files with eventData if a folder <existingTargets> exists in the dataFolder.\n')
-			DirtyDataFiles = [f for f in listdir(dataFolder) if isfile(join(dataFolder, f)) if '.csv' in f]
+			DirtyDataFiles = [f for f in listdir(dataFolder) if isfile(join(dataFolder, f)) if '.csv' in f] 
 
 			if len(DirtyDataFiles) == 0:
 				warn('\nWARNING: No datafiles found that had a matching eventData file.\nNo files will be analyzed.\n')
 
-<<<<<<< HEAD
-		else:
-			eventFolder = dataFolder + sep + 'existingTargets' + sep
-			DirtyEventFiles = [f for f in listdir(eventFolder) if isfile(join(eventFolder, f)) if '.xml' in f]	#LT: changed to .xml		
-			DirtyDataFiles = []
-			for f in DirtyEventFiles:
-				rawData_f = f[:-11] + '.csv' #LT: changed to -11
-=======
 			makedirs(eventFolder)
 			makedirs(preComputed_targetEventsFolder)
 
@@ -244,11 +207,10 @@ def checkFolders(folder,aggregateEvent,aggregateWindow,aggregateLag,onlyAnalyzeF
 			if not exists(preComputed_targetEventsFolder):
 				makedirs(preComputed_targetEventsFolder)
 
-			DirtyEventFiles = [f for f in listdir(eventFolder) if isfile(join(eventFolder, f)) if '.csv' in f]				
+			DirtyEventFiles = [f for f in listdir(eventFolder) if isfile(join(eventFolder, f)) if '.xml' in f]	#LT: changed to .xml			
 			DirtyDataFiles = []
 			for f in DirtyEventFiles:
-				rawData_f = f[:-10] + '.csv'
->>>>>>> origin/NP_continued
+				rawData_f = f[:-11] + '.csv' #LT: changed to -11
 				if isfile(join(dataFolder, rawData_f)):
 					DirtyDataFiles.append(rawData_f)
 				else:
@@ -258,26 +220,6 @@ def checkFolders(folder,aggregateEvent,aggregateWindow,aggregateLag,onlyAnalyzeF
 		DirtyDataFiles = [f for f in listdir(dataFolder) if isfile(join(dataFolder, f)) if '.csv' in f]
 
 	# divide dirtyDataFiles amongst parallel processes:
-<<<<<<< HEAD
-	nFiles = len(DirtyDataFiles)
-	nPerProcess = np.ceil(nFiles / parallelProcess[1])
-	if not parallelProcess[1] == 1:
-		start = int((parallelProcess[0] * nPerProcess) - nPerProcess)
-		end = int(((parallelProcess[0]+1) * nPerProcess) - nPerProcess)
-		print('First file = %s' %start)
-		print('Last file = %s\n' %end)
-		if parallelProcess[0] == parallelProcess[1]:
-			DirtyDataFiles = DirtyDataFiles[start : ]
-		else:
-			DirtyDataFiles = DirtyDataFiles[start : end]
-
-	return dataFolder,tmpFigFolder,outputFolder,cleanedFolder,spatAggFolder,eventAggFolder, outputFilename,outputDescriptionFilename,eventAggFname,backupEventAggFname,DirtyDataFiles,aggregateLevel
-
-def skipPartsOfPipeline(backupEventAggFname,DirtyDataFiles,skipToDataSetLevel,skipCleanup,skipSpatAgg,skipEventAgg,includeTrialVisualization):
-
-	t = ([],0,len(DirtyDataFiles))#(time started,nth file,total number of files)
-
-=======
 	print('parallelProcess = %s of %s' %parallelProcess)
 	nFiles = len(DirtyDataFiles)
 	print('nFiles = %s' %nFiles)
@@ -388,7 +330,6 @@ def skipPartsOfPipeline(backupEventAggFname,DirtyDataFiles,skipToDataSetLevel,sk
 			warn('\nWARNING: Could not skip to datasetlevel because the backup of the eventAggregate didnt exist:\n%s' %backupEventAggFname)
 			skipToDataSetLevel = False
 
->>>>>>> origin/NP_continued
 	# Skipping certain parts can only be done if other parts are skipped as well:
 	if skipCleanup == False: # NB: if False, all other skips become ineffective.
 		if skipSpatAgg:
@@ -422,25 +363,15 @@ def skipPartsOfPipeline(backupEventAggFname,DirtyDataFiles,skipToDataSetLevel,sk
 
 	if skipToDataSetLevel: # This allows you to quickly skip the analysis section, if you've already created a backup of a fully analyzed dataset
 		if isfile(backupEventAggFname):
-<<<<<<< HEAD
-			warn('\n********\nWARNING: Skipped analyzing the database and jumped straight to DataSet-level comparisons.\nAny new files, spatial aggregates, temporal aggregates, windows, lags etc. ARE NOT INCLUDED.\nTo re-analyze the database, change <skipToDataSetLevel> to False. (and re-analyzing MANUALLY copy a \'BACKUP\'.)\n')
-			t = (t[0],t[2],t[2])
-			DirtyDataFiles = []
-=======
 			warn('\n********\nWARNING: Skipped analyzing the database and jumped straight to DataSet-level comparisons.\nAny raw data, spatial aggregates ARE NOT INCLUDED.\nTo re-analyze the database, change <skipToDataSetLevel> to False.\n')
 
 			t = (t[0],t[2],t[2])
 			DirtyDataFiles = [] # WARNING: any edits made to DirtyDataFiles in skipPartsOfPipeline will NOT apply to the back-up
->>>>>>> origin/NP_continued
 		else:
 			skipToDataSetLevel = False
 			warn('\nWARNING: Tried to <skipToDataSetLevel>, but could not find corresponding data backup:\n%s\n\n*********' %backupEventAggFname)
 
-<<<<<<< HEAD
-	return t,skipToDataSetLevel,skipCleanup,skipSpatAgg,skipEventAgg,includeTrialVisualization
-=======
 	return t,skipToDataSetLevel,skipCleanup,skipSpatAgg,skipEventAgg,includeTrialVisualization,DirtyDataFiles,skipComputeEvents
->>>>>>> origin/NP_continued
 
 
 def processUserInput(timestampString,PlayerIDstring,TeamIDstring,XPositionString,YPositionString,readAttributeCols,readAttributeLabels):
@@ -454,10 +385,6 @@ def processUserInput(timestampString,PlayerIDstring,TeamIDstring,XPositionString
 	'Location': (XPositionString,YPositionString) }
 	# if len(readAttributeCols) != len(readAttributeLabels):
 	# 	warn('\nFORMAT USER INPUT ERROR: The number of columns to be read as attributes does not correspond to the number of labels given.\nMake sure that for each column that is read from the data there is a label.\nAs a working solution, the attributes will be given <no_label> as a label.\n********* PLEASE UPDATE USER INPUT ********\n**********************************')
-<<<<<<< HEAD
-=======
-	
->>>>>>> origin/NP_continued
 	attrLabel = {}
 	for ix,v in enumerate(readAttributeCols):
 		

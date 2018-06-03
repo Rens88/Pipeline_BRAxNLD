@@ -60,35 +60,6 @@ def process(trialEventsSpatAggExcerpt,exportData,exportDataString,exportFullExpl
 			laterColumns.append(ikey)
 	columnOrder = firstColumns + secondColumns + thirdColumns + laterColumns
 
-<<<<<<< HEAD
-	if len(exportData[0]) <= len(firstColumns):
-		skippedData = True
-		newOrAdd(aggregatedOutputFilename,exportDataString,exportData,skippedData)
-		warn('\nWARNING: No Data exported.\nProbably because there were no targetevents detected.\nCheck if this was warned for in temporalAggregation.\n')
-
-		if debuggingMode:
-			elapsed = str(round(time.time() - tExportCSV, 2))
-			print('***** Time elapsed during exportCSV: %ss' %elapsed)
-		return appendEventAggregate
-
-	# Temporally aggregated data
-	skippedData = False
-	newOrAdd(aggregatedOutputFilename,exportDataString,exportData,skippedData)
-	varDescription(outputDescriptionFilename,exportDataString,exportFullExplanation)
-
-	# Spatially aggregated data
-	spatAggPanda = pd.concat([rawPanda, eventsPanda.loc[:, eventsPanda.columns != 'Ts'], attrPanda.loc[:, attrPanda.columns != 'Ts']], axis=1) # Skip the duplicate 'Ts' columns
-	spatAggPanda.to_csv(spatAggFolder + spatAggFname)
-
-	# Spatially aggregated data per event
-	# (with the specified window), added into one long file combining the whole database.
-	appendEventAggregate = eventAggregate(eventAggFolder,eventAggFname,appendEventAggregate,trialEventsSpatAggExcerpt,skipEventAgg_curFile,fileIdentifiers,columnOrder)
-
-	## Export attribute label for skip skipToDataSetLevel
-	if t[1] == 1: # only after the first file (attribute label won't change in the next iterations of the file by file analysis)
-		attrLabel_asPanda = pd.DataFrame.from_dict([attrLabel],orient='columns')
-		attrLabel_asPanda.to_csv(outputFolder + 'attributeLabel.csv')
-=======
 	# if len(exportData[0]) <= len(firstColumns):
 	# ###if len(exportData.keys()) <= len(firstColumns):
 	# 	skippedData = True
@@ -148,8 +119,6 @@ def process(trialEventsSpatAggExcerpt,exportData,exportDataString,exportFullExpl
 	# (with the specified window), added into one long file combining the whole database.
 
 	appendEventAggregate = eventAggregate(eventAggFolder,eventAggFname,appendEventAggregate,trialEventsSpatAggExcerpt,skipEventAgg_curFile,fileIdentifiers,columnOrder)
-
->>>>>>> origin/NP_continued
 
 	if debuggingMode:
 		elapsed = str(round(time.time() - tExportCSV, 2))
@@ -259,10 +228,6 @@ def eventAggregate(eventAggFolder,eventAggFname,appendEventAggregate,trialEvents
 			columnOrder.remove(ikey)
 
 	# Save as new csv (overwrite)
-<<<<<<< HEAD
-	combinedData.to_csv(eventAggFolder + eventAggFname, index_label = 'DataSetIndex', columns = columnOrder)
-
-=======
 	# combinedData = combinedData.astype(object)
 	# print(type(combinedData))
 	# print(type(columnOrder))
@@ -299,8 +264,6 @@ def eventAggregate(eventAggFolder,eventAggFname,appendEventAggregate,trialEvents
 	# print(combinedData.shape)
 	###combinedData.to_csv(eventAggFolder + eventAggFname, index_label = 'DataSetIndex')
 
-	
->>>>>>> origin/NP_continued
 	return appendEventAggregate
 
 def debugPrint(filename,varToPrint,winopen):

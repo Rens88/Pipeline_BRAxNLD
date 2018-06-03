@@ -26,11 +26,6 @@ import safetyWarning
 import pandas as pd
 
 if __name__ == '__main__':
-<<<<<<< HEAD
-
-=======
-	
->>>>>>> origin/NP_continued
 	process(loadFname,loadFolder,skipSpatAgg_curFile,readAttributeCols,readEventColumns,attrLabel,outputFolder,debuggingMode)
 	rawData(filename,folder)
 	existingAttributes(filename,folder,rawHeaders)

@@ -608,12 +608,18 @@ def checkIfDataExists(aggregateLevel,debuggingMode,tTempAgg,exportData,exportDat
 	return eventExcerptPanda
 def cleanUp_ballSpeedAcceleration(rawDict,attributeDict):
 	# something that could be part of clean-up:
-	if not all(np.isnan(attributeDict.loc[rawDict['PlayerID'] == 'ball','Acceleration'])):
-		attributeDict.loc[rawDict['PlayerID'] == 'ball','Acceleration'] = np.nan
-		warn('\nWARN: Some datasets also give the acceleration of the ball.\nTo avoid conflicts, these input values will be overwritten with empty values.\nIf you are in fact interested in Acceleration of the ball, then create a new feature that refers to the ball specifically (ballAcceleration).\n')
-	if not all(np.isnan(attributeDict.loc[rawDict['PlayerID'] == 'ball','Speed'])):
-		attributeDict.loc[rawDict['PlayerID'] == 'ball','Speed'] = np.nan
-		warn('\nWARN: Some datasets also give the Speed of the ball.\nTo avoid conflicts, these input values will be overwritten with empty values.\nIf you are in fact interested in Speed of the ball, then create a new feature that refers to the ball specifically (ballSpeed).\n')
+	if 'Acceleration' in attributeDict:
+		if not all(np.isnan(attributeDict.loc[rawDict['PlayerID'] == 'ball','Acceleration'])):
+			attributeDict.loc[rawDict['PlayerID'] == 'ball','Acceleration'] = np.nan
+			warn('\nWARN: Some datasets also give the acceleration of the ball.\nTo avoid conflicts, these input values will be overwritten with empty values.\nIf you are in fact interested in Acceleration of the ball, then create a new feature that refers to the ball specifically (ballAcceleration).\n')
+	else:
+		warn('\nWARN: Acceleration not in attributeDict.')
+	if 'Speed' in attributeDict:
+		if not all(np.isnan(attributeDict.loc[rawDict['PlayerID'] == 'ball','Speed'])):
+			attributeDict.loc[rawDict['PlayerID'] == 'ball','Speed'] = np.nan
+			warn('\nWARN: Some datasets also give the Speed of the ball.\nTo avoid conflicts, these input values will be overwritten with empty values.\nIf you are in fact interested in Speed of the ball, then create a new feature that refers to the ball specifically (ballSpeed).\n')
+	else:
+		warn('\nWARN: Speed not in attributeDict.')
 	return attributeDict
 
 def prepareExportStrings(exportDataString,aggregateLevel,exportFullExplanation):
@@ -861,7 +867,8 @@ def aggregateTemporally(data,*positional_parameters,**keyword_parameters):
 		return count, avg, std, sumVal, minVal, maxVal, med, sem, kur, ske
 
 	# continue to create the strings in the full version
-	exportCurrentData,targetGroup, curKeyString, curLabel, eventDescrString, overallString, overallExplanation = positional_parameters
+	exportCurrentData, targetGroup, curKeyString, curLabel, eventDescrString, overallString, overallExplanation = positional_parameters
+	# print('TARGET GROUP: ' + targetGroup)
 
 	if 'aggrMethods' in keyword_parameters:
 		aggrMethods = keyword_parameters['aggrMethods']
@@ -1164,7 +1171,7 @@ def aggregateCurrentEvent(attrDictCols_numeric,window,interpolatedCurEventExcerp
 				rawDict.to_csv('rawDict_complete.csv')
 				attributeDict.loc[rowswithinrange].to_csv('attributeDict_rowswithinrange.csv')
 				attributeDict.to_csv('attributeDict_complete.csv')
-				attributeDict.loc[attributeDict['PlayerID'] == 'groupRow'].to_csv('attributeDict_allGropuRows.csv')
+				attributeDict.loc[rawDict['PlayerID'] == 'groupRow'].to_csv('attributeDict_allGropuRows.csv') #LT: changed to rawDict
 				print('Apparently, targetGroup has already been allocated as a grouprow:' )
 				print('targetGroup = %s' %targetGroup)
 				print('----')

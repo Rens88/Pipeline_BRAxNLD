@@ -72,56 +72,51 @@ def process(targetEvents,aggregateLevel,rawPanda,attrPanda,eventsPanda,TeamAstri
 		targetEvents = \
 		addRegularEvents(rawPanda,targetEvents,TeamAstring,TeamBstring,aggregateLevel)	
 
-<<<<<<< HEAD
+	# if 'Turnovers' in targetEvents:
+	# 	if len(targetEvents['Turnovers'][0]) == 6: 
+	# 		# it's the Turnovers with XY
+	# 		# So determine in or outside of 16m
+	# 		for idx,val in enumerate(targetEvents['Turnovers']):
+	# 			curTs = val[0]
+	# 			refTeam = val[1]
+	# 			if refTeam == TeamAstring:
+	# 				othTeam = TeamBstring
+	# 			elif refTeam == TeamBstring:
+	# 				othTeam = TeamAstring
+	# 			else:
+	# 				warn('\nFATAL WARNING: Could not determine othTeam in Turnovers events...\nrefTeam = <%s>\nTeamAstring = <%s>\nTeamBstring = <%s>\n' %(refTeam,TeamAstring,TeamBstring))
+	# 				pdb.set_trace()
+
+	# 			curX = val[5][0]
+	# 			curY = val[5][1]
+				
+	# 			# NOT TAKING FIELD DIMENSIONS INTO ACCOUNT
+	# 			warn('\nWARNING: I\'m not (yet) taking field dimensions into account.\nPenalty box is based on generic measures (same as in plotSnapshot)\n')
+	# 			warn('\nWARNING: At computEvents, I\'m now only very crudely verifying if the Turnovers happened on the refTeam\'s side of the pitch.\n')
+	# 			avgRefTeam = np.nanmean(rawPanda.loc[rawPanda['TeamID'] == refTeam,'X'])
+	# 			avgOthTeam = np.nanmean(rawPanda.loc[rawPanda['TeamID'] == othTeam,'X'])
+
+	# 			label = 'outside_16m'
+	# 			if curY >= -20 and curY <= 20:
+	# 				if curX <= -33.5: # left attacking
+	# 					label = 'inside_16m'
+	# 					if avgRefTeam < avgOthTeam:
+	# 						warn('\nWARNING: Suspected turnover on own half.\nCheck event data and mismatches in Turnovers.\nCurrently, these event labels are overwritten as <outside_16m>.\n')
+	# 						label = 'outside_16m'
+	# 				elif curX >= 33.5: # right attacking
+	# 					label = 'inside_16m'
+	# 					if avgRefTeam > avgOthTeam:
+	# 						warn('\nWARNING: Suspected turnover on own half.\nCheck event data and mismatches in Turnovers.\nCurrently, these event labels are overwritten as <outside_16m>.\n')
+	# 						label = 'outside_16m'
+			
+	# 			# write a checkup based on the guessed data driven playing side
+	# 			# only for inside
+
+	# 			newVal = (val[0],val[1],val[2],val[3],val[4],val[5],label)
+	# 			targetEvents['Turnovers'][idx] = newVal
+
 	targetEvents = \
 	student_LT_computeEvents.process(targetEvents,aggregateLevel,rawPanda,attrPanda,eventsPanda,TeamAstring,TeamBstring)
-=======
-	if 'Turnovers' in targetEvents:
-		
-		if len(targetEvents['Turnovers'][0]) == 6: 
-			# it's the Turnovers with XY
-			# So determine in or outside of 16m
-			for idx,val in enumerate(targetEvents['Turnovers']):
-				curTs = val[0]
-				refTeam = val[1]
-				if refTeam == TeamAstring:
-					othTeam = TeamBstring
-				elif refTeam == TeamBstring:
-					othTeam = TeamAstring
-				else:
-					warn('\nFATAL WARNING: Could not determine othTeam in Turnovers events...\nrefTeam = <%s>\nTeamAstring = <%s>\nTeamBstring = <%s>\n' %(refTeam,TeamAstring,TeamBstring))
-					pdb.set_trace()
-
-				curX = val[5][0]
-				curY = val[5][1]
-				
-				# NOT TAKING FIELD DIMENSIONS INTO ACCOUNT
-				warn('\nWARNING: I\'m not (yet) taking field dimensions into account.\nPenalty box is based on generic measures (same as in plotSnapshot)\n')
-				warn('\nWARNING: At computEvents, I\'m now only very crudely verifying if the Turnovers happened on the refTeam\'s side of the pitch.\n')
-				avgRefTeam = np.nanmean(rawPanda.loc[rawPanda['TeamID'] == refTeam,'X'])
-				avgOthTeam = np.nanmean(rawPanda.loc[rawPanda['TeamID'] == othTeam,'X'])
-
-				label = 'outside_16m'
-				if curY >= -20 and curY <= 20:
-					if curX <= -33.5: # left attacking
-						label = 'inside_16m'
-						if avgRefTeam < avgOthTeam:
-							warn('\nWARNING: Suspected turnover on own half.\nCheck event data and mismatches in Turnovers.\nCurrently, these event labels are overwritten as <outside_16m>.\n')
-							label = 'outside_16m'
-					elif curX >= 33.5: # right attacking
-						label = 'inside_16m'
-						if avgRefTeam > avgOthTeam:
-							warn('\nWARNING: Suspected turnover on own half.\nCheck event data and mismatches in Turnovers.\nCurrently, these event labels are overwritten as <outside_16m>.\n')
-							label = 'outside_16m'
-			
-				# write a checkup based on the guessed data driven playing side
-				# only for inside
-
-				newVal = (val[0],val[1],val[2],val[3],val[4],val[5],label)
-				targetEvents['Turnovers'][idx] = newVal
-
-	targetEvents = \
-	student_XX_computeEvents.process(targetEvents,aggregateLevel,rawPanda,attrPanda,eventsPanda,TeamAstring,TeamBstring)
 
 
 	# export it
@@ -145,7 +140,6 @@ def process(targetEvents,aggregateLevel,rawPanda,attrPanda,eventsPanda,TeamAstri
 		targetEventsFname = preComputedTargetFolder + cleanFname[:-12] + '_preComputed_Event_' + key +  '.csv'
 		tmp = pd.DataFrame.from_dict(targetEvents[key])
 		tmp.to_csv(targetEventsFname) # filename only needs match	
->>>>>>> origin/NP_continued
 	
 	if debuggingMode:
 		elapsed = str(round(time.time() - tComputeEvents, 2))

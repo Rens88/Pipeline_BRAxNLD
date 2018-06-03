@@ -42,8 +42,7 @@ def process(rawDict,attributeDict,attributeLabel,TeamAstring,TeamBstring,skipSpa
 	# Per Team and for both teams
 
 	# Ball possession
-<<<<<<< HEAD
-	# computeBallPossession = True # temporarily turned off
+	# computeBallPossession = False # temporarily turned off
 	# if computeBallPossession:
 	# 	attributeDict,attributeLabel = \
 	# 	ballPossession(rawDict,attributeDict,attributeLabel,TeamAstring,TeamBstring,skipSpatAgg)
@@ -78,74 +77,19 @@ def process(rawDict,attributeDict,attributeLabel,TeamAstring,TeamBstring,skipSpa
 	# 	print('*****----- Time elapsed during spatialAggregation.teamSurface_asPanda(): %ss' %elapsed)
 	# 	tSpatAgg_surf = time.time()
 
-	# # Computing vNorm, technically requires some form of temporalAggregation. 
-	# # This is permitted ONLY if the compute variable returns a value for every timeframe.
 	# attributeDict,attributeLabel = \
 	# vNorm(rawDict,attributeDict,attributeLabel,TeamAstring,TeamBstring,skipSpatAgg)
 	# if debuggingMode:
 	# 	elapsed = str(round(time.time() - tSpatAgg_surf, 2))
 	# 	print('*****----- Time elapsed during spatialAggregation.vNorm(): %ss' %elapsed)
 	tSpatAgg_vNorm = time.time()
-=======
-	computeBallPossession = False # temporarily turned off
-	if computeBallPossession:
-		attributeDict,attributeLabel = \
-		ballPossession(rawDict,attributeDict,attributeLabel,TeamAstring,TeamBstring,skipSpatAgg)
-
-	# Use this is an example for a GROUP level aggregate
-	attributeDict,attributeLabel = \
-	teamCentroid_panda(rawDict,attributeDict,attributeLabel,TeamAstring,TeamBstring,skipSpatAgg)
-	if debuggingMode:
-		elapsed = str(round(time.time() - tSpatAgg, 2))
-		print('*****----- Time elapsed during spatialAggregation.teamCentroid_panda(): %ss' %elapsed)
-		tSpatAgg_cent = time.time()
-
-	# Use this is an example for a PLAYER level aggregate
-	attributeDict,attributeLabel = \
-	distanceToCentroid(rawDict,attributeDict,attributeLabel,TeamAstring,TeamBstring,skipSpatAgg)
-	if debuggingMode:
-		elapsed = str(round(time.time() - tSpatAgg_cent, 2))
-		print('*****----- Time elapsed during spatialAggregation.distanceToCentroid(): %ss' %elapsed)
-		tSpatAgg_dist = time.time()
 
 	attributeDict,attributeLabel = \
-	teamSpread_asPanda(rawDict,attributeDict,attributeLabel,TeamAstring,TeamBstring,skipSpatAgg)
-	if debuggingMode:
-		elapsed = str(round(time.time() - tSpatAgg_dist, 2))
-		print('*****----- Time elapsed during spatialAggregation.teamSpread_asPanda(): %ss' %elapsed)
-		tSpatAgg_spread = time.time()
-
-	attributeDict,attributeLabel = \
-	teamSurface_asPanda(rawDict,attributeDict,attributeLabel,TeamAstring,TeamBstring,skipSpatAgg)
-	if debuggingMode:
-		elapsed = str(round(time.time() - tSpatAgg_spread, 2))
-		print('*****----- Time elapsed during spatialAggregation.teamSurface_asPanda(): %ss' %elapsed)
-		tSpatAgg_surf = time.time()
->>>>>>> origin/NP_continued
-
-	attributeDict,attributeLabel = \
-<<<<<<< HEAD
 	student_LT_spatialAggregation.process(rawDict,attributeDict,attributeLabel,TeamAstring,TeamBstring,skipSpatAgg)
 	if debuggingMode:
 		elapsed = str(round(time.time() - tSpatAgg_vNorm, 2))
-		print('*****----- Time elapsed during spatialAggregation.student_XX_spatialAggregation(): %ss' %elapsed)
+		print('*****----- Time elapsed during spatialAggregation.student_LT_spatialAggregation(): %ss' %elapsed)
 		tSpatAgg_student = time.time()
-
-=======
-	vNorm(rawDict,attributeDict,attributeLabel,TeamAstring,TeamBstring,skipSpatAgg)
-	if debuggingMode:
-		elapsed = str(round(time.time() - tSpatAgg_surf, 2))
-		print('*****----- Time elapsed during spatialAggregation.vNorm(): %ss' %elapsed)
-		tSpatAgg_vNorm = time.time()
-
-	attributeDict,attributeLabel = \
-	student_XX_spatialAggregation.process(rawDict,attributeDict,attributeLabel,TeamAstring,TeamBstring,skipSpatAgg)
-	if debuggingMode:
-		elapsed = str(round(time.time() - tSpatAgg_vNorm, 2))
-		print('*****----- Time elapsed during spatialAggregation.student_XX_spatialAggregation(): %ss' %elapsed)
-		tSpatAgg_student = time.time()
-
->>>>>>> origin/NP_continued
 	## debugging only
 	# allesBijElkaar = pd.concat([rawDict, attributeDict], axis=1) # debugging only
 	# allesBijElkaar.to_csv('C:\\Users\\rensm\\Documents\\PostdocLeiden\\BRAxNLD repository\\Data\\tmp\\test.csv') # debugging only		
@@ -154,6 +98,19 @@ def process(rawDict,attributeDict,attributeLabel,TeamAstring,TeamBstring,skipSpa
 	# Spatially aggregated data
 	spatAggPanda = pd.concat([rawDict, eventsPanda.loc[:, eventsPanda.columns != 'Ts'], attributeDict.loc[:, attributeDict.columns != 'Ts']], axis=1) # Skip the duplicate 'Ts' columns
 	spatAggPanda.to_csv(spatAggFolder + spatAggFname)
+
+	# print(attributeDict.columns.values,attributeLabel)
+	#LT: drop defender variables
+	excludeList = ['pressureFromDefender','pressureZone','angleInPossDefGoal','distToPlayerWithBall','shotDensityFromDefender','playerInIZ']
+	try:
+		attributeDict = attributeDict.drop(['pressureFromDefender','pressureZone','angleInPossDefGoal','distToPlayerWithBall','shotDensityFromDefender','playerInIZ'], axis=1)
+		for e in ['pressureFromDefender','pressureZone','angleInPossDefGoal','distToPlayerWithBall','shotDensityFromDefender','playerInIZ']:
+			attributeLabel.pop(e)
+	except:
+		print('\nWARN: Can not drop the columns out of the attributeDict.')
+		pass
+	# print(attributeDict.columns.values,attributeLabel)
+	# pdb.set_trace()
 
 	if debuggingMode:
 		elapsed = str(round(time.time() - tSpatAgg, 2))
@@ -1341,14 +1298,8 @@ def ballPossession(rawDict,attributeDict,attributeLabel,TeamAstring,TeamBstring,
 	elapsed = str(round(time.time() - tDistToBall, 2))
 	print('*****----- Time elapsed during determining distance to ball.vNorm(): %ss' %elapsed)
 
-<<<<<<< HEAD
 	altogether = pd.concat([rawDict,attributeDict], axis=1)
 	altogether.to_csv('D:\\KNVB\\test.csv')
 
 	pdb.set_trace()
 	return attributeDict,attributeLabel
-=======
-	pdb.set_trace()
-	return attributeDict,attributeLabel
-
->>>>>>> origin/NP_continued
