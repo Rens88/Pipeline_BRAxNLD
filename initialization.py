@@ -42,9 +42,17 @@ def process(studentFolder,folder,aggregateEvent,allWindows_and_Lags,skipToDataSe
 		DirtyDataFiles.remove('35_ERE_XIV.csv')
 		warn('\nWARNING: Hard-coded to skip Match 35_ERE_XIV. This match has something weird with duplicate players that messes up the temporal aggregation.\nOther matches may have the same issue.\nNEEDS TO BE SOLVED\n!!!!!!!!!!\n!!!!!!!!!.')
 
-	if '76_ERE-P_XIV.csv' in DirtyDataFiles:
-		DirtyDataFiles.remove('76_ERE-P_XIV.csv')
-		warn('\nWARNING: Hard-coded to skip Match 8_ERE_XIV. This match has something weird with the events which results in incorrectly not appending (but overwriting) the eventAggregate in the next file of the file-by-file analysis.\n!!!!!!!!!!!!!!!!!!\nThis is a bigger issue that may result into missing matches in other batches as well.\nNEEDS TO BE SOLVED\n!!!!!!!!!!\n!!!!!!!!!.')
+	skipTheseForTheSameReason = ['7_ERE_XIV.csv', '76_ERE-P_XIV.csv']
+	for stftsr in skipTheseForTheSameReason:
+		if stftsr in DirtyDataFiles:
+			DirtyDataFiles.remove(stftsr)
+			warn('\nWARNING: Hard-coded to skip <%s>. This match has something weird with the events which results in incorrectly not appending (but overwriting) the eventAggregate in the next file of the file-by-file analysis.\n!!!!!!!!!!!!!!!!!!\nThis is a bigger issue that may result into missing matches in other batches as well.\nNEEDS TO BE SOLVED\n!!!!!!!!!!\n!!!!!!!!!.' %stftsr)
+
+	skipTheseForTheSameReason = ['151_ERE_XVI.csv', '20_ERE_XIV.csv']
+	for stftsr in skipTheseForTheSameReason:
+		if stftsr in DirtyDataFiles:
+			DirtyDataFiles.remove(stftsr)
+			warn('\nWARNING: Hard-coded to skip <%s>. Assuming that the lack of matches in output is due to overwriting eventagg, it should be this file. May not be true. Check how many files existed in the new output.\nNEEDS TO BE SOLVED\n!!!!!!!!!!\n!!!!!!!!!.' %stftsr)
 
 	DirtyDataFiles_backup = DirtyDataFiles.copy()
 
@@ -350,7 +358,10 @@ def skipPartsOfPipeline(backupEventAggFname,DirtyDataFiles,skipToDataSetLevel,sk
 					for i in umCurChunk:
 						# doesItExistIn_DDF = [True for j in DirtyDataFiles if str(i) in j]
 						# More specific:
+
 						doesItExistIn_DDF = [True for j in DirtyDataFiles if str(i) == str(j.split('_')[0])]
+						if 'CROPPED' in DirtyDataFiles[0]:
+							doesItExistIn_DDF = [True for j in DirtyDataFiles if str(i) == str(j.split('_')[1])]
 						if not any(doesItExistIn_DDF):
 							warn('\nWARNING: Dropped MatchID <%s> from eventAggregate backup as it did not exist in DirtyDataFiles.\nNote that it was only dropped from the automatic backup, in the original file the match can still be accessed.\n' %i)
 							chunk = chunk.drop(chunk[chunk['MatchID'] != i].index)
@@ -375,7 +386,8 @@ def skipPartsOfPipeline(backupEventAggFname,DirtyDataFiles,skipToDataSetLevel,sk
 				for MatchID in uniqueMatches:
 
 					curFiles = [f for f in files if '_preComputed_Event_' in f and str(MatchID) == str(f.split('_')[0])]
-
+					if 'CROPPED' in files[0]:
+						curFiles = [f for f in files if '_preComputed_Event_' in f and str(MatchID) == str(f.split('_')[1])]
 					if curFiles == []:
 						warn('\nWARNING: Pre-fatal: could not find any pre-computed event files that corresponded to MatchID <%s>' %MatchID)
 						warn_and_exit = True

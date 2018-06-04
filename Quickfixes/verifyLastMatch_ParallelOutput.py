@@ -5,7 +5,7 @@ import numpy as np
 import pdb; #pdb.set_trace()
 
 
-outputFolders = ['C:\\Users\\rensm\\Documents\\SURFDRIVE\\Repositories\\BRAxNLD repository_newStyle\\Output\\Turnovers 05s\\']
+outputFolders = ['C:\\Users\\rensm\\Documents\\SURFDRIVE\\Repositories\\BRAxNLD repository_newStyle\\Output\\01-06-2018\\']
 
 # outputFolders = ['C:\\Users\\rensm\\Documents\\SURFDRIVE\\Repositories\\BRAxNLD repository_newStyle\\Output\\Turnovers 05s\\',\
 # 'C:\\Users\\rensm\\Documents\\SURFDRIVE\\Repositories\\BRAxNLD repository_newStyle\\Output\\Turnovers 10s\\',\
@@ -26,7 +26,7 @@ for outputFolder in outputFolders:
 	totalNinsideLonger = 0
 	for f in parallelOutputFiles:
 		df = pd.read_csv(outputFolder+f,low_memory=False) # NB: low_memory MUST be True, otherwise it results in problems later on.
-		
+		print(f)
 		substrings = f.split('_')
 		for s in substrings:
 			if 'of' in s:

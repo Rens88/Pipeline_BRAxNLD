@@ -17,7 +17,7 @@ dataType =  "FDP" # "FDP" or or "NP" --> so far, only used to call the right cle
 # This folder should contain a folder with 'Data'. The tabular output and figure will be stored in this folder as well.
 # folder = 'C:\\Users\\rensm\\Documents\\SURFDRIVE\\Repositories\\Sample repository\\'
 # folder = 'C:\\Users\\rensm\\Documents\\SURFDRIVE\\Repositories\\BRAxNLD repository_newStyle\\'
-# folder = '/home/meerhoffla/Repositories/Sample repository/'
+# folder = '/local/rens/Repositories/Sample repository/'
 folder = '/local/rens/Repositories/BRAxNLD repository_newStyle/'
 
 # String representing the different teams
@@ -141,7 +141,11 @@ import iterateWindowsOverEventAgg
 #########################
 # ANALYSIS (file by file)
 #########################
-
+# Just to be sure it doesn't overwrite the eventAggregate:
+# if not skipEventAgg:
+# 	print('safety measure to not overwrite an existing event aggregate.')
+# 	pdb.set_trace()
+	
 for dirtyFname in DirtyDataFiles:
 	print(	'\nFILE: << %s >>' %dirtyFname[:-4])
 	t = estimateRemainingTime.printProgress(t)

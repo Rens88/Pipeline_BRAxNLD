@@ -44,7 +44,7 @@ def process(df,attrLabel_asPanda,aggregateLevel,aggregateEvent,allWindows_and_La
 
 		# create the new filename		
 		tmp = eventAggFname.replace(winString,'_window(%s)_' %win)
-		exportFname = tmp.replace(lagString,'_lag(%s)_DerivedFromLargestWindow_' %lag)
+		exportFname = tmp.replace(lagString,'_lag(%s)_DerivedFromLargestWindow' %lag)
 
 		# Check if requested window itTempAggs covered by available window
 		newEnd = -lag # relative to event

@@ -17,7 +17,7 @@ dataType =  "FDP" # "FDP" or or "NP" --> so far, only used to call the right cle
 # This folder should contain a folder with 'Data'. The tabular output and figure will be stored in this folder as well.
 # folder = 'C:\\Users\\rensm\\Documents\\SURFDRIVE\\Repositories\\Sample repository\\'
 # folder = 'C:\\Users\\rensm\\Documents\\SURFDRIVE\\Repositories\\BRAxNLD repository_newStyle\\'
-# folder = '/home/meerhoffla/Repositories/Sample repository/'
+# folder = '/local/rens/Repositories/Sample repository/'
 folder = '/local/rens/Repositories/BRAxNLD repository_newStyle/'
 
 # String representing the different teams
@@ -70,7 +70,7 @@ skipComputeEvents = True #
 # If both True, then files are not verified to be analyzed previously
 # If skipToDataSetLevel == False, then it is verified that every match exists in eventAggregate
 skipEventAgg = True # For now, don't skip unless longest window was computed. # Only works if current file already exists in eventAgg. NB: if False, skipToDataSetLevel becomes ineffective.
-skipEventAgg_MatchVerification = True # As it can be memory heavy and time-consuming AND as the verification only works if the eventAgg file was created with the same operating system (the file order changes.. need to work on that), the option exists to skip the verification, with the risk that you're creating an output that does not belong to the curent batch. Although this should be picked-up on when combining them (duplicate events..)
+skipEventAgg_MatchVerification = False # As it can be memory heavy and time-consuming AND as the verification only works if the eventAgg file was created with the same operating system (the file order changes.. need to work on that), the option exists to skip the verification, with the risk that you're creating an output that does not belong to the curent batch. Although this should be picked-up on when combining them (duplicate events..)
 skipToDataSetLevel = True # Only works if corresponding AUTOMATIC BACKUP exists. NB: Does not check if all raw data files are in automatic backup. NB2: does not include any changes in cleanup, spatagg, or eventagg NB2: may not work after implementing iteratoverwindows thingy
 
 # Choose between append (= True) or overwrite (= False) (the first time around only of course) the existing (if any) eventAggregate CSV.
@@ -141,7 +141,11 @@ import iterateWindowsOverEventAgg
 #########################
 # ANALYSIS (file by file)
 #########################
-
+# Just to be sure it doesn't overwrite the eventAggregate:
+if not skipEventAgg:
+	print('safety measure to not overwrite an existing event aggregate.')
+	pdb.set_trace()
+	
 for dirtyFname in DirtyDataFiles:
 	print(	'\nFILE: << %s >>' %dirtyFname[:-4])
 	t = estimateRemainingTime.printProgress(t)

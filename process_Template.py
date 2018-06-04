@@ -15,8 +15,8 @@ debuggingMode = True # whether yo want to print the times that each script took
 dataType =  "FDP" # "FDP" or or "NP" --> so far, only used to call the right cleanup script. Long term goal would be to have a generic cleanup script
 
 # This folder should contain a folder with 'Data'. The tabular output and figure will be stored in this folder as well.
-# folder = 'C:\\Users\\rensm\\Documents\\SURFDRIVE\\Repositories\\Sample repository\\'
-folder = 'C:\\Users\\rensm\\Documents\\SURFDRIVE\\Repositories\\BRAxNLD repository_newStyle\\'
+folder = 'C:\\Users\\rensm\\Documents\\SURFDRIVE\\Repositories\\Sample repository\\'
+# folder = 'C:\\Users\\rensm\\Documents\\SURFDRIVE\\Repositories\\BRAxNLD repository_newStyle\\'
 # folder = '/home/meerhoffla/Repositories/Sample repository/'
 # folder = '/local/rens/Repositories/BRAxNLD repository_newStyle/'
 
@@ -47,7 +47,7 @@ conversionToMeter = 1 #111111 # https://gis.stackexchange.com/questions/8650/mea
 # 'Regular' works as long as you don't choose a window larger than your file.
 # Other keywords depend on which events you import and/or compute.
 aggregateEvent = 'Turnovers' # Event that will be used to aggregate over (verified for 'Goals' and for 'Possession')
-allWindows_and_Lags = [(30,0),(25,0),(20,0),(15,0),(10,0),(5,0)] # input tuple of window and corresponding lag. # a negative lag indicates tEnd as after the event
+allWindows_and_Lags = [(30,-5),(25,0),(20,0),(15,0),(10,0),(5,0)] # input tuple of window and corresponding lag. # a negative lag indicates tEnd as after the event
 
 aggregatePerPlayer = [] # a list of outcome variables that you want to aggregated per player. For example: ['vNorm','distFrame']
 
@@ -90,7 +90,7 @@ includeEventInterpolation = False # may cause problems at the plotting level,
 includeCleanupInterpolation = True # When not interpolating at all, plotting procedure becomes less reliable as it uses an un-aligned index (and it may even fail)
 datasetFramerate = 10 # (Hz) This is the framerate with which the whole dataset will be aggregated.
 
-parallelProcess = (1,15) # (nth process,total n processes) # default = (1,1)
+parallelProcess = (1,1) # (nth process,total n processes) # default = (1,1)
 
 #########################
 # INITIALIZATION ########

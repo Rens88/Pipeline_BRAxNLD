@@ -4,6 +4,7 @@ from os import listdir, path, makedirs, sep, walk
 import numpy as np
 import pdb; #pdb.set_trace()
 
+print('WHY IS DT PREV EVENT SOMETIMES MISSING?')
 
 outputFolders = ['C:\\Users\\rensm\\Documents\\SURFDRIVE\\Repositories\\BRAxNLD repository_newStyle\\Output\\Turnovers 05s\\',\
 'C:\\Users\\rensm\\Documents\\SURFDRIVE\\Repositories\\BRAxNLD repository_newStyle\\Output\\Turnovers 10s\\',\
@@ -18,13 +19,17 @@ outputFolders = ['C:\\Users\\rensm\\Documents\\SURFDRIVE\\Repositories\\BRAxNLD 
 # 'C:\\Users\\rensm\\Documents\\SURFDRIVE\\Repositories\\BRAxNLD repository_newStyle\\Output\\Turnovers 25s\\']
 
 outputFolder_export = 'C:\\Users\\rensm\\Documents\\SURFDRIVE\\Repositories\\BRAxNLD repository_newStyle\\Output\\Results\\'
+
+
+# outputFolders = ['C:\\Users\\rensm\\Documents\\SURFDRIVE\\Repositories\\BRAxNLD repository_newStyle\\Output\\01-06-2018\\']
+# outputFolder_export = 'C:\\Users\\rensm\\Documents\\SURFDRIVE\\Repositories\\BRAxNLD repository_newStyle\\Output\\01-06-2018\\'
+
 logText = []
 
 for outputFolder in outputFolders:
 	logText.append('\n\n************************')
 
-	parallelOutputFiles = [f for f in listdir(outputFolder) if isfile(join(outputFolder, f)) if '.csv' in f]
-
+	parallelOutputFiles = [f for f in listdir(outputFolder) if isfile(join(outputFolder, f)) if '.csv' in f if not 'combined' in f]
 	combined_df = pd.DataFrame([])
 	windowString = []
 	for f in parallelOutputFiles:
@@ -63,7 +68,7 @@ for outputFolder in outputFolders:
 	
 	# first of all, drop any columns that have no data at all
 	percentagesMissing = []
-	columnThreshold = 10
+	columnThreshold = 40
 	# rename index rows:
 	combined_df.index.names = ["OverallIndex"]
 	combined_df.rename(index=str, columns={"Unnamed: 0": "MatchIndex"},inplace = True)
@@ -74,6 +79,8 @@ for outputFolder in outputFolders:
 			combined_df.rename(index=str, columns={c_orig: c_new},inplace = True)
 
 	combined_df_noMissing = combined_df.copy()
+	droppedColumns = []
+	percMissingStored = []
 	for c in combined_df_noMissing.keys():
 
 		percMissing = sum(combined_df[c].isnull())/combined_df[c].shape[0]*100
@@ -82,6 +89,12 @@ for outputFolder in outputFolders:
 		if percMissing > columnThreshold:
 			# print('<%s> percent were missing; Therefore, dropped column <%s>.' %(percMissing,c))
 			combined_df_noMissing = combined_df_noMissing.drop([c],axis = 1)
+			droppedColumns.append(c)
+			percMissingStored.append(percMissing)
+
+	tmp = 'Dropped these columns:\n%s\nWith the following percentages:\n%s' %(droppedColumns,percMissingStored)
+	logText.append(tmp)
+	print(tmp)
 
 
 	tmp = '\nFeatures omitted due to mostly empty features:\ndf nColumns before: %s' %combined_df.shape[1]
@@ -103,7 +116,11 @@ for outputFolder in outputFolders:
 	logText.append(tmp)
 
 	combined_df.to_csv(outputFolder_export + parallelOutputFiles[0][:-10] + 'combined.csv')
+
 	combined_df_noMissing.to_csv(outputFolder_export + parallelOutputFiles[0][:-10] + 'combinedNOMISSING.csv')
+
+	combined_df_sample = combined_df.loc[combined_df['temporalAggregate'] == 'Turnovers_000']
+	combined_df_sample.to_csv(outputFolder_export + parallelOutputFiles[0][:-10] + 'combined_sample.csv')
 
 	combined_df_noMissing_sample = combined_df_noMissing.loc[combined_df_noMissing['temporalAggregate'] == 'Turnovers_000']
 	combined_df_noMissing_sample.to_csv(outputFolder_export + parallelOutputFiles[0][:-10] + 'combinedNOMISSING_sample.csv')

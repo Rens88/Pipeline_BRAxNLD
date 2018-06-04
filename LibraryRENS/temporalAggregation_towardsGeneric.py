@@ -78,6 +78,37 @@ def processEventAggOnly(df,newStart,newEnd,aggregateEvent,attrLabel_asPanda,aggr
 	
 	prev_FileID = []
 
+
+	# print('REMEMBER TO DELETE THIS!!!!!!!!!')
+	# print('REMEMBER TO DELETE THIS!!!!!!!!!')
+	# print('REMEMBER TO DELETE THIS!!!!!!!!!')
+	# print('REMEMBER TO DELETE THIS!!!!!!!!!')
+	# print('REMEMBER TO DELETE THIS!!!!!!!!!')
+	# print('REMEMBER TO DELETE THIS!!!!!!!!!')
+	# print('REMEMBER TO DELETE THIS!!!!!!!!!')
+	# print('REMEMBER TO DELETE THIS!!!!!!!!!')
+	# print('REMEMBER TO DELETE THIS!!!!!!!!!')
+	# print('REMEMBER TO DELETE THIS!!!!!!!!!')
+	# print('REMEMBER TO DELETE THIS!!!!!!!!!')
+	# print('REMEMBER TO DELETE THIS!!!!!!!!!')
+	# print('REMEMBER TO DELETE THIS!!!!!!!!!')
+	# print('REMEMBER TO DELETE THIS!!!!!!!!!')
+	# print('REMEMBER TO DELETE THIS!!!!!!!!!')
+	# print('REMEMBER TO DELETE THIS!!!!!!!!!')
+	# print('REMEMBER TO DELETE THIS!!!!!!!!!')
+	# print('REMEMBER TO DELETE THIS!!!!!!!!!')
+	# print('REMEMBER TO DELETE THIS!!!!!!!!!')
+	# print('REMEMBER TO DELETE THIS!!!!!!!!!')
+	# print('REMEMBER TO DELETE THIS!!!!!!!!!')
+	# print('REMEMBER TO DELETE THIS!!!!!!!!!')
+	# print('REMEMBER TO DELETE THIS!!!!!!!!!')
+	# print('REMEMBER TO DELETE THIS!!!!!!!!!')
+	# print('REMEMBER TO DELETE THIS!!!!!!!!!')
+	# print('REMEMBER TO DELETE THIS!!!!!!!!!')
+	# warn('REMEMBER TO DELETE THIS!!!!!!!!!')
+
+	# uniqueEvents = ['77_ERE-P_XIV_Turnovers_000', '77_ERE-P_XIV_Turnovers_001', '77_ERE-P_XIV_Turnovers_002','77_ERE-P_XIV_Turnovers_003','77_ERE-P_XIV_Turnovers_004']
+
 	for idx,currentEventUID in enumerate(uniqueEvents):
 
 		dfCurEventOriginal = df[df['EventUID'] == currentEventUID].copy()
@@ -195,7 +226,9 @@ def processEventAggOnly(df,newStart,newEnd,aggregateEvent,attrLabel_asPanda,aggr
 
 		optionalInput = {'attrLabel':attrLabel_asPanda} # attrLabel is not actually optional.
 
-		exportCurrentData, overallString, overallExplanation =\
+		# interpolatedCurEventExcerptPanda.to_csv('tmp.csv')
+
+		exportCurrentData, overallString, overallExplanation, players =\
 		aggregateCurrentEvent(attrDictCols_numeric,window,interpolatedCurEventExcerptPanda,refTeam,othTeam,ref,oth,exportCurrentData,aggrMeth_popLevel,aggrMeth_playerLevel,aggregatePerPlayer,aggregationOrders,overallString,optionalInput,populations,eventDescrString,targetEvents,aggregateEvent)
 
 		currentAsPanda = pd.DataFrame([[d for d in exportCurrentData]],columns=overallString,index = [idx])
@@ -521,7 +554,7 @@ def process(targetEvents,aggregateLevel,rawDict,attributeDict,exportData,exportD
 		## Systematically aggregate all existing spatial aggregates		
 		optionalInput = {'attributeDict':attributeDict,'rawDict':rawDict,'overallExplanation':overallExplanation,'attrLabel':attrLabel, 'rowswithinrange':rowswithinrange}
 
-		exportCurrentData, overallString, overallExplanation =\
+		exportCurrentData, overallString, overallExplanation, players =\
 		aggregateCurrentEvent(attrDictCols_numeric,window,interpolatedCurEventExcerptPanda,refTeam,othTeam,ref,oth,exportCurrentData,aggrMeth_popLevel,aggrMeth_playerLevel,aggregatePerPlayer,aggregationOrders,overallString,optionalInput,populations,eventDescrString,targetEvents,aggregateLevel[0])
 		
 		# print(len(overallString))
@@ -1282,4 +1315,4 @@ def aggregateCurrentEvent(attrDictCols_numeric,window,interpolatedCurEventExcerp
 
 		# if len(exportCurrentData) > 165:
 		# 	pdb.set_trace()
-	return exportCurrentData, overallString, overallExplanation 
+	return exportCurrentData, overallString, overallExplanation, players
