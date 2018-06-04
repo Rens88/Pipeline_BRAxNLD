@@ -7,11 +7,11 @@
 # By using the following strings in aggrMeth_playerLevel or aggrMeth_popLevel (poLevel = population level)
 # ['cnt', 'avg', 'std', 'sumVal', 'minVal', 'maxVal', 'med', 'sem', 'kur', 'ske']
 #
-# As for the individually spatially aggregated variables (i.e., measures that relate to one individual), the 
+# As for the individually spatially aggregated variables (i.e., measures that relate to one individual), the
 # temporal aggregates can be determined for all players ('allTeam'), the players of the reference team ('refTeam') and
 # the players of the other (= non reference)  team ('othTeam').
 # By default, all three are exported, but you could change this with <populations>
-# 
+#
 # For these player-level variables, the order of aggregating is important too. First per player and then over time
 # provides a more player based comparison. First over time and then per player provides insights over the time evolution.
 # By default, it aggregates first per player, then per time (<perTimePerPlayer>), yielding a count equal to the number of players.
@@ -50,20 +50,20 @@ if __name__ == '__main__':
 
 	process(targetEvents,aggregateLevel,rawDict,attributeDict,exportData,exportDataString,exportFullExplanation,TeamAstring,TeamBstring)
 	# Aggregates a range of pre-defined features over a specific window:
-	specific(rowswithinrange,aggregateString,rawDict,attributeDict,exportData,exportDataString,exportFullExplanation,TeamAstring,TeamBstring)	
+	specific(rowswithinrange,aggregateString,rawDict,attributeDict,exportData,exportDataString,exportFullExplanation,TeamAstring,TeamBstring)
 
 def process(targetEvents,aggregateLevel,rawDict,attributeDict,exportData,exportDataString,exportFullExplanation,TeamAstring,TeamBstring,debuggingMode,skipEventAgg_curFile,fileIdentifiers,attrLabel,aggregatePerPlayer,includeEventInterpolation,datasetFramerate):
 	tTempAgg = time.time()
 	FileID = "_".join(fileIdentifiers)
 
 	# something that could be part of clean-up:
-	if 'Acceleration' in targetEvents: 
+	if 'Acceleration' in targetEvents:
 		if not all(np.isnan(attributeDict.loc[rawDict['PlayerID'] == 'ball','Acceleration'])):
 			attributeDict.loc[rawDict['PlayerID'] == 'ball','Acceleration'] = np.nan
 			warn('\nWARN: Some datasets also give the acceleration of the ball.\nTo avoid conflicts, these input values will be overwritten with empty values.\nIf you are in fact interested in Acceleration of the ball, then create a new feature that refers to the ball specifically (ballAcceleration).\n')
 	else:
-		warn('\nWARN: Acceleration not included in the targetEvents.\n') #LT: added!
-	if 'Speed' in targetEvents: 
+		warn('\nWARN: Acceleration not included in the targetEvents.\n')
+	if 'Speed' in targetEvents:
 		if not all(np.isnan(attributeDict.loc[rawDict['PlayerID'] == 'ball','Speed'])):
 			attributeDict.loc[rawDict['PlayerID'] == 'ball','Speed'] = np.nan
 			warn('\nWARN: Some datasets also give the Speed of the ball.\nTo avoid conflicts, these input values will be overwritten with empty values.\nIf you are in fact interested in Speed of the ball, then create a new feature that refers to the ball specifically (ballSpeed).\n')
@@ -72,7 +72,7 @@ def process(targetEvents,aggregateLevel,rawDict,attributeDict,exportData,exportD
 	freqInterpolatedData = 10 # in Hz
 
 	## Specify which aggregates are taken.
-	aggregationOrder = ['perTimePerPlayer'] 
+	aggregationOrder = ['perTimePerPlayer']
 
 	populations = ['allTeam','refTeam','othTeam']
 	aggregationOrders = aggregationOrder*len(populations)
@@ -89,7 +89,7 @@ def process(targetEvents,aggregateLevel,rawDict,attributeDict,exportData,exportD
 	# populations = ['allTeam','refTeam','othTeam','allTeam','refTeam','othTeam']
 	# aggrMeth_playerLevel = ['avg', 'std', 'sumVal', 'minVal', 'maxVal', 'med', 'sem', 'kur', 'ske']
 	# aggrMeth_popLevel = ['avg', 'std', 'sumVal', 'minVal', 'maxVal', 'med', 'sem', 'kur', 'ske']
-	
+
 	# Create an empty dataFrame where the eventExcerpt will be stored.
 	eventExcerptPanda = pd.DataFrame()
 	# To which UID and refTeam should be added
@@ -119,7 +119,7 @@ def process(targetEvents,aggregateLevel,rawDict,attributeDict,exportData,exportD
 	exportFullExplanation.append('Unique identifier of the <<%s>> events.' %aggregateLevel[0])
 	# not yet a generic solution.
 	# TO DO: WRITE THIS GENERICALLY
-	
+
 	exportDataString.append('eventClassification')
 	exportFullExplanation.append('Classification of the current event.')
 	exportDataString.append('RefTeam')
@@ -147,7 +147,7 @@ def process(targetEvents,aggregateLevel,rawDict,attributeDict,exportData,exportD
 	## Loop over every event
 	for idx,currentEvent in enumerate(targetEvents[aggregateLevel[0]]):
 		# print('This is event <%s>:\n%s' %(idx,currentEvent))
-		
+
 		#####################################
 		## Prepare export of current event ##
 		#####################################
@@ -155,7 +155,7 @@ def process(targetEvents,aggregateLevel,rawDict,attributeDict,exportData,exportD
 			try:
 				warn('\nWARNING: Event had no time of occurrence. Therefore, it was skipped.\nThese are the event contents:\ntime of event = %s\nRefTeam of event = %s\nend of event = %s' %currentEvent)
 			except: # a lazy way to catch currentEvents with only 2 bits of info.
-				warn('\nWARNING: Event had no time of occurrence. Therefore, it was skipped.\nThese are the event contents:\ntime of event = %s\nRefTeam of event = %s\n' %currentEvent)				
+				warn('\nWARNING: Event had no time of occurrence. Therefore, it was skipped.\nThese are the event contents:\ntime of event = %s\nRefTeam of event = %s\n' %currentEvent)
 			continue
 		## Determine the window
 		if aggregateLevel[1] != None:
@@ -171,9 +171,9 @@ def process(targetEvents,aggregateLevel,rawDict,attributeDict,exportData,exportD
 			# No window indicated, so take the full event (if possible)
 			if len(currentEvent) < 3:
 				warn('\nFATAL WARNING: No tStart indicated for this event, nor a window was given for the temporal aggregation.\nEither: 1) Indicate a window for the temporal aggregation.\nOr: 2) Export a tStart for the event you\'re aggregating.')
-						
+
 			tEnd = currentEvent[0]# - aggregateLevel[2]
-			tStart = currentEvent[2]# - aggregateLevel[1]			
+			tStart = currentEvent[2]# - aggregateLevel[1]
 			eventDescrString =  'During the whole duration of the events <%s>.' %aggregateLevel[0]
 
 		window = (tStart, tEnd)
@@ -192,9 +192,9 @@ def process(targetEvents,aggregateLevel,rawDict,attributeDict,exportData,exportD
 			if tEnd_prevEvent > tStart:
 				overlapFoundHere = True
 
-		
-		
-		# tmp = rawDict[rawDict['Ts'] > window[0]] 
+
+
+		# tmp = rawDict[rawDict['Ts'] > window[0]]
 		tmp = attributeDict[attributeDict['Ts'] > window[0]]
 		rowswithinrange = tmp[tmp['Ts'] <= window[1]].index
 
@@ -206,27 +206,27 @@ def process(targetEvents,aggregateLevel,rawDict,attributeDict,exportData,exportD
 				warn('\nWARNING: No positional data available for when the requested event occurred.\nAs a work-around, this event was skipped.\nThis is an indication that the positional data and the event data do not lign up.\nmin(Ts) = %s\nmax(Ts) = %s\nEvent:\n%s' %(min(rawDict['Ts']),max(rawDict['Ts']),currentEvent))
 				# pdb.set_trace()
 				continue
-		
+
 		## Prepare a copy of exported data so far (which can be considered as file identifiers)
 
 		exportCurrentData = exportData.copy()
 		overallString = exportDataString.copy()
 		overallExplanation = exportFullExplanation.copy()
-		
+
 		# print('\nBefore appending trial identifiers:')
 		# print('len(exportCurrentData) = %s' %len(exportCurrentData))
 		# print('len(overallString) = %s' %len(overallString))
 		# print('len(overallExplanation) = %s' %len(overallExplanation))
 
 		## Create the output string that identifies the current event
-		aggregateString = '%s_%03d' %(aggregateLevel[0],idx)		
+		aggregateString = '%s_%03d' %(aggregateLevel[0],idx)
 		if idx > 1000:
 			aggregateString = '%s_%d' %(aggregateLevel[0],idx)
 			warn('\nWARNING: More than 1000 occurrences of the same event.\nForced to change format for finding aggregateString.\nConsider pre-allocating the number of digits included by default.')
-		
+
 		exportCurrentData.append(aggregateString) # NB: String and explanation are defined before the for loop
-		
-		## Create unique event identifier 
+
+		## Create unique event identifier
 		EventUID = FileID + '_' + aggregateString
 		exportCurrentData.append(EventUID) # NB: String and explanation are defined before the for loop
 
@@ -257,8 +257,8 @@ def process(targetEvents,aggregateLevel,rawDict,attributeDict,exportData,exportD
 			oth = 'B'
 			refTeam = TeamAstring
 			othTeam = TeamBstring
-		exportCurrentData.append(refTeam) # NB: String and explanation are defined before the for loop	
-		exportCurrentData.append(othTeam) # NB: String and explanation are defined before the for loop	
+		exportCurrentData.append(refTeam) # NB: String and explanation are defined before the for loop
+		exportCurrentData.append(othTeam) # NB: String and explanation are defined before the for loop
 		eventOverlap = currentEvent[-1] # should always be the last value in currentEvent
 		exportCurrentData.append(eventOverlap) # NB: String and explanation are defined before the for loop
 		if not type(eventOverlap) == bool:
@@ -266,7 +266,7 @@ def process(targetEvents,aggregateLevel,rawDict,attributeDict,exportData,exportD
 		if not eventOverlap == overlapFoundHere:
 			warn('\nWARNING: Current event start <%ss> before previous event finished <%ss>.\nThis should have been dealt with in computeEvents.\nStrange..' %(tStart,tEnd_prevEvent))
 
-		## Change attribute keys to refer to refTeam and othTeam		
+		## Change attribute keys to refer to refTeam and othTeam
 		# WEAKNESS: relies on attribute keys to end with 'A' or 'B' in team scenarios.
 		keyAttr = attrLabel.keys()
 		copyTheseKeys_A = [ikey for ikey in keyAttr if ikey[-1] == 'A']
@@ -287,14 +287,14 @@ def process(targetEvents,aggregateLevel,rawDict,attributeDict,exportData,exportD
 					attrDictCols_numeric.remove(attrKey)
 
 				continue
-			
+
 			## if all(attributeDict.loc[groupRowsInds,attrKey].notnull()):
 				# assumes that all grouprows have a value
 				# however, whenever only one team is visible for some time (for example during the break), this is possible!
 				# So I formulated an alternative:
 				# Of the group key, all player rows should be zero
-		
-			if all(attributeDict.loc[playerRowsInds,attrKey].isnull()):				
+
+			if all(attributeDict.loc[playerRowsInds,attrKey].isnull()):
 				if attrKey in ['Run', 'Goal', 'Possession/Turnover', 'Pass']:
 					continue
 				if not (attrKey[-1] == 'A' or attrKey[-1] == 'B'):
@@ -334,8 +334,8 @@ def process(targetEvents,aggregateLevel,rawDict,attributeDict,exportData,exportD
 			# it's probably here because the currentEventID is used to identify the trial in the eventAggFile
 			# load prev aggregated data??
 			warn('\nContinued with previously aggregated event data.\nIf you want to add new (or revised) spatial aggregates, change <skipEventAgg> into <False>.\n')
-			break	
-		
+			break
+
 		## Create an index that restarts per event
 		times = rawDict.loc[rowswithinrange]['Ts'].unique()
 		timesSorted = np.sort(times)
@@ -363,7 +363,7 @@ def process(targetEvents,aggregateLevel,rawDict,attributeDict,exportData,exportD
 		## Create a new panda that has the identifiers of the current event and the rawdata
 		curEventExcerptPanda = pd.concat([curEventTime, currentEventID, rawDict.loc[rowswithinrange], attributeDict.loc[rowswithinrange, attrDictCols]], axis=1) # Skip the duplicate 'Ts' columns
 
-		
+
 		# print('\nthe problematic index:')
 		# print(currentEventID.index)
 		# print('-----------------------\n')
@@ -455,7 +455,7 @@ def process(targetEvents,aggregateLevel,rawDict,attributeDict,exportData,exportD
 		#######################
 		## End of prepration ##
 		#######################
-				
+
 		###################################
 		## Start of temporal aggregation ##
 		###################################
@@ -467,17 +467,17 @@ def process(targetEvents,aggregateLevel,rawDict,attributeDict,exportData,exportD
 		## Count exsiting events (goals, possession and passes)
 		exportCurrentData,overallString,overallExplanation =\
 		countEvents2.goals(window,aggregateLevel[0],targetEvents,TeamAstring,TeamBstring,exportCurrentData,overallString,overallExplanation)
-		
+
 		exportCurrentData,overallString,overallExplanation =\
 		countEvents2.turnovers(window,aggregateLevel[0],targetEvents,TeamAstring,TeamBstring,exportCurrentData,overallString,overallExplanation)
 
 		exportCurrentData,overallString,overallExplanation =\
 		countEvents2.possessions(window,aggregateLevel[0],targetEvents,TeamAstring,TeamBstring,exportCurrentData,overallString,overallExplanation)
-		
+
 		exportCurrentData,overallString,overallExplanation =\
 		countEvents2.passes(window,aggregateLevel[0],targetEvents,TeamAstring,TeamBstring,exportCurrentData,overallString,overallExplanation)
 
-		## Systematically aggregate all existing spatial aggregates		
+		## Systematically aggregate all existing spatial aggregates
 		# print(attrDictCols_numeric)
 		for key in attrDictCols_numeric:
 			# print('THIS IS THE key: %s' %key)
@@ -512,16 +512,16 @@ def process(targetEvents,aggregateLevel,rawDict,attributeDict,exportData,exportD
 				print(tmp)
 				print(type(interpolatedCurEventExcerptPanda[key]))
 				# pdb.set_trace()
-				
-			curContent = np.isnan(interpolatedCurEventExcerptPanda[key]) == False			
+
+			curContent = np.isnan(interpolatedCurEventExcerptPanda[key]) == False
 			tmpPlayerID = interpolatedCurEventExcerptPanda['PlayerID'][curContent]
 			tmpTeampID = interpolatedCurEventExcerptPanda['TeamID'][curContent]
 			tmpPlayersUnique = tmpPlayerID.unique()
-			players = np.sort(tmpPlayersUnique.astype(str))		# THIS IS THE SAME, regardless of which key is used. So, only once, export player IDs			
-			### players = np.sort(interpolatedCurEventExcerptPanda.loc[curContent,'PlayerID'].unique())		# THIS IS THE SAME, regardless of which key is used. So, only once, export player IDs			
+			players = np.sort(tmpPlayersUnique.astype(str))		# THIS IS THE SAME, regardless of which key is used. So, only once, export player IDs
+			### players = np.sort(interpolatedCurEventExcerptPanda.loc[curContent,'PlayerID'].unique())		# THIS IS THE SAME, regardless of which key is used. So, only once, export player IDs
 
 			## Make outcome variable dependent on current event's refTeam
-			# NB: attrLabel is already changed earlier.			
+			# NB: attrLabel is already changed earlier.
 			# print('WAS THERE ANY CURRENT CONTENT? %s' %any(curContent))
 
 			if not any(curContent):
@@ -534,7 +534,7 @@ def process(targetEvents,aggregateLevel,rawDict,attributeDict,exportData,exportD
 				safeEnoughToBeAplayerRow = False
 				if len(uniqueTeams) == 1:
 					# there was only 1 team, so very plausible that there were missing values at the grouprows for the current variable
-					safeEnoughToBeAgroupRow = True				
+					safeEnoughToBeAgroupRow = True
 
 				nPlA = len(interpolatedCurEventExcerptPanda.loc[interpolatedCurEventExcerptPanda['TeamID'] == TeamAstring,'PlayerID'].unique())
 				nPlB = len(interpolatedCurEventExcerptPanda.loc[interpolatedCurEventExcerptPanda['TeamID'] == TeamBstring,'PlayerID'].unique())
@@ -588,7 +588,7 @@ def process(targetEvents,aggregateLevel,rawDict,attributeDict,exportData,exportD
 				if nPlA == 0 and nPlB == 0:
 					safeEnoughToBeAgroupRow = False
 					safeEnoughToBeAplayerRow = True
-				
+
 				if safeEnoughToBeAgroupRow:
 					# only one team found, so indeed a team was missing
 					targetGroup = 'groupRows'
@@ -661,8 +661,8 @@ def process(targetEvents,aggregateLevel,rawDict,attributeDict,exportData,exportD
 					# No reference assigend
 					doNothing = [] # right?
 
-			if all(tmpPlayerID == 'ball'): 
-				if targetGroup == []:				
+			if all(tmpPlayerID == 'ball'):
+				if targetGroup == []:
 					targetGroup = 'ballRows'
 				else:
 					interpolatedCurEventExcerptPanda.to_csv('interpolatedCurEventExcerptPanda_complete.csv')
@@ -671,7 +671,7 @@ def process(targetEvents,aggregateLevel,rawDict,attributeDict,exportData,exportD
 					rawDict.to_csv('rawDict_complete.csv')
 					attributeDict.loc[rowswithinrange].to_csv('attributeDict_rowswithinrange.csv')
 					attributeDict.to_csv('attributeDict_complete.csv')
-					attributeDict.loc[rawDict['PlayerID'] == 'groupRow'].to_csv('attributeDict_allGroupRows.csv') #LT: change attributeDict to rawDict!
+					attributeDict.loc[rawDict['PlayerID'] == 'groupRow'].to_csv('attributeDict_allGroupRows.csv')
 					print('Apparently, targetGroup has already been allocated as a grouprow:' )
 					print('targetGroup = %s' %targetGroup)
 					print('----')
@@ -696,7 +696,7 @@ def process(targetEvents,aggregateLevel,rawDict,attributeDict,exportData,exportD
 					pdb.set_trace()
 					exit()
 					# To avoid errors: either separate variables covering multiple sets, or add code here that joins targetGroups..
-			
+
 			if (all(tmpPlayerID != 'groupRow') and all(tmpPlayerID != 'ball')) and all(tmpTeampID != ''): # i.e., not group, nor ball, but with values in TeamID
 				if targetGroup == []:
 					targetGroup = 'playerRows'
@@ -749,14 +749,14 @@ def process(targetEvents,aggregateLevel,rawDict,attributeDict,exportData,exportD
 
 					exportCurrentData, overallString, overallExplanation = \
 					aggregateTemporallyINCEPTION(population,aggregationOrder,aggrMeth_popLevel,aggrMeth_playerLevel,interpolatedCurEventExcerptPanda,key,refTeam,othTeam,attrLabel,eventDescrString, exportCurrentData, overallString, overallExplanation)
-				
+
 				# print('\nBefore aggregate per player:')
 				# print('len(exportCurrentData) = %s' %len(exportCurrentData))
 				# print('len(overallString) = %s' %len(overallString))
 				# print('len(overallExplanation) = %s' %len(overallExplanation))
 
 				if key in aggregatePerPlayer:
-					
+
 					# Create the attrlabel for 22 players (that may remain empty)
 					for i in np.arange(0,22):
 
@@ -800,7 +800,7 @@ def process(targetEvents,aggregateLevel,rawDict,attributeDict,exportData,exportD
 				warn('\nWARNING: The following features were currently exported, but not previously:\n<%s>\nThe missing values were replaced with <NaN>.\n' %missingOutput)
 					# The number of features exported per event was not the same.\nThis will result in an alignment problem in the output.\nExported previously:\n%s\n\nExported currently:\n%s\n' %(overallString_prev,overallString))
 		overallString_prev = overallString
-		
+
 		if len(overallString) > len(overallString_longest):
 			overallString_longest = overallString
 
@@ -815,9 +815,9 @@ def process(targetEvents,aggregateLevel,rawDict,attributeDict,exportData,exportD
 			for i in np.arange(0,22):
 				overallString.append('Player_%02d' %(i+1))
 				overallExplanation.append('The PlayerID of the <%sth> player as represented in the individually aggregated variables for the current event.' %i)
-				
+
 				if len(players) >= i + 1:
-					exportCurrentData.append(players[i])				
+					exportCurrentData.append(players[i])
 				else:
 					exportCurrentData.append(np.nan)
 
@@ -858,7 +858,7 @@ def interpolateEventExcerpt(curEventExcerptPanda,freqInterpolatedData,tStart,tEn
 
 	fatalIssue = False
 	interpolatedVals,fatalIssue = FillGaps_and_Filter.fillGaps(curEventExcerptPanda,eventInterpolation = True,fixed_X_int = X_int,aggregateLevel = aggregateLevel,datasetFramerate = datasetFramerate)
-	if 'fatalIssue' in interpolatedVals:		
+	if 'fatalIssue' in interpolatedVals:
 		fatalIssue = True
 	if fatalIssue == True:
 		warn('\nWARNING: uhoh... picked up a fatal error later on in the pipeline. Likely a processing error (not a data issue).')
@@ -877,7 +877,7 @@ def interpolateEventExcerpt(curEventExcerptPanda,freqInterpolatedData,tStart,tEn
 	return interpolatedVals
 
 def aggregateTemporallyINCEPTION(population,aggregationOrder,aggrMeth_popLevel,aggrMeth_playerLevel,curEventExcerptPanda,key,refTeam,othTeam,attrLabel,eventDescrString, exportCurrentData, overallString, overallExplanation):
-	
+
 	# Allplayers of refTeam
 	curContent_refTeam = curEventExcerptPanda['TeamID'] == refTeam
 	try:
@@ -927,7 +927,7 @@ def aggregateTemporallyINCEPTION(population,aggregationOrder,aggrMeth_popLevel,a
 		popString = 'oth'
 	else:
 		warn('\nWARNING: Did not recognize aggregation population (one of the teams, or both).\nSpecify it with either <allTeam>, <refTeam> or <othTeam>. \nContinued by default with <allTeam>.')
-		
+
 	# two ways:
 	# 1) average per time per player (of a team)
 	# 2) average per player (of a team) per time
@@ -967,7 +967,7 @@ def aggregateTemporallyINCEPTION(population,aggregationOrder,aggrMeth_popLevel,a
 			data = count
 		else:
 			warn('\nFATAL WARNING: Could not identify aggregation method <%s>.' %meth)
-		
+
 		curKeyString = key + '_' + meth + '_' + aggregationOrder + '_' + popString
 
 		if data.size == 0:
@@ -988,11 +988,11 @@ def aggregateTemporally(data,*positional_parameters,**keyword_parameters):
 		axis = keyword_parameters['axis']
 		nAxis = (axis - 1) * -1
 	else:
-		axis = 0		
+		axis = 0
 	no_export = False
 	if 'no_export' in keyword_parameters:
 		no_export = keyword_parameters['no_export']
-	
+
 	exportNans = False
 	if 'exportNans' in keyword_parameters:
 		exportNans = keyword_parameters['exportNans']
@@ -1024,7 +1024,7 @@ def aggregateTemporally(data,*positional_parameters,**keyword_parameters):
 		med = np.nan
 		sem = np.nan
 		kur = np.nan
-		ske = np.nan		
+		ske = np.nan
 
 	if no_export:
 		return count, avg, std, sumVal, minVal, maxVal, med, sem, kur, ske
@@ -1046,12 +1046,12 @@ def aggregateTemporally(data,*positional_parameters,**keyword_parameters):
 
 	if 'cnt' in aggrMethods:
 		exportCurrentData.append(count)
-		overallString.append(curKeyString + '_cnt')				
+		overallString.append(curKeyString + '_cnt')
 		overallExplanation.append('Number of occurences (i.e., n) of <%s> (%s). For <%s>. %s' %(curKeyString, curLabel, targetGroup, eventDescrString))
 
 	if 'avg' in aggrMethods:
 		exportCurrentData.append(avg)
-		overallString.append(curKeyString + '_avg')				
+		overallString.append(curKeyString + '_avg')
 		overallExplanation.append('Average of <%s> (%s). For <%s>. %s' %(curKeyString, curLabel, targetGroup, eventDescrString))
 
 	if 'std' in aggrMethods:
@@ -1068,7 +1068,7 @@ def aggregateTemporally(data,*positional_parameters,**keyword_parameters):
 		exportCurrentData.append(minVal)
 		overallString.append(curKeyString + '_min')
 		overallExplanation.append('Minimum of <%s> (%s). For <%s>. %s' %(curKeyString, curLabel, targetGroup, eventDescrString))
-	
+
 	if 'max' in aggrMethods:
 		exportCurrentData.append(maxVal)
 		overallString.append(curKeyString + '_max')
@@ -1078,17 +1078,17 @@ def aggregateTemporally(data,*positional_parameters,**keyword_parameters):
 		exportCurrentData.append(med)
 		overallString.append(curKeyString + '_med')
 		overallExplanation.append('The Median of <%s> (%s). For <%s>. %s' %(curKeyString, curLabel, targetGroup, eventDescrString))
-	
+
 	if 'sem' in aggrMethods:
 		exportCurrentData.append(sem)
-		overallString.append(curKeyString + '_sem')				
+		overallString.append(curKeyString + '_sem')
 		overallExplanation.append('The Standard Error of Measurment (SEM) of <%s> (%s). For <%s>. %s' %(curKeyString, curLabel, targetGroup, eventDescrString))
-	
+
 	if 'kur' in aggrMethods:
 		exportCurrentData.append(kur)
-		overallString.append(curKeyString + '_kur')				
+		overallString.append(curKeyString + '_kur')
 		overallExplanation.append('Kurtosis of <%s> (%s). For <%s>. %s' %(curKeyString, curLabel, targetGroup, eventDescrString))
-	
+
 	if 'ske' in aggrMethods:
 		exportCurrentData.append(ske)
 		overallString.append(curKeyString + '_ske')

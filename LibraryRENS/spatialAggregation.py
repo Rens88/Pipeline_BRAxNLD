@@ -36,7 +36,7 @@ if __name__ == '__main__':
 	#####################################################################################
 	#####################################################################################
 
-def process(rawDict,attributeDict,attributeLabel,TeamAstring,TeamBstring,skipSpatAgg,eventsPanda,spatAggFolder,spatAggFname,debuggingMode):
+def process(rawDict,attributeDict,attributeLabel,TeamAstring,TeamBstring,skipSpatAgg,eventsPanda,spatAggFolder,spatAggFname,targetEvents,debuggingMode):
 	tSpatAgg = time.time()
 	# Per Match (i.e., file)
 	# Per Team and for both teams
@@ -87,7 +87,7 @@ def process(rawDict,attributeDict,attributeLabel,TeamAstring,TeamBstring,skipSpa
 	tSpatAgg_vNorm = time.time()
 
 	attributeDict,attributeLabel = \
-	student_XX_spatialAggregation.process(rawDict,attributeDict,attributeLabel,TeamAstring,TeamBstring,skipSpatAgg)
+	student_XX_spatialAggregation.process(rawDict,attributeDict,attributeLabel,TeamAstring,TeamBstring,skipSpatAgg,targetEvents)
 	if debuggingMode:
 		elapsed = str(round(time.time() - tSpatAgg_vNorm, 2))
 		print('*****----- Time elapsed during spatialAggregation.student_XX_spatialAggregation(): %ss' %elapsed)

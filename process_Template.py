@@ -43,7 +43,7 @@ conversionToMeter = 1 #111111 # https://gis.stackexchange.com/questions/8650/mea
 # 'Full' and 'Random' always work.
 # 'Regular' works as long as you don't choose a window larger than your file.
 # Other keywords depend on which events you import and/or compute.
-aggregateEvent = 'attack' # Event that will be used to aggregate over (verified for 'Goals' and for 'Possession')
+aggregateEvent = 'Random' # Event that will be used to aggregate over (verified for 'Goals' and for 'Possession')
 aggregateWindow = 7 # in seconds #NB: still need to write warning in temporal aggregation in case you have Goals in combination with None.
 aggregateLag = 0 # in seconds
 aggregatePerPlayer = ['dangerousity','zone','control','pressure','density'] # a list of outcome variables that you want to aggregated per player. For example: ['vNorm','distFrame']
@@ -190,7 +190,7 @@ for dirtyFname in DirtyDataFiles:
 	####### Compute new attributes #########################################################
 	########################################################################################
 
-	attrPanda,attrLabel = spatialAggregation.process(rawPanda,attrPanda,attrLabel,TeamAstring,TeamBstring,skipSpatAgg_curFile,eventsPanda,spatAggFolder,spatAggFname,debuggingMode)
+	attrPanda,attrLabel = spatialAggregation.process(rawPanda,attrPanda,attrLabel,TeamAstring,TeamBstring,skipSpatAgg_curFile,eventsPanda,spatAggFolder,spatAggFname,targetEventsImported,debuggingMode)
 
 	# NB: targetEVents is a dictionary with the key corresponding to the type of event.
 	# For each key, there is a tuple that contains (timeOfEvent,TeamID,..)

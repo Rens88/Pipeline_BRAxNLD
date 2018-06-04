@@ -20,7 +20,7 @@ import time
 import imp
 # import plotSnapshot
 
-if __name__ == '__main__':		
+if __name__ == '__main__':
 
 	# 09-02-2018 Rens Meerhoff
 	# The plot new style
@@ -30,17 +30,17 @@ def process(plotTheseAttributes,aggregateLevel,eventExcerptPanda,attributeLabel,
 	tTrialVisualization = time.time()
 
 	# An attempt to avoid the error 'Fail to allocate bitmap'
-	# imp.reload(plt) 
-	# imp.reload(mcolors) 
-	# imp.reload(patches) 
-	# imp.reload(mlines) 
-	# imp.reload(matplotlib) 	
-	# matplotlib.use('Agg') 
+	# imp.reload(plt)
+	# imp.reload(mcolors)
+	# imp.reload(patches)
+	# imp.reload(mlines)
+	# imp.reload(matplotlib)
+	# matplotlib.use('Agg')
 
 	tmpFigFolder = tmpFigFolder + 'trialVisualization' + sep
-	
+
 	xLabel = attributeLabel['Ts']
-	
+
 	if not 'temporalAggregate' in eventExcerptPanda.keys():
 		# No events detected
 		warn('\nWARNING: No temporalAggregate detected. \nCouldnt plot any data.\nUse <Random> to create random events, or <full> to plot the whole file.\nOr change <skipEventAgg> to True to run it at the trial level.')
@@ -58,7 +58,7 @@ def process(plotTheseAttributes,aggregateLevel,eventExcerptPanda,attributeLabel,
 
 		# fileAggregateID,rowswithinrangeTeam,rowswithinrangeBall,rowswithinrangePlayer,rowswithinrangePlayerA,rowswithinrangePlayerB,specialCase,skipCurrentEvent = \
 		# findRows(idx,aggregateLevel,targetEvents,rawDict,TeamAstring,TeamBstring,currentEvent)
-		
+
 		# if skipCurrentEvent:
 		# 	continue
 
@@ -83,7 +83,7 @@ def process(plotTheseAttributes,aggregateLevel,eventExcerptPanda,attributeLabel,
 
 			if type(plotThisAttribute) == tuple: # pairwise comparison of team
 				# Pairwise per team
-				yLabel = findYlabel(plotThisAttribute,attributeLabel,TeamAstring,TeamBstring) 
+				yLabel = findYlabel(plotThisAttribute,attributeLabel,TeamAstring,TeamBstring)
 				# Plot it
 				pairwisePerTeam(plotThisAttribute,currentEvent,rowswithinrangeTeam,teamStrings)
 
@@ -126,7 +126,7 @@ def process(plotTheseAttributes,aggregateLevel,eventExcerptPanda,attributeLabel,
 	return
 
 def	plotSnapshot(outputFilename,currentEvent,rowswithinrangePlayerA,rowswithinrangePlayerB,teamStrings,fileAggregateID,dataType,fieldDimensions):
-	
+
 	# # Use this to only plot the last frame
 	# tmp = currentEvent.loc[currentEvent['TeamID'] == TeamAstring]#.index
 	# rowswithinrangePlayerA = tmp[tmp['Ts'] == max(currentEvent['Ts'])].index
@@ -152,7 +152,7 @@ def	plotSnapshot(outputFilename,currentEvent,rowswithinrangePlayerA,rowswithinra
 			warn('\nWARNING: no field dimensions found. If plot looks weird, include field dimensions (see importFieldDimensions.py).\nPlotted the borders in red to indicate they are estimations.')
 		elif dataType == 'NP':
 			# create data based field parameters...
-			fieldDimensions.update({'X_bot_left': min(currentEvent['X']),'X_top_left': min(currentEvent['X']),'X_bot_right': max(currentEvent['X']),'X_top_right': max(currentEvent['X']),'Y_bot_left': min(currentEvent['Y']),'Y_bot_right': min(currentEvent['Y']),'Y_top_left': max(currentEvent['Y']),'Y_top_right': max(currentEvent['Y'])}) # Values are given in meters			
+			fieldDimensions.update({'X_bot_left': min(currentEvent['X']),'X_top_left': min(currentEvent['X']),'X_bot_right': max(currentEvent['X']),'X_top_right': max(currentEvent['X']),'Y_bot_left': min(currentEvent['Y']),'Y_bot_right': min(currentEvent['Y']),'Y_top_left': max(currentEvent['Y']),'Y_top_right': max(currentEvent['Y'])}) # Values are given in meters
 			warn('\nWARNING: no field dimensions found. If plot looks weird, include field dimensions (see importFieldDimensions.py).\nPlotted the borders in red to indicate they are estimations.')
 		else:
 			fieldDimensions.update({'X_bot_left': -50,'X_top_left': -50,'X_bot_right': 50,'X_top_right': 50,'Y_bot_left': -32.5,'Y_bot_right': -32.5,'Y_top_left': 32.7,'Y_top_right': 32.7}) # Values are given in meters
@@ -170,7 +170,7 @@ def	plotSnapshot(outputFilename,currentEvent,rowswithinrangePlayerA,rowswithinra
 
 	X_mid_bot = ( (XBR - XBL) / 2 ) + XBL
 	X_mid_top = ( (XTR - XTL) / 2 ) + XTL
-	
+
 	Y_mid_left = ( (YBR - YBL) / 2 ) + YBL
 	Y_mid_right = ( (YTR - YTL) / 2 ) + YTL
 
@@ -232,38 +232,38 @@ def findTeamString(currentEvent,TeamAstring,TeamBstring):
 	return teamStrings
 
 def findYlabel(plotThisAttribute,attributeLabel,TeamAstring,TeamBstring):
-	
+
 	tmp = []
 	for itmp in [0,1]:
 		labelProvided = [True for j in attributeLabel.keys() if plotThisAttribute[itmp] == j]
-		
+
 		if labelProvided:
 			tmp.append(attributeLabel[plotThisAttribute[itmp]]) # take the label as provided
 			if TeamAstring in tmp[itmp]:
 				ofTeamAstring = ' of %s' %TeamAstring
 				if ofTeamAstring in tmp[itmp]:
-					tmp[itmp] = tmp[itmp].replace(ofTeamAstring,'')	
+					tmp[itmp] = tmp[itmp].replace(ofTeamAstring,'')
 				else:
 					tmp[itmp] = tmp[itmp].replace(TeamAstring,'both teams')
 
 			if TeamBstring in tmp[itmp]:
 				ofTeamBstring = ' of %s' %TeamBstring
 				if ofTeamBstring in tmp[itmp]:
-					tmp[itmp] = tmp[itmp].replace(ofTeamBstring,'')	
+					tmp[itmp] = tmp[itmp].replace(ofTeamBstring,'')
 				else:
 					tmp[itmp] = tmp[itmp].replace(TeamBstring,'both teams')
 
 			if 'refTeam' in tmp[itmp]:
 				ofRefTeamstring = ' of refTeam'
 				if ofRefTeamstring in tmp[itmp]:
-					tmp[itmp] = tmp[itmp].replace(ofRefTeamstring,'')	
+					tmp[itmp] = tmp[itmp].replace(ofRefTeamstring,'')
 				else:
 					tmp[itmp] = tmp[itmp].replace('refTeam','both teams')
 
 			if 'othTeam' in tmp[itmp]:
 				ofOthTeamstring = ' of othTeam'
 				if ofOthTeamstring in tmp[itmp]:
-					tmp[itmp] = tmp[itmp].replace(ofOthTeamstring,'')	
+					tmp[itmp] = tmp[itmp].replace(ofOthTeamstring,'')
 				else:
 					tmp[itmp] = tmp[itmp].replace('othTeam','both teams')
 
@@ -281,7 +281,7 @@ def findYlabel(plotThisAttribute,attributeLabel,TeamAstring,TeamBstring):
 	return yLabel
 
 def pairwisePerTeam(plotThisAttribute,eventExcerptPanda,rowswithinrangeTeam,teamStrings):
-	
+
 	# if not plotThisAttribute[0] in eventExcerptPanda.keys():
 
 	Y1 = eventExcerptPanda[plotThisAttribute[0]][rowswithinrangeTeam]
@@ -289,7 +289,7 @@ def pairwisePerTeam(plotThisAttribute,eventExcerptPanda,rowswithinrangeTeam,team
 
 	X1 = eventExcerptPanda['Ts'][rowswithinrangeTeam]
 	X2 = eventExcerptPanda['Ts'][rowswithinrangeTeam]
-	
+
 	# Look for gaps in time:
 	# Idea: could separate this per team. But with the current definitions, Values for one team should occur equally often as for any other team
 	t0 = X1[:-1].reset_index(level=None, drop=False, inplace=False)
@@ -323,10 +323,10 @@ def plotPerPlayerPerTeam(plotThisAttribute,eventExcerptPanda,rowswithinrangePlay
 	x_attribute = 'Ts'
 	if 'x_value' in keyword_param:
 		x_attribute = keyword_param['x_value']
-	
+
 	## made a start with plotting dotted line as representing velocity
 	# timeWithinRange = ( min(eventExcerptPanda['Ts'][rowswithinrangePlayerA]),max(eventExcerptPanda['Ts'][rowswithinrangePlayerA]) )
-	
+
 	# # select 0.5s periods
 	# # take the min value
 	# tmin = min(eventExcerptPanda['Ts'][rowswithinrangePlayerA])
@@ -338,7 +338,7 @@ def plotPerPlayerPerTeam(plotThisAttribute,eventExcerptPanda,rowswithinrangePlay
 	# # find the first value larger than min + 0.5
 	# # until you reach the max value
 	# print(timeWithinRange)
-	# rowswithinrangePlayerA_sparse 
+	# rowswithinrangePlayerA_sparse
 	# Y1_sparse
 
 	Y1 = eventExcerptPanda.loc[rowswithinrangePlayerA].pivot(columns='PlayerID',values=plotThisAttribute)
@@ -352,7 +352,7 @@ def plotPerPlayerPerTeam(plotThisAttribute,eventExcerptPanda,rowswithinrangePlay
 	                for name, color in colors.items())
 	sorted_names = [name for hsv, name in by_hsv]
 	[sorted_names.remove(i) for i in ['gainsboro', 'whitesmoke', 'w', 'white', 'snow','salmon']] # remove some hard to see colors
-	
+
 	# Use this to make code more generic (and allow user to specify color)
 	refColorA = 'red'
 	refColorB = 'blue'
@@ -392,12 +392,12 @@ def plotPerPlayerPerTeam(plotThisAttribute,eventExcerptPanda,rowswithinrangePlay
 			# Highlight the last point as the current position
 			# print(X1[player].notnull()[::-1].idxmax())
 			# print(X1[player][X1[player] == max(X1[player])].index)
-			plt.plot(X1[player],Y1[player],'s',markersize = 2,color=curColor) 
+			plt.plot(X1[player],Y1[player],'s',markersize = 2,color=curColor)
 
 			tmp = X1[player].notnull()[::-1].idxmax()
-			pltA = plt.plot(X1[player].loc[tmp],Y1[player].loc[tmp],'s',color=curColor) 
+			pltA = plt.plot(X1[player].loc[tmp],Y1[player].loc[tmp],'s',color=curColor)
 		else:
-			pltA = plt.plot(X1[player],Y1[player],color=curColor,linestyle='-') 
+			pltA = plt.plot(X1[player],Y1[player],color=curColor,linestyle='-')
 
 
 	for ix,player in enumerate(X2.keys()):
@@ -405,12 +405,12 @@ def plotPerPlayerPerTeam(plotThisAttribute,eventExcerptPanda,rowswithinrangePlay
 		if x_attribute == 'X':
 			# Highlight the last point as the current position
 			# tmp = X2[player].notnull()[::-1].idxmax()
-			# tmp = 
+			# tmp =
 			plt.plot(X2[player],Y2[player],'o', markersize = 2, color=curColor)
 
 			tmp = X2[player].notnull()[::-1].idxmax()
-			pltB = plt.plot(X2[player].loc[tmp],Y2[player].loc[tmp],'o',color=curColor) 
+			pltB = plt.plot(X2[player].loc[tmp],Y2[player].loc[tmp],'o',color=curColor)
 		else:
 			pltB = plt.plot(X2[player],Y2[player],color=curColor,linestyle='--')
 
-	plt.legend([pltA[0], pltB[0]], [TeamAstring,TeamBstring])	
+	plt.legend([pltA[0], pltB[0]], [TeamAstring,TeamBstring])
