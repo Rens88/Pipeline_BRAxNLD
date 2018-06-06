@@ -344,6 +344,10 @@ def process(targetEvents,aggregateLevel,rawDict,attributeDict,exportData,exportD
 		
 		
 		# tmp = rawDict[rawDict['Ts'] > window[0]] 
+		if window[0] > window[1]:
+		  warn('\nWARNING: start <%s> occurred before <%s> end. This is indicated in <window>.\nAs a working solution, the pipeline continues by swapping the originally indicated start with the orginally indicated end.' %window)
+		  window = (window[1],window[0])
+		  
 		tmp = attributeDict[attributeDict['Ts'] > window[0]]
 		rowswithinrange = tmp[tmp['Ts'] <= window[1]].index
 

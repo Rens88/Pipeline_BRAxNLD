@@ -72,7 +72,8 @@ def process(targetEvents,aggregateLevel,rawPanda,attrPanda,eventsPanda,TeamAstri
 		targetEvents = \
 		addRegularEvents(rawPanda,targetEvents,TeamAstring,TeamBstring,aggregateLevel)	
 
-	if 'Turnovers' in targetEvents:
+	### TO DO, PUT IN SEPARATE FUNCTION
+	if 'Turnovers' in targetEvents and targetEvents['Turnovers'] != []:		
 		
 		if len(targetEvents['Turnovers'][0]) == 6: 
 			# it's the Turnovers with XY
@@ -172,12 +173,12 @@ def overlappingTargets(targetEvents,key,aggregateLevel,excludeOverlappingEvents,
 			tEnd = currentEvent[0] - aggregateLevel[2] # tEnd - lag
 			tStart = currentEvent[0] - aggregateLevel[1] - aggregateLevel[2] # tEnd - window - lagg
 		else:
+			tEnd = currentEvent[0] - aggregateLevel[2]
 			# No window indicated, so take the full event (if possible)
 			if len(currentEvent) < 3 or aggregateLevel[2] == None:
 				warn('\nWARNING: No tStart indicated for this event, nor a window was given for the temporal aggregation.\nCould not determine whether the event overlapped the previous event.\n')
 				tStart = None		
 			else:
-				tEnd = currentEvent[0]# - aggregateLevel[2]
 				tStart = currentEvent[2]# - aggregateLevel[1]			
 
 
