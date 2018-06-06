@@ -46,8 +46,8 @@ conversionToMeter = 1 #111111 # https://gis.stackexchange.com/questions/8650/mea
 # 'Full' and 'Random' always work. 
 # 'Regular' works as long as you don't choose a window larger than your file.
 # Other keywords depend on which events you import and/or compute.
-aggregateEvent = 'Turnovers' # Event that will be used to aggregate over (verified for 'Goals' and for 'Possession')
-allWindows_and_Lags = [(30,-5),(25,0),(20,0),(15,0),(10,0),(5,0)] # input tuple of window and corresponding lag. # a negative lag indicates tEnd as after the event
+aggregateEvent = 'Possession' # Event that will be used to aggregate over (verified for 'Goals' and for 'Possession')
+allWindows_and_Lags = [(None,0)] # input tuple of window and corresponding lag. # a negative lag indicates tEnd as after the event
 
 aggregatePerPlayer = [] # a list of outcome variables that you want to aggregated per player. For example: ['vNorm','distFrame']
 
@@ -56,10 +56,10 @@ aggregatePerPlayer = [] # a list of outcome variables that you want to aggregate
 # Group level variables ('LengthA','LengthB') should be included as a tuple (and will be plotted in the same plot).
 # plotTheseAttributes = ['vNorm',('Surface_ref','Surface_oth')]#,('Spread_ref','Spread_oth'),('stdSpread_ref','stdSpread_oth'),'vNorm']#,'LengthB',('LengthA','LengthB'),('SurfaceA','SurfaceB'),('SpreadA','SpreadB'),('WidthA','WidthB')] # [('LengthA','LengthB'),('WidthA','WidthB'),('SurfaceA','SurfaceB'),('SpreadA','SpreadB')] # teams that need to be compared as tuple
 # This trialVisualization plots the selected outcome variables variable for the given window for the temporal aggregation. Useful to verify if your variables are as excpected.
-includeTrialVisualization = False
+includeTrialVisualization = True
 plotTheseAttributes_atTrialLevel = ['vNorm'] #
 # This datasetVisualization compares all events of all files in the dataset. Useful for datasetlevel comparisons
-includeDatasetVisualization = False
+includeDatasetVisualization = True
 plotTheseAttributes_atDatasetLevel = ['vNorm',('Surface_ref','Surface_oth'),('Spread_ref','Spread_oth')]
 
 # Parts of the pipeline can be skipped
@@ -298,15 +298,16 @@ for chunk in chunkedDf:
 	if not skipEventAgg_MatchVerification:
 		# SEE SIMILAR CODE IN Initialization.py
 		# If you find any mistakes here, it is likely, the also exist in Initialization.py
-		umCurChunk = chunk['MatchID'].unique()
-		# This needs to be skipped per chunk (so based on curUM and not uniqueMatches)
-		for i in umCurChunk:
-			# doesItExistIn_DDF = [True for j in DirtyDataFiles_backup if str(i) in j]
-			# More specific:
-			doesItExistIn_DDF = [True for j in DirtyDataFiles_backup if str(i) == str(j.split('_')[0])]
-			if not any(doesItExistIn_DDF):
-				warn('\nWARNING: Dropped MatchID <%s> from eventAggregate backup as it did not exist in DirtyDataFiles.\nNote that it was only dropped from the automatic backup, in the original file the match can still be accessed.\n' %i)
-				chunk = chunk.drop(chunk[chunk['MatchID'] != i].index)
+		if allWindows_and_Lags != [(None,0)] and 'MatchID' in chunk.keys():
+			umCurChunk = chunk['MatchID'].unique()
+			# This needs to be skipped per chunk (so based on curUM and not uniqueMatches)
+			for i in umCurChunk:
+				# doesItExistIn_DDF = [True for j in DirtyDataFiles_backup if str(i) in j]
+				# More specific:
+				doesItExistIn_DDF = [True for j in DirtyDataFiles_backup if str(i) == str(j.split('_')[0])]
+				if not any(doesItExistIn_DDF):
+					warn('\nWARNING: Dropped MatchID <%s> from eventAggregate backup as it did not exist in DirtyDataFiles.\nNote that it was only dropped from the automatic backup, in the original file the match can still be accessed.\n' %i)
+					chunk = chunk.drop(chunk[chunk['MatchID'] != i].index)
 
 	# Store chunk
 	datasetEventsSpatAggExcerpt = pd.concat([datasetEventsSpatAggExcerpt, chunk])#, ignore_index = True)
@@ -345,7 +346,8 @@ print('ITERATING OVER WINDOWS....')
 
 # Iterate over the remaining windows
 ###iterateWindowsOverEventAgg.process(aggregateLevel,eventAggFolder,aggregateEvent,allWindows_and_Lags,eventAggFname,aggregatePerPlayer,outputFolder,debuggingMode,dataFolder,parallelProcess)
-iterateWindowsOverEventAgg.process(datasetEventsSpatAggExcerpt,attrLabel_asPanda,aggregateLevel,aggregateEvent,allWindows_and_Lags,aggregatePerPlayer,outputFolder,debuggingMode,dataFolder,parallelProcess,eventAggFname)
+if allWindows_and_Lags != [(None,0)]:
+	iterateWindowsOverEventAgg.process(datasetEventsSpatAggExcerpt,attrLabel_asPanda,aggregateLevel,aggregateEvent,allWindows_and_Lags,aggregatePerPlayer,outputFolder,debuggingMode,dataFolder,parallelProcess,eventAggFname)
 
 warn('\nWARNING: Due to implementation iterateWindowsOverEventAgg, plotting procedure might not work correctly.\n')
 
