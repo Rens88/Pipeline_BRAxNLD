@@ -349,7 +349,7 @@ print('ITERATING OVER WINDOWS....')
 if allWindows_and_Lags != [(None,0)]:
 	iterateWindowsOverEventAgg.process(datasetEventsSpatAggExcerpt,attrLabel_asPanda,aggregateLevel,aggregateEvent,allWindows_and_Lags,aggregatePerPlayer,outputFolder,debuggingMode,dataFolder,parallelProcess,eventAggFname)
 
-warn('\nWARNING: Due to implementation iterateWindowsOverEventAgg, plotting procedure might not work correctly.\n')
+	warn('\nWARNING: Due to implementation iterateWindowsOverEventAgg, plotting procedure might not work correctly.\n')
 
 ############################
 # End dataSetLevel - stuff #

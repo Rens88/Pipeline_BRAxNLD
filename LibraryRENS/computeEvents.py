@@ -173,11 +173,12 @@ def overlappingTargets(targetEvents,key,aggregateLevel,excludeOverlappingEvents,
 			tStart = currentEvent[0] - aggregateLevel[1] - aggregateLevel[2] # tEnd - window - lagg
 		else:
 			# No window indicated, so take the full event (if possible)
-			if len(currentEvent) < 3:
-				warn('\nFATAL WARNING: No tStart indicated for this event, nor a window was given for the temporal aggregation.\nEither: 1) Indicate a window for the temporal aggregation.\nOr: 2) Export a tStart for the event you\'re aggregating.')
-						
-			tEnd = currentEvent[0]# - aggregateLevel[2]
-			tStart = currentEvent[2]# - aggregateLevel[1]			
+			if len(currentEvent) < 3 or aggregateLevel[2] == None:
+				warn('\nWARNING: No tStart indicated for this event, nor a window was given for the temporal aggregation.\nCould not determine whether the event overlapped the previous event.\n')
+				tStart = None		
+			else:
+				tEnd = currentEvent[0]# - aggregateLevel[2]
+				tStart = currentEvent[2]# - aggregateLevel[1]			
 
 
 		dtPrev = tEnd # by default, dtPrev is as big as the window (only relevant for the first event)
@@ -190,26 +191,26 @@ def overlappingTargets(targetEvents,key,aggregateLevel,excludeOverlappingEvents,
 			targetEvents_new[key][-1] = currentEvent + (dtPrev,False,)
 			availableWindow.append(dtPrev)
 
+			if tStart != None:
+				if tEnd_prevEvent > tStart:
+					targetEvents_new[key][-1] = currentEvent + (dtPrev,True,)
+					currentEvent = targetEvents_new[key][-1]
 
-			if tEnd_prevEvent > tStart:
-				targetEvents_new[key][-1] = currentEvent + (dtPrev,True,)
-				currentEvent = targetEvents_new[key][-1]
+					if excludeOverlappingEvents:					
+						if methodOverlap == 'exclude':
+							# simply exclude
 
-				if excludeOverlappingEvents:					
-					if methodOverlap == 'exclude':
-						# simply exclude
+							targetEvents_new[key].remove(currentEvent)
 
-						targetEvents_new[key].remove(currentEvent)
-
-					elif methodOverlap == 'limitWindow':
-						# or limit the window size 
-						# and report window limit
-						tStart = tEnd_prevEvent
-						warn('UNFINISHED')
-					elif methodOverlap == 'include':
-						donothing = [] # just leave it in there
-					else:
-						warn('\nWARNING: Only <exclude> or <limitWindow> are valid inputs for <methodOverlap> when excluding events in temporalAggregation.\nBy default, overlapping events are skipped.\n')
+						elif methodOverlap == 'limitWindow':
+							# or limit the window size 
+							# and report window limit
+							tStart = tEnd_prevEvent
+							warn('UNFINISHED')
+						elif methodOverlap == 'include':
+							donothing = [] # just leave it in there
+						else:
+							warn('\nWARNING: Only <exclude> or <limitWindow> are valid inputs for <methodOverlap> when excluding events in temporalAggregation.\nBy default, overlapping events are skipped.\n')
 			# else:
 			# 	print('hi')
 			# 	targetEvents_new[key][-1] = currentEvent + (False,)
