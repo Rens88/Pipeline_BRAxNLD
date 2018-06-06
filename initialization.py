@@ -24,15 +24,19 @@ def process(studentFolder,folder,aggregateEvent,allWindows_and_Lags,skipToDataSe
 	addLibrary(studentFolder)
 	
 	# if it works, put this in initialization
-	maxStarts_and_Ends = [(i[1]*-1-i[0],i[1]*-1) for i in allWindows_and_Lags]
-	minSt,maxEn = maxStarts_and_Ends[0]
-	for s,e in maxStarts_and_Ends:
-		if s < minSt:
-			minSt = s
-		if e > maxEn:
-			maxEn = e
-	aggregateLag = maxEn * -1
-	aggregateWindow = maxEn - minSt
+	if not allWindows_and_Lags[0][0] == None:
+		maxStarts_and_Ends = [(i[1]*-1-i[0],i[1]*-1) for i in allWindows_and_Lags]
+		minSt,maxEn = maxStarts_and_Ends[0]
+		for s,e in maxStarts_and_Ends:
+			if s < minSt:
+				minSt = s
+			if e > maxEn:
+				maxEn = e
+		aggregateLag = maxEn * -1
+		aggregateWindow = maxEn - minSt
+	else:
+		aggregateLag = 0
+		aggregateWindow = None
 
 	dataFolder,tmpFigFolder,outputFolder,cleanedFolder,spatAggFolder,eventAggFolder,aggregatedOutputFilename,outputDescriptionFilename,eventAggFname,backupEventAggFname,DirtyDataFiles,aggregateLevel = \
 	checkFolders(folder,aggregateEvent,aggregateWindow,aggregateLag,onlyAnalyzeFilesWithEventData,parallelProcess)
