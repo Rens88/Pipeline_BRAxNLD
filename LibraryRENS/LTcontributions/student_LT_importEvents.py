@@ -158,48 +158,48 @@ def importFromXML(targetEvents,cleanFname,TeamAstring,TeamBstring,dataFolder):
 		curEvent = dfMerged.loc[dfMerged['Time'] == curTime,'Event'].values[0]
 		#BALL EVENTS
 		if curEvent == 'Pass':
-			passEvents.append((curTime,curTeam,None)) 
+			passEvents.append((curTime,curTeam)) 
 		elif curEvent == 'Reception':
-			receptionEvents.append((curTime,curTeam,None))
+			receptionEvents.append((curTime,curTeam))
 		elif curEvent == 'Running with ball':
-			runningEvents.append((curTime,curTeam,None))
+			runningEvents.append((curTime,curTeam))
 		elif curEvent == 'Neutral contact':
-			neutralEvents.append((curTime,curTeam,None))
+			neutralEvents.append((curTime,curTeam))
 		elif curEvent == 'Cross':
-			crossEvents.append((curTime,curTeam,None))
+			crossEvents.append((curTime,curTeam))
 		elif curEvent == 'Clearance':
-			clearanceEvents.append((curTime,curTeam,None))
+			clearanceEvents.append((curTime,curTeam))
 		elif curEvent == 'Shot on target':
-			shotOnTargetEvents.append((curTime,curTeam,None))
+			shotOnTargetEvents.append((curTime,curTeam))
 		elif curEvent == 'Shot not on target':
-			shotNotOnTargetEvents.append((curTime,curTeam,None))
+			shotNotOnTargetEvents.append((curTime,curTeam))
 		elif curEvent == 'Hold of ball gk':
-			holdOfBallGkEvents.append((curTime,curTeam,None))
+			holdOfBallGkEvents.append((curTime,curTeam))
 		elif curEvent == 'Foot clearance gk':
-			footClearGkEvents.append((curTime,curTeam,None))
+			footClearGkEvents.append((curTime,curTeam))
 		elif curEvent == 'High deflection gk':
-			highDeflGkEvents.append((curTime,curTeam,None))
+			highDeflGkEvents.append((curTime,curTeam))
 		elif curEvent == 'Low deflection gk':
-			lowDeflGkEvents.append((curTime,curTeam,None))
+			lowDeflGkEvents.append((curTime,curTeam))
 		elif curEvent == 'High catch gk':
-			highCatchGkEvents.append((curTime,curTeam,None))
+			highCatchGkEvents.append((curTime,curTeam))
 		elif curEvent == 'Low catch gk':
-			lowCatchGkEvents.append((curTime,curTeam,None))
+			lowCatchGkEvents.append((curTime,curTeam))
 		#MATCH EVENTS
 		elif curEvent == 'Foul - dir. free-kick':
-			dirFreeKickEvents.append((curTime,curTeam,None))
+			dirFreeKickEvents.append((curTime,curTeam))
 		elif curEvent == 'Goal':
-			goalEvents.append((curTime,curTeam,None))
+			goalEvents.append((curTime,curTeam))
 		elif curEvent == 'Offside':
-			offsideEvents.append((curTime,curTeam,None))
+			offsideEvents.append((curTime,curTeam))
 		elif curEvent == 'Yellow card':
-			yellowCardEvents.append((curTime,curTeam,None))
+			yellowCardEvents.append((curTime,curTeam))
 		elif curEvent == 'Red card':
-			redCardEvents.append((curTime,curTeam,None))
+			redCardEvents.append((curTime,curTeam))
 		elif curEvent == 'Player in':
-			playerInEvents.append((curTime,curTeam,None))
+			playerInEvents.append((curTime,curTeam))
 		elif curEvent == 'Player out':
-			playerOutEvents.append((curTime,curTeam,None))
+			playerOutEvents.append((curTime,curTeam))
 
 
 	# print(pd.unique(dfEvents['BallEventCode']))
