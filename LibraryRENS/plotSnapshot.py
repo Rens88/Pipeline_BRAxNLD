@@ -9,6 +9,7 @@ import matplotlib.pyplot as plt
 import matplotlib.patches as patches
 import matplotlib.lines as mlines
 import pdb; #pdb.set_trace()
+import os
 from os import listdir, makedirs
 from os.path import isfile, join, isdir
 from warnings import warn
@@ -31,7 +32,6 @@ def process(outputFilename,currentEvent,teamStrings,TeamAstring,TeamBstring):
 	# timeUnit = 1000 # unit of time as given in dataset in Hertz (i.e., 1000 = milliseconds)
 	# frameRate = 10 # in Hertz (depends on data input)
 	# traceWindow = 1 # in seconds
-
 	# traceWindowFrames = traceWindow * frameRate
 	# dtCorrection = timeUnit / frameRate
 	# filenameWholeDataset = filename
@@ -297,7 +297,6 @@ def process(outputFilename,currentEvent,teamStrings,TeamAstring,TeamBstring):
 			plt.plot(X[i:i+traceWindowFrames],Y[i:i+traceWindowFrames],color = 'k',linewidth=.5,linestyle = ':')
 
 	# Create legend
-
 	red_line = mlines.Line2D([], [], color='r', marker='.',markersize=15, label='Team1')
 	blue_line = mlines.Line2D([], [], color='b', marker='.',markersize=15, label='Team2')
 	plt.legend(handles=[red_line,blue_line])
@@ -306,11 +305,10 @@ def process(outputFilename,currentEvent,teamStrings,TeamAstring,TeamBstring):
 
 	# Save figure
 	# Check if folder exists (otherwise make it)
-
-	if not folder[-10:]=='Figs\\Temp\\':
-		figTmpFolder = folder + 'Figs\\Temp\\' + 'Snapshots_'+ filenameWholeDataset + '\\'
+	if not folder[-10:]== 'Figs' + os.sep + 'Temp' + os.sep:
+		figTmpFolder = folder + 'Figs' + os.sep + 'Temp' + os.sep + 'Snapshots_'+ filenameWholeDataset + os.sep
 	else:
-		figTmpFolder = folder + 'Snapshots_'+ filenameWholeDataset + '\\'
+		figTmpFolder = folder + 'Snapshots_'+ filenameWholeDataset + os.sep
 	if not isdir(figTmpFolder):
 	    makedirs(figTmpFolder)
 

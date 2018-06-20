@@ -1,7 +1,7 @@
 import time
 
 ## Here, you can clarify which functions exist in this module.
-if __name__ == '__main__': 
+if __name__ == '__main__':
 	# t => (time started,nth file,total number of files)
 	printProgress(t)
 
@@ -20,10 +20,10 @@ def printDuration(t):
 	else:
 
 		percentageProgress = (nthFile) / totalFiles * 100
-		elapsedTime = time.time() - timeStarted		
+		elapsedTime = time.time() - timeStarted
 		estTimeRemaining_inSeconds = (elapsedTime / percentageProgress * 100) - elapsedTime
 
-	percentageProgress  = str(round(percentageProgress, 2))	
+	percentageProgress  = str(round(percentageProgress, 2))
 	elapsedTime = str(round(elapsedTime, 2))
 	print('\n-------------------------------\n-------------------------------\n%s out of %s files (%s%%) analyzed in %ss.\n-------------------------------\n-------------------------------\n' %(nthFile,totalFiles,percentageProgress,elapsedTime))
 
@@ -42,13 +42,13 @@ def printProgress(t):
 	else:
 
 		percentageProgress = (nthFile) / totalFiles * 100
-		elapsedTime = time.time() - timeStarted		
+		elapsedTime = time.time() - timeStarted
 		estTimeRemaining_inSeconds = (elapsedTime / percentageProgress * 100) - elapsedTime
 		remainingTimeInHHMMSS = time.strftime('%H:%M:%S', time.gmtime(estTimeRemaining_inSeconds))
 
-	percentageProgress  = str(round(percentageProgress, 2))	
+	percentageProgress  = str(round(percentageProgress, 2))
 	elapsedTime = str(round(elapsedTime, 2))
 	print('%s out of %s files (%s%%) analyzed in %ss.\nEstimated time remaining: %s\n-------------------------------\n' %(nthFile,totalFiles,percentageProgress,elapsedTime,remainingTimeInHHMMSS))
-	
+
 	t = (timeStarted,nthFile + 1,totalFiles)
 	return t

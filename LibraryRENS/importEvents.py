@@ -21,7 +21,7 @@ import pandas as pd
 # import exportCSV
 
 import safetyWarning
-import student_XX_importEvents
+import student_VP_importEvents
 import time
 
 from os import listdir, path, makedirs, sep
@@ -47,10 +47,16 @@ if __name__ == '__main__':
 	# 3 --> START time of the possession
 
 
-def process(rawPanda,eventsPanda,TeamAstring,TeamBstring,cleanFname,dataFolder,debuggingMode):
+def process(rawPanda,eventsPanda,TeamAstring,TeamBstring,cleanFname,dataFolder,debuggingMode,skipComputeEvents_curFile):
 	tImportEvents = time.time()
-
 	targetEvents = {}
+
+	if skipComputeEvents_curFile:
+		if debuggingMode:
+			elapsed = str(round(time.time() - tImportEvents, 2))
+			print('***** Time elapsed during importEvents: %ss' %elapsed)
+
+		return targetEvents
 	########################################################################################
 	####### Import existing events ######################################################
 	########################################################################################
@@ -67,12 +73,12 @@ def process(rawPanda,eventsPanda,TeamAstring,TeamBstring,cleanFname,dataFolder,d
 	targetEvents = passes(eventsPanda,TeamAstring,TeamBstring,targetEvents)
 	targetEvents = full(eventsPanda,targetEvents,TeamAstring)
 
-	# importFromFile = True # temporarily turned off
-	# if importFromFile:
-	# 	targetEvents = fromFile(targetEvents,rawPanda,TeamAstring,TeamBstring,cleanFname,dataFolder)
+	importFromFile = False # temporarily turned off
+	if importFromFile:
+		targetEvents = fromFile(targetEvents,rawPanda,TeamAstring,TeamBstring,cleanFname,dataFolder)
 
 	targetEvents = \
-	student_XX_importEvents.process(targetEvents,cleanFname,TeamAstring,TeamBstring,dataFolder)
+	student_VP_importEvents.process(targetEvents,cleanFname,TeamAstring,TeamBstring,dataFolder)
 
 	if debuggingMode:
 		elapsed = str(round(time.time() - tImportEvents, 2))
@@ -89,10 +95,13 @@ def fromFile(targetEvents,rawPanda,TeamAstring,TeamBstring,cleanFname,dataFolder
 		warn('\nWARNING: folder <existingTargets> in dataFolder <%s> NOT found.\nIf you want to import target events, put them in that folder.' %dataFolder)
 		return targetEvents
 
-	existingTargetsFname = dataFolder + 'existingTargets' + sep + cleanFname[:-12] + '_Event.csv'
+	existingTargetsFname = dataFolder + 'existingTargets' + sep + cleanFname[:-12] + '_Event.xml' #changed to xml
+
+	print(existingTargetsFname)
+	pdb.set_trace()
 
 	if not isfile(existingTargetsFname):
-		warn('\nWARNING: Although the existingTarget\'s folder existed in dataFolder <%s>, no <%s> found.\nNo existing targets imported.\nSet onlyAnalyzeFilesWithEventData to True in User input if you want to limit the analysis to files that have targetEvents.\n' %(dataFolder,cleanFname[:-12] + '_Event.xml')) #LT: changed to .xml
+		warn('\nWARNING: Although the existingTarget\'s folder existed in dataFolder <%s>, no <%s> found.\nNo existing targets imported.\nSet onlyAnalyzeFilesWithEventData to True in User input if you want to limit the analysis to files that have targetEvents.\n' %(dataFolder,cleanFname[:-12] + '_Event.csv'))
 		return targetEvents
 
 	rawTargetEvents = pd.read_csv(existingTargetsFname, low_memory = False)

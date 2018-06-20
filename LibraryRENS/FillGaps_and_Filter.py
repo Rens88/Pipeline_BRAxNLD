@@ -14,9 +14,9 @@ from scipy.signal import butter,lfilter,filtfilt
 import cleanupData
 import time
 
-if __name__ == '__main__':		
+if __name__ == '__main__':
 	process(df)
-########################################################################	
+########################################################################
 
 def process(df,**kwargs):
 
@@ -40,7 +40,7 @@ def process(df,**kwargs):
 		# an issue with filtering.. Havent resolved it yet.
 		warn('\n(potentially FATAL) WARNING: Max Ts after filtering = %s' %max(df_filled_filtered['Ts']))
 	return df_filled_filtered,fatalGroupRowIssueAfterFiltering
-########################################################################	
+########################################################################
 
 def filterData(df):
 	# never use datasetframerate, because interpolation would have happened before anyway
@@ -55,7 +55,7 @@ def filterData(df):
 	# else:
 	# 	frameRateForInterpolation = dataDrivenFrameRate
 
-	everyPlayerIDs = pd.unique(df['PlayerID'])	
+	everyPlayerIDs = pd.unique(df['PlayerID'])
 
 	# Prepare butterworth filter
 	# Filter requirements.
@@ -84,7 +84,7 @@ def filterData(df):
 
 			# for idx,st in enumerate(starts):
 			# 	en = ends.iloc[idx]
-				
+
 			# 	print(st)
 			# 	print(ends.iloc[idx])
 
@@ -98,7 +98,7 @@ def filterData(df):
 			# 	windowSizeForFilter = np.round((windowSize*2*dataDrivenFrameRate)+1,1)
 			# 	yhat = savitzky_golay(Y, windowSizeForFilter, 3) # window size 51, polynomial order 3
 
-			# # for jumps (if they exist)			
+			# # for jumps (if they exist)
 			# pdb.set_trace()
 			# print('---')
 			# print(starts)
@@ -145,7 +145,7 @@ def butter_lowpass_filter(data, cutoff, fs, order=5):
     b, a = butter_lowpass(cutoff, fs, order=order)
     y = lfilter(b, a, data)
     return y
-    
+
 def fillGaps(df,**kwargs):
 	uniqueGroupRowsAtStart = len(df.loc[df['PlayerID'] == 'groupRow','Ts'].unique())
 
@@ -183,7 +183,7 @@ def fillGaps(df,**kwargs):
 	# # print(everyPlayerIDs.isnull())
 	# print(everyPlayerIDs)
 	# pdb.set_trace()
-	uniqueTimes = pd.unique(df['Ts'])	
+	uniqueTimes = pd.unique(df['Ts'])
 	smallestTime = min(uniqueTimes)
 	biggestTime = max(uniqueTimes)
 
@@ -199,7 +199,7 @@ def fillGaps(df,**kwargs):
 			warn('\nWARNING: The specified datasetFramerate <%s> does not correspond with the dataDrivenFrameRate <%s>.\nIf the difference is substantial, this may affect the reliability of the results.\n' %(datasetFramerate,dataDrivenFrameRate))
 	else:
 		frameRateForInterpolation = dataDrivenFrameRate
-	interpolatedVals = pd.DataFrame([],columns = df.columns)			
+	interpolatedVals = pd.DataFrame([],columns = df.columns)
 	beforeWarning = []
 	afterWarning = []
 	for nthPlayer, everyPlayerID in enumerate(everyPlayerIDs['everyPlayerIDs']):
@@ -220,7 +220,7 @@ def fillGaps(df,**kwargs):
 		# print(min(curTs))
 		# print(curRows)
 
-		# Separately check for smallestTime and biggestTime 
+		# Separately check for smallestTime and biggestTime
 		# Not sure how this affects the rest of the code..
 		if min(curTs) - min(df['Ts']) > dataDrivenThreshold:
 			# 'gap' for this player at the start
@@ -241,7 +241,7 @@ def fillGaps(df,**kwargs):
 			# if not eventInterpolation:
 			X_int = findJumps(curTs,dataDrivenThreshold,frameRateForInterpolation)
 			# elif:
-		
+
 			# except:
 			# 	# print(tStart)
 			# 	# print(tEnd)
@@ -254,7 +254,7 @@ def fillGaps(df,**kwargs):
 			# 	pdb.set_trace()
 		else:
 			X_int = determineX_int(curTs,frameRateForInterpolation)
-		
+
 
 		if len(X_int) != len(np.unique(X_int)):
 			warn('\nWARNING: For some reason, the to be interpolated time had duplicate values.\nRemoved them, not sure about consequences.\nMight have something to do with jumps close together.\nCould avoid by making the threshold for jumps larger.\n')
@@ -273,7 +273,7 @@ def fillGaps(df,**kwargs):
 			#### X_int = np.sort(int_curPlayer['Ts'].unique()) ###################################################### IT JUST TO BE THIS
 			X_int = np.sort(interpolatedVals['Ts'].unique())
 			# print(len(X_int))
-			
+
 		###int_curPlayer = pd.DataFrame(X_int, columns = ['Ts'])
 
 		int_curPlayer['Ts'] = X_int
@@ -392,13 +392,13 @@ def fillGaps(df,**kwargs):
 						nearestTimeOfEvent = np.where(abs(X_int - timeOfEvent) == min(abs(X_int - timeOfEvent)))
 						# Currently, it's possible that a time index is chosen that has no corresponding positional data. (it may be the one frame before, or the one frame after)
 
-						# Put the stringEvent there, and leave the rest as an empty string i.e., '' 
+						# Put the stringEvent there, and leave the rest as an empty string i.e., ''
 						ix_event = nearestTimeOfEvent[0]
 						###int_curKey.loc[ix_event,key] = df.loc[curRows,key].iloc[stringEvent]
 						int_curPlayer.loc[ix_event,key] = df.loc[curRows,key].iloc[stringEvent]
 
 			###int_curPlayer = pd.concat([int_curPlayer,int_curKey],axis= 1) # Each key gets added one by one
-		
+
 		interpolatedVals = interpolatedVals.append([int_curPlayer], ignore_index = True)
 		# Same same but different:
 		# interpolatedVals = interpolatedVals.append(int_curPlayer, ignore_index = True)
@@ -468,10 +468,10 @@ def findJumps(curTs,dataDrivenThreshold,frameRateForInterpolation,**kwargs):
 		# Throw a warning just in case it links to problems later on.
 		warn('\nWARNING: Multiple occurrences of minimum Ts found. Causes an issue with skipping jumps.\nThe work-around simply takes the first of the multiple occurrences.\nIt may cause a problem later.\nOriginal firstdata:\n%s\n' %firstData)
 		firstData.drop(firstData.index[1:],inplace = True)
-		
+
 
 	lastData = pd.DataFrame(curTs[max(curTs) == curTs])
-	
+
 
 	if lastData.shape != (1,1):
 		# A small work-around for the cases where there are multiple max curTs
@@ -492,7 +492,7 @@ def findJumps(curTs,dataDrivenThreshold,frameRateForInterpolation,**kwargs):
 		# No jumps found, simply interpolate with standardaized X_int
 		tmp = determineX_int(curTs,frameRateForInterpolation)
 		X_int = np.round(tmp,math.ceil(math.log(frameRateForInterpolation,10))) # automatically rounds it to the required number of significant numbers (decimal points) for the given sampling frequency (to avoid '0' being stored as 1.474746 E16 AND 1.374750987 E16)
-		
+
 		# print('X_int without jumps:')
 		# print(X_int)
 		# print('*********')
@@ -505,13 +505,13 @@ def findJumps(curTs,dataDrivenThreshold,frameRateForInterpolation,**kwargs):
 
 		jumpEnds = t1['Ts'][dt['Ts']>(np.median(dt['Ts'])*1.5)]  # should it be the frame after jump ends?
 		dataStarts = pd.concat([firstData['Ts'], jumpEnds],axis = 0) #-1 # jumpStarts - 1
-		
+
 		# print('dataEnds with jumps:')
 		# print(dataEnds)
 		# print('********')
 		# X_int without the jumps
 		tmp = [np.arange(dataStarts.iloc[isx],en + 1/frameRateForInterpolation,1/frameRateForInterpolation) for isx,en in enumerate(dataEnds)]
-		
+
 
 		# for isx,en in enumerate(dataEnds):
 		# 	print('this is the end:')
@@ -541,7 +541,7 @@ def findJumps(curTs,dataDrivenThreshold,frameRateForInterpolation,**kwargs):
 	return X_int
 
 def findJumps_Fixed_X_int(curTs,dataDrivenThreshold,frameRateForInterpolation,fixed_X_int,aggregateLevel):
-	
+
 	# Don't thing I need this functionality, but saved it just in case:
 	start_ix = 0
 	end_ix = len(fixed_X_int) + start_ix -1
@@ -568,7 +568,7 @@ def findJumps_Fixed_X_int(curTs,dataDrivenThreshold,frameRateForInterpolation,fi
 		## Using interp1d here to avoid (for example) negative values where they can't exist.
 		## Spline interpolation can be used on the raw data. Not on the aggregated data.
 
-		# Adjust first X_int frame in case of missing a frame at the start				
+		# Adjust first X_int frame in case of missing a frame at the start
 		# Crop the missing first frames (if any)
 		X_int_cropped_idx = np.where(X_int >= min(curTs))
 		start_ixNew = X_int_cropped_idx[0][0] + start_ix
@@ -580,14 +580,18 @@ def findJumps_Fixed_X_int(curTs,dataDrivenThreshold,frameRateForInterpolation,fi
 		X_int_cropped_idx = np.where(X_int_cropped <= max(curTs))
 		end_ix = len(X_int_cropped_idx[0]) + start_ix -1
 		X_int_cropped = X_int_cropped[X_int_cropped_idx]
-		
+
 		""""
-		s = interp1d(curTs, curY)		
+		s = interp1d(curTs, curY)
+<<<<<<< HEAD
+=======
+
+>>>>>>> origin/NP_continued
 		try:
-			Y_int = s(X_int_cropped)				
+			Y_int = s(X_int_cropped)
 		except:
-			print(min(curTs[1:-1]),min(X_int_cropped))		
-			print(max(curTs[1:-1]),max(X_int_cropped))		
+			print(min(curTs[1:-1]),min(X_int_cropped))
+			print(max(curTs[1:-1]),max(X_int_cropped))
 			print('---')
 			print(curTs)
 			print('----')
@@ -596,7 +600,7 @@ def findJumps_Fixed_X_int(curTs,dataDrivenThreshold,frameRateForInterpolation,fi
 			print('If a problem occurs here, it has something to do with the window length and the available frames in the raw data. Probably, there is no overlap or something...')
 			pdb.set_trace()
 		"""
-	else:					
+	else:
 		# Adjust for jumps in time.
 		jumpStarts = t0['Ts'][dt['Ts']>(np.median(dt['Ts'])*1.5)]
 		jumpEnds = t1['Ts'][dt['Ts']>(np.median(dt['Ts'])*1.5)]
@@ -604,7 +608,7 @@ def findJumps_Fixed_X_int(curTs,dataDrivenThreshold,frameRateForInterpolation,fi
 
 		curTs_cropped = curTs[curTs >= endOfLastJump]
 		# curY_cropped = curY[curTs >= endOfLastJump]
-						
+
 		# It excludes the X_int preceding endOfLastJump
 		X_int_cropped = X_int[X_int >= endOfLastJump]
 
@@ -616,7 +620,7 @@ def findJumps_Fixed_X_int(curTs,dataDrivenThreshold,frameRateForInterpolation,fi
 		## Spline interpolation can be used on the raw data. Not on the aggregated data.
 		s = interp1d(curTs_cropped, curY_cropped)
 		Y_int = s(X_int_cropped)
-						
+
 		tmp = next(i for i, x in enumerate(X_int) if x > endOfLastJump)
 		start_ix = start_ix + tmp -1
 		"""
@@ -639,16 +643,16 @@ def deriveFramerate(df):
 def fillGapsConsistentTimestamps(curEventExcerptPanda,X_int,aggregateLevel,refTeam):
 	## admittedly not the prettiest way....
 	# It requires a for loop per key, then a for loop per unique playerID....
-	
-	everyPlayerIDs = pd.unique(curEventExcerptPanda['PlayerID'])	
-	
+
+	everyPlayerIDs = pd.unique(curEventExcerptPanda['PlayerID'])
+
 	newIndex = np.arange(0,len(everyPlayerIDs) * len(X_int))
 
 	if len(newIndex) < 2:
 		warn('\nFATAL WARNING: There seems to be a problem with the length of the timeseries that is currently being interpolated.\nThe timeseries as the same tStart <%s> as tEnd <%s>.\nIn other words, it has a length of only 1 timestamp.\nThe working solution is to simply return the original eventExcerpt.\n' %(smallestTime,biggestTime))
 		return curEventExcerptPanda
 	# Create an array that is empty and has the same size as the interpoloated values will have.
-	interpolatedVals = pd.DataFrame(np.nan, index=newIndex, columns=['eventTimeIndex','eventTime','Ts'])			
+	interpolatedVals = pd.DataFrame(np.nan, index=newIndex, columns=['eventTimeIndex','eventTime','Ts'])
 
 	# Interpolate each key separately
 	for key in curEventExcerptPanda.keys():
@@ -669,7 +673,7 @@ def fillGapsConsistentTimestamps(curEventExcerptPanda,X_int,aggregateLevel,refTe
 		for nthPlayer, everyPlayerID in enumerate(everyPlayerIDs):
 
 			# Prepare indices to Store it in the panda
-			start_ix = (1 + nthPlayer) * len(X_int) - len(X_int) 
+			start_ix = (1 + nthPlayer) * len(X_int) - len(X_int)
 			end_ix = (1 + nthPlayer) * len(X_int) -1
 			interpolatedVals.loc[start_ix : end_ix,'Ts'] = X_int # The same every time, only needs to be done once. Could use it as a check though, as they should always be the same
 			interpolatedVals.loc[start_ix : end_ix,'eventTime'] = X_int - X_int[-1] # The same every time, only needs to be done once. Could use it as a check though, as they should always be the same
@@ -709,7 +713,7 @@ def fillGapsConsistentTimestamps(curEventExcerptPanda,X_int,aggregateLevel,refTe
 					## Using interp1d here to avoid (for example) negative values where they can't exist.
 					## Spline interpolation can be used on the raw data. Not on the aggregated data.
 
-					# Adjust first X_int frame in case of missing a frame at the start				
+					# Adjust first X_int frame in case of missing a frame at the start
 					# Crop the missing first frames (if any)
 					X_int_cropped_idx = np.where(X_int >= min(curX))
 					start_ixNew = X_int_cropped_idx[0][0] + start_ix
@@ -735,13 +739,13 @@ def fillGapsConsistentTimestamps(curEventExcerptPanda,X_int,aggregateLevel,refTe
 					end_ix = len(X_int_cropped_idx[0]) + start_ix -1
 					X_int_cropped = X_int_cropped[X_int_cropped_idx]
 
-					s = interp1d(curX, curY)		
+					s = interp1d(curX, curY)
 
 					try:
-						Y_int = s(X_int_cropped)				
+						Y_int = s(X_int_cropped)
 					except:
-						print(min(curX[1:-1]),min(X_int_cropped))		
-						print(max(curX[1:-1]),max(X_int_cropped))		
+						print(min(curX[1:-1]),min(X_int_cropped))
+						print(max(curX[1:-1]),max(X_int_cropped))
 						print('---')
 						print(curX)
 						print('----')
@@ -749,7 +753,7 @@ def fillGapsConsistentTimestamps(curEventExcerptPanda,X_int,aggregateLevel,refTe
 						print('---')
 						print('If a problem occurs here, it has something to do with the window length and the available frames in the raw data. Probably, there is no overlap or something...')
 						pdb.set_trace()
-				else:					
+				else:
 					# Adjust for jumps in time.
 					jumpStarts = t0['Ts'][dt['Ts']>(np.median(dt['Ts'])*1.5)]
 					jumpEnds = t1['Ts'][dt['Ts']>(np.median(dt['Ts'])*1.5)]
@@ -757,7 +761,7 @@ def fillGapsConsistentTimestamps(curEventExcerptPanda,X_int,aggregateLevel,refTe
 
 					curX_cropped = curX[curX >= endOfLastJump]
 					curY_cropped = curY[curX >= endOfLastJump]
-									
+
 					# It excludes the X_int preceding endOfLastJump
 					X_int_cropped = X_int[X_int >= endOfLastJump]
 					### This also works; The last value in tmp is the X_int value prior to where the data restarts (BUT NOT WITH interp1d)
@@ -773,7 +777,7 @@ def fillGapsConsistentTimestamps(curEventExcerptPanda,X_int,aggregateLevel,refTe
 					## Spline interpolation can be used on the raw data. Not on the aggregated data.
 					s = interp1d(curX_cropped, curY_cropped)
 					Y_int = s(X_int_cropped)
-									
+
 					tmp = next(i for i, x in enumerate(X_int) if x > endOfLastJump)
 					start_ix = start_ix + tmp -1
 
@@ -839,7 +843,7 @@ def fillGapsConsistentTimestamps(curEventExcerptPanda,X_int,aggregateLevel,refTe
 						nearestTimeOfEvent = np.where(abs(X_int - timeOfEvent) == min(abs(X_int - timeOfEvent)))
 						# Currently, it's possible that a time index is chosen that has no corresponding positional data. (it may be the one frame before, or the one frame after)
 
-						# Put the stringEvent there, and leave the rest as an empty string i.e., '' 
+						# Put the stringEvent there, and leave the rest as an empty string i.e., ''
 						ix_event = nearestTimeOfEvent[0]
 						# int_curKey.loc[ix_event,key] = curEventExcerptPanda.loc[curRows,key].iloc[stringEvent]
 						# interpolatedVals.loc[ix_event,key] = curEventExcerptPanda.loc[curRows,key].iloc[stringEvent]
@@ -879,7 +883,7 @@ def fillGapsConsistentTimestamps(curEventExcerptPanda,X_int,aggregateLevel,refTe
 				# 		nearestTimeOfEvent = np.where(abs(X_int - timeOfEvent) == min(abs(X_int - timeOfEvent)))
 				# 		# Currently, it's possible that a time index is chosen that has no corresponding positional data. (it may be the one frame before, or the one frame after)
 
-				# 		# Put the stringEvent there, and leave the rest as an empty string i.e., '' 
+				# 		# Put the stringEvent there, and leave the rest as an empty string i.e., ''
 				# 		ix_event = start_ix + nearestTimeOfEvent[0]
 				# 		interpolatedVals.loc[ix_event,key] = curEventExcerptPanda[key].iloc[stringEvent]
 
@@ -941,7 +945,7 @@ def savitzky_golay(y, window_size, order, deriv=0, rate=1):
     """
     import numpy as np
     from math import factorial
-    
+
     try:
         window_size = np.abs(np.int(window_size))
         order = np.abs(np.int(order))

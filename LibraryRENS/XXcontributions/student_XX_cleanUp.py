@@ -45,7 +45,7 @@ def process(dirtyFname,cleanFname,dataFolder,cleanedFolder,headers,readAttribute
 	# df_cropped01,df_omitted01 = \
 	# omitXandY_equals0(df)
 
-	df_cleaned,df_omitted,fatalTeamIDissue = KNVB(dirtyFname,cleanFname,dataFolder,cleanedFolder,headers,readAttributeCols,debugOmittedRows,readEventColumns,TeamAstring,TeamBstring)
+	df_cleaned,df_omitted,fatalTeamIDissue,halfTime,secondHalfTime = KNVB(dirtyFname,cleanFname,dataFolder,cleanedFolder,headers,readAttributeCols,debugOmittedRows,readEventColumns,TeamAstring,TeamBstring)
 
 
 	# df_omitted = pd.concat([df_omitted, df_omitted01]) # Only relevant when cleaning up in multiple steps.
@@ -53,9 +53,9 @@ def process(dirtyFname,cleanFname,dataFolder,cleanedFolder,headers,readAttribute
 
 	# df_croppedLAST = df_cropped01.copy()
 
-	return df_cleaned,df_omitted,fatalTeamIDissue#,halfTime,secondHalfTime
+	return df_cleaned,df_omitted,fatalTeamIDissue,halfTime,secondHalfTime
 
-#LT: TODO: sort values by Ts
+
 def KNVB(fname,cleanFname,dataFolder,cleanedFolder,headers,readAttributeCols,debugOmittedRows,readEventColumns,TeamAstring,TeamBstring):
 	expectedVals = (-60,60,-40,40) # This should probably be dataset specific.
 	conversion_to_S = .001
@@ -82,10 +82,8 @@ def KNVB(fname,cleanFname,dataFolder,cleanedFolder,headers,readAttributeCols,deb
 		if not i in fileHeaders:
 			exit('EXIT: Column header <%s> not in column headers of the file:\n%s\n\nSOLUTION: Change the user input in \'process\' \n' %(i,fileHeaders))
 
-	#LT: TODO: sort values by Ts
 	df = pd.read_csv(dataFolder+fname,usecols=(colHeaders),low_memory=False)
 	df[ts] = df[ts]*conversion_to_S # Convert from ms to s.
-
 
 	## Cleanup for BRAxNLD
 	if headers['TeamID'] == None:
@@ -99,16 +97,11 @@ def KNVB(fname,cleanFname,dataFolder,cleanedFolder,headers,readAttributeCols,deb
 	else:
 		fatalTeamIDissue = False
 
-	#Copy shirtnumbers of opponnents to PlayerID's and multiply with -1
-	df = setPlayerID(df,ID,Tid,TeamBstring)
-
-	#delete referees
-	refereeIdx = (df[Tid].isnull()) & (df[ID] != 'ball')
-	df = df[refereeIdx == False]
-
-	#no negative speed
-	speedZero = df['Speed'] < 0.0
-	df.loc[speedZero,'Speed'] = 0.0
+	print('********************')
+	halfTime, secondHalfTime = determineHalfTime(headers,df)
+	print("Half-time:", halfTime)
+	print("Second-half:",secondHalfTime)
+	print('********************')
 
 	df_cropped01,df_omitted01 = omitXandY_equals0(df,x,y,ID)
 	df_cropped02,df_omitted02 = omitRowsWithout_XandY(df_cropped01,x,y)
@@ -118,30 +111,14 @@ def KNVB(fname,cleanFname,dataFolder,cleanedFolder,headers,readAttributeCols,deb
 	df_omitted = pd.concat([df_omitted01, df_omitted02, df_omitted03])
 	## End cleanup for BRAxNLD
 
-	#LT: controleren of dit er in moet!
 	df_cleaned = df_cropped03
 
-	return df_cleaned, df_omitted,fatalTeamIDissue
+	return df_cleaned, df_omitted,fatalTeamIDissue,halfTime,secondHalfTime
 
-def setPlayerID(df,ID,Tid,TeamBstring):
-	#Copy shirtnumbers of opponnents to PlayerID's and multiply with -1
-	teamOppIdx = df[Tid] == TeamBstring
-	df.loc[teamOppIdx,ID] = df.loc[teamOppIdx,'Shirt'] * -1
-
-	#Set ball
-	# Ball: Team = NaN, PlrID = 0, Shirt = 1, inBallPoss always 0
-	ballIdx = (df[Tid].isnull()) & (df[ID] == 0) & (df['Shirt'] == 1)
-	df.loc[ballIdx,ID] = 'ball'
-
-	return df
 
 def omitXandY_equals0(df,x,y,ID):
 	# Omit rows where both x and y = 0 and where there is no team value
-	# XandY_equals0 = ( ((df[x] == 0) & (df[y] == 0) & (df[ID] == 'nan')) )
-	# print(df)
-	# XandY_equals0 = ( (df[ID] == 'nan') )
-	XandY_equals0 = ( ((df[x] == 0) & (df[y] == 0) & (df[ID].isnull())) )
-	# pdb.set_trace()
+	XandY_equals0 = ( ((df[x] == 0) & (df[y] == 0) & (df[ID] == 'nan')) )
 	df[XandY_equals0 == True]
 	df_cleaned 	= df[XandY_equals0 == False]
 	df_omitted 	= df[XandY_equals0 == True]
@@ -175,27 +152,28 @@ def omitRowsWithExtreme_XandY(df,x,y,expectedVals):
 
 	return df_cleaned,df_omitted
 
-# def determineHalfTime(headers,df):
-# 	noPlayers = 0
-# 	seconds = 60 # 1 minute
+def determineHalfTime(headers,df):
+	noPlayers = 0
+	seconds = 60 # 1 minute
 
-# 	halfTime = -1
+	halfTime = -1
+	secondHalfTime = -1
 
-# 	for idx,i in enumerate(pd.unique(df[headers['Ts']])):
-# 		curTime = df.iloc[idx][headers['Ts']]
-# 		curX = df['X'][df[headers['Ts']] == i]
-# 		if all(curX.isnull()):
-# 			noPlayers = noPlayers + 1
-# 		else:
-# 			noPlayers = 0
+	for idx,i in enumerate(pd.unique(df[headers['Ts']])):
+		curTime = df.iloc[idx][headers['Ts']]
+		curX = df['X'][df[headers['Ts']] == i]
+		if all(curX.isnull()):
+			noPlayers = noPlayers + 1
+		else:
+			noPlayers = 0
 
-# 		if (noPlayers == seconds):
-# 			halfTime = i - (seconds/10) #10 Hz
+		if (noPlayers == seconds):
+			halfTime = i - (seconds/10) #10 Hz
 
-# 		if halfTime > 0 and all(curX.notnull()):#LT: maybe also for 60 seconds?
-# 			secondHalfTime = i #- (seconds/10)
+		if halfTime > 0 and all(curX.notnull()):#LT: maybe also for 60 seconds?
+			secondHalfTime = i #- (seconds/10)
 
-# 	return halfTime, secondHalfTime
+	return halfTime, secondHalfTime
 
 # def omitXandY_equals0(df):
 # 	# Omit rows where both x and y = 0 and where there is no team value

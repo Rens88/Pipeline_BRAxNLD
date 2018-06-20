@@ -16,7 +16,7 @@ if __name__ == '__main__':
 	process(rawDict,attributeDict,TeamAstring,TeamBstring,filename,folder,exportData,exportDataString,exportFullExplanation)
 
 	goals(rawDict,attributeDict,TeamAstring,TeamBstring,exportData,exportDataString,exportFullExplanation,targetEvents)
-	possession(rawDict,attributeDict,TeamAstring,TeamBstring,exportData,exportDataString,exportFullExplanation,targetEvents)	
+	possession(rawDict,attributeDict,TeamAstring,TeamBstring,exportData,exportDataString,exportFullExplanation,targetEvents)
 	passes(rawDict,attributeDict,TeamAstring,TeamBstring,exportData,exportDataString,exportFullExplanation,possessionCharacteristics,targetEvents)
 
 def process(rawDict,attributeDict,TeamAstring,TeamBstring,filename,folder,exportData,exportDataString,exportFullExplanation):
@@ -43,7 +43,7 @@ def process(rawDict,attributeDict,TeamAstring,TeamBstring,filename,folder,export
 
 	# ############## EXPORT THIS BEAUTY TO CSV
 	# outputFilename = folder + 'output.csv'
-	# exportCSV.newOrAdd(outputFilename,exportDataString,exportData)	
+	# exportCSV.newOrAdd(outputFilename,exportDataString,exportData)
 	# outputFilename = folder + 'outputDescription.txt'
 	# exportCSV.varDescription(outputFilename,exportDataString,exportFullExplanation)
 
@@ -118,7 +118,7 @@ def possession(rawDict,attributeDict,TeamAstring,TeamBstring,exportData,exportDa
 			if TeamAstring in curStatus:
 				# it's about Team A
 				currentPossession = TeamAstring
-			elif TeamBstring in curStatus:		
+			elif TeamBstring in curStatus:
 				# it's about Team B
 				currentPossession = TeamBstring
 			else:
@@ -132,19 +132,19 @@ def possession(rawDict,attributeDict,TeamAstring,TeamBstring,exportData,exportDa
 			currentPossessionDuration = None
 			currentPossession = None
 
-		elif 'Turnover' in curStatus:		
+		elif 'Turnover' in curStatus:
 			dt.append(float(rawDict['Time']['TsS'][curFrame+1]-rawDict['Time']['TsS'][curFrame])) # a cheecky way to read frame rate from data
 			if currentPossession == TeamAstring:
 				currentPossession = TeamBstring
-				targetEvents['Turnovers'].append((float(rawDict['Time']['TsS'][idx]),TeamAstring))								
+				targetEvents['Turnovers'].append((float(rawDict['Time']['TsS'][idx]),TeamAstring))
 			elif currentPossession == TeamBstring:
 				currentPossession = TeamAstring
-				targetEvents['Turnovers'].append((float(rawDict['Time']['TsS'][idx]),TeamBstring))								
+				targetEvents['Turnovers'].append((float(rawDict['Time']['TsS'][idx]),TeamBstring))
 			else:
 				currentPossession = None
 
 		else:
-			# Based on next status 
+			# Based on next status
 			if possessionEvent[idx+1][1][0:8] == 'Turnover' and possessionEvent[idx+1][1][-len(TeamAstring)-1:-1] == TeamAstring:
 				# The next turnover goes to TeamA, so:
 				currentPossession = TeamBstring
@@ -152,7 +152,7 @@ def possession(rawDict,attributeDict,TeamAstring,TeamBstring,exportData,exportDa
 
 			elif possessionEvent[idx+1][1][0:8] == 'Turnover' and possessionEvent[idx+1][1][-len(TeamBstring)-1:-1] == TeamBstring:
 				currentPossession = TeamAstring
-				warn('\nIndirectly assessed event (based on next event):\n<<%s>>\nas <<%s>>' %(curStatus,currentPossession))			
+				warn('\nIndirectly assessed event (based on next event):\n<<%s>>\nas <<%s>>' %(curStatus,currentPossession))
 			else:
 				warn('\nCouldnt identify event:\n%s\n\n' %curStatus)
 				currentPossession = None
@@ -166,7 +166,7 @@ def possession(rawDict,attributeDict,TeamAstring,TeamBstring,exportData,exportDa
 			in2 = None
 		else:
 			in2 = float(rawDict['Time']['TsS'][endPossession])
-		targetEvents['Possession'].append((in1,in2,currentPossession))								
+		targetEvents['Possession'].append((in1,in2,currentPossession))
 
 	# print(rawDict['Time']['TsS'])
 	if dt == []:
@@ -223,7 +223,7 @@ def possession(rawDict,attributeDict,TeamAstring,TeamBstring,exportData,exportDa
 	exportData.append(float(possessionCountB))
 	exportFullExplanation.append('Number of times %s had possession per match.' %TeamBstring)
 
-	exportDataString.append('possessionCountDelta')	
+	exportDataString.append('possessionCountDelta')
 	exportData.append(float(abs(possessionCountA - possessionCountB)))
 	exportFullExplanation.append('Absolute difference between number of possessions scored by %s and %s.' %(TeamAstring,TeamBstring))
 
@@ -257,9 +257,9 @@ def possession(rawDict,attributeDict,TeamAstring,TeamBstring,exportData,exportDa
 	# Average duration of a possession (until turnover / ball loss / end game)
 	if possessionCount == 0 and overwriteOutput:
 		possessionCount = 1
-		possessionCountA = 1		
+		possessionCountA = 1
 		possessionCountB = 1
-		possessionCountNone = 1		
+		possessionCountNone = 1
 
 	exportDataString.append('possessionDurationAvg')
 	possessionDurationAvg = possessionDurationSum / possessionCount
@@ -284,7 +284,7 @@ def possession(rawDict,attributeDict,TeamAstring,TeamBstring,exportData,exportDa
 	exportDataString.append('possessionDurationStd')
 	exportData.append(float(sum([abs(i[3]-possessionDurationAvg) for i in possessionCharacteristics if i[3] != None])/ possessionCount))
 	exportFullExplanation.append('Standard deviation of the duration of a possession per match by %s and %s.' %(TeamAstring,TeamBstring))
-	
+
 	exportDataString.append('possessionDurationStdA')
 	exportData.append(float(sum([abs(i[3]-possessionDurationAvgA) for i in possessionCharacteristics if i[3] != None and i[2] == TeamAstring])/ possessionCountA))
 	exportFullExplanation.append('Standard deviation of the duration of a possession per match by %s.' %TeamAstring)
@@ -331,10 +331,10 @@ def passes(rawDict,attributeDict,TeamAstring,TeamBstring,exportData,exportDataSt
 			passOut[count,1] = idx#rawDict['Time']['TsS'][idx]
 			if TeamAstring in i:
 				passOut[count,0] = 0
-				targetEvents['Passes'].append((float(rawDict['Time']['TsS'][idx]),TeamAstring))				
+				targetEvents['Passes'].append((float(rawDict['Time']['TsS'][idx]),TeamAstring))
 			elif TeamBstring in i:
 				passOut[count,0] = 1
-				targetEvents['Passes'].append((float(rawDict['Time']['TsS'][idx]),TeamBstring))								
+				targetEvents['Passes'].append((float(rawDict['Time']['TsS'][idx]),TeamBstring))
 			else:
 				warn('\n\nCould not recognize team:\n<<%s>>' %i)
 			if 'oal' in i:
@@ -354,11 +354,11 @@ def passes(rawDict,attributeDict,TeamAstring,TeamBstring,exportData,exportDataSt
 	exportData.append(float(passCountA))
 	passCountB = sum([TeamBstring in i for i in passes])
 	exportFullExplanation.append('Number of passes by %s per match.' %TeamAstring)
-	
+
 	exportDataString.append('passCountB')
 	exportData.append(float(passCountB))
 	exportFullExplanation.append('Number of passes by %s per match.' %TeamBstring)
-	
+
 	exportDataString.append('passDelta')
 	exportData.append(float(abs(passCountA - passCountB)))
 	exportFullExplanation.append('Absolute difference between number of passes scored by %s and %s.' %(TeamAstring,TeamBstring))
@@ -368,7 +368,7 @@ def passes(rawDict,attributeDict,TeamAstring,TeamBstring,exportData,exportDataSt
 	PassessPossession = []
 
 	for idx,i in enumerate(possessionCharacteristics):
-		tmp = 0		
+		tmp = 0
 		while passOut[ind][1] >= i[0]: # after the start
 			if passOut[ind][1] <= i[4]: # before the end
 				# print('found one',passOut[ind][1])

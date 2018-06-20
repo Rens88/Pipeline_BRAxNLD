@@ -23,7 +23,7 @@ if __name__ == '__main__':
 
 def process(dataFolder,dirtyFname,exportData,exportDataString,debuggingMode):
 	tImportFieldDimensions = time.time()
-	
+
 	fieldDimensions = {'foundIt':False}
 	warn('\nUPDATE REQUIRED.\nShould embed a rotation of the rawData based on the field dimensions if necessary\n************\n************\n************\n')
 
@@ -50,7 +50,7 @@ def process(dataFolder,dirtyFname,exportData,exportDataString,debuggingMode):
 	for idx,existingDimsFname in enumerate(fieldDims['Filename']):
 		if existingDimsFname == dirtyFname:
 			fieldDimensions['foundIt'] = True
-			fieldDimensions.update({'X_bot_left': fieldDims['X_bot_left'][idx],'X_top_left': fieldDims['X_top_left'][idx],'X_bot_right': fieldDims['X_bot_right'][idx],'X_top_right': fieldDims['X_top_right'][idx],'Y_bot_left': fieldDims['Y_bot_left'][idx],'Y_bot_right': fieldDims['Y_bot_right'][idx],'Y_top_left': fieldDims['Y_top_left'][idx],'Y_top_right': fieldDims['Y_top_right'][idx]}) # Values are given in meters			
+			fieldDimensions.update({'X_bot_left': fieldDims['X_bot_left'][idx],'X_top_left': fieldDims['X_top_left'][idx],'X_bot_right': fieldDims['X_bot_right'][idx],'X_top_right': fieldDims['X_top_right'][idx],'Y_bot_left': fieldDims['Y_bot_left'][idx],'Y_bot_right': fieldDims['Y_bot_right'][idx],'Y_top_left': fieldDims['Y_top_left'][idx],'Y_top_right': fieldDims['Y_top_right'][idx]}) # Values are given in meters
 			if debuggingMode:
 				elapsed = str(round(time.time() - tImportFieldDimensions, 2))
 				print('***** Time elapsed during importFieldDimensions: %ss' %elapsed)
@@ -60,21 +60,21 @@ def process(dataFolder,dirtyFname,exportData,exportDataString,debuggingMode):
 	if 'School' in exportDataString and 'Test' in exportDataString:
 		curSchool = exportData[exportDataString.index('School')]
 		sameSchoolRows = fieldDims['School'] == curSchool
-		
+
 		curTest = exportData[exportDataString.index('Test')]
 		sameTest_and_sameSchoolRows = fieldDims.loc[sameSchoolRows]['Test'] == curTest
 
 		if any(sameTest_and_sameSchoolRows):
 			idx = sameTest_and_sameSchoolRows.index[0]
 			fieldDimensions['foundIt'] = True
-			fieldDimensions.update({'X_bot_left': fieldDims['X_bot_left'][idx],'X_top_left': fieldDims['X_top_left'][idx],'X_bot_right': fieldDims['X_bot_right'][idx],'X_top_right': fieldDims['X_top_right'][idx],'Y_bot_left': fieldDims['Y_bot_left'][idx],'Y_bot_right': fieldDims['Y_bot_right'][idx],'Y_top_left': fieldDims['Y_top_left'][idx],'Y_top_right': fieldDims['Y_top_right'][idx]}) # Values are given in meters			
+			fieldDimensions.update({'X_bot_left': fieldDims['X_bot_left'][idx],'X_top_left': fieldDims['X_top_left'][idx],'X_bot_right': fieldDims['X_bot_right'][idx],'X_top_right': fieldDims['X_top_right'][idx],'Y_bot_left': fieldDims['Y_bot_left'][idx],'Y_bot_right': fieldDims['Y_bot_right'][idx],'Y_top_left': fieldDims['Y_top_left'][idx],'Y_top_right': fieldDims['Y_top_right'][idx]}) # Values are given in meters
 			if debuggingMode:
 				elapsed = str(round(time.time() - tImportFieldDimensions, 2))
 				print('***** Time elapsed during importFieldDimensions: %ss' %elapsed)
 
 			return fieldDimensions
 		# print(sameSchoolRows)
-		
+
 		# print(exportData)
 	# pdb.set_trace()
 	# if not foundIt:

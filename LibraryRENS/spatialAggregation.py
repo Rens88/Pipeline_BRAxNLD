@@ -13,7 +13,7 @@ import plotSnapshot
 import safetyWarning
 import pandas as pd
 import time
-import student_XX_spatialAggregation
+import student_VP_spatialAggregation
 
 if __name__ == '__main__':
 	process(rawDict,attributeDict,attributeLabel,TeamAstring,TeamBstring)
@@ -36,13 +36,13 @@ if __name__ == '__main__':
 	#####################################################################################
 	#####################################################################################
 
-def process(rawDict,attributeDict,attributeLabel,TeamAstring,TeamBstring,skipSpatAgg,eventsPanda,spatAggFolder,spatAggFname,targetEvents,debuggingMode):
+def process(rawDict,attributeDict,attributeLabel,TeamAstring,TeamBstring,skipSpatAgg,eventsPanda,spatAggFolder,spatAggFname,targetEventsImported,debuggingMode):
 	tSpatAgg = time.time()
 	# Per Match (i.e., file)
 	# Per Team and for both teams
 
 	# Ball possession
-	# computeBallPossession = True # temporarily turned off
+	# computeBallPossession = False # temporarily turned off
 	# if computeBallPossession:
 	# 	attributeDict,attributeLabel = \
 	# 	ballPossession(rawDict,attributeDict,attributeLabel,TeamAstring,TeamBstring,skipSpatAgg)
@@ -77,8 +77,6 @@ def process(rawDict,attributeDict,attributeLabel,TeamAstring,TeamBstring,skipSpa
 	# 	print('*****----- Time elapsed during spatialAggregation.teamSurface_asPanda(): %ss' %elapsed)
 	# 	tSpatAgg_surf = time.time()
 
-	# # Computing vNorm, technically requires some form of temporalAggregation.
-	# # This is permitted ONLY if the compute variable returns a value for every timeframe.
 	# attributeDict,attributeLabel = \
 	# vNorm(rawDict,attributeDict,attributeLabel,TeamAstring,TeamBstring,skipSpatAgg)
 	# if debuggingMode:
@@ -87,12 +85,11 @@ def process(rawDict,attributeDict,attributeLabel,TeamAstring,TeamBstring,skipSpa
 	tSpatAgg_vNorm = time.time()
 
 	attributeDict,attributeLabel = \
-	student_XX_spatialAggregation.process(rawDict,attributeDict,attributeLabel,TeamAstring,TeamBstring,skipSpatAgg,targetEvents)
+	student_VP_spatialAggregation.process(rawDict,attributeDict,attributeLabel,TeamAstring,TeamBstring,skipSpatAgg,targetEventsImported)
 	if debuggingMode:
 		elapsed = str(round(time.time() - tSpatAgg_vNorm, 2))
-		print('*****----- Time elapsed during spatialAggregation.student_XX_spatialAggregation(): %ss' %elapsed)
+		print('*****----- Time elapsed during spatialAggregation.student_VP_spatialAggregation(): %ss' %elapsed)
 		tSpatAgg_student = time.time()
-
 	## debugging only
 	# allesBijElkaar = pd.concat([rawDict, attributeDict], axis=1) # debugging only
 	# allesBijElkaar.to_csv('C:\\Users\\rensm\\Documents\\PostdocLeiden\\BRAxNLD repository\\Data\\tmp\\test.csv') # debugging only
@@ -101,6 +98,19 @@ def process(rawDict,attributeDict,attributeLabel,TeamAstring,TeamBstring,skipSpa
 	# Spatially aggregated data
 	spatAggPanda = pd.concat([rawDict, eventsPanda.loc[:, eventsPanda.columns != 'Ts'], attributeDict.loc[:, attributeDict.columns != 'Ts']], axis=1) # Skip the duplicate 'Ts' columns
 	spatAggPanda.to_csv(spatAggFolder + spatAggFname)
+
+	# print(attributeDict.columns.values,attributeLabel)
+	#LT: drop defender variables
+	excludeList = ['pressureFromDefender','pressureZone','angleInPossDefGoal','distToPlayerWithBall','shotDensityFromDefender','playerInIZ']
+	try:
+		attributeDict = attributeDict.drop(['pressureFromDefender','pressureZone','angleInPossDefGoal','distToPlayerWithBall','shotDensityFromDefender','playerInIZ'], axis=1)
+		for e in ['pressureFromDefender','pressureZone','angleInPossDefGoal','distToPlayerWithBall','shotDensityFromDefender','playerInIZ']:
+			attributeLabel.pop(e)
+	except:
+		print('\nWARN: Can not drop the columns out of the attributeDict.')
+		pass
+	# print(attributeDict.columns.values,attributeLabel)
+	# pdb.set_trace()
 
 	if debuggingMode:
 		elapsed = str(round(time.time() - tSpatAgg, 2))

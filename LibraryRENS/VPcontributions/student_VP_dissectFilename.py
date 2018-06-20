@@ -56,6 +56,7 @@ def KNVB(fname):
 		HomeTeam = grp[1]
 		AwayTeam = grp[2]
 		Half = grp[3]
+		MatchID = grp[0] #tijdelijke fix
 		if('Netherlands' in HomeTeam):
 			TeamAstring = HomeTeam
 			TeamBstring = AwayTeam
@@ -64,9 +65,9 @@ def KNVB(fname):
 			TeamBstring = HomeTeam
 
 		# Prepare the tabular export
-		exportData = [MatchDate,HomeTeam,AwayTeam,Half]
-		exportDataString = ['MatchDate','HomeTeam','AwayTeam','Half']
-		exportDataFullExplanation = ['Date of the match.','Home team.','Away Team.','Half of the match']
+		exportData = [MatchDate,HomeTeam,AwayTeam,Half,MatchID]
+		exportDataString = ['MatchDate','HomeTeam','AwayTeam','Half','MatchID']
+		exportDataFullExplanation = ['Date of the match.','Home team.','Away Team.','Half of the match','ID of the match']
 	else:
 		exportData, exportDataString, exportDataFullExplanation, fname = default(fname)
 

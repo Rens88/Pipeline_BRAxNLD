@@ -60,33 +60,65 @@ def process(trialEventsSpatAggExcerpt,exportData,exportDataString,exportFullExpl
 			laterColumns.append(ikey)
 	columnOrder = firstColumns + secondColumns + thirdColumns + laterColumns
 
-	if len(exportData[0]) <= len(firstColumns):
-		skippedData = True
-		newOrAdd(aggregatedOutputFilename,exportDataString,exportData,skippedData)
-		warn('\nWARNING: No Data exported.\nProbably because there were no targetevents detected.\nCheck if this was warned for in temporalAggregation.\n')
+	# if len(exportData[0]) <= len(firstColumns):
+	# ###if len(exportData.keys()) <= len(firstColumns):
+	# 	skippedData = True
+	# 	newOrAdd(aggregatedOutputFilename,exportDataString,exportData,skippedData)
+	# 	warn('\nWARNING: No Data exported.\nProbably because there were no targetevents detected.\nCheck if this was warned for in temporalAggregation.\n')
 
-		if debuggingMode:
-			elapsed = str(round(time.time() - tExportCSV, 2))
-			print('***** Time elapsed during exportCSV: %ss' %elapsed)
-		return appendEventAggregate
+	# 	if debuggingMode:
+	# 		elapsed = str(round(time.time() - tExportCSV, 2))
+	# 		print('***** Time elapsed during exportCSV: %ss' %elapsed)
+	# 	return appendEventAggregate
 
-	# Temporally aggregated data
-	skippedData = False
-	newOrAdd(aggregatedOutputFilename,exportDataString,exportData,skippedData)
-	varDescription(outputDescriptionFilename,exportDataString,exportFullExplanation)
+	# # Temporally aggregated data
+	# skippedData = False
+	# newOrAdd(aggregatedOutputFilename,exportDataString,exportData,skippedData)
 
-	# Spatially aggregated data
-	spatAggPanda = pd.concat([rawPanda, eventsPanda.loc[:, eventsPanda.columns != 'Ts'], attrPanda.loc[:, attrPanda.columns != 'Ts']], axis=1) # Skip the duplicate 'Ts' columns
-	spatAggPanda.to_csv(spatAggFolder + spatAggFname)
-
-	# Spatially aggregated data per event
-	# (with the specified window), added into one long file combining the whole database.
-	appendEventAggregate = eventAggregate(eventAggFolder,eventAggFname,appendEventAggregate,trialEventsSpatAggExcerpt,skipEventAgg_curFile,fileIdentifiers,columnOrder)
+	# check if file exists
+	# if not, create new
 
 	## Export attribute label for skip skipToDataSetLevel
 	if t[1] == 1: # only after the first file (attribute label won't change in the next iterations of the file by file analysis)
 		attrLabel_asPanda = pd.DataFrame.from_dict([attrLabel],orient='columns')
 		attrLabel_asPanda.to_csv(outputFolder + 'attributeLabel.csv')
+		exportData.to_csv(aggregatedOutputFilename)
+
+	elif isfile(aggregatedOutputFilename):
+		existing_df = pd.read_csv(aggregatedOutputFilename)
+		combined_df = pd.concat([existing_df, exportData],axis = 0, ignore_index = True)
+
+		try:
+			combined_df.drop(['Unnamed: 0'],axis = 1,inplace=True)
+		except:
+			warn('\nWARN: Couldnt find unnamed column.\nConsider specifying index column string to make it consistent.\nThis will result in a (mostly) empty column that should be named something with <Unnamed>.\n')
+
+		existingFirstColumns = [i for i in firstColumns if i in combined_df.keys()]
+		notExistingFirstColumns = [i for i in firstColumns if not i in combined_df.keys()]
+		strangeColumns = [i for i in notExistingFirstColumns if i not in ['TrialBasedIndex', 'eventTimeIndex', 'eventTime', 'Ts', 'X', 'Y', 'TeamID', 'PlayerID']]
+
+		if strangeColumns != []:
+			warn('\nWARNING: During export, these columns existed in the spatial aggregate, but were not exported:\n<%s>' %strangeColumns)
+
+		LastColumns = [i for i in combined_df.keys() if i not in existingFirstColumns]
+
+		columnOrderAggregatedOutput = existingFirstColumns + LastColumns
+
+		combined_df = combined_df[columnOrderAggregatedOutput]
+		combined_df.to_csv(aggregatedOutputFilename)
+	else:
+		warn('\nFATAL WARNING: It was not the first time that exportCSV was run, but still, the aggregatedOutputFilename <%s> could not be found. This means that the data from the current file was not exported.' %aggregatedOutputFilename)
+
+	varDescription(outputDescriptionFilename,exportDataString,exportFullExplanation)
+
+	# # Spatially aggregated data ----> moved to end of spatial aggregation
+	# spatAggPanda = pd.concat([rawPanda, eventsPanda.loc[:, eventsPanda.columns != 'Ts'], attrPanda.loc[:, attrPanda.columns != 'Ts']], axis=1) # Skip the duplicate 'Ts' columns
+	# spatAggPanda.to_csv(spatAggFolder + spatAggFname)
+
+	# Spatially aggregated data per event
+	# (with the specified window), added into one long file combining the whole database.
+
+	appendEventAggregate = eventAggregate(eventAggFolder,eventAggFname,appendEventAggregate,trialEventsSpatAggExcerpt,skipEventAgg_curFile,fileIdentifiers,columnOrder)
 
 	if debuggingMode:
 		elapsed = str(round(time.time() - tExportCSV, 2))
@@ -196,7 +228,41 @@ def eventAggregate(eventAggFolder,eventAggFname,appendEventAggregate,trialEvents
 			columnOrder.remove(ikey)
 
 	# Save as new csv (overwrite)
-	combinedData.to_csv(eventAggFolder + eventAggFname, index_label = 'DataSetIndex', columns = columnOrder)
+	# combinedData = combinedData.astype(object)
+	# print(type(combinedData))
+	# print(type(columnOrder))
+	# print(eventAggFolder + eventAggFname)
+	# test = pd.DataFrame([])
+	# test.to_csv(eventAggFolder + eventAggFname)
+
+	# print('test 1 successful')
+	# test = pd.DataFrame([],columns = ['DataSetIndex'])
+	# test.to_csv(eventAggFolder + eventAggFname, index_label = 'DataSetIndex')
+
+	# print('test 2 successful')
+
+	# test = pd.DataFrame([],columns = columnOrder)
+	# test.to_csv(eventAggFolder + eventAggFname, columns = columnOrder)
+
+	# print('test 3 successful')
+	# combinedData = combinedData[columnOrder]
+
+
+	tmp = pd.DataFrame([],index = combinedData.index)
+	for c in columnOrder:
+
+		tmp = tmp.join(combinedData[c])
+	tmp.to_csv(eventAggFolder + eventAggFname, index_label = 'DataSetIndex')
+
+	# print('BEFORE ordering columns')
+	# print(combinedData.keys())
+	# print('AFTER ordering columns')
+	# print(tmp.keys())
+	# print('**************************')
+	# print(combinedData.shape)
+	# combinedData = tmp
+	# print(combinedData.shape)
+	###combinedData.to_csv(eventAggFolder + eventAggFname, index_label = 'DataSetIndex')
 
 	return appendEventAggregate
 

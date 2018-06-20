@@ -7,18 +7,18 @@ import pdb; #pdb.set_trace()
 from warnings import warn
 import numpy as np
 
-if __name__ == '__main__':		
+if __name__ == '__main__':
 	checkWindow(rawDict,firstFrameTimeseries,windowTimeseries)
 	checkLengthExport(expData,expString,expExplanation)
 
-########################################################################	
+########################################################################
 
 def checkLengthExport(expData,expString,expExplanation):
 	if len(expData) != len(expString):
 		warn('\nExported data does not have the same length as the exported header strings:\nCheck whether you didnt forget to add any.\n')
 	if len(expData) != len(expExplanation):
 		warn('\nExported data does not have the same length as the exported variable explanation:\nCheck whether you didnt forget to add any.\n')
-########################################################################	
+########################################################################
 
 def checkWindow(rawDict,firstFrameTimeseries,windowTimeseries):
 	smallestTime = np.amin(rawDict['Time']['TsMS'])
