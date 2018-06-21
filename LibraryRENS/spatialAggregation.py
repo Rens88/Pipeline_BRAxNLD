@@ -100,15 +100,15 @@ def process(rawDict,attributeDict,attributeLabel,TeamAstring,TeamBstring,skipSpa
 	spatAggPanda.to_csv(spatAggFolder + spatAggFname)
 
 	# print(attributeDict.columns.values,attributeLabel)
-	#LT: drop defender variables
-	excludeList = ['pressureFromDefender','pressureZone','angleInPossDefGoal','distToPlayerWithBall','shotDensityFromDefender','playerInIZ']
-	try:
-		attributeDict = attributeDict.drop(['pressureFromDefender','pressureZone','angleInPossDefGoal','distToPlayerWithBall','shotDensityFromDefender','playerInIZ'], axis=1)
-		for e in ['pressureFromDefender','pressureZone','angleInPossDefGoal','distToPlayerWithBall','shotDensityFromDefender','playerInIZ']:
-			attributeLabel.pop(e)
-	except:
-		print('\nWARN: Can not drop the columns out of the attributeDict.')
-		pass
+	# #LT: drop defender variables
+	# excludeList = ['InBallPos','Shirt','dist to closest home','dist to closest visitor','pressureFromDefender','pressureZone','angleInPossDefGoal','distToPlayerWithBall','shotDensityFromDefender','playerInIZ']
+	# try:
+	# 	attributeDict = attributeDict.drop(excludeList, axis=1)
+	# 	for e in excludeList:
+	# 		attributeLabel.pop(e)
+	# except:
+	# 	print('\nWARN: Can not drop the columns out of the attributeDict.')
+	# 	pass
 	# print(attributeDict.columns.values,attributeLabel)
 	# pdb.set_trace()
 

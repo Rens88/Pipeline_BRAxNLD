@@ -75,23 +75,23 @@ def process(rawDict,attributeDict,attributeLabel,TeamAstring,TeamBstring,skipSpa
 	# print("secondhalf: ", secondHalfTime)
 	# # pdb.set_trace()
 
-	if skipSpatAgg: # Return eary if spatial aggregation is being skipped
-		return attributeDict,attributeLabel
+	# if skipSpatAgg: # Return eary if spatial aggregation is being skipped
+	# 	return attributeDict,attributeLabel
 
 	attributeDict,attributeLabel = \
-	zone(rawDict,attributeDict,attributeLabel,TeamAstring,TeamBstring)#,secondHalfTime)
+	zone(rawDict,attributeDict,attributeLabel,TeamAstring,TeamBstring,skipSpatAgg)#,secondHalfTime)
 
 	attributeDict,attributeLabel = \
-	control(rawDict,attributeDict,attributeLabel,TeamAstring,TeamBstring)
+	control(rawDict,attributeDict,attributeLabel,TeamAstring,TeamBstring,skipSpatAgg)
 
 	attributeDict,attributeLabel = \
-	pressure(rawDict,attributeDict,attributeLabel,TeamAstring,TeamBstring)#,secondHalfTime)
+	pressure(rawDict,attributeDict,attributeLabel,TeamAstring,TeamBstring,skipSpatAgg)#,secondHalfTime)
 
 	attributeDict,attributeLabel = \
-	density(rawDict,attributeDict,attributeLabel,TeamAstring,TeamBstring)#,secondHalfTime)
+	density(rawDict,attributeDict,attributeLabel,TeamAstring,TeamBstring,skipSpatAgg)#,secondHalfTime)
 
-	attributeDict,attributeLabel = \
-	dangerousity(rawDict,attributeDict,attributeLabel,TeamAstring,TeamBstring)
+	# attributeDict,attributeLabel = \
+	# dangerousity(rawDict,attributeDict,attributeLabel,TeamAstring,TeamBstring)
 
 	# attributeDict,attributeLabel = \
 	# dangerousityPerInterval(rawDict,attributeDict,attributeLabel,TeamAstring,TeamBstring)
@@ -241,7 +241,21 @@ def playerInPenaltyArea(curPlayerTeam,TeamString,curPlayerX,zoneMin_X,zoneMax_X,
 	return all(curPlayerTeam == TeamString) and all(curPlayerX >= zoneMin_X) and all(curPlayerX <= zoneMax_X) and all(curPlayerY >= zoneMin_Y) and all(curPlayerY <= zoneMax_Y)
 
 @timing
-def zone(rawDict,attributeDict,attributeLabel,TeamAstring,TeamBstring):#,secondHalfTime):
+def zone(rawDict,attributeDict,attributeLabel,TeamAstring,TeamBstring,skipSpatAgg):#,secondHalfTime):
+	##### THE STRINGS #####
+	# tmpZone = 'Value of player with ball in the final third (last ' + str(beginZone) + ' meters).'
+	# tmpInZone = 'Is player with ball in the final third (last ' + str(beginZone) + ' meters)?'
+	tmpZone = 'Value of player with ball in the final third (last 34 meters).'
+	tmpInZone = 'Is player with ball in the final third (last 34 meters)?'
+	tmpOpponentsHalf = 'Boolean to decide if a player is on the half of the opponent.'
+	tmpInPenaltyArea = 'Boolean to decide if a player is in the penalty area.'
+
+	attributeLabel_tmp = {'zone': tmpZone, 'inZone': tmpInZone, 'opponentsHalf': tmpOpponentsHalf, 'inPenaltyArea': tmpInPenaltyArea}
+	attributeLabel.update(attributeLabel_tmp)
+
+	if skipSpatAgg: # Return early if spatial aggregation is being skipped
+		return attributeDict,attributeLabel
+
 	##############   READ ZONE CSV   ###############
 	dirPath = os.path.dirname(os.path.realpath(__file__))
 	fileName = dirPath + '\\Zone.csv'
@@ -303,16 +317,7 @@ def zone(rawDict,attributeDict,attributeLabel,TeamAstring,TeamBstring):#,secondH
 
 	attributeDict = pd.concat([attributeDict, newAttributes], axis=1)
 
-	##### THE STRINGS #####
-	tmpZone = 'Value of player with ball in the final third (last ' + str(beginZone) + ' meters).'
-	tmpInZone = 'Is player with ball in the final third (last ' + str(beginZone) + ' meters)?'
-	tmpOpponentsHalf = 'Boolean to decide if a player is on the half of the opponent.'
-	tmpInPenaltyArea = 'Boolean to decide if a player is in the penalty area.'
-
-	attributeLabel_tmp = {'zone': tmpZone, 'inZone': tmpInZone, 'opponentsHalf': tmpOpponentsHalf, 'inPenaltyArea': tmpInPenaltyArea}
-	attributeLabel.update(attributeLabel_tmp)
-
-	altogether = pd.concat([rawDict,attributeDict], axis=1)
+	# altogether = pd.concat([rawDict,attributeDict], axis=1)
 	# altogether.to_csv('D:\\KNVB\\test.csv')
 
 	# pdb.set_trace()
@@ -320,7 +325,19 @@ def zone(rawDict,attributeDict,attributeLabel,TeamAstring,TeamBstring):#,secondH
 	return attributeDict,attributeLabel
 
 @timing
-def control(rawDict,attributeDict,attributeLabel,TeamAstring,TeamBstring):
+def control(rawDict,attributeDict,attributeLabel,TeamAstring,TeamBstring,skipSpatAgg):
+	##### THE STRINGS #####
+	# Export a string label of each new attribute in the labels dictionary (useful for plotting purposes)
+	tmpVelRelToBall = 'Relative velocity between player and ball.'
+	tmpVelRelToBall2 = 'Square of relative velocity between player and ball.'
+	tmpControl = 'Ball control of player with ball.'
+
+	attributeLabel_tmp = {'velRelToBall': tmpVelRelToBall, 'velRelToBallSquared': tmpVelRelToBall2, 'Link_Control': tmpControl}
+	attributeLabel.update(attributeLabel_tmp)
+
+	if skipSpatAgg: # Return early if spatial aggregation is being skipped
+		return attributeDict,attributeLabel
+
 	##### THE DATA #####
 	# In this case, the new attribute will be computed based on a group (i.e., team) value
 	ballVals = rawDict[rawDict['PlayerID'] == 'ball'].set_index('Ts')
@@ -412,15 +429,6 @@ def control(rawDict,attributeDict,attributeLabel,TeamAstring,TeamBstring):
 
 	attributeDict = pd.concat([attributeDict, newAttributes], axis=1)
 
-	##### THE STRINGS #####
-	# Export a string label of each new attribute in the labels dictionary (useful for plotting purposes)
-	tmpVelRelToBall = 'Relative velocity between player and ball.'
-	tmpVelRelToBall2 = 'Square of relative velocity between player and ball.'
-	tmpControl = 'Ball control of player with ball.'
-
-	attributeLabel_tmp = {'velRelToBall': tmpVelRelToBall, 'velRelToBallSquared': tmpVelRelToBall2, 'Link_Control': tmpControl}
-	attributeLabel.update(attributeLabel_tmp)
-
 	# altogether = pd.concat([rawDict,attributeDict], axis=1)
 	# altogether.to_csv('D:\\KNVB\\test.csv')
 	# pdb.set_trace()
@@ -428,9 +436,22 @@ def control(rawDict,attributeDict,attributeLabel,TeamAstring,TeamBstring):
 	return attributeDict,attributeLabel
 
 @timing
-def pressure(rawDict,attributeDict,attributeLabel,TeamAstring,TeamBstring):#,secondHalfTime):
+def pressure(rawDict,attributeDict,attributeLabel,TeamAstring,TeamBstring,skipSpatAgg):#,secondHalfTime):
 	def distance(X_1,Y_1,X_2,Y_2):
 		return np.sqrt((X_1 - X_2)**2 + (Y_1 - Y_2)**2)
+
+	##### THE STRINGS #####
+	tmpLink_Pressure = 'Pressure on player with ball.'
+	tmpLink_PressureFromDefender = 'Pressure from defender.'
+	tmpLink_PressureZone = 'Pressure Zone for defender.'
+	tmpAngleInPossDefGoal = 'Angle for player with ball between defender and goal.'
+	tmpDistToPlayerWithBall = 'Distance to player with ball, only for defenders.'
+
+	attributeLabel_tmp = {'Link_Pressure': tmpLink_Pressure, 'Link_PressureFromDefender': tmpLink_PressureFromDefender, 'Link_PressureZone': tmpLink_PressureZone, 'angleInPossDefGoal': tmpAngleInPossDefGoal, 'distToPlayerWithBall': tmpDistToPlayerWithBall}
+	attributeLabel.update(attributeLabel_tmp)
+
+	if skipSpatAgg: # Return early if spatial aggregation is being skipped
+		return attributeDict,attributeLabel
 
 	#distances
 	highPressDist = 1
@@ -534,15 +555,6 @@ def pressure(rawDict,attributeDict,attributeLabel,TeamAstring,TeamBstring):#,sec
 
 	attributeDict = pd.concat([attributeDict, newAttributes], axis=1)
 
-	##### THE STRINGS #####
-	tmpLink_Pressure = 'Pressure on player with ball.'
-	tmpLink_PressureFromDefender = 'Pressure from defender.'
-	tmpLink_PressureZone = 'Pressure Zone for defender.'
-	tmpAngleInPossDefGoal = 'Angle for player with ball between defender and goal.'
-	tmpDistToPlayerWithBall = 'Distance to player with ball, only for defenders.'
-
-	attributeLabel_tmp = {'Link_Pressure': tmpLink_Pressure, 'Link_PressureFromDefender': tmpLink_PressureFromDefender, 'Link_PressureZone': tmpLink_PressureZone, 'angleInPossDefGoal': tmpAngleInPossDefGoal, 'distToPlayerWithBall': tmpDistToPlayerWithBall}
-	attributeLabel.update(attributeLabel_tmp)
 	# altogether = pd.concat([rawDict,attributeDict], axis=1)
 	# altogether.to_csv('D:\\KNVB\\test.csv')
 	# pdb.set_trace()
@@ -620,9 +632,26 @@ def plotZone(pointA,pointB,pointC,pointD,pointE,playersOpponent,playersOwnTeam):
 	# pdb.set_trace()
 
 @timing
-def density(rawDict,attributeDict,attributeLabel,TeamAstring,TeamBstring):#,secondHalfTime):
+def density(rawDict,attributeDict,attributeLabel,TeamAstring,TeamBstring,skipSpatAgg):#,secondHalfTime):
 	def distance(X_1,Y_1,X_2,Y_2):
 		return np.sqrt((X_1 - X_2)**2 + (Y_1 - Y_2)**2)
+
+	##### THE STRINGS #####
+	tmpDensity = 'Density for player with ball.'
+	tmpLink_SDPlayerWithBall = 'Shot Density for player with ball.'
+	tmpLink_SDDefender = 'Shot Density from defender in the Blocking Zone on player with ball.'
+	tmpLink_PDPlayerWithBall = 'Pass Density for player with ball.'
+	tmpAngleToGoal = 'Angle to goal for player with ball.'
+	tmpPlayerInIZ = 'Player in the Interception Zone.'
+	tmpMajority = 'Difference between the number of defenders and attackers within the Interception Zone.'
+	tmpCentrality = 'Centrality for the player with ball.'
+	tmpDistToGoal = 'Distance from player with ball to the goal.'
+
+	attributeLabel_tmp = {'Link_Density': tmpDensity, 'Link_SDPlayerWithBall': tmpLink_SDPlayerWithBall, 'Link_SDDefender': tmpLink_SDDefender, 'Link_PDPlayerWithBall': tmpLink_PDPlayerWithBall, 'angleToGoal': tmpAngleToGoal, 'playerInIZ': tmpPlayerInIZ, 'majority': tmpMajority, 'centrality': tmpCentrality, 'distToGoal': tmpDistToGoal}
+	attributeLabel.update(attributeLabel_tmp)
+
+	if skipSpatAgg: # Return early if spatial aggregation is being skipped
+		return attributeDict,attributeLabel
 
 	#variables
 	goalBZWidth = 5 #2.68 meters next to the goalposts
@@ -771,19 +800,6 @@ def density(rawDict,attributeDict,attributeLabel,TeamAstring,TeamBstring):#,seco
 
 	attributeDict = pd.concat([attributeDict, newAttributes], axis=1)
 
-	##### THE STRINGS #####
-	tmpDensity = 'Density for player with ball.'
-	tmpLink_SDPlayerWithBall = 'Shot Density for player with ball.'
-	tmpLink_SDDefender = 'Shot Density from defender in the Blocking Zone on player with ball.'
-	tmpLink_PDPlayerWithBall = 'Pass Density for player with ball.'
-	tmpAngleToGoal = 'Angle to goal for player with ball.'
-	tmpPlayerInIZ = 'Player in the Interception Zone.'
-	tmpMajority = 'Difference between the number of defenders and attackers within the Interception Zone.'
-	tmpCentrality = 'Centrality for the player with ball.'
-	tmpDistToGoal = 'Distance from player with ball to the goal.'
-
-	attributeLabel_tmp = {'Link_Density': tmpDensity, 'Link_SDPlayerWithBall': tmpLink_SDPlayerWithBall, 'Link_SDDefender': tmpLink_SDDefender, 'Link_PDPlayerWithBall': tmpLink_PDPlayerWithBall, 'angleToGoal': tmpAngleToGoal, 'playerInIZ': tmpPlayerInIZ, 'majority': tmpMajority, 'centrality': tmpCentrality, 'distToGoal': tmpDistToGoal}
-	attributeLabel.update(attributeLabel_tmp)
 	# altogether = pd.concat([rawDict,attributeDict], axis=1)
 	# altogether.to_csv('D:\\KNVB\\test.csv')
 

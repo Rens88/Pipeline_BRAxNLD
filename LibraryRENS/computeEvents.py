@@ -72,48 +72,50 @@ def process(targetEvents,aggregateLevel,rawPanda,attrPanda,eventsPanda,TeamAstri
 		targetEvents = \
 		addRegularEvents(rawPanda,targetEvents,TeamAstring,TeamBstring,aggregateLevel)	
 
-	# if 'Turnovers' in targetEvents:
-	# 	if len(targetEvents['Turnovers'][0]) == 6: 
-	# 		# it's the Turnovers with XY
-	# 		# So determine in or outside of 16m
-	# 		for idx,val in enumerate(targetEvents['Turnovers']):
-	# 			curTs = val[0]
-	# 			refTeam = val[1]
-	# 			if refTeam == TeamAstring:
-	# 				othTeam = TeamBstring
-	# 			elif refTeam == TeamBstring:
-	# 				othTeam = TeamAstring
-	# 			else:
-	# 				warn('\nFATAL WARNING: Could not determine othTeam in Turnovers events...\nrefTeam = <%s>\nTeamAstring = <%s>\nTeamBstring = <%s>\n' %(refTeam,TeamAstring,TeamBstring))
-	# 				pdb.set_trace()
+	### TO DO, PUT IN SEPARATE FUNCTION
+	if 'Turnovers' in targetEvents and targetEvents['Turnovers'] != []:
+		
+		if len(targetEvents['Turnovers'][0]) == 6: 
+			# it's the Turnovers with XY
+			# So determine in or outside of 16m
+			for idx,val in enumerate(targetEvents['Turnovers']):
+				curTs = val[0]
+				refTeam = val[1]
+				if refTeam == TeamAstring:
+					othTeam = TeamBstring
+				elif refTeam == TeamBstring:
+					othTeam = TeamAstring
+				else:
+					warn('\nFATAL WARNING: Could not determine othTeam in Turnovers events...\nrefTeam = <%s>\nTeamAstring = <%s>\nTeamBstring = <%s>\n' %(refTeam,TeamAstring,TeamBstring))
+					pdb.set_trace()
 
-	# 			curX = val[5][0]
-	# 			curY = val[5][1]
+				curX = val[5][0]
+				curY = val[5][1]
 				
-	# 			# NOT TAKING FIELD DIMENSIONS INTO ACCOUNT
-	# 			warn('\nWARNING: I\'m not (yet) taking field dimensions into account.\nPenalty box is based on generic measures (same as in plotSnapshot)\n')
-	# 			warn('\nWARNING: At computEvents, I\'m now only very crudely verifying if the Turnovers happened on the refTeam\'s side of the pitch.\n')
-	# 			avgRefTeam = np.nanmean(rawPanda.loc[rawPanda['TeamID'] == refTeam,'X'])
-	# 			avgOthTeam = np.nanmean(rawPanda.loc[rawPanda['TeamID'] == othTeam,'X'])
+				# NOT TAKING FIELD DIMENSIONS INTO ACCOUNT
+				warn('\nWARNING: I\'m not (yet) taking field dimensions into account.\nPenalty box is based on generic measures (same as in plotSnapshot)\n')
+				warn('\nWARNING: At computEvents, I\'m now only very crudely verifying if the Turnovers happened on the refTeam\'s side of the pitch.\n')
+				avgRefTeam = np.nanmean(rawPanda.loc[rawPanda['TeamID'] == refTeam,'X'])
+				avgOthTeam = np.nanmean(rawPanda.loc[rawPanda['TeamID'] == othTeam,'X'])
 
-	# 			label = 'outside_16m'
-	# 			if curY >= -20 and curY <= 20:
-	# 				if curX <= -33.5: # left attacking
-	# 					label = 'inside_16m'
-	# 					if avgRefTeam < avgOthTeam:
-	# 						warn('\nWARNING: Suspected turnover on own half.\nCheck event data and mismatches in Turnovers.\nCurrently, these event labels are overwritten as <outside_16m>.\n')
-	# 						label = 'outside_16m'
-	# 				elif curX >= 33.5: # right attacking
-	# 					label = 'inside_16m'
-	# 					if avgRefTeam > avgOthTeam:
-	# 						warn('\nWARNING: Suspected turnover on own half.\nCheck event data and mismatches in Turnovers.\nCurrently, these event labels are overwritten as <outside_16m>.\n')
-	# 						label = 'outside_16m'
+				label = 'outside_16m'
+				if curY >= -20 and curY <= 20:
+					if curX <= -33.5: # left attacking
+						label = 'inside_16m'
+						if avgRefTeam < avgOthTeam:
+							warn('\nWARNING: Suspected turnover on own half.\nCheck event data and mismatches in Turnovers.\nCurrently, these event labels are overwritten as <outside_16m>.\n')
+							label = 'outside_16m'
+					elif curX >= 33.5: # right attacking
+						label = 'inside_16m'
+						if avgRefTeam > avgOthTeam:
+							warn('\nWARNING: Suspected turnover on own half.\nCheck event data and mismatches in Turnovers.\nCurrently, these event labels are overwritten as <outside_16m>.\n')
+							label = 'outside_16m'
 			
-	# 			# write a checkup based on the guessed data driven playing side
-	# 			# only for inside
+				# write a checkup based on the guessed data driven playing side
+				# only for inside
 
-	# 			newVal = (val[0],val[1],val[2],val[3],val[4],val[5],label)
-	# 			targetEvents['Turnovers'][idx] = newVal
+				newVal = (val[0],val[1],val[2],val[3],val[4],val[5],label)
+				targetEvents['Turnovers'][idx] = newVal
 
 	targetEvents = \
 	student_LT_computeEvents.process(targetEvents,aggregateLevel,rawPanda,attrPanda,eventsPanda,TeamAstring,TeamBstring)
@@ -171,12 +173,13 @@ def overlappingTargets(targetEvents,key,aggregateLevel,excludeOverlappingEvents,
 			tEnd = currentEvent[0] - aggregateLevel[2] # tEnd - lag
 			tStart = currentEvent[0] - aggregateLevel[1] - aggregateLevel[2] # tEnd - window - lagg
 		else:
+			tEnd = currentEvent[0] - aggregateLevel[2]
 			# No window indicated, so take the full event (if possible)
-			if len(currentEvent) < 3:
-				warn('\nFATAL WARNING: No tStart indicated for this event, nor a window was given for the temporal aggregation.\nEither: 1) Indicate a window for the temporal aggregation.\nOr: 2) Export a tStart for the event you\'re aggregating.')
-						
-			tEnd = currentEvent[0]# - aggregateLevel[2]
-			tStart = currentEvent[2]# - aggregateLevel[1]			
+			if len(currentEvent) < 3 or aggregateLevel[2] == None:
+				warn('\nWARNING: No tStart indicated for this event, nor a window was given for the temporal aggregation.\nCould not determine whether the event overlapped the previous event.\n')
+				tStart = None		
+			else:				
+				tStart = currentEvent[2]# - aggregateLevel[1]			
 
 
 		dtPrev = tEnd # by default, dtPrev is as big as the window (only relevant for the first event)
@@ -189,26 +192,26 @@ def overlappingTargets(targetEvents,key,aggregateLevel,excludeOverlappingEvents,
 			targetEvents_new[key][-1] = currentEvent + (dtPrev,False,)
 			availableWindow.append(dtPrev)
 
+			if tStart != None:
+				if tEnd_prevEvent > tStart:
+					targetEvents_new[key][-1] = currentEvent + (dtPrev,True,)
+					currentEvent = targetEvents_new[key][-1]
 
-			if tEnd_prevEvent > tStart:
-				targetEvents_new[key][-1] = currentEvent + (dtPrev,True,)
-				currentEvent = targetEvents_new[key][-1]
+					if excludeOverlappingEvents:					
+						if methodOverlap == 'exclude':
+							# simply exclude
 
-				if excludeOverlappingEvents:					
-					if methodOverlap == 'exclude':
-						# simply exclude
+							targetEvents_new[key].remove(currentEvent)
 
-						targetEvents_new[key].remove(currentEvent)
-
-					elif methodOverlap == 'limitWindow':
-						# or limit the window size 
-						# and report window limit
-						tStart = tEnd_prevEvent
-						warn('UNFINISHED')
-					elif methodOverlap == 'include':
-						donothing = [] # just leave it in there
-					else:
-						warn('\nWARNING: Only <exclude> or <limitWindow> are valid inputs for <methodOverlap> when excluding events in temporalAggregation.\nBy default, overlapping events are skipped.\n')
+						elif methodOverlap == 'limitWindow':
+							# or limit the window size 
+							# and report window limit
+							tStart = tEnd_prevEvent
+							warn('UNFINISHED')
+						elif methodOverlap == 'include':
+							donothing = [] # just leave it in there
+						else:
+							warn('\nWARNING: Only <exclude> or <limitWindow> are valid inputs for <methodOverlap> when excluding events in temporalAggregation.\nBy default, overlapping events are skipped.\n')
 			# else:
 			# 	print('hi')
 			# 	targetEvents_new[key][-1] = currentEvent + (False,)

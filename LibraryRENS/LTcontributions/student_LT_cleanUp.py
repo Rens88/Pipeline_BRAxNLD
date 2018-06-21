@@ -125,14 +125,18 @@ def KNVB(fname,cleanFname,dataFolder,cleanedFolder,headers,readAttributeCols,deb
 
 def setPlayerID(df,ID,Tid,TeamBstring):
 	#Copy shirtnumbers of opponnents to PlayerID's and multiply with -1 if they don't have a PlayerID
-	teamOppIdx = (df[Tid] == TeamBstring) & (df[ID] == 0)
+	teamOppIdx = (df[ID] == 0) & (df[Tid].notnull())
 	df.loc[teamOppIdx,ID] = df.loc[teamOppIdx,'Shirt'] * -1
 
 	#Set ball
 	# Ball: Team = NaN, PlrID = 0, Shirt = 1, inBallPoss always 0
 	ballIdx = (df[Tid].isnull()) & (df[ID] == 0) & (df['Shirt'] == 1)
-	df.loc[ballIdx,ID] = 'ball'
-
+	if not any(ballIdx):
+		warn('\nFATAL ERROR: Can not identify the ball. TeamID has to be null, PlayerID has to be 0, Shirtnumber has to be 1.')
+		exit()
+	else:
+		df.loc[ballIdx,ID] = 'ball'
+	
 	return df
 
 def omitXandY_equals0(df,x,y,ID):

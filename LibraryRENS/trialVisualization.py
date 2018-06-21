@@ -189,7 +189,7 @@ def	plotSnapshot(outputFilename,currentEvent,rowswithinrangePlayerA,rowswithinra
 	ax.add_artist(MidCircle)
 
 	# For FDP, plot the full field (could be rotated as well?)
-	if dataType == 'FDP':
+	if dataType == 'FDP' or dataType == 'KNVB':
 		x1 = XBL
 		x2 = XBR
 		x0 = X_mid_bot
@@ -398,6 +398,13 @@ def plotPerPlayerPerTeam(plotThisAttribute,eventExcerptPanda,rowswithinrangePlay
 			pltA = plt.plot(X1[player].loc[tmp],Y1[player].loc[tmp],'s',color=curColor) 
 		else:
 			pltA = plt.plot(X1[player],Y1[player],color=curColor,linestyle='-') 
+
+	#LT: print X1 en player. wordt nu niet geplot
+
+
+
+
+
 
 
 	for ix,player in enumerate(X2.keys()):

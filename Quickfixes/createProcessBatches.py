@@ -5,7 +5,8 @@ import numpy as np
 #################################
 ### User input
 batchFolder = 'C:\\Users\\rensm\\Documents\\GitHub\\Pipeline_BRAxNLD\\ProcessBRxNL_iterateWindows\\'
-nBatches = 15
+batchFolder = 'C:\\Users\\Lars\\Documents\\GitHub\\Pipeline_BRAxNLD\\ProcessBRxNL_iterateWindows\\'
+nBatches = 3
 #################################
 
 

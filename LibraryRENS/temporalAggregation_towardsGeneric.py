@@ -78,6 +78,37 @@ def processEventAggOnly(df,newStart,newEnd,aggregateEvent,attrLabel_asPanda,aggr
 	
 	prev_FileID = []
 
+
+	# print('REMEMBER TO DELETE THIS!!!!!!!!!')
+	# print('REMEMBER TO DELETE THIS!!!!!!!!!')
+	# print('REMEMBER TO DELETE THIS!!!!!!!!!')
+	# print('REMEMBER TO DELETE THIS!!!!!!!!!')
+	# print('REMEMBER TO DELETE THIS!!!!!!!!!')
+	# print('REMEMBER TO DELETE THIS!!!!!!!!!')
+	# print('REMEMBER TO DELETE THIS!!!!!!!!!')
+	# print('REMEMBER TO DELETE THIS!!!!!!!!!')
+	# print('REMEMBER TO DELETE THIS!!!!!!!!!')
+	# print('REMEMBER TO DELETE THIS!!!!!!!!!')
+	# print('REMEMBER TO DELETE THIS!!!!!!!!!')
+	# print('REMEMBER TO DELETE THIS!!!!!!!!!')
+	# print('REMEMBER TO DELETE THIS!!!!!!!!!')
+	# print('REMEMBER TO DELETE THIS!!!!!!!!!')
+	# print('REMEMBER TO DELETE THIS!!!!!!!!!')
+	# print('REMEMBER TO DELETE THIS!!!!!!!!!')
+	# print('REMEMBER TO DELETE THIS!!!!!!!!!')
+	# print('REMEMBER TO DELETE THIS!!!!!!!!!')
+	# print('REMEMBER TO DELETE THIS!!!!!!!!!')
+	# print('REMEMBER TO DELETE THIS!!!!!!!!!')
+	# print('REMEMBER TO DELETE THIS!!!!!!!!!')
+	# print('REMEMBER TO DELETE THIS!!!!!!!!!')
+	# print('REMEMBER TO DELETE THIS!!!!!!!!!')
+	# print('REMEMBER TO DELETE THIS!!!!!!!!!')
+	# print('REMEMBER TO DELETE THIS!!!!!!!!!')
+	# print('REMEMBER TO DELETE THIS!!!!!!!!!')
+	# warn('REMEMBER TO DELETE THIS!!!!!!!!!')
+
+	# uniqueEvents = ['77_ERE-P_XIV_Turnovers_000', '77_ERE-P_XIV_Turnovers_001', '77_ERE-P_XIV_Turnovers_002','77_ERE-P_XIV_Turnovers_003','77_ERE-P_XIV_Turnovers_004']
+
 	for idx,currentEventUID in enumerate(uniqueEvents):
 
 		dfCurEventOriginal = df[df['EventUID'] == currentEventUID].copy()
@@ -195,7 +226,9 @@ def processEventAggOnly(df,newStart,newEnd,aggregateEvent,attrLabel_asPanda,aggr
 
 		optionalInput = {'attrLabel':attrLabel_asPanda} # attrLabel is not actually optional.
 
-		exportCurrentData, overallString, overallExplanation =\
+		# interpolatedCurEventExcerptPanda.to_csv('tmp.csv')
+
+		exportCurrentData, overallString, overallExplanation, players =\
 		aggregateCurrentEvent(attrDictCols_numeric,window,interpolatedCurEventExcerptPanda,refTeam,othTeam,ref,oth,exportCurrentData,aggrMeth_popLevel,aggrMeth_playerLevel,aggregatePerPlayer,aggregationOrders,overallString,optionalInput,populations,eventDescrString,targetEvents,aggregateEvent)
 
 		currentAsPanda = pd.DataFrame([[d for d in exportCurrentData]],columns=overallString,index = [idx])
@@ -233,7 +266,10 @@ def processEventAggOnly(df,newStart,newEnd,aggregateEvent,attrLabel_asPanda,aggr
 def process(targetEvents,aggregateLevel,rawDict,attributeDict,exportData,exportDataString,exportFullExplanation,TeamAstring,TeamBstring,debuggingMode,skipEventAgg_curFile,fileIdentifiers,attrLabel,aggregatePerPlayer,includeEventInterpolation,datasetFramerate):
 	tTempAgg = time.time()
 	FileID = "_".join(fileIdentifiers)
-						
+	
+	# print(attributeDict.columns.values,attrLabel)
+	# pdb.set_trace()
+
 	eventExcerptPanda = checkIfDataExists(aggregateLevel,debuggingMode,tTempAgg,exportData,exportDataString,exportFullExplanation,attrLabel,targetEvents)
 
 	attributeDict = cleanUp_ballSpeedAcceleration(rawDict,attributeDict) # something that could be part of clean-up:
@@ -311,6 +347,11 @@ def process(targetEvents,aggregateLevel,rawDict,attributeDict,exportData,exportD
 		
 		
 		# tmp = rawDict[rawDict['Ts'] > window[0]] 
+		print(currentEvent)
+		if window[0] > window[1]:
+			warn('\nWARNING: start <%s> occurred before <%s> end. This is indicated in <window>.\nAs a working solution, the pipeline continues by swapping the originally indicated start with the orginally indicated end.' %window)
+			window = (window[1],window[0])
+			pdb.set_trace()
 		tmp = attributeDict[attributeDict['Ts'] > window[0]]
 		rowswithinrange = tmp[tmp['Ts'] <= window[1]].index
 
@@ -521,7 +562,9 @@ def process(targetEvents,aggregateLevel,rawDict,attributeDict,exportData,exportD
 		## Systematically aggregate all existing spatial aggregates		
 		optionalInput = {'attributeDict':attributeDict,'rawDict':rawDict,'overallExplanation':overallExplanation,'attrLabel':attrLabel, 'rowswithinrange':rowswithinrange}
 
-		exportCurrentData, overallString, overallExplanation =\
+
+		# print(currentEvent)
+		exportCurrentData, overallString, overallExplanation, players =\
 		aggregateCurrentEvent(attrDictCols_numeric,window,interpolatedCurEventExcerptPanda,refTeam,othTeam,ref,oth,exportCurrentData,aggrMeth_popLevel,aggrMeth_playerLevel,aggregatePerPlayer,aggregationOrders,overallString,optionalInput,populations,eventDescrString,targetEvents,aggregateLevel[0])
 		
 		# print(len(overallString))
@@ -608,18 +651,14 @@ def checkIfDataExists(aggregateLevel,debuggingMode,tTempAgg,exportData,exportDat
 	return eventExcerptPanda
 def cleanUp_ballSpeedAcceleration(rawDict,attributeDict):
 	# something that could be part of clean-up:
-	if 'Acceleration' in attributeDict:
+	if 'Acceleration' in attributeDict.keys():
 		if not all(np.isnan(attributeDict.loc[rawDict['PlayerID'] == 'ball','Acceleration'])):
 			attributeDict.loc[rawDict['PlayerID'] == 'ball','Acceleration'] = np.nan
 			warn('\nWARN: Some datasets also give the acceleration of the ball.\nTo avoid conflicts, these input values will be overwritten with empty values.\nIf you are in fact interested in Acceleration of the ball, then create a new feature that refers to the ball specifically (ballAcceleration).\n')
-	else:
-		warn('\nWARN: Acceleration not in attributeDict.')
-	if 'Speed' in attributeDict:
+	if 'Speed' in attributeDict.keys():
 		if not all(np.isnan(attributeDict.loc[rawDict['PlayerID'] == 'ball','Speed'])):
 			attributeDict.loc[rawDict['PlayerID'] == 'ball','Speed'] = np.nan
 			warn('\nWARN: Some datasets also give the Speed of the ball.\nTo avoid conflicts, these input values will be overwritten with empty values.\nIf you are in fact interested in Speed of the ball, then create a new feature that refers to the ball specifically (ballSpeed).\n')
-	else:
-		warn('\nWARN: Speed not in attributeDict.')
 	return attributeDict
 
 def prepareExportStrings(exportDataString,aggregateLevel,exportFullExplanation):
@@ -675,8 +714,10 @@ def userInput():
 
 	populations = ['allTeam','refTeam','othTeam']
 	aggregationOrders = aggregationOrder*len(populations)
-	aggrMeth_playerLevel = ['avg', 'std'] # specifically for pertime perplayer
-	aggrMeth_popLevel = ['avg', 'std','cnt']
+	# aggrMeth_playerLevel = ['avg', 'std'] # specifically for pertime perplayer
+	# aggrMeth_popLevel = ['avg', 'std','cnt']
+	aggrMeth_playerLevel = ['avg'] # specifically for pertime perplayer
+	aggrMeth_popLevel = ['avg', 'min','max','cnt'] #LT: count belangrijk om te zien of die over time of player heen gaat. Bij time gelijk aan aantal timestamps
 	return freqInterpolatedData,populations,aggregationOrders,aggrMeth_playerLevel,aggrMeth_popLevel
 
 
@@ -867,8 +908,7 @@ def aggregateTemporally(data,*positional_parameters,**keyword_parameters):
 		return count, avg, std, sumVal, minVal, maxVal, med, sem, kur, ske
 
 	# continue to create the strings in the full version
-	exportCurrentData, targetGroup, curKeyString, curLabel, eventDescrString, overallString, overallExplanation = positional_parameters
-	# print('TARGET GROUP: ' + targetGroup)
+	exportCurrentData,targetGroup, curKeyString, curLabel, eventDescrString, overallString, overallExplanation = positional_parameters
 
 	if 'aggrMethods' in keyword_parameters:
 		aggrMethods = keyword_parameters['aggrMethods']
@@ -1171,7 +1211,7 @@ def aggregateCurrentEvent(attrDictCols_numeric,window,interpolatedCurEventExcerp
 				rawDict.to_csv('rawDict_complete.csv')
 				attributeDict.loc[rowswithinrange].to_csv('attributeDict_rowswithinrange.csv')
 				attributeDict.to_csv('attributeDict_complete.csv')
-				attributeDict.loc[rawDict['PlayerID'] == 'groupRow'].to_csv('attributeDict_allGropuRows.csv') #LT: changed to rawDict
+				attributeDict.loc[rawDict['PlayerID'] == 'groupRow'].to_csv('attributeDict_allGropuRows.csv')
 				print('Apparently, targetGroup has already been allocated as a grouprow:' )
 				print('targetGroup = %s' %targetGroup)
 				print('----')
@@ -1211,7 +1251,11 @@ def aggregateCurrentEvent(attrDictCols_numeric,window,interpolatedCurEventExcerp
 				curContent = (np.isnan(interpolatedCurEventExcerptPanda[key]) == False) & (interpolatedCurEventExcerptPanda['PlayerID'] != 'ball')
 				# curContent = interpolatedCurEventExcerptPanda.loc[curContent,'PlayerID'] != 'ball'
 				targetGroup = 'playerRows'
-
+			elif key in ['InBallPos','Shirt','dist to closest home','dist to closest visitor','zone','inZone','opponentsHalf']:
+				tmp = ['InBallPos','Shirt','dist to closest home','dist to closest visitor','zone','inZone','opponentsHalf']
+				warn('\nWARNING: Update these features in cleanup and spatial aggregation. They had (unnecessary) info for the ball...\n%s' %tmp)
+				targetGroup = 'playerRows'
+				curContent = (np.isnan(interpolatedCurEventExcerptPanda[key]) == False) & (interpolatedCurEventExcerptPanda['PlayerID'] != 'ball')
 			else:
 				warn('\nFATAL WARNING: Somehow, targetGroup was still empty. My best guess is that it has to be a playerRow, but this is JUST GUESSING.\n!!!!!!!!!!!!!!!! NEED TO FIX THIS !!!!!!!!!!!!!!!!!!!!!!!!!!\nKey = <%s>' %key)
 				targetGroup = 'playerRows'
@@ -1287,4 +1331,4 @@ def aggregateCurrentEvent(attrDictCols_numeric,window,interpolatedCurEventExcerp
 
 		# if len(exportCurrentData) > 165:
 		# 	pdb.set_trace()
-	return exportCurrentData, overallString, overallExplanation 
+	return exportCurrentData, overallString, overallExplanation, players

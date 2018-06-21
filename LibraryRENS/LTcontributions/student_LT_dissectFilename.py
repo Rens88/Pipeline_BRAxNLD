@@ -45,7 +45,7 @@ def process(fname,dataType,TeamAstring,TeamBstring):
 
 def KNVB(fname):	
 	# Using regular expression to extract info from filename		
-	regex = r'(\d{8})_([a-zA-Z\s\d]*)_([a-zA-Z\s\d]*)_([12])'
+	regex = r'([\d]*)_([a-zA-Z\s\d]*)_([a-zA-Z\s\d]*)_([12])'
 	match = re.search(regex,fname)
 	print(fname)
 	if match:
@@ -54,13 +54,15 @@ def KNVB(fname):
 		HomeTeam = grp[1]
 		AwayTeam = grp[2]
 		Half = grp[3]
-		#Netherlands is always TeamAstring
-		if("Netherlands" in HomeTeam):
-			TeamAstring = HomeTeam
-			TeamBstring = AwayTeam
-		else:
-			TeamAstring = AwayTeam
-			TeamBstring = HomeTeam
+		#Netherlands is always TeamAstring 
+		# if("Netherlands" in HomeTeam):
+		# 	TeamAstring = HomeTeam
+		# 	TeamBstring = AwayTeam
+		# else:
+		# 	TeamAstring = AwayTeam
+		# 	TeamBstring = HomeTeam
+		TeamAstring = HomeTeam
+		TeamBstring = AwayTeam
 
 		# Prepare the tabular export
 		exportData = [MatchDate,HomeTeam,AwayTeam,Half]

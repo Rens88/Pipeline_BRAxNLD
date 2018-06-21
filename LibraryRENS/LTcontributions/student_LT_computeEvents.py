@@ -12,6 +12,7 @@ import pandas as pd
 from warnings import warn
 import pdb; #pdb.set_trace()
 import random
+import datetime
 
 ## Here, you can clarify which functions exist in this module.
 if __name__ == '__main__': 
@@ -24,15 +25,17 @@ if __name__ == '__main__':
 ## Here, you specifiy what each function does
 def process(targetEvents,aggregateLevel,rawPanda,attrPanda,eventsPanda,TeamAstring,TeamBstring):
 	# targetEvents = addRandomEvents(rawPanda,targetEvents,TeamAstring,TeamBstring)
+	# print(targetEvents['shotOnTarget'])
 	targetEvents = attackEvents(rawPanda,attrPanda,targetEvents,TeamAstring,TeamBstring)
 	# targetEvents = attackLabels(rawPanda,attrPanda,targetEvents,TeamAstring,TeamBstring)
-	print('################')
-	print(targetEvents)
+	# print('################')
+	# print(targetEvents['shotOnTarget'])
 	# print(len(targetEvents['attack']))
-	pdb.set_trace()
+	# pdb.set_trace()
 	
 	return targetEvents
 
+#LT: verschil in events en eventlabels. Bijvoorbeeld als schot niet aan aanval toegewezen is.
 def attackLabels(rawPanda,attrPanda,targetEvents,TeamAstring,TeamBstring):
 	#labels for event result
 	noShotLabel = 0
@@ -40,51 +43,79 @@ def attackLabels(rawPanda,attrPanda,targetEvents,TeamAstring,TeamBstring):
 	shotOnTargetLabel = 2
 	goalLabel = 3
 	attackEvents = targetEvents['attack']
-
-	if 'shotOnTarget' in targetEvents:
-		for idx, i in enumerate(targetEvents['shotOnTarget']):
-			timeDiff = 999999
-			attackIdx = -1
-			for jdx, j in enumerate(attackEvents):
-				if abs(i[0] - j[0]) < timeDiff:
-					timeDiff = abs(i[0] - j[0])
-					attackIdx = jdx
-
-			attackList = list(targetEvents['attack'][attackIdx])
-			attackList[3] = shotOnTargetLabel
-			attackTuple = tuple(attackList)
-			attackEvents[attackIdx] = attackTuple
-			print('-shotOnTargetLabel',attackTuple)
+	maxTimeDiff = 5
 
 	if 'shotNotOnTarget' in targetEvents:
 		for idx, i in enumerate(targetEvents['shotNotOnTarget']):
+			# print('shotnot',i)
 			timeDiff = 999999
 			attackIdx = -1
 			for jdx, j in enumerate(attackEvents):
-				if abs(i[0] - j[0]) < timeDiff:
+				#event is during the attack
+				if i[0] <= j[0] and i[0] >= j[2]:
+					attackIdx = jdx
+					break
+				#determine timedifference between targetEvents and attackEvents with absolute treshold of 5 seconds
+				elif abs(i[0] - j[0]) < timeDiff and abs(i[0] - j[0]) <= maxTimeDiff:
 					timeDiff = abs(i[0] - j[0])
 					attackIdx = jdx
 
-			attackList = list(targetEvents['attack'][attackIdx])
-			attackList[3] = shotNotOnTargetLabel
-			attackTuple = tuple(attackList)
-			attackEvents[attackIdx] = attackTuple
-			print('-shotNotOnTargetLabel',attackTuple)
+			#put label on attack
+			if attackIdx != -1:
+				attackList = list(targetEvents['attack'][attackIdx])
+				attackList[3] = shotNotOnTargetLabel
+				attackTuple = tuple(attackList)
+				attackEvents[attackIdx] = attackTuple
+				# print('-shotNotOnTargetLabel',attackTuple)
+			else:
+				warn('\nShot Not on Target is not labeled to an attack: ' + str(i))
+
+	if 'shotOnTarget' in targetEvents:
+		for idx, i in enumerate(targetEvents['shotOnTarget']):
+			# print('shot',i)
+			timeDiff = 999999
+			attackIdx = -1
+			for jdx, j in enumerate(attackEvents):
+				#event is during the attack
+				if i[0] <= j[0] and i[0] >= j[2]:
+					attackIdx = jdx
+					break
+				#determine timedifference between targetEvents and attackEvents with absolute treshold of 5 seconds
+				elif abs(i[0] - j[0]) < timeDiff and abs(i[0] - j[0]) <= maxTimeDiff:
+					timeDiff = abs(i[0] - j[0])
+					attackIdx = jdx
+
+			if attackIdx != -1:
+				attackList = list(targetEvents['attack'][attackIdx])
+				attackList[3] = shotOnTargetLabel
+				attackTuple = tuple(attackList)
+				attackEvents[attackIdx] = attackTuple
+				# print('-shotOnTargetLabel',attackTuple)
+			else:
+				warn('\nShot on Target is not labeled to an attack: ' + str(i))
 
 	if 'goal' in targetEvents:
 		for idx, i in enumerate(targetEvents['goal']):
 			timeDiff = 999999
 			attackIdx = -1
 			for jdx, j in enumerate(attackEvents):
-				if abs(i[0] - j[0]) < timeDiff:
+				#event is during the attack
+				if i[0] <= j[0] and i[0] >= j[2]:
+					attackIdx = jdx
+					break
+				#determine timedifference between targetEvents and attackEvents with absolute treshold of 5 seconds
+				elif abs(i[0] - j[0]) < timeDiff and abs(i[0] - j[0]) <= maxTimeDiff:
 					timeDiff = abs(i[0] - j[0])
 					attackIdx = jdx
 
-			attackList = list(targetEvents['attack'][attackIdx])
-			attackList[3] = goalLabel
-			attackTuple = tuple(attackList)
-			attackEvents[attackIdx] = attackTuple
-			print('-Goal',attackTuple)
+			if attackIdx != -1:
+				attackList = list(targetEvents['attack'][attackIdx])
+				attackList[3] = goalLabel
+				attackTuple = tuple(attackList)
+				attackEvents[attackIdx] = attackTuple
+				# print('-Goal',attackTuple)
+			else:
+				warn('\nGoal is not labeled to an attack: ' + str(i))
 
 	for idx, i in enumerate(attackEvents):
 		if i[3] == None:
@@ -92,6 +123,7 @@ def attackLabels(rawPanda,attrPanda,targetEvents,TeamAstring,TeamBstring):
 			attackList[3] = noShotLabel
 			attackTuple = tuple(attackList)
 			attackEvents[idx] = attackTuple
+			# print('-No Shot',attackTuple)
 
 	return targetEvents
 
@@ -101,7 +133,7 @@ def attackEvents(rawPanda,attrPanda,targetEvents,TeamAstring,TeamBstring):
 		warn('\nWARNING: Shots and goals are not labeled. Check importEvents.\n')
 
 	consecutiveTs = 5 #consecutive timestamps to call it an attack.
-	endTs = 3.0 #3 seconds not the ball
+	endTs = 5.0 #5 seconds not the ball
 	timeCount = 0
 	timeFrequenty = 0.1 #in seconds
 	beginTime = 0
@@ -110,18 +142,45 @@ def attackEvents(rawPanda,attrPanda,targetEvents,TeamAstring,TeamBstring):
 	attackEvents = []
 	previousTime = 0
 	zone = 0
+	max_X = 52.5
+	max_Y = 34
+	outTime = 0.5
+	ballSpeedTreshold = 1
 
-	ballPos = attrPanda[attrPanda['InBallPos'] == 1]
-	ballPos = ballPos.sort_values('Ts')
+	allDict = pd.concat([rawPanda, attrPanda], axis=1)
+	allDict = allDict.loc[:,~allDict.columns.duplicated()]
+	
+	ball = allDict[allDict['PlayerID'] == 'ball']
 
-	for idx,i in enumerate(pd.unique(ballPos['Ts'])):
+	inBallPos = allDict[allDict['InBallPos'] == 1]
+	inBallPos = inBallPos.sort_values('Ts')
+
+	# print(ball)
+	# pdb.set_trace()
+
+	for idx,i in enumerate(pd.unique(inBallPos['Ts'])):
 		curTime = round(i,1)
-		curX = ballPos['X'][ballPos['Ts'] == i].values[0]
-		# print(curTime)
-		eventSet = False
+		try: #try if ball exists
+			curBallX = ball['X'][ball['Ts'] == i].values[0]
+			curBallY = ball['Y'][ball['Ts'] == i].values[0]
+		except: #continue if there is no ball
+			continue
+		try:
+			curBallXPast = ball['X'][ball['Ts'] == (i-outTime)].values[0]
+			curBallYPast = ball['Y'][ball['Ts'] == (i-outTime)].values[0]
+		except:
+			curBallXPast = 0
+			curBallYPast = 0
+		
+		# if not attackStart:
+		# 	print(curTime, round(curTime - previousTime,1) == timeFrequenty, all(inBallPos['inZone'][inBallPos['Ts'] == i] == 1), abs(curBallX) <= max_X, abs(curBallY) <= max_Y)
 
-		#determine beginTime of attack. Attack starts if player with ball is for 0.5 seconds in final third
-		if round(curTime - previousTime,1) == timeFrequenty and all(ballPos['inZone'][ballPos['Ts'] == i] == 1) and not attackStart:
+		#determine beginTime of attack. #Attack starts if:		
+		#1. player with ball is for 0.5 seconds in final third
+		#2. if the ball is on the field
+		#3. if the ball is moving 
+		#4. and the previous attack has ended
+		if round(curTime - previousTime,1) == timeFrequenty and all(inBallPos['inZone'][inBallPos['Ts'] == i] == 1) and abs(curBallX) <= max_X and abs(curBallY) <= max_Y and ball['Speed'][(ball['Ts'] > i) & (ball['Ts'] < (i+endTs))].mean() > ballSpeedTreshold and not attackStart:
 			timeCount = timeCount + 1
 		else:
 			timeCount = 0
@@ -129,24 +188,61 @@ def attackEvents(rawPanda,attrPanda,targetEvents,TeamAstring,TeamBstring):
 		if timeCount == consecutiveTs:
 			beginTime = round(curTime - consecutiveTs * timeFrequenty,1)
 			attackStart = True
-			curTeam = ballPos['TeamID'][ballPos['Ts'] == i].values[0]
-			#determine where the final third is
+			#current attacking team
+			curAttTeam = inBallPos['TeamID'][inBallPos['Ts'] == i].values[0]
+			curX = inBallPos['X'][inBallPos['Ts'] == i].values[0]
+			#determine where the final third is. curX is the player with ball in final third
 			if curX > 0:
-				zone = 1
+				rightSide = True
 			else:
-				zone = -1
+				rightSide = False
 
-		#determine endTime of attack. attack ends if the team has no possession for 3 seconds or if ball is on own half, or match ends during attack.
-		if ((curTime - previousTime) >= endTs or (curX > 0 and zone == -1) or (curX < 0 and zone == 1) or curTime == max(ballPos['Ts'])) and attackStart:
-			endTime = previousTime
-			attackStart = False
-			attackEvents.append((endTime,curTeam,beginTime,None))
-			# print(endTime,curTeam,beginTime)#,curTime,previousTime,(curTime - previousTime),(curX > 0 and zone == -1),(curX < 0 and zone == 1))
+		#determine endTime of attack.
+		if attackStart:
+			#attack ends if the team has no possession on opponents half for 5 seconds
+			if (curTime - previousTime) >= endTs:
+				endTime = previousTime
+				attackStart = False
+				attackEvents.append((endTime,curAttTeam,beginTime,None))
+				# print('--5sec:', str(datetime.timedelta(seconds=endTime)), curAttTeam, str(datetime.timedelta(seconds=beginTime)), endTime, beginTime)
+			#if the ball passes the center line
+			elif (curBallX > 0 and not rightSide) or (curBallX < 0 and rightSide):
+				endTime = curTime
+				attackStart = False
+				attackEvents.append((endTime,curAttTeam,beginTime,None))
+				# print('--middle:', str(datetime.timedelta(seconds=endTime)), curAttTeam, str(datetime.timedelta(seconds=beginTime)), endTime, beginTime)
+			#if the ball passed the side or backline for 0.5 seconds
+			elif (abs(curBallX) >= max_X and abs(curBallXPast) >= max_X) or (abs(curBallY) >= max_Y and abs(curBallYPast) >= max_Y):
+				endTime = curTime - outTime
+				attackStart = False
+				attackEvents.append((endTime,curAttTeam,beginTime,None))
+				# print('--out:', str(datetime.timedelta(seconds=endTime)), curAttTeam, str(datetime.timedelta(seconds=beginTime)), endTime, beginTime)
+			#if defending team shoots the ball out of the final third
+			elif lastTeam != curAttTeam and ((curBallX > -18.5 and not rightSide) or (curBallX < 18.5 and rightSide)):
+				endTime = previousTime
+				attackStart = False
+				attackEvents.append((endTime,curAttTeam,beginTime,None))
+				# print('--def:', str(datetime.timedelta(seconds=endTime)), curAttTeam, str(datetime.timedelta(seconds=beginTime)), endTime, beginTime)
+			#if ball is almost not moving for 5 seconds. The referee may have stopped the game (for a free kick for example).
+			elif ball['Speed'][(ball['Ts'] > i) & (ball['Ts'] < (i+endTs))].mean() < ballSpeedTreshold:
+				endTime = previousTime
+				attackStart = False
+				attackEvents.append((endTime,curAttTeam,beginTime,None))
+				# print('--ball:', str(datetime.timedelta(seconds=endTime)), curAttTeam, str(datetime.timedelta(seconds=beginTime)), endTime, beginTime)
+			#if attack ends during half/full time
+			elif curTime == max(inBallPos['Ts']):
+				endTime = curTime
+				attackStart = False
+				attackEvents.append((endTime,curAttTeam,beginTime,None))
+				# print('--half/full time:', str(datetime.timedelta(seconds=endTime)), curAttTeam, str(datetime.timedelta(seconds=beginTime)), endTime, beginTime)
 
-		if all(ballPos['opponentsHalf'][ballPos['Ts'] == i] == 1):
-			# print('previousTime')
+
+		if all(inBallPos['opponentsHalf'][inBallPos['Ts'] == i] == 1):
+			# print('previousTime', curTime)
 			previousTime = curTime
 		# endTime = 0
+
+		lastTeam = inBallPos['TeamID'][inBallPos['Ts'] == i].values[0]
 
 	targetEvents = {**targetEvents,'attack': attackEvents}
 

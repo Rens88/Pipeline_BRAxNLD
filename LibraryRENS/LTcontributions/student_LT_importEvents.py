@@ -48,7 +48,9 @@ def importFromXML(targetEvents,cleanFname,TeamAstring,TeamBstring,dataFolder):
 			for key in child.keys():
 				# print(key,child.attrib.get(key))
 				if key in childCols and child.attrib.get(key) != '':
-					dfList.append(child.attrib.get(key))
+					idxChildCols = childCols.index(key)
+					# print(key,child.attrib.get(key),childCols.index(key))
+					dfList.insert(idxChildCols,child.attrib.get(key))
 
 			if len(dfList) == len(childCols):
 				dfList2.append(dfList)
@@ -68,9 +70,10 @@ def importFromXML(targetEvents,cleanFname,TeamAstring,TeamBstring,dataFolder):
 	#Read XML file
 	tree = ET.parse(existingTargetsFname)
 	root = tree.getroot()
-	ballEventCols = ['Id','Time', 'BallEventCode', 'NumAmiscoJ1']#'WithWhat', 'How', 'NumAmiscoJ1']
-	matchEventCols = ['Id','Time', 'MatchEventCode', 'NumAmiscoJ1']
-	playerCols = ['Team','Id','NumAmisco','SecondName', 'FirstName', 'ShirtNumber', 'Poste']
+	ballEventCols = ['Time', 'BallEventCode', 'NumAmiscoJ1']#'Id', 'WithWhat', 'How', 'NumAmiscoJ1']
+	matchEventCols = ['Time', 'MatchEventCode', 'NumAmiscoJ1']
+	# playerCols = ['Team','Id','NumAmisco','SecondName', 'FirstName', 'ShirtNumber', 'Poste']#old firstname not always filled
+	playerCols = ['Team','NumAmisco']
 
 	# for child in root.iter('EVENT'):
 	# 	print(child.attrib)
@@ -87,6 +90,10 @@ def importFromXML(targetEvents,cleanFname,TeamAstring,TeamBstring,dataFolder):
 	dfMatchEvents = pd.DataFrame(XMLToDF(root, 'EVENT', matchEventCols, ''), columns=matchEventCols)
 	dfMatchEvents.rename(columns={'MatchEventCode': 'Event'}, inplace=True)
 
+	# print(dfBallEvents)
+	# print(dfMatchEvents)
+	# pdb.set_trace()
+
 	# dfEvents = pd.concat([dfBallEvents, dfMatchEvents])
 	# print(dfEvents['Time'].count())
 	# print(dfEvents[dfEvents.index.duplicated()])
@@ -97,6 +104,7 @@ def importFromXML(targetEvents,cleanFname,TeamAstring,TeamBstring,dataFolder):
 
 	# dfBallEvents.to_csv('D:\\KNVB\\ballevents.csv')
 	# dfMatchEvents.to_csv('D:\\KNVB\\matchevents.csv')
+	# dfEvents.to_csv('D:\\KNVB\\events.csv')
 	# pdb.set_trace()
 
 	#read Team and Players
@@ -106,11 +114,17 @@ def importFromXML(targetEvents,cleanFname,TeamAstring,TeamBstring,dataFolder):
 			if teamKey == 'Name':
 				teamName = team.attrib.get(teamKey)
 				dfList = dfList + XMLToDF(team, 'PLAYER', playerCols, teamName)
-	
+				# print(dfList)
+
+	# print(dfList)
+	# pdb.set_trace()
+
 	dfPlayers = pd.DataFrame(dfList,columns=playerCols)
 	# dfPlayers.to_csv('D:\\KNVB\\players.csv')
 
 	# print(dfPlayers)
+	# print(dfEvents)
+	# pdb.set_trace()
 
 	dfEvents = timestampToSeconds(dfEvents,'Time')
 
@@ -205,11 +219,10 @@ def importFromXML(targetEvents,cleanFname,TeamAstring,TeamBstring,dataFolder):
 	# print(pd.unique(dfEvents['BallEventCode']))
 	# print(dfEvents[dfEvents['BallEventCode'] == 'Pass'])
 	# print('#############################',receptionEvents,'#############################',runningEvents,'#############################',neutralEvents,'#############################',crossEvents,'#############################',highCatchGkEvents,'#############################',clearanceEvents,'#############################',shotOnTargetEvents,'#############################',holdOfBallGkEvents,'#############################',shotNotOnTargetEvents,'#############################',footClearGkEvents,'#############################',highDeflGkEvents,'#############################',lowCatchGkEvents,'#############################',lowDeflGkEvents)
-	# pdb.set_trace()
 
 	targetEvents = {**targetEvents,'pass':passEvents,'reception':receptionEvents,'runningWithBall':runningEvents,'neutralContact':neutralEvents,'cross':crossEvents,'clearance':clearanceEvents,'shotOnTarget':shotOnTargetEvents,'shotNotOnTarget':shotNotOnTargetEvents,'holdOfBallGk':holdOfBallGkEvents,'footClearanceGk':footClearGkEvents,'highDeflectionGk':highDeflGkEvents,'lowDelfectionGk':lowDeflGkEvents,'highCatchGk':highCatchGkEvents,'lowCatchGk':lowCatchGkEvents,'directFreeKick':dirFreeKickEvents,'goal':goalEvents,'offside':offsideEvents,'yellowCard':yellowCardEvents,'redCard':redCardEvents,'playerIn':playerInEvents,'playerOut':playerOutEvents}
 
-	# print(targetEvents)
+	# print(targetEvents['shotOnTarget'])
 	# pdb.set_trace()
 
 	#LT: added! Anders pakt hij het example mee.
