@@ -100,7 +100,7 @@ def KNVB(fname,cleanFname,dataFolder,cleanedFolder,headers,readAttributeCols,deb
 		fatalTeamIDissue = False
 
 	#Copy shirtnumbers of opponnents to PlayerID's and multiply with -1
-	df = setPlayerID(df,ID,Tid,TeamBstring)
+	df = setPlayerID(df,ID,Tid,ts)
 
 	#delete referees
 	refereeIdx = (df[Tid].isnull()) & (df[ID] != 'ball')
@@ -123,7 +123,7 @@ def KNVB(fname,cleanFname,dataFolder,cleanedFolder,headers,readAttributeCols,deb
 	
 	return df_cleaned, df_omitted,fatalTeamIDissue
 
-def setPlayerID(df,ID,Tid,TeamBstring):
+def setPlayerID(df,ID,Tid,ts):
 	#Copy shirtnumbers of opponnents to PlayerID's and multiply with -1 if they don't have a PlayerID
 	teamOppIdx = (df[ID] == 0) & (df[Tid].notnull())
 	df.loc[teamOppIdx,ID] = df.loc[teamOppIdx,'Shirt'] * -1
@@ -136,6 +136,13 @@ def setPlayerID(df,ID,Tid,TeamBstring):
 		exit()
 	else:
 		df.loc[ballIdx,ID] = 'ball'
+
+	#check if PlayerID's are unique at the first timestamp
+	players = (df[ts] == min(df[ts])) & (df[ID].notnull()) & (df[ID] != 0) & (df[Tid].notnull())
+	diff = df.loc[players,ID].count() - len(df.loc[players,ID].unique())
+	if diff > 0:
+		warn('\nFATAL ERROR: not all playerIDs are unique! This will cause problems in spatial and temporal aggregation. There are %s duplicated values.' %(diff))
+		exit()
 	
 	return df
 

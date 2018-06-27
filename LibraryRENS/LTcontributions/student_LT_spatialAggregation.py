@@ -13,6 +13,7 @@ import os
 import time
 import matplotlib.pyplot as plt
 from warnings import warn
+from heapq import nsmallest
 import pdb;
 
 #standard KNVB settings
@@ -328,11 +329,11 @@ def zone(rawDict,attributeDict,attributeLabel,TeamAstring,TeamBstring,skipSpatAg
 def control(rawDict,attributeDict,attributeLabel,TeamAstring,TeamBstring,skipSpatAgg):
 	##### THE STRINGS #####
 	# Export a string label of each new attribute in the labels dictionary (useful for plotting purposes)
+	tmpControl = 'Ball control of player with ball.'
 	tmpVelRelToBall = 'Relative velocity between player and ball.'
 	tmpVelRelToBall2 = 'Square of relative velocity between player and ball.'
-	tmpControl = 'Ball control of player with ball.'
 
-	attributeLabel_tmp = {'velRelToBall': tmpVelRelToBall, 'velRelToBallSquared': tmpVelRelToBall2, 'Link_Control': tmpControl}
+	attributeLabel_tmp = {'Link_Control': tmpControl, 'velRelToBall': tmpVelRelToBall, 'velRelToBallSquared': tmpVelRelToBall2}
 	attributeLabel.update(attributeLabel_tmp)
 
 	if skipSpatAgg: # Return early if spatial aggregation is being skipped
@@ -423,9 +424,9 @@ def control(rawDict,attributeDict,attributeLabel,TeamAstring,TeamBstring,skipSpa
 		newAttributes['Link_Control'][curPlayer.index] = control[curPlayerDict.index]
 
 	#Set back
-	newAttributes['velRelToBall'][notInZone.index] = 0
-	newAttributes['velRelToBallSquared'][notInZone.index] = 0
-	newAttributes['Link_Control'][notInZone.index] = 0
+	newAttributes['velRelToBall'][notInZone.index] = np.nan
+	newAttributes['velRelToBallSquared'][notInZone.index] = np.nan
+	newAttributes['Link_Control'][notInZone.index] = np.nan
 
 	attributeDict = pd.concat([attributeDict, newAttributes], axis=1)
 
@@ -445,9 +446,15 @@ def pressure(rawDict,attributeDict,attributeLabel,TeamAstring,TeamBstring,skipSp
 	tmpLink_PressureFromDefender = 'Pressure from defender.'
 	tmpLink_PressureZone = 'Pressure Zone for defender.'
 	tmpAngleInPossDefGoal = 'Angle for player with ball between defender and goal.'
-	tmpDistToPlayerWithBall = 'Distance to player with ball, only for defenders.'
+	tmpDistToPlayerWithBall = 'Distance to player with ball for the defenders.'
+	tmpMinDistToDef = 'Distance to closest defender for player with ball.'
+	tmpAvgDistToDef2 = 'Average distance to the two closest defenders for player with ball.'
+	tmpAvgDistToDef3 = 'Average distance to the three closest defenders for player with ball.'
+	tmpMinAngleDefGoal = 'Angle between player with ball, defender and goal for the closest defender.'
+	tmpAvgAngleDefGoal2 = 'Average angle between player with ball, defender and goal for the two closest defenders.'
+	tmpAvgAngleDefGoal3 = 'Average angle between player with ball, defender and goal for the three closest defenders.'
 
-	attributeLabel_tmp = {'Link_Pressure': tmpLink_Pressure, 'Link_PressureFromDefender': tmpLink_PressureFromDefender, 'Link_PressureZone': tmpLink_PressureZone, 'angleInPossDefGoal': tmpAngleInPossDefGoal, 'distToPlayerWithBall': tmpDistToPlayerWithBall}
+	attributeLabel_tmp = {'Link_Pressure': tmpLink_Pressure, 'Link_PressureFromDefender': tmpLink_PressureFromDefender, 'Link_PressureZone': tmpLink_PressureZone, 'angleInPossDefGoal': tmpAngleInPossDefGoal, 'distToPlayerWithBall': tmpDistToPlayerWithBall,'minDistToDef': tmpMinDistToDef,'avgDistToDef2': tmpAvgDistToDef2,'avgDistToDef3': tmpAvgDistToDef3,'minAngleInPossDefGoal': tmpMinAngleDefGoal,'avgAngleInPossDefGoal2': tmpAvgAngleDefGoal2,'avgAngleInPossDefGoal3': tmpAvgAngleDefGoal3}
 	attributeLabel.update(attributeLabel_tmp)
 
 	if skipSpatAgg: # Return early if spatial aggregation is being skipped
@@ -477,7 +484,7 @@ def pressure(rawDict,attributeDict,attributeLabel,TeamAstring,TeamBstring,skipSp
 	leftSide, goal_A_X, goal_B_X, goal_Y = determineSide(rawDict,attributeDict,attributeLabel,TeamAstring,TeamBstring)
 	beginZone,zoneMin_X,zoneA,zoneB,zoneMin_A_X,zoneMax_A_X,zoneMin_B_X,zoneMax_B_X,zoneMin_Y,zoneMax_Y = determineFinalThird(leftSide,TeamAstring,TeamBstring,goal_A_X,goal_B_X)
 
-	newAttributes = pd.DataFrame(index = attributeDict.index, columns = ['Link_Pressure','Link_PressureFromDefender','Link_PressureZone','angleInPossDefGoal','distToPlayerWithBall'])
+	newAttributes = pd.DataFrame(index = attributeDict.index, columns = ['Link_Pressure','Link_PressureFromDefender','Link_PressureZone','angleInPossDefGoal','distToPlayerWithBall','minDistToDef','avgDistToDef2','avgDistToDef3','minAngleInPossDefGoal','avgAngleInPossDefGoal2','avgAngleInPossDefGoal3'])
 
 	#players in zone with ball possession
 	inZone = rawDict[attributeDict['inZone'] == 1]
@@ -487,8 +494,15 @@ def pressure(rawDict,attributeDict,attributeLabel,TeamAstring,TeamBstring,skipSp
 
 	newAttributes.loc[players.index,'Link_PressureFromDefender'] = 0
 	newAttributes.loc[players.index,'Link_Pressure'] = 0
+	newAttributes.loc[players.index,'minDistToDef'] = np.nan
+	newAttributes.loc[players.index,'avgDistToDef2'] = np.nan
+	newAttributes.loc[players.index,'avgDistToDef3'] = np.nan
+	newAttributes.loc[players.index,'minAngleInPossDefGoal'] = np.nan
+	newAttributes.loc[players.index,'avgAngleInPossDefGoal2'] = np.nan
+	newAttributes.loc[players.index,'avgAngleInPossDefGoal3'] = np.nan
 
 	for idx,i in enumerate(pd.unique(inZone['Ts'])):
+		t1 = time.time()*1000
 		curTime = i#rawDict.iloc[idx]['Ts']
 
 		#needed to select the players of the opponent
@@ -506,6 +520,9 @@ def pressure(rawDict,attributeDict,attributeLabel,TeamAstring,TeamBstring,skipSp
 			curInZone_X = float(curInZone_X)
 			curInZone_Y = float(curInZone_Y)
 
+		t2 = time.time()*1000
+		el1 = str(round(t2 - t1, 2))
+
 		if all(curTeamOnInZone == TeamAstring):
 			goalOpponent_X = goal_B_X
 			playersOpponent = curPlayer[curPlayer['TeamID'] == TeamBstring]
@@ -514,17 +531,38 @@ def pressure(rawDict,attributeDict,attributeLabel,TeamAstring,TeamBstring,skipSp
 			goalOpponent_X = goal_A_X
 			playersOpponent = curPlayer[curPlayer['TeamID'] == TeamAstring]
 
+		t3 = time.time()*1000
+		el2 = str(round(t3 - t2, 2))
+
 		#calculate distances between player with ball, defender and goal
 		distInPossessDefender = distance(curInZone_X,curInZone_Y,playersOpponent['X'],playersOpponent['Y'])
 		distInPossessGoal = distance(curInZone_X,curInZone_Y,goalOpponent_X,goal_Y)
 		distDefenderGoal = distance(playersOpponent['X'],playersOpponent['Y'],goalOpponent_X,goal_Y)
 
-		# print(distInPossessDefender,distInPossessGoal,distDefenderGoal)
+		t4 = time.time()*1000
+		el3 = str(round(t4 - t3, 2))
 
+		# print(distInPossessDefender,(min(distInPossessDefender)+nsmallest(2, distInPossessDefender)[-1]+nsmallest(3, distInPossessDefender)[-1])/3)
+		minDist1 = min(distInPossessDefender)
+		minDist2 = nsmallest(2, distInPossessDefender)[-1]
+		minDist3 = nsmallest(3, distInPossessDefender)[-1]
 		newAttributes.loc[playersOpponent.index,'distToPlayerWithBall'] = distInPossessDefender
+		newAttributes.loc[curInZone.index,'minDistToDef'] = minDist1
+		newAttributes.loc[curInZone.index,'avgDistToDef2'] = (minDist1+minDist2)/2
+		newAttributes.loc[curInZone.index,'avgDistToDef3'] = (minDist1+minDist2+minDist3)/3
+
+		t5 = time.time()*1000
+		el4 = str(round(t5 - t4, 2))
+
 		#angle between player with ball, defender and goal, see https://stackoverflow.com/questions/1211212/how-to-calculate-an-angle-from-three-points
 		angleInPossDefGoal = np.degrees(np.arccos((distInPossessDefender**2 + distInPossessGoal**2 - distDefenderGoal**2) / (2 * distInPossessDefender * distInPossessGoal)))
 		newAttributes.loc[playersOpponent.index,'angleInPossDefGoal'] = angleInPossDefGoal
+		newAttributes.loc[curInZone.index,'minAngleInPossDefGoal'] = angleInPossDefGoal[distInPossessDefender == minDist1].iloc[0]
+		newAttributes.loc[curInZone.index,'avgAngleInPossDefGoal2'] = (angleInPossDefGoal[distInPossessDefender == minDist1].iloc[0] + angleInPossDefGoal[distInPossessDefender == minDist2].iloc[0])/2
+		newAttributes.loc[curInZone.index,'avgAngleInPossDefGoal3'] = (angleInPossDefGoal[distInPossessDefender == minDist1].iloc[0] + angleInPossDefGoal[distInPossessDefender == minDist2].iloc[0] + angleInPossDefGoal[distInPossessDefender == minDist3].iloc[0])/3
+
+		t6 = time.time()*1000
+		el5 = str(round(t6 - t5, 2))
 
 		##############Features Link######################3
 		#HIGH PRESSURE ZONE
@@ -551,12 +589,20 @@ def pressure(rawDict,attributeDict,attributeLabel,TeamAstring,TeamBstring,skipSp
 		newAttributes.loc[defenderIdx,'Link_PressureFromDefender'] = 1 - (distInPossessDefender[defenderIdx] / hindValue)
 		newAttributes.loc[defenderIdx,'Link_PressureZone']= 'HIND'
 
+		t7 = time.time()*1000
+		el6 = str(round(t7 - t6, 2))
+
 		newAttributes.loc[curInZone.index,'Link_Pressure'] = 1 - math.exp(-1 * constant * sum(newAttributes.loc[playersOpponent.index,'Link_PressureFromDefender']))
+
+		t8 = time.time()*1000
+		el7 = str(round(t8 - t7, 2))
+		print(el1,el2,el3,el4,el5,el6,el7)
+		pdb.set_trace()
 
 	attributeDict = pd.concat([attributeDict, newAttributes], axis=1)
 
-	# altogether = pd.concat([rawDict,attributeDict], axis=1)
-	# altogether.to_csv('D:\\KNVB\\test.csv')
+	altogether = pd.concat([rawDict,attributeDict], axis=1)
+	altogether.to_csv('D:\\KNVB\\test.csv')
 	# pdb.set_trace()
 
 	return attributeDict,attributeLabel

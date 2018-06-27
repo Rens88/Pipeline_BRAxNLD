@@ -31,11 +31,11 @@ def process(targetEvents,aggregateLevel,rawPanda,attrPanda,eventsPanda,TeamAstri
 	# print('################')
 	# print(targetEvents['shotOnTarget'])
 	# print(len(targetEvents['attack']))
+	# print(attrPanda)
 	# pdb.set_trace()
 	
 	return targetEvents
 
-#LT: verschil in events en eventlabels. Bijvoorbeeld als schot niet aan aanval toegewezen is.
 def attackLabels(rawPanda,attrPanda,targetEvents,TeamAstring,TeamBstring):
 	#labels for event result
 	noShotLabel = 0

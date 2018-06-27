@@ -49,7 +49,7 @@ conversionToMeter = 1 #111111 # https://gis.stackexchange.com/questions/8650/mea
 aggregateEvent = 'attack' # Event that will be used to aggregate over (verified for 'Goals' and for 'Possession')
 allWindows_and_Lags = [(None,0)] #[(None,0),(None,0),(None,0),(None,0),(None,0)] input tuple of window and corresponding lag. # a negative lag indicates tEnd as after the event
 #als window op None en lag op 0 dan kan je attacks van begin tot eindtijd weergeven
-aggregatePerPlayer = ['zone','Link_Control','Link_Pressure','Link_Density'] # a list of outcome variables that you want to aggregated per player. For example: ['vNorm','distFrame']
+aggregatePerPlayer = ['distToGoal','minDistToDef','avgDistToDef2','avgDistToDef3','minAngleInPossDefGoal','avgAngleInPossDefGoal2','avgAngleInPossDefGoal3']#['velRelToBall','angleInPossDefGoal','distToPlayerWithBall','angleToGoal','majority','centrality','distToGoal'] # a list of outcome variables that you want to aggregated per player. For example: ['vNorm','distFrame']
 
 # Strings need to correspond to outcome variables (dict keys). 
 # Individual level variables ('vNorm') should be included as a list element.
@@ -57,14 +57,14 @@ aggregatePerPlayer = ['zone','Link_Control','Link_Pressure','Link_Density'] # a 
 # plotTheseAttributes = ['vNorm',('Surface_ref','Surface_oth')]#,('Spread_ref','Spread_oth'),('stdSpread_ref','stdSpread_oth'),'vNorm']#,'LengthB',('LengthA','LengthB'),('SurfaceA','SurfaceB'),('SpreadA','SpreadB'),('WidthA','WidthB')] # [('LengthA','LengthB'),('WidthA','WidthB'),('SurfaceA','SurfaceB'),('SpreadA','SpreadB')] # teams that need to be compared as tuple
 # This trialVisualization plots the selected outcome variables variable for the given window for the temporal aggregation. Useful to verify if your variables are as excpected.
 includeTrialVisualization = True
-plotTheseAttributes_atTrialLevel = ['zone','Link_Control','Link_Pressure','Link_Density'] #
+plotTheseAttributes_atTrialLevel = ['distToGoal','minDistToDef','avgDistToDef2','avgDistToDef3','minAngleInPossDefGoal','avgAngleInPossDefGoal2','avgAngleInPossDefGoal3'] #
 # This datasetVisualization compares all events of all files in the dataset. Useful for datasetlevel comparisons
 includeDatasetVisualization = True
-plotTheseAttributes_atDatasetLevel = ['zone','Link_Control','Link_Pressure','Link_Density']
+plotTheseAttributes_atDatasetLevel = ['distToGoal','minDistToDef','avgDistToDef2','avgDistToDef3','minAngleInPossDefGoal','avgAngleInPossDefGoal2','avgAngleInPossDefGoal3']#['velRelToBall','angleInPossDefGoal','distToPlayerWithBall','angleToGoal','majority','centrality','distToGoal']
 
 # Parts of the pipeline can be skipped
-skipCleanup = True # Only works if cleaned file exists. NB: if False, all other skips become ineffective.
-skipSpatAgg = True # Only works if spat agg export exists. NB: if False, skipEventAgg and skipToDataSetLevel become ineffective.
+skipCleanup = False # Only works if cleaned file exists. NB: if False, all other skips become ineffective.
+skipSpatAgg = False # Only works if spat agg export exists. NB: if False, skipEventAgg and skipToDataSetLevel become ineffective.
 skipComputeEvents = False #
 
 # If both True, then files are not verified to be analyzed previously
@@ -235,7 +235,7 @@ for dirtyFname in DirtyDataFiles:
 
 	# print(attrPanda.columns.values,attrLabel)
 	#LT: drop all variables where no temporal aggregation is needed
-	excludeList = ['Link_PressureFromDefender','Link_PressureZone','Link_SDDefender','playerInIZ']
+	excludeList = ['InBallPos','Shirt','Link_PressureFromDefender','Link_PressureZone','Link_SDDefender','playerInIZ']
 	try:
 		attrPanda = attrPanda.drop(excludeList, axis=1)
 		for e in excludeList:
