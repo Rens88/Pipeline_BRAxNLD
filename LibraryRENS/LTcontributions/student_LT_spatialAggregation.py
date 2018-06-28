@@ -217,7 +217,7 @@ def determineFinalThird(leftSide,TeamAstring,TeamBstring,goal_A_X,goal_B_X):
 	return beginZone,zoneMin_X,zoneA,zoneB,zoneMin_A_X,zoneMax_A_X,zoneMin_B_X,zoneMax_B_X,zoneMin_Y,zoneMax_Y
 
 def playerInFinalThird(curPlayerTeam,TeamString,curPlayerX,zoneMin_X,zoneMax_X,curPlayerY,zoneMin_Y,zoneMax_Y):
-	return all(curPlayerTeam == TeamString) and all(curPlayerX >= zoneMin_X) and all(curPlayerX <= zoneMax_X) and all(curPlayerY >= zoneMin_Y) and all(curPlayerY <= zoneMax_Y)
+	return all(curPlayerTeam == TeamString) and curPlayerX >= zoneMin_X and curPlayerX <= zoneMax_X and curPlayerY >= zoneMin_Y and curPlayerY <= zoneMax_Y
 
 def playerOnOpponentsHalf(curPlayerTeam,TeamString,curPlayerX,zoneMin_X,zoneMax_X,curPlayerY,zoneMin_Y,zoneMax_Y):
 	if(zoneMin_X > 0):
@@ -225,7 +225,7 @@ def playerOnOpponentsHalf(curPlayerTeam,TeamString,curPlayerX,zoneMin_X,zoneMax_
 	else:
 		zoneMax_X = 0
 	
-	return all(curPlayerTeam == TeamString) and all(curPlayerX >= zoneMin_X) and all(curPlayerX <= zoneMax_X) and all(curPlayerY >= zoneMin_Y) and all(curPlayerY <= zoneMax_Y)
+	return all(curPlayerTeam == TeamString) and curPlayerX >= zoneMin_X and curPlayerX <= zoneMax_X and curPlayerY >= zoneMin_Y and curPlayerY <= zoneMax_Y
 
 def playerInPenaltyArea(curPlayerTeam,TeamString,curPlayerX,zoneMin_X,zoneMax_X,curPlayerY,zoneMin_Y,zoneMax_Y):
 	penaltyAreaLength = 16.5
@@ -239,7 +239,7 @@ def playerInPenaltyArea(curPlayerTeam,TeamString,curPlayerX,zoneMin_X,zoneMax_X,
 	zoneMin_Y = (penaltyAreaWidth / 2) * -1
 	zoneMax_Y = penaltyAreaWidth / 2
 
-	return all(curPlayerTeam == TeamString) and all(curPlayerX >= zoneMin_X) and all(curPlayerX <= zoneMax_X) and all(curPlayerY >= zoneMin_Y) and all(curPlayerY <= zoneMax_Y)
+	return all(curPlayerTeam == TeamString) and curPlayerX >= zoneMin_X and curPlayerX <= zoneMax_X and curPlayerY >= zoneMin_Y and curPlayerY <= zoneMax_Y
 
 @timing
 def zone(rawDict,attributeDict,attributeLabel,TeamAstring,TeamBstring,skipSpatAgg):#,secondHalfTime):
@@ -259,8 +259,8 @@ def zone(rawDict,attributeDict,attributeLabel,TeamAstring,TeamBstring,skipSpatAg
 
 	##############   READ ZONE CSV   ###############
 	dirPath = os.path.dirname(os.path.realpath(__file__))
-	fileName = dirPath + '\\Zone.csv'
-	zoneMatrix = np.loadtxt(open(fileName, 'r'),delimiter=os.pathsep)
+	fileName = dirPath + os.sep + 'Zone.csv'
+	zoneMatrix = np.loadtxt(open(fileName, 'r'),delimiter=';')
 
 	##############   DETERMINE SIDE FIRST HALF   ###############
 	leftSide, goal_A_X, goal_B_X, goal_Y = determineSide(rawDict,attributeDict,attributeLabel,TeamAstring,TeamBstring)
@@ -287,11 +287,11 @@ def zone(rawDict,attributeDict,attributeLabel,TeamAstring,TeamBstring,skipSpatAg
 	for idx,i in enumerate(pd.unique(InBallPos['Ts'])):
 		curTime = i
 
-		curPlayerX = InBallPos['X'][InBallPos['Ts'] == curTime]
-		curPlayerY = InBallPos['Y'][InBallPos['Ts'] == curTime]
+		curPlayerX = InBallPos['X'][InBallPos['Ts'] == curTime].values[0]
+		curPlayerY = InBallPos['Y'][InBallPos['Ts'] == curTime].values[0]
 		curPlayerTeam = InBallPos['TeamID'][InBallPos['Ts'] == curTime]
 		#skip if NaN
-		if all(np.isnan(curPlayerX)) or all(np.isnan(curPlayerY)):
+		if np.isnan(curPlayerX) or np.isnan(curPlayerY):
 		 	continue
 
 		#TEAM A
@@ -502,7 +502,6 @@ def pressure(rawDict,attributeDict,attributeLabel,TeamAstring,TeamBstring,skipSp
 	newAttributes.loc[players.index,'avgAngleInPossDefGoal3'] = np.nan
 
 	for idx,i in enumerate(pd.unique(inZone['Ts'])):
-		t1 = time.time()*1000
 		curTime = i#rawDict.iloc[idx]['Ts']
 
 		#needed to select the players of the opponent
@@ -510,37 +509,29 @@ def pressure(rawDict,attributeDict,attributeLabel,TeamAstring,TeamBstring,skipSp
 
 		#needed to select the player with ball
 		curInZone = inZone[inZone['Ts'] == curTime]
-		curTeamOnInZone = inZone['TeamID'][inZone['Ts'] == curTime]
-		curInZone_X = inZone['X'][inZone['Ts'] == curTime]
-		curInZone_Y = inZone['Y'][inZone['Ts'] == curTime]
+		curTeamOnInZone = inZone['TeamID'][inZone['Ts'] == curTime].values[0]
+		curInZone_X = inZone['X'][inZone['Ts'] == curTime].values[0]
+		curInZone_Y = inZone['Y'][inZone['Ts'] == curTime].values[0]
 
-		if all(np.isnan(curInZone_X)) or all(np.isnan(curInZone_Y)):
+		if np.isnan(curInZone_X) or np.isnan(curInZone_Y):
 			 	continue 
 		else:
 			curInZone_X = float(curInZone_X)
 			curInZone_Y = float(curInZone_Y)
 
-		t2 = time.time()*1000
-		el1 = str(round(t2 - t1, 2))
-
-		if all(curTeamOnInZone == TeamAstring):
+		if curTeamOnInZone == TeamAstring:
 			goalOpponent_X = goal_B_X
 			playersOpponent = curPlayer[curPlayer['TeamID'] == TeamBstring]
 
-		elif all(curTeamOnInZone == TeamBstring):
+		elif curTeamOnInZone == TeamBstring:
 			goalOpponent_X = goal_A_X
 			playersOpponent = curPlayer[curPlayer['TeamID'] == TeamAstring]
 
-		t3 = time.time()*1000
-		el2 = str(round(t3 - t2, 2))
 
 		#calculate distances between player with ball, defender and goal
 		distInPossessDefender = distance(curInZone_X,curInZone_Y,playersOpponent['X'],playersOpponent['Y'])
 		distInPossessGoal = distance(curInZone_X,curInZone_Y,goalOpponent_X,goal_Y)
 		distDefenderGoal = distance(playersOpponent['X'],playersOpponent['Y'],goalOpponent_X,goal_Y)
-
-		t4 = time.time()*1000
-		el3 = str(round(t4 - t3, 2))
 
 		# print(distInPossessDefender,(min(distInPossessDefender)+nsmallest(2, distInPossessDefender)[-1]+nsmallest(3, distInPossessDefender)[-1])/3)
 		minDist1 = min(distInPossessDefender)
@@ -551,18 +542,12 @@ def pressure(rawDict,attributeDict,attributeLabel,TeamAstring,TeamBstring,skipSp
 		newAttributes.loc[curInZone.index,'avgDistToDef2'] = (minDist1+minDist2)/2
 		newAttributes.loc[curInZone.index,'avgDistToDef3'] = (minDist1+minDist2+minDist3)/3
 
-		t5 = time.time()*1000
-		el4 = str(round(t5 - t4, 2))
-
 		#angle between player with ball, defender and goal, see https://stackoverflow.com/questions/1211212/how-to-calculate-an-angle-from-three-points
 		angleInPossDefGoal = np.degrees(np.arccos((distInPossessDefender**2 + distInPossessGoal**2 - distDefenderGoal**2) / (2 * distInPossessDefender * distInPossessGoal)))
 		newAttributes.loc[playersOpponent.index,'angleInPossDefGoal'] = angleInPossDefGoal
 		newAttributes.loc[curInZone.index,'minAngleInPossDefGoal'] = angleInPossDefGoal[distInPossessDefender == minDist1].iloc[0]
 		newAttributes.loc[curInZone.index,'avgAngleInPossDefGoal2'] = (angleInPossDefGoal[distInPossessDefender == minDist1].iloc[0] + angleInPossDefGoal[distInPossessDefender == minDist2].iloc[0])/2
 		newAttributes.loc[curInZone.index,'avgAngleInPossDefGoal3'] = (angleInPossDefGoal[distInPossessDefender == minDist1].iloc[0] + angleInPossDefGoal[distInPossessDefender == minDist2].iloc[0] + angleInPossDefGoal[distInPossessDefender == minDist3].iloc[0])/3
-
-		t6 = time.time()*1000
-		el5 = str(round(t6 - t5, 2))
 
 		##############Features Link######################3
 		#HIGH PRESSURE ZONE
@@ -589,20 +574,12 @@ def pressure(rawDict,attributeDict,attributeLabel,TeamAstring,TeamBstring,skipSp
 		newAttributes.loc[defenderIdx,'Link_PressureFromDefender'] = 1 - (distInPossessDefender[defenderIdx] / hindValue)
 		newAttributes.loc[defenderIdx,'Link_PressureZone']= 'HIND'
 
-		t7 = time.time()*1000
-		el6 = str(round(t7 - t6, 2))
-
 		newAttributes.loc[curInZone.index,'Link_Pressure'] = 1 - math.exp(-1 * constant * sum(newAttributes.loc[playersOpponent.index,'Link_PressureFromDefender']))
-
-		t8 = time.time()*1000
-		el7 = str(round(t8 - t7, 2))
-		print(el1,el2,el3,el4,el5,el6,el7)
-		pdb.set_trace()
 
 	attributeDict = pd.concat([attributeDict, newAttributes], axis=1)
 
-	altogether = pd.concat([rawDict,attributeDict], axis=1)
-	altogether.to_csv('D:\\KNVB\\test.csv')
+	# altogether = pd.concat([rawDict,attributeDict], axis=1)
+	# altogether.to_csv('D:\\KNVB\\test.csv')
 	# pdb.set_trace()
 
 	return attributeDict,attributeLabel
@@ -737,22 +714,22 @@ def density(rawDict,attributeDict,attributeLabel,TeamAstring,TeamBstring,skipSpa
 		curTime = i#rawDict.iloc[idx]['Ts']
 		curPlayer = players[players['Ts_raw'] == curTime]
 		curInZone = inZone[inZone['Ts'] == curTime]
-		curInZoneX = inZone['X'][inZone['Ts'] == curTime]
-		curInZoneY = inZone['Y'][inZone['Ts'] == curTime]
-		curTeamInZone = inZone['TeamID'][inZone['Ts'] == curTime]
+		curInZoneX = inZone['X'][inZone['Ts'] == curTime].values[0]
+		curInZoneY = inZone['Y'][inZone['Ts'] == curTime].values[0]
+		curTeamInZone = inZone['TeamID'][inZone['Ts'] == curTime].values[0]
 
-		if all(np.isnan(curInZoneX)) or all(np.isnan(curInZoneY)):
+		if np.isnan(curInZoneX) or np.isnan(curInZoneY):
 		 	continue
 		else:
 			curInZoneX = float(curInZoneX)
 			curInZoneY = float(curInZoneY)
 
-		if all(curTeamInZone == TeamAstring):
+		if curTeamInZone == TeamAstring:
 			goalOpponent_X = goal_B_X
 			playersOpponent = curPlayer[curPlayer['TeamID'] == TeamBstring]
 			playersOwnTeam = curPlayer[(curPlayer['TeamID'] == TeamAstring) & (curPlayer['inZone'] != 1)]
 
-		elif all(curTeamInZone == TeamBstring):
+		elif curTeamInZone == TeamBstring:
 			goalOpponent_X = goal_A_X
 			playersOpponent = curPlayer[curPlayer['TeamID'] == TeamAstring]
 			playersOwnTeam = curPlayer[(curPlayer['TeamID'] == TeamBstring) & (curPlayer['inZone'] != 1)]
@@ -846,8 +823,8 @@ def density(rawDict,attributeDict,attributeLabel,TeamAstring,TeamBstring,skipSpa
 
 	attributeDict = pd.concat([attributeDict, newAttributes], axis=1)
 
-	# altogether = pd.concat([rawDict,attributeDict], axis=1)
-	# altogether.to_csv('D:\\KNVB\\test.csv')
+	altogether = pd.concat([rawDict,attributeDict], axis=1)
+	altogether.to_csv('D:\\KNVB\\test2.csv')
 
 	# pdb.set_trace()
 
