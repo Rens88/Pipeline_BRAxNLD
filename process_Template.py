@@ -56,15 +56,15 @@ aggregatePerPlayer = ['distToGoal','minDistToDef','avgDistToDef2','avgDistToDef3
 # Group level variables ('LengthA','LengthB') should be included as a tuple (and will be plotted in the same plot).
 # plotTheseAttributes = ['vNorm',('Surface_ref','Surface_oth')]#,('Spread_ref','Spread_oth'),('stdSpread_ref','stdSpread_oth'),'vNorm']#,'LengthB',('LengthA','LengthB'),('SurfaceA','SurfaceB'),('SpreadA','SpreadB'),('WidthA','WidthB')] # [('LengthA','LengthB'),('WidthA','WidthB'),('SurfaceA','SurfaceB'),('SpreadA','SpreadB')] # teams that need to be compared as tuple
 # This trialVisualization plots the selected outcome variables variable for the given window for the temporal aggregation. Useful to verify if your variables are as excpected.
-includeTrialVisualization = True
+includeTrialVisualization = False
 plotTheseAttributes_atTrialLevel = ['distToGoal','minDistToDef','avgDistToDef2','avgDistToDef3','minAngleInPossDefGoal','avgAngleInPossDefGoal2','avgAngleInPossDefGoal3'] #
 # This datasetVisualization compares all events of all files in the dataset. Useful for datasetlevel comparisons
-includeDatasetVisualization = True
+includeDatasetVisualization = False
 plotTheseAttributes_atDatasetLevel = ['distToGoal','minDistToDef','avgDistToDef2','avgDistToDef3','minAngleInPossDefGoal','avgAngleInPossDefGoal2','avgAngleInPossDefGoal3']#['velRelToBall','angleInPossDefGoal','distToPlayerWithBall','angleToGoal','majority','centrality','distToGoal']
 
 # Parts of the pipeline can be skipped
-skipCleanup = False # Only works if cleaned file exists. NB: if False, all other skips become ineffective.
-skipSpatAgg = False # Only works if spat agg export exists. NB: if False, skipEventAgg and skipToDataSetLevel become ineffective.
+skipCleanup = True # Only works if cleaned file exists. NB: if False, all other skips become ineffective.
+skipSpatAgg = True # Only works if spat agg export exists. NB: if False, skipEventAgg and skipToDataSetLevel become ineffective.
 skipComputeEvents = False #
 
 # If both True, then files are not verified to be analyzed previously
@@ -230,7 +230,7 @@ for dirtyFname in DirtyDataFiles:
 	# --> in some cases there is also a starting time of the event and other information 
 	# (for example, possession contains the starting time and the nubmer of passes made within that possession)
 	# NB2: For attack - events, use the 4th place in the tuple for the label (e.g., 1 = no shot, 2 = shot off target, 3 = shot on target, 4 = goals)
-	targetEvents = \
+	targetEvents,eventClassified = \
 	computeEvents.process(targetEventsImported,aggregateLevel,rawPanda,attrPanda,eventsPanda,TeamAstring,TeamBstring,dataFolder,cleanFname,debuggingMode,skipComputeEvents_curFile)
 
 	# print(attrPanda.columns.values,attrLabel)
@@ -249,7 +249,7 @@ for dirtyFname in DirtyDataFiles:
 
 	## Temporal aggregation
 	exportData,exportDataString,exportFullExplanation,trialEventsSpatAggExcerpt,attrLabel = \
-	temporalAggregation_towardsGeneric.process(targetEvents,aggregateLevel,rawPanda,attrPanda,exportData,exportDataString,exportDataFullExplanation,TeamAstring,TeamBstring,debuggingMode,skipEventAgg_curFile,fileIdentifiers,attrLabel,aggregatePerPlayer,includeEventInterpolation,datasetFramerate)
+	temporalAggregation_towardsGeneric.process(targetEvents,aggregateLevel,rawPanda,attrPanda,exportData,exportDataString,exportDataFullExplanation,TeamAstring,TeamBstring,debuggingMode,skipEventAgg_curFile,fileIdentifiers,attrLabel,aggregatePerPlayer,includeEventInterpolation,datasetFramerate,eventClassified)
 
 	########################################################################################
 	####### EXPORT to CSV ##################################################################

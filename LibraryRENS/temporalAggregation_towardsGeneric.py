@@ -263,7 +263,7 @@ def processEventAggOnly(df,newStart,newEnd,aggregateEvent,attrLabel_asPanda,aggr
 
 
 
-def process(targetEvents,aggregateLevel,rawDict,attributeDict,exportData,exportDataString,exportFullExplanation,TeamAstring,TeamBstring,debuggingMode,skipEventAgg_curFile,fileIdentifiers,attrLabel,aggregatePerPlayer,includeEventInterpolation,datasetFramerate):
+def process(targetEvents,aggregateLevel,rawDict,attributeDict,exportData,exportDataString,exportFullExplanation,TeamAstring,TeamBstring,debuggingMode,skipEventAgg_curFile,fileIdentifiers,attrLabel,aggregatePerPlayer,includeEventInterpolation,datasetFramerate,eventClassified):
 	tTempAgg = time.time()
 	FileID = "_".join(fileIdentifiers)
 	
@@ -387,15 +387,15 @@ def process(targetEvents,aggregateLevel,rawDict,attributeDict,exportData,exportD
 		EventUID = FileID + '_' + aggregateString
 		exportCurrentData.append(EventUID) # NB: String and explanation are defined before the for loop
 
-		# not yet a generic solution.
-		# TO DO: WRITE THIS GENERICALLY
-
-		if aggregateLevel[0] == 'Turnovers':
+		if eventClassified:
 			eventClassification = currentEvent[-3]
 			exportCurrentData.append(eventClassification)
 		else:
 			exportCurrentData.append('Undefined')
 			warn('\nWARNING: need to add a generic eventClassification.\n')
+
+		exportCurrentData.append(tStart)
+		exportCurrentData.append(tEnd)
 
 		## Assign refTeam
 		refTeam = currentEvent[1]
@@ -690,6 +690,10 @@ def prepareExportStrings(exportDataString,aggregateLevel,exportFullExplanation):
 	
 	exportDataString.append('eventClassification')
 	exportFullExplanation.append('Classification of the current event.')
+	exportDataString.append('tStart')
+	exportFullExplanation.append('The starting time (in seconds) of the current event.')
+	exportDataString.append('tEnd')
+	exportFullExplanation.append('The end time (in seconds) of the current event.')
 	exportDataString.append('RefTeam')
 	exportFullExplanation.append('Teamstring of the reference team the <<%s>> events refer to.' %aggregateLevel[0])
 	exportDataString.append('OthTeam')

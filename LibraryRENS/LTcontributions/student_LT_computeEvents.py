@@ -23,10 +23,10 @@ if __name__ == '__main__':
 	addRandomEvents(rawPanda,targetEvents,TeamAstring,TeamBstring)
 	
 ## Here, you specifiy what each function does
-def process(targetEvents,aggregateLevel,rawPanda,attrPanda,eventsPanda,TeamAstring,TeamBstring):
+def process(targetEvents,aggregateLevel,rawPanda,attrPanda,eventsPanda,TeamAstring,TeamBstring,eventClassified):
 	# targetEvents = addRandomEvents(rawPanda,targetEvents,TeamAstring,TeamBstring)
 	# print(targetEvents['shotOnTarget'])
-	targetEvents = attackEvents(rawPanda,attrPanda,targetEvents,TeamAstring,TeamBstring)
+	targetEvents, eventClassified = attackEvents(rawPanda,attrPanda,targetEvents,TeamAstring,TeamBstring,eventClassified)
 	# targetEvents = attackLabels(rawPanda,attrPanda,targetEvents,TeamAstring,TeamBstring)
 	# print('################')
 	# print(targetEvents['shotOnTarget'])
@@ -34,9 +34,9 @@ def process(targetEvents,aggregateLevel,rawPanda,attrPanda,eventsPanda,TeamAstri
 	# print(attrPanda)
 	# pdb.set_trace()
 	
-	return targetEvents
+	return targetEvents,eventClassified
 
-def attackLabels(rawPanda,attrPanda,targetEvents,TeamAstring,TeamBstring):
+def attackLabels(rawPanda,attrPanda,targetEvents,TeamAstring,TeamBstring,eventClassified):
 	#labels for event result
 	noShotLabel = 0
 	shotNotOnTargetLabel = 1
@@ -125,10 +125,12 @@ def attackLabels(rawPanda,attrPanda,targetEvents,TeamAstring,TeamBstring):
 			attackEvents[idx] = attackTuple
 			# print('-No Shot',attackTuple)
 
-	return targetEvents
+	eventClassified = True
+
+	return targetEvents, eventClassified
 
 
-def attackEvents(rawPanda,attrPanda,targetEvents,TeamAstring,TeamBstring):
+def attackEvents(rawPanda,attrPanda,targetEvents,TeamAstring,TeamBstring,eventClassified):
 	if 'shotNotOnTarget' not in targetEvents or 'shotOnTarget' not in targetEvents or 'goal' not in targetEvents:
 		warn('\nWARNING: Shots and goals are not labeled. Check importEvents.\n')
 
@@ -246,9 +248,9 @@ def attackEvents(rawPanda,attrPanda,targetEvents,TeamAstring,TeamBstring):
 
 	targetEvents = {**targetEvents,'attack': attackEvents}
 
-	targetEvents = attackLabels(rawPanda,attrPanda,targetEvents,TeamAstring,TeamBstring)
+	targetEvents,eventClassified = attackLabels(rawPanda,attrPanda,targetEvents,TeamAstring,TeamBstring,eventClassified)
 
-	return targetEvents
+	return targetEvents,eventClassified
 
 #LT: afronden nodig?
 def attackEventsOLD(rawPanda,attrPanda,targetEvents,TeamAstring,TeamBstring):

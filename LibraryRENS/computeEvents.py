@@ -26,7 +26,7 @@ if __name__ == '__main__':
 
 def process(targetEvents,aggregateLevel,rawPanda,attrPanda,eventsPanda,TeamAstring,TeamBstring,dataFolder,cleanFname,debuggingMode,skipComputeEvents_curFile):
 	tComputeEvents = time.time()
-
+	eventClassified = False
 	if skipComputeEvents_curFile:
 		# Load previously computed target events
 		targetFolder = dataFolder + sep + 'existingTargets' + sep
@@ -113,12 +113,12 @@ def process(targetEvents,aggregateLevel,rawPanda,attrPanda,eventsPanda,TeamAstri
 			
 				# write a checkup based on the guessed data driven playing side
 				# only for inside
-
+				eventClassified = True
 				newVal = (val[0],val[1],val[2],val[3],val[4],val[5],label)
 				targetEvents['Turnovers'][idx] = newVal
 
-	targetEvents = \
-	student_LT_computeEvents.process(targetEvents,aggregateLevel,rawPanda,attrPanda,eventsPanda,TeamAstring,TeamBstring)
+	targetEvents,eventClassified = \
+	student_LT_computeEvents.process(targetEvents,aggregateLevel,rawPanda,attrPanda,eventsPanda,TeamAstring,TeamBstring,eventClassified)
 
 
 	# export it
@@ -147,7 +147,7 @@ def process(targetEvents,aggregateLevel,rawPanda,attrPanda,eventsPanda,TeamAstri
 		elapsed = str(round(time.time() - tComputeEvents, 2))
 		print('***** Time elapsed during computeEvents: %ss' %elapsed)
 	
-	return targetEvents
+	return targetEvents,eventClassified
 
 ############################################################
 ############################################################
