@@ -23,11 +23,14 @@ import csv
 from warnings import warn
 import numpy as np
 from os.path import isfile, join, isdir, exists
-from os import listdir, path, makedirs
+from os import listdir, path, makedirs, sep
 import re
 import pandas as pd
-import student_XX_cleanUp
+import student_LT_cleanUp
 import time
+import FillGaps_and_Filter
+import math
+import matplotlib.pyplot as plt
 
 if __name__ == '__main__':
 
@@ -48,30 +51,99 @@ if __name__ == '__main__':
 	NP(dataFiles,cleanFname,folder,cleanedFolder,TeamAstring,TeamBstring)
 
 #########################################################################
-def process(dirtyFname,cleanFname,dataType,dataFolder,cleanedFolder,spatAggFname,spatAggFolder,TeamAstring,TeamBstring,headers,readAttributeCols,timestampString,readEventColumns,conversionToMeter,skipCleanup,skipSpatAgg,debuggingMode):
+def process(dirtyFname,cleanFname,dataType,dataFolder,cleanedFolder,spatAggFname,spatAggFolder,eventAggFolder,eventAggFname,TeamAstring,TeamBstring,headers,readAttributeCols,timestampString,readEventColumns,conversionToMeter,skipCleanup,skipSpatAgg,skipEventAgg,exportData, exportDataString,includeCleanupInterpolation,datasetFramerate,debuggingMode,skipComputeEvents,aggregateLevel):
 	tCleanup = time.time()	# do stuff
 
+	headers = headers.copy()
+	
 	debugOmittedRows = False # Optional export of data that was omitted in the cleaning process
 	fatalTimeStampIssue = False
 	fatalTeamIDissue = False
 	fatalIssue = False
+	fatalGroupRowIssue = False
 
 	# Clean up data, if necessary
 	cleanFnames = [f for f in listdir(cleanedFolder) if isfile(join(cleanedFolder, f)) if '.csv' in f]
 	spatAggFnames = [f for f in listdir(spatAggFolder) if isfile(join(spatAggFolder, f)) if '.csv' in f]
+	eventAggFnames = [f for f in listdir(eventAggFolder) if isfile(join(eventAggFolder, f)) if '.csv' in f]
+
+	print('HIERRRRR')
+
+	skipComputeEvents_curFile = skipComputeEvents
+	if skipComputeEvents_curFile:
+		targetFolder = dataFolder + sep + 'existingTargets' + sep
+		preComputedTargetFolder = targetFolder + 'preComputed' + sep
+		key = aggregateLevel[0] # at least the key that will be aggregated over must exist
+		targetEventsFname = preComputedTargetFolder + cleanFname[:-12] + '_preComputed_Event_' + key +  '.csv'
+
+		if not isfile(targetEventsFname):
+			warn('\nWARNING: Although skipComputeEvents was requested, no targetEventsFname with name <%s> was found. Therefore, it couldnt be skipped.' %targetEventsFname)
+			skipComputeEvents_curFile = False
+			
+	print('A',spatAggFname,spatAggFnames,skipSpatAgg)
 	if spatAggFname in spatAggFnames and skipSpatAgg == True:
 		warn('\nContinued with previously cleaned and spatially aggregated data.\nIf you want to add new spatial aggregates, change <skipSpatAgg> into <False>.\n')
 		# Spat agg files don't exist if there was a fatal error, so:
 		fatalIssue = False
 		loadFolder = spatAggFolder
 		loadFname = spatAggFname
+
+		if eventAggFname in eventAggFnames and skipEventAgg == True:
+		# If there is a spat agg file, AND if skipEventAgg == True,
+		# then, it needs to be verified whether there is a row with an event aggregate for the current file.
+			df = pd.read_csv(eventAggFolder+eventAggFname,usecols=(exportDataString),low_memory=True) # NB: low_memory MUST be True, otherwise it results in problems later on.
+			# testCount = 0
+			for i in np.arange(len(df.keys())):
+				# testCount = testCount + 1
+
+				try:
+					if not df[exportDataString[i]].dtype == str:
+						if not any(df[exportDataString[i]].astype(str) == exportData[i]):
+							skipEventAgg = False
+							break
+					else:	
+						if not any(df[exportDataString[i]] == exportData[i]):
+							skipEventAgg = False
+							break
+				except: # this error occurred a couple of times. Not sure why... something with an invalid comparison, so presumably one of the inputs wasnt a string??
+					print('DataFrame type:')
+					print(type(df[exportDataString[i]]))
+					print('\nDataFrame contents:')
+					print(df[exportDataString[i]])
+					print('\n----------\n')
+					print('File identifiers type:')
+					print(type(exportData[i]))
+					print('\nFile identifiers contents:')
+					print(exportData[i])
+					
+					print('Df identifiers type:')
+					print(type(exportDataString[i]))
+					print('\nDf identifiers contents:')
+					print(exportDataString[i])
+					pdb.set_trace()
+					print('\nNB: In the past, this problem was related to the string input resembling a float input.\nFor example, <1E3>, which (with low_memory = True) is read as a float (1,000).\n')
+					if not exportData[i] in exportDataString[i]:
+						skipEventAgg = False
+						break
+					else:
+						raise Exception ('exit')
+		else:
+			skipEventAgg = False
+		if TeamAstring == None:
+			dfTeamString = pd.read_csv(cleanedFolder+cleanFname,usecols= ['TeamID'] ,low_memory=False) # NB: low_memory MUST be True, otherwise it results in problems later on.
+			TeamAstring,TeamBstring = dataDrivenTeamstring(dfTeamString['TeamID'])
 		if debuggingMode:
 			elapsed = str(round(time.time() - tCleanup, 2))
-			print('Time elapsed during cleanupData: %ss' %elapsed)
-		return loadFolder,loadFname,fatalIssue,skipSpatAgg
+			print('***** Time elapsed during cleanupData: %ss' %elapsed)
+		return loadFolder,loadFname,fatalIssue,skipSpatAgg,skipEventAgg,TeamAstring,TeamBstring,skipComputeEvents_curFile
 
+	skipEventAgg = False
 	skipSpatAgg = False # over-rule skipSpatAgg as the corresponding spatAgg output file could not be found
-	if cleanFname in cleanFnames and skipCleanup:
+
+	print('hallo',isfile(cleanedFolder + cleanFname),cleanedFolder + cleanFname)
+	pdb.set_trace()
+	if isfile(cleanedFolder + cleanFname) and skipCleanup:
+	# if cleanFname in cleanFnames and skipCleanup:
 		with open(cleanedFolder+cleanFname, 'r') as f:
 			reader = csv.reader(f)
 			fileHeaders = list(next(reader))
@@ -84,19 +156,28 @@ def process(dirtyFname,cleanFname,dataType,dataFolder,cleanedFolder,spatAggFname
 		loadFolder = cleanedFolder
 		loadFname = cleanFname
 		
+		if TeamAstring == None and not fatalIssue:
+			df = pd.read_csv(cleanedFolder+cleanFname,usecols= ['TeamID'] ,low_memory=False) # NB: low_memory MUST be True, otherwise it results in problems later on.
+
+			TeamAstring,TeamBstring = dataDrivenTeamstring(df['TeamID'])
 		if debuggingMode:
 			elapsed = str(round(time.time() - tCleanup, 2))
-			print('Time elapsed during cleanupData: %ss' %elapsed)
-		return loadFolder,loadFname,fatalIssue,skipSpatAgg#, readAttributeCols#, attrLabel
+			print('***** Time elapsed during cleanupData: %ss' %elapsed)
+		return loadFolder,loadFname,fatalIssue,skipSpatAgg,skipEventAgg,TeamAstring,TeamBstring,skipComputeEvents_curFile#, readAttributeCols#, attrLabel
 	else: # create a new clean Fname
 		print('\nCleaning up file...')
+
 		if dataType == "NP":
 			# NB: cleanupData currently dataset specific (NP or FDP). Fixes are quite specific and may not easily transfer to different datasets.
 			# df_cleaned,df_omitted,headers,readAttributeCols,readEventColumns = \
 			df_cleaned,df_omitted = \
 			NP(dirtyFname,cleanFname,dataFolder,cleanedFolder,headers,readAttributeCols,debugOmittedRows,readEventColumns,TeamAstring,TeamBstring)
 		elif dataType == "FDP":
-			df_cleaned,df_omitted,fatalTeamIDissue = FDP(dirtyFname,cleanFname,dataFolder,cleanedFolder,headers,readAttributeCols,debugOmittedRows,readEventColumns,TeamAstring,TeamBstring)
+			df_cleaned,df_omitted,fatalTeamIDissue,TeamAstring,TeamBstring = FDP(dirtyFname,cleanFname,dataFolder,cleanedFolder,headers,readAttributeCols,debugOmittedRows,readEventColumns,TeamAstring,TeamBstring)
+			# return 1,2,3,4,5
+		elif dataType == "KNVB":#LT: added!
+			df_cleaned,df_omitted,fatalTeamIDissue = \
+			student_LT_cleanUp.process(dirtyFname,cleanFname,dataFolder,cleanedFolder,headers,readAttributeCols,debugOmittedRows,readEventColumns,TeamAstring,TeamBstring)
 		else:
 			# overwrite cleanedFolder and add a warning that no cleanup had taken place
 			loadFolder = dataFolder
@@ -105,8 +186,8 @@ def process(dirtyFname,cleanFname,dataType,dataFolder,cleanedFolder,spatAggFname
 
 			if debuggingMode:
 				elapsed = str(round(time.time() - tCleanup, 2))
-				print('Time elapsed during cleanupData: %ss' %elapsed)
-			return loadFolder,loadFname,fatalIssue,skipSpatAgg
+				print('***** Time elapsed during cleanupData: %ss' %elapsed)
+			return loadFolder,loadFname,fatalIssue,skipSpatAgg,skipEventAgg,skipComputeEvents_curFile
 
 		## Genereic clean up function (for all datasets)
 		# First: Rename columns to be standardized.
@@ -118,33 +199,62 @@ def process(dirtyFname,cleanFname,dataType,dataFolder,cleanedFolder,spatAggFname
 
 		# Check if there is already a set of rows for team values (i.e., rows without playerID that are not 'ball')
 		# df_cleaned.to_csv('C:\\Users\\rensm\\Documents\\PostdocLeiden\\NP repository\\Output\\test.csv')
-		df_cleaned = verifyGroupRows(df_cleaned)
+		df_cleaned,fatalGroupRowIssue = verifyGroupRows(df_cleaned)
 
+		## OLD BUT USEFUL
 		# Confirm whether Every timestamp occurs equally often, to enable indexing based on timestamp
-		tsConsistent = verifyTimestampConsistency(df_cleaned,TeamAstring,TeamBstring)
-		if not tsConsistent:
-			warn('\nTO DO: Timestamp is not consistent: \nWrite the code to smooth out timestamp.')
-		
+		# tsConsistent = verifyTimestampConsistency(df_cleaned,TeamAstring,TeamBstring)
+			## you could omit interpolation to save time. But 
+			# if not tsConsistent:
+				# --> interpolation highly recommended
+		## \OLD BUT USEFUL
+
 		# The first fatal error. Skip file and continue.
 		fatalTimeStampIssue = checkForFatalTimestampIssue(df_cleaned)
 		
-		df_cleaned,df_omitted = \
-		student_XX_cleanUp.process(df_cleaned,df_omitted,TeamAstring,TeamBstring,headers,readAttributeCols,readEventColumns)
+		# df_cleaned,df_omitted = \
+		# student_LT_cleanUp.process(dirtyFname,cleanFname,dataFolder,cleanedFolder,headers,readAttributeCols,debugOmittedRows,readEventColumns,TeamAstring,TeamBstring)
 
 		if exists(cleanedFolder + cleanFname):
 			warn('\nOverwriting file <%s> \nin cleanedFolder <%s>.\n' %(cleanFname,cleanedFolder))
 
 		# Export cleaned data to CSV
 		if fatalTeamIDissue:
-			df_Fatal = pd.DataFrame([],columns=['fatalIssue'])
+			df_Fatal = pd.DataFrame(['fatalTeamIDissue'],columns=['fatalIssue'])
 			df_Fatal.to_csv(cleanedFolder + cleanFname)
 			fatalIssue = True
+			warn('\nFATAL CLEANUP ISSUE: An issue with creating the new TeamID by splitting up player name.\nFatal cleanup issue result in the current file being skipped in its entirety\n')
 		elif fatalTimeStampIssue:
-			df_Fatal = pd.DataFrame([],columns=['fatalIssue'])
+			df_Fatal = pd.DataFrame(['fatalTimeStampIssue'],columns=['fatalIssue'])
 			df_Fatal.to_csv(cleanedFolder + cleanFname)
 			fatalIssue = True
+			warn('\nFATAL CLEANUP ISSUE: Something with the same timestamp occurring multiple times for the same playerID\nFatal cleanup issue result in the current file being skipped in its entirety\n')
+		elif fatalGroupRowIssue:
+			df_Fatal = pd.DataFrame(['fatalGroupRowIssue'],columns=['fatalIssue'])
+			df_Fatal.to_csv(cleanedFolder + cleanFname)
+			fatalIssue = True
+			warn('\nFATAL CLEANUP ISSUE: problems with groupRows. Perhaps one of the players did not have a team assigend to it.\nFatal cleanup issue result in the current file being skipped in its entirety\n')
+
 		else:
-			df_cleaned.to_csv(cleanedFolder + cleanFname)
+			# print(len(df_cleaned.loc[df_cleaned['PlayerID'] == 'groupRow','Ts'].unique()))
+			if includeCleanupInterpolation: #LT: benieuwd of dit nu wel werkt...
+				# df_cleaned,fatalGroupRowIssueAfterFiltering = FillGaps_and_Filter.process(df_cleaned,datasetFramerate = datasetFramerate)
+				# df_cleaned.to_csv('D:\\KNVB\\test2.csv')
+				# pdb.set_trace()
+				if 'fatalIssue' in df_cleaned:
+					df_cleaned.to_csv(cleanedFolder + cleanFname)
+					fatalIssue = True
+
+			# print(len(df_cleaned.loc[df_cleaned['PlayerID'] == 'groupRow','Ts'].unique()))
+			# pdb.set_trace()
+			#LT: deleted, because of negative Speed --> nog fillgaps and filter
+			# if fatalGroupRowIssueAfterFiltering:
+			# 	df_Fatal = pd.DataFrame(['fatalGroupRowIssueAfterFiltering'],columns=['fatalIssue'])
+			# 	df_Fatal.to_csv(cleanedFolder + cleanFname)
+			# 	fatalIssue = True
+			# 	warn('\nFATAL CLEANUP ISSUE: This one is doubly weird, as there was no issue with the grouprows before FillGaps_and_Filter.py..\nThis really should not be possible.\nIf it happens, check out the bit in FillGaps_and_Filter where it calls upon verifyGroupRows again.\nFatal cleanup issue result in the current file being skipped in its entirety\n')
+			if not fatalIssue:
+				df_cleaned.to_csv(cleanedFolder + cleanFname)
 	
 		# Optional: Export data that has been omitted, in case you suspect that relevent rows were omitted.
 		if debugOmittedRows:
@@ -167,35 +277,47 @@ def process(dirtyFname,cleanFname,dataType,dataFolder,cleanedFolder,spatAggFname
 
 	if debuggingMode:
 		elapsed = str(round(time.time() - tCleanup, 2))
-		print('Time elapsed during cleanupData: %ss' %elapsed)
+		print('***** Time elapsed during cleanupData: %ss' %elapsed)
 
-	return loadFolder,loadFname,fatalIssue,skipSpatAgg#, readAttributeCols#, attrLabel
+	return loadFolder,loadFname,fatalIssue,skipSpatAgg,skipEventAgg,TeamAstring,TeamBstring,skipComputeEvents_curFile #, readAttributeCols#, attrLabel
 
 def FDP(fname,cleanFname,dataFolder,cleanedFolder,headers,readAttributeCols,debugOmittedRows,readEventColumns,TeamAstring,TeamBstring):
-
 	expectedVals = (-60,60,-40,40) # This should probably be dataset specific.
 	conversion_to_S = .001
 	# FDP specific function where the column 'Naam' is seperated into its PlayerID and TeamID
 	ts = headers['Ts']
 	x,y = headers['Location']
 	ID = headers['PlayerID']
+
 	colHeaders = [ts,x,y,ID] + readAttributeCols + readEventColumns
+	if headers['TeamID'] != None:
+	 # If there is a header for 'TeamID', then include it as the colHeaders that will be read from the CSV file.
+	 # Mede mogelijk gemaakt door: Lars
+	 Tid = headers['TeamID']
+	 colHeaders = [ts,x,y,ID,Tid] + readAttributeCols + readEventColumns
+	 
 	newPlayerIDstring = 'Player'
 	newTeamIDstring = 'Team'
 
 	# Only read the headers as a check-up:
 	with open(dataFolder+fname, 'r') as f:
-		reader = csv.reader(f)
-		fileHeaders = list(next(reader))
+	 reader = csv.reader(f)
+	 fileHeaders = list(next(reader))
 
 	for i in colHeaders:
-		if not i in fileHeaders:
-			exit('EXIT: Column header <%s> not in column headers of the file:\n%s\n\nSOLUTION: Change the user input in \'process\' \n' %(i,fileHeaders))
-  
+	 if not i in fileHeaders:
+	  warn('\nEXIT: Column header <%s> not in column headers of the file:\n%s\n\nSOLUTION: Change the user input in \'process\' \n' %(i,fileHeaders))
+	  exit()
+
 	df = pd.read_csv(dataFolder+fname,usecols=(colHeaders),low_memory=False)
 	df[ts] = df[ts]*conversion_to_S # Convert from ms to s.
-	
+
+	## When no teamstring has been assigned yet, extract it from the data. Will only work if there are two unique string inputs in the row teamID
+	if TeamAstring == None:
+		TeamAstring, TeamBstring = dataDrivenTeamstring(df[Tid])
+		
 	## Cleanup for BRAxNLD
+	fatalTeamIDissue = False
 	if headers['TeamID'] == None:
 		df,headers,fatalTeamIDissue = splitName_and_Team(df,headers,ID,newPlayerIDstring,newTeamIDstring,TeamAstring,TeamBstring)
 		# Delete the original ID, but only if the string is not the same as the new Dict.Keys
@@ -203,6 +325,12 @@ def FDP(fname,cleanFname,dataFolder,cleanedFolder,headers,readAttributeCols,debu
 			del df[ID]
 			# del df_omitted[ID]		
 		ID = headers['PlayerID']
+
+	# if referee rows exist, drop them
+	refRows = (df[ headers['TeamID']].isnull()) & (df[x].notnull()) & (df[ID] != 'ball')
+	if any(refRows):
+		df.drop(df[refRows].index,inplace = True)
+		warn('\nWARNING: Some rows were identified as referee rows. These were dropped.\n')
 
 	df_cropped01,df_omitted01 = omitXandY_equals0(df,x,y,ID)
 	df_cropped02,df_omitted02 = omitRowsWithout_XandY(df_cropped01,x,y)	
@@ -214,7 +342,7 @@ def FDP(fname,cleanFname,dataFolder,cleanedFolder,headers,readAttributeCols,debu
 
 	df_cleaned = df_cropped03
 
-	return df_cleaned, df_omitted,fatalTeamIDissue
+	return df_cleaned, df_omitted,fatalTeamIDissue,TeamAstring,TeamBstring
 
 def NP(fname,newfname,folder,cleanedFolder,headers,readAttributeCols,debugOmittedRows,readEventColumns,TeamAstring,TeamBstring):
 
@@ -405,6 +533,7 @@ def checkForFatalTimestampIssue(rawDict):
 
 def verifyGroupRows(df_cleaned):
 
+	fatalGroupRowIssue = False
 	# Group Rows are the rows where any feature can be stored that captures multiple players (i.e., team or attackers/midfielders/defenders)
 	# groupRows should have the 'PlayerID' value 'groupRow'
 	
@@ -415,10 +544,21 @@ def verifyGroupRows(df_cleaned):
 	# 2) a 'PlayerID' that is not a 'ball'	
 	if df_cleaned['PlayerID'].dtype != float:
 		groupRows = (groupRows) & (df_cleaned['PlayerID'] != 'ball')
+
 	
 	uniqueTs = pd.unique(df_cleaned['Ts'])
 	uniqueTs = np.sort(uniqueTs)	
 	
+	# if not any(groupRows):
+	# 	# groupRows don't exist. Let's see if there are any rows without PlayerID
+	# 	everyPlayerIDs = df_cleaned['PlayerID'].unique()
+	# 	everyPlayerIDs = pd.DataFrame(everyPlayerIDs,columns = ['everyPlayerIDs'])
+	# 	if any(everyPlayerIDs[everyPlayerIDs['everyPlayerIDs'].isnull()]):
+	# 		warn('\nWARNING: Found rows without a PlayerID.\nThe pipeline assumes these rows are groupRows.\n')
+	# 		groupRows = df_cleaned['PlayerID'].isnull().index
+	# 		df_cleaned.loc[groupRows,'PlayerID'] = 'groupRow'
+
+
 	# When there are no group rows, they need to be created for every unique timestamp.
 	if df_cleaned['Ts'][(groupRows)].empty:# and not any(df_cleaned['PlayerID'] == 'groupRow'):
 		# If groupRows don't exist, then create them
@@ -427,10 +567,10 @@ def verifyGroupRows(df_cleaned):
 		groupPlayerID = ['groupRow' for i in uniqueTs]
 		# Create groupIndex by adding to highest existing index
 		firstGroupIndex = df_cleaned.index[-1] + 1
-		groupIndex = firstGroupIndex + range(len(groupPlayerID))
+		groupIndex = firstGroupIndex + np.arange(len(groupPlayerID))
 
 		# Put these in a DataFrame with the same column headers
-		df_group = pd.DataFrame({'Ts':uniqueTs,'PlayerID':groupPlayerID},index = [groupIndex])# possibly add the index ? index = []
+		df_group = pd.DataFrame({'Ts':uniqueTs,'PlayerID':groupPlayerID},index = groupIndex)# possibly add the index ? index = []
 		
 		# Append them to the existing dataframe
 		df_cleaned = df_cleaned.append(df_group)
@@ -443,20 +583,27 @@ def verifyGroupRows(df_cleaned):
 
 		# elif any(df_cleaned['PlayerID'][groupRows] != 'groupRow'):		
 			# df_cleaned['PlayerID'][groupRows] = 'groupRow'
+			timeString = time.strftime("%Hh%Mm_%d_%B_%Y")
+			df_cleaned.loc[groupRows].to_csv('debug_overwritten_as_grouprows_' + timeString + '.csv')
+
 			warn('\nWARNING: Contents of PlayerID overwritten for group rows.\nBe sure that group rows were identified correctly.\n')
 			df_cleaned.loc[groupRows,('PlayerID')] = 'groupRow'
 
-		# Verify whether x, y, and TeamID are empty
-		if not all(df_cleaned['X'][(groupRows)].isnull()):
-			warn('\nWARNING: X values of groupRows are not empty.\Consider cleaning. ')
+		# Verify that x, y, and TeamID are empty
+		if not all(df_cleaned['X'][(groupRows)].isnull()):			
+			warn('\nFATAL WARNING: X values of groupRows are not empty.\Consider cleaning. ')
+			fatalGroupRowIssue = True
+
 		if not all(df_cleaned['Y'][(groupRows)].isnull()):
-			warn('\nWARNING: Y values of groupRows are not empty.\Consider cleaning. ')
+			warn('\nFATAL WARNING: Y values of groupRows are not empty.\Consider cleaning. ')
+			fatalGroupRowIssue = True
+
 		if not all(df_cleaned['TeamID'][(groupRows)].isnull()):
 			warn('\nWARNING: TeamID values of groupRows are not empty.\Consider cleaning. ')			
 
 		# and finally, verify that there is a group row for every timestamp.
 		if len(df_cleaned['PlayerID'][groupRows]) != len(uniqueTs):
-			warn('\nWARNING: Not as many groupRows as unique timestamps.\nSolved it by appending the missing timestamps as groupRows to the end of the file.\nThis may result in a non-ordered dataset!! (if groupRows wer not originally a the end of the file)\nCould consider re-ordering dataFrame after inserting these missing timestamps.\n')
+			warn('\nWARNING: Not as many groupRows as unique timestamps.\nSolved it by appending the missing timestamps as groupRows to the end of the file.\nThis may result in a non-ordered dataset!! (if groupRows were not originally at the end of the file)\nCould consider re-ordering dataFrame after inserting these missing timestamps.\n')
 
 			# Definitely not the fastest way. But it works.
 			# Check which Ts values are missing for the groupRows
@@ -471,22 +618,46 @@ def verifyGroupRows(df_cleaned):
 						ismissingGroupTs = False
 				if ismissingGroupTs:
 					missingGroupTs.append(i)
+
 			# Add missing group rows as empty rows
 			# Create a string value
 			groupPlayerID = ['groupRow' for i in missingGroupTs]
-			# Create groupIndex by adding to highest existing index
-			firstGroupIndex = df_cleaned.index[-1] + 1
-			groupIndex = firstGroupIndex + range(len(groupPlayerID))
 
-			# Put these in a DataFrame with the same column headers
-			df_group = pd.DataFrame({'Ts':missingGroupTs,'PlayerID':groupPlayerID},index = [groupIndex])# possibly add the index ? index = []
 			
-			# Append them to the existing dataframe
-			df_cleaned = df_cleaned.append(df_group)
+			## Adjustment to order the newly created groupRows by Ts
+			# Create a dataframe of old and new gropurows
+			missingGroupRows = pd.DataFrame({'Ts':missingGroupTs,'PlayerID':groupPlayerID})# possibly add the index ? index = []
+			existingGroupRows = df_cleaned.loc[groupRows]
+			old_and_new_grouprows = pd.concat([missingGroupRows,existingGroupRows],axis = 0)
+			old_and_new_grouprows = old_and_new_grouprows.sort_values(['Ts'])
+			old_and_new_grouprows.reset_index(drop=True,inplace = True)
+			# Drop the old ones from the original df
+			df_cleaned.drop(df_cleaned[groupRows].index,inplace = True)
+			# Add the new ones
+			df_cleaned = df_cleaned.append(old_and_new_grouprows)
+			# df_cleaned.to_csv('C:\\Users\\rensm\\Documents\\SURFDRIVE\\Repositories\\NP repository\\newgrouprows.csv')
+
+			## The old method ##
+			# # Create groupIndex by adding to highest existing index
+			# firstGroupIndex = df_cleaned.index[-1] + 1
+			# groupIndex = firstGroupIndex + range(len(groupPlayerID))
+
+			# # Put these in a DataFrame with the same column headers
+			# df_group = pd.DataFrame({'Ts':missingGroupTs,'PlayerID':groupPlayerID},index = [groupIndex])# possibly add the index ? index = []
+			
+			# # Append them to the existing dataframe
+			# df_cleaned = df_cleaned.append(df_group)
+			## / The old method ##
+
+			df_cleaned.reset_index(drop=True,inplace = True)
 
 			newGroupRows = df_cleaned['PlayerID'] == 'groupRow'
 			groupRows = newGroupRows
 
+			# # print(len(missingGroupTs))
+			# print(len(np.unique(df_cleaned['Ts'][groupRows])))
+
+			# pdb.set_trace()
 		# ##########################
 		# #### Work in progress ####
 		# ##########################
@@ -550,7 +721,9 @@ def verifyGroupRows(df_cleaned):
 		# #### \Work in progress ###
 		# ##########################	
 
-	return df_cleaned
+		# print(df_cleaned.keys())
+		# pdb.set_trace()
+	return df_cleaned,fatalGroupRowIssue
 
 def convertHHMMSS_to_s(df,ts):
 	# I used a regular expression to convert a timestamp to numbers.
@@ -852,3 +1025,17 @@ def checkGroupRows_withInformation(df,headers,readEventColumns,TeamAstring,TeamB
 	# 	row[idx] = ''
 	## Strip rows from useless spaces
 	# row = [s.strip() for s in row]
+
+def dataDrivenTeamstring(TeamID_Data):
+
+	# Data driven team strings
+	uniqueTeams = TeamID_Data.unique()
+	uniqueTeams = [st for st in uniqueTeams if type(st) == str]
+	if len(uniqueTeams) == 2:
+		TeamAstring = uniqueTeams[0] 
+		TeamBstring = uniqueTeams[1] 
+		warn('\nWARNING: Teamstring had to be determined based on the data.\nTeamAstring = <%s>\nTeamBstring = <%s>' %(TeamAstring,TeamBstring))
+	else:
+		warn('\nFATAL WARNING: Teamstrings are non-existent and there were not precisely 2 unique team strings in the data.\nIt was thus impossible to determine the Team strings based on the data.\nTeamstrings in data:\n%s' %uniqueTeams)
+
+	return TeamAstring, TeamBstring
