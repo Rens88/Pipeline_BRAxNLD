@@ -21,16 +21,18 @@ def process(rawPanda,attrPanda,TeamAstring,TeamBstring,playerReportFolder,matchN
 	# pdb.set_trace()
 	# print(type(attrPanda[playerField].iloc[0]))
 	# pdb.set_trace()
+	allDict = pd.concat([rawPanda, attrPanda], axis=1)
+	allDict = allDict.loc[:,~allDict.columns.duplicated()]
 
-	dfPlayers = attrPanda[playerField][(attrPanda[playerField] != 'ball') & (attrPanda[playerField] != 'groupRow')].unique()
+	dfPlayers = allDict[playerField][(allDict[playerField] != 'ball') & (allDict[playerField] != 'groupRow')].unique()
 	#type string gemaakt, omdat hier straks spelernamen in komen te staan
-	dfPlayersA = attrPanda[playerField][(attrPanda[playerField] != 'ball') & (attrPanda[playerField] != 'groupRow') & (attrPanda[teamField] == TeamAstring)].unique()
+	dfPlayersA = allDict[playerField][(allDict[playerField] != 'ball') & (allDict[playerField] != 'groupRow') & (allDict[teamField] == TeamAstring)].unique()
 	dfPlayersA = np.sort(dfPlayersA)
-	dfPlayersB = attrPanda[playerField][(attrPanda[playerField] != 'ball') & (attrPanda[playerField] != 'groupRow') & (attrPanda[teamField] == TeamBstring)].unique()
+	dfPlayersB = allDict[playerField][(allDict[playerField] != 'ball') & (allDict[playerField] != 'groupRow') & (allDict[teamField] == TeamBstring)].unique()
 	dfPlayersB = np.sort(dfPlayersB)
-	dfTeams = attrPanda[teamField].bfill().ffill().unique()
+	dfTeams = allDict[teamField].bfill().ffill().unique()
 
-	dfDanger = attrPanda[attrPanda[fieldToPlot] > 0].sort_values(by=['Ts'])
+	dfDanger = allDict[allDict[fieldToPlot] > 0].sort_values(by=['Ts'])
 	dfDanger = dfDanger.assign(fiveSeconds=dfDanger['Ts']//5,fifteenMinutes=dfDanger['Ts']//900)
 
 	#count timestamps in final third per player
@@ -56,8 +58,16 @@ def process(rawPanda,attrPanda,TeamAstring,TeamBstring,playerReportFolder,matchN
 		teamDataB = teamDataB.drop(teamDataB.index[3])
 
 	#find max value as integer
-	maxDangerA = math.ceil(max(teamDataA))
-	maxDangerB = math.ceil(max(teamDataB))
+	if len(teamDataA) == 0:
+		maxDangerA = 1
+	else:
+		maxDangerA = math.ceil(max(teamDataA))
+
+	if len(teamDataB) == 0:
+		maxDangerB = 1
+	else:
+		maxDangerB = math.ceil(max(teamDataB))
+
 	if maxDangerA > maxDangerB:
 		maxDangerTeam = maxDangerA
 	else:
@@ -65,14 +75,14 @@ def process(rawPanda,attrPanda,TeamAstring,TeamBstring,playerReportFolder,matchN
 
 	plotTeam(teamDataA,teamDataB,dfTeams,playerReportFolder,maxDangerTeam,matchName,TeamAstring,TeamBstring)
 	# print(dfPlayers)
-	# print(attrPanda[teamField][attrPanda[playerField]=='1214'])
+	# print(allDict[teamField][allDict[playerField]=='1214'])
 	# pdb.set_trace()
 	#add every fifteenMinutes a zero value so that every player has always a value in fifteen minutes
 	for player in dfPlayers:
 		for quart in range(0,4):
-			# print(player,quart,attrPanda[teamField][attrPanda[playerField]==player].iloc[0])
+			# print(player,quart,allDict[teamField][allDict[playerField]==player].iloc[0])
 			# pdb.set_trace()
-			dfDanger = dfDanger.append({playerField:player,teamField:attrPanda[teamField][attrPanda[playerField]==player].iloc[0],'Ts':quart*900,fieldToPlot:0,'fiveSeconds':quart*180,'fifteenMinutes':quart},ignore_index=True)
+			dfDanger = dfDanger.append({playerField:player,teamField:allDict[teamField][allDict[playerField]==player].iloc[0],'Ts':quart*900,fieldToPlot:0,'fiveSeconds':quart*180,'fifteenMinutes':quart},ignore_index=True)
 
 	allPlayerData = dfDanger.groupby([teamField,'fifteenMinutes','fiveSeconds',playerField])[fieldToPlot].max().groupby([teamField,playerField,'fifteenMinutes']).sum()
 	allTeamData = dfDanger.groupby([teamField,'fifteenMinutes','fiveSeconds',playerField])[fieldToPlot].max().groupby([teamField,'fifteenMinutes']).sum()
@@ -91,7 +101,7 @@ def process(rawPanda,attrPanda,TeamAstring,TeamBstring,playerReportFolder,matchN
 		#add the stopage time to the last fifteen minutes
 		playerData[2] = playerData[2] + playerData[3]
 		playerData = playerData.drop(playerData.index[3])
-		team = attrPanda[teamField][attrPanda[playerField]==player].iloc[0]
+		team = allDict[teamField][allDict[playerField]==player].iloc[0]
 		plotPlayer(playerData,player,playerReportFolder,maxDangerPlayer,team,matchName,TeamAstring)
 	
 	#generate graph for team A
@@ -114,8 +124,16 @@ def process(rawPanda,attrPanda,TeamAstring,TeamBstring,playerReportFolder,matchN
 
 def plotTeam(teamDataA,teamDataB,dfTeams,playerReportFolder,maxDangerTeam,matchName,TeamAstring,TeamBstring):
 	# print(teamDataA,teamDataB)
-	ax = teamDataA.plot(color='orange')
-	teamDataB.plot(ax=ax,color='royalblue')
+	if len(teamDataA) == 0 and len(teamDataB) != 0:
+		ax = teamDataB.plot(color='royalblue')
+		plt.legend([TeamBstring])
+	elif len(teamDataB) == 0:
+		ax = teamDataA.plot(color='orange')
+		plt.legend([TeamAstring])
+	else:
+		ax = teamDataA.plot(color='orange')
+		teamDataB.plot(ax=ax,color='royalblue')
+		plt.legend([TeamAstring,TeamBstring])
 
 	plt.title('Team Performance')
 	plt.ylabel('Dangerousity score')
@@ -123,8 +141,6 @@ def plotTeam(teamDataA,teamDataB,dfTeams,playerReportFolder,maxDangerTeam,matchN
 	plt.xticks(np.arange(0, 3, step=1),['0-15','16-30','31-45+'])
 	plt.ylim(bottom=0)
 	plt.ylim(top=maxDangerTeam)
-
-	plt.legend([TeamAstring,TeamBstring])
 
 	strFile = playerReportFolder + matchName +' Team.png'
 	if os.path.isfile(strFile):

@@ -96,7 +96,6 @@ def process(rawDict,attributeDict,attributeLabel,TeamAstring,TeamBstring,skipSpa
 	# pdb.set_trace()		 
 	
 	# Spatially aggregated data
-	print('skipspat',skipSpatAgg)
 	if not skipSpatAgg: #LT: terugzetten!
 		spatAggPanda = pd.concat([rawDict, eventsPanda.loc[:, eventsPanda.columns != 'Ts'], attributeDict.loc[:, attributeDict.columns != 'Ts']], axis=1) # Skip the duplicate 'Ts' columns
 		spatAggPanda.to_csv(spatAggFolder + spatAggFname)

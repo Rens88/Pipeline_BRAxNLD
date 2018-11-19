@@ -67,8 +67,6 @@ def process(dirtyFname,cleanFname,dataType,dataFolder,cleanedFolder,spatAggFname
 	spatAggFnames = [f for f in listdir(spatAggFolder) if isfile(join(spatAggFolder, f)) if '.csv' in f]
 	eventAggFnames = [f for f in listdir(eventAggFolder) if isfile(join(eventAggFolder, f)) if '.csv' in f]
 
-	print('HIERRRRR')
-
 	skipComputeEvents_curFile = skipComputeEvents
 	if skipComputeEvents_curFile:
 		targetFolder = dataFolder + sep + 'existingTargets' + sep
@@ -80,7 +78,6 @@ def process(dirtyFname,cleanFname,dataType,dataFolder,cleanedFolder,spatAggFname
 			warn('\nWARNING: Although skipComputeEvents was requested, no targetEventsFname with name <%s> was found. Therefore, it couldnt be skipped.' %targetEventsFname)
 			skipComputeEvents_curFile = False
 			
-	print('A',spatAggFname,spatAggFnames,skipSpatAgg)
 	if spatAggFname in spatAggFnames and skipSpatAgg == True:
 		warn('\nContinued with previously cleaned and spatially aggregated data.\nIf you want to add new spatial aggregates, change <skipSpatAgg> into <False>.\n')
 		# Spat agg files don't exist if there was a fatal error, so:
@@ -140,8 +137,6 @@ def process(dirtyFname,cleanFname,dataType,dataFolder,cleanedFolder,spatAggFname
 	skipEventAgg = False
 	skipSpatAgg = False # over-rule skipSpatAgg as the corresponding spatAgg output file could not be found
 
-	print('hallo',isfile(cleanedFolder + cleanFname),cleanedFolder + cleanFname)
-	pdb.set_trace()
 	if isfile(cleanedFolder + cleanFname) and skipCleanup:
 	# if cleanFname in cleanFnames and skipCleanup:
 		with open(cleanedFolder+cleanFname, 'r') as f:

@@ -318,7 +318,7 @@ def zone(rawDict,attributeDict,attributeLabel,TeamAstring,TeamBstring,skipSpatAg
 		if playerInPenaltyArea(curPlayerTeam,TeamBstring,curPlayerX,zoneMin_B_X,zoneMax_B_X,curPlayerY,zoneMin_Y,zoneMax_Y):
 			newAttributes.loc[curPlayerTeam.index,'inPenaltyArea'] = 1
 
-	print("zone4")#17 sec op server....
+	# print("zone4")#17 sec op server....
 	attributeDict = pd.concat([attributeDict, newAttributes], axis=1)
 
 	# altogether = pd.concat([rawDict,attributeDict], axis=1)
@@ -724,6 +724,9 @@ def density(rawDict,attributeDict,attributeLabel,TeamAstring,TeamBstring,skipSpa
 	# print(allDict.columns)
 	# pdb.set_trace()
 	# allDict = rawDict.join(attributeDict, lsuffix='_raw', rsuffix='_attr')
+	allDict = pd.concat([rawDict, attributeDict], axis=1)
+	allDict = allDict.loc[:,~allDict.columns.duplicated()]
+
 	players = allDict[(allDict['PlayerID'] != 'ball') & (allDict['PlayerID'] != 'groupRow')]
 
 	newAttributes.loc[players.index,'Link_SDDefender'] = 0
