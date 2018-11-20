@@ -24,9 +24,9 @@ if __name__ == '__main__':
 	importFromXML(targetEvents,cleanFname,TeamAstring,TeamBstring,dataFolder)
 
 ## Here, you specifiy what each function does
-def process(targetEvents,cleanFname,TeamAstring,TeamBstring,dataFolder):
+def process(targetEvents,cleanFname,TeamAstring,TeamBstring,dataFolder,xmlFolder):
 
-	targetEvents = importFromXML(targetEvents,cleanFname,TeamAstring,TeamBstring,dataFolder)
+	targetEvents = importFromXML(targetEvents,cleanFname,TeamAstring,TeamBstring,dataFolder,xmlFolder)
 
 	# Always return the targetEvents as a dictionary (referencing to the type of event you're importing).
 	# The dict contains a tuple that has: (1,2,3,i,..)
@@ -37,7 +37,7 @@ def process(targetEvents,cleanFname,TeamAstring,TeamBstring,dataFolder):
 	return targetEvents
 
 
-def importFromXML(targetEvents,cleanFname,TeamAstring,TeamBstring,dataFolder):
+def importFromXML(targetEvents,cleanFname,TeamAstring,TeamBstring,dataFolder,xmlFolder):
 	def XMLToDF(root,iterate,childCols,teamName):
 		dfList2 = []
 
@@ -62,9 +62,10 @@ def importFromXML(targetEvents,cleanFname,TeamAstring,TeamBstring,dataFolder):
 		warn('\nWARNING: folder <existingTargets> in dataFolder <%s> NOT found.\nIf you want to import target events, put them in that folder.' %dataFolder)
 		return targetEvents
 
-	existingTargetsFname = dataFolder + 'existingTargets' + sep + cleanFname[:-12] + '_Events.xml'
+	# existingTargetsFname = dataFolder + 'existingTargets' + sep + cleanFname[:-12] + '_Events.xml'
+	existingTargetsFname = xmlFolder + cleanFname[:-12] + '_Events.xml'
 	if not isfile(existingTargetsFname):
-		warn('\nWARNING: Although the existingTarget\'s folder existed in dataFolder <%s>, no <%s> found.\nNo existing targets imported.\n' %(dataFolder,cleanFname + '_existingTargets.xml'))
+		warn('\nWARNING: Although the existingTarget\'s folder existed in dataFolder <%s>, no <%s> found.\nNo existing targets imported.\n' %(xmlFolder,cleanFname[:-12] + '_Events.xml'))
 		return targetEvents
 
 	#Read XML file

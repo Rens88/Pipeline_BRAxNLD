@@ -8,6 +8,7 @@ import os
 import pdb
 import matplotlib.pyplot as plt
 from scipy import stats
+from warnings import warn
 
 def process(rawPanda,attrPanda,TeamAstring,TeamBstring,playerReportFolder,matchName,debuggingMode,skipPlayerReports):
 	#Load CSV file with events
@@ -46,8 +47,16 @@ def process(rawPanda,attrPanda,TeamAstring,TeamBstring,playerReportFolder,matchN
 			dfDanger = dfDanger.append({teamField:team,'Ts':quart*900,fieldToPlot:0,'fiveSeconds':quart*180,'fifteenMinutes':quart},ignore_index=True)
 
 	#Decide which team is the Netherlands
-	teamDataA = dfDanger[dfDanger[teamField] == TeamAstring].groupby([teamField,'fifteenMinutes','fiveSeconds',playerField])[fieldToPlot].max().groupby([teamField,'fifteenMinutes']).sum()
-	teamDataB = dfDanger[dfDanger[teamField] == TeamBstring].groupby([teamField,'fifteenMinutes','fiveSeconds',playerField])[fieldToPlot].max().groupby([teamField,'fifteenMinutes']).sum()
+	try:
+		teamDataA = dfDanger[dfDanger[teamField] == TeamAstring].groupby([teamField,'fifteenMinutes','fiveSeconds',playerField])[fieldToPlot].max().groupby([teamField,'fifteenMinutes']).sum()
+	except:
+		teamDataA = []
+		warn('\nWARNING: No dangerousity data for team A found.\n')
+	try:
+		teamDataB = dfDanger[dfDanger[teamField] == TeamBstring].groupby([teamField,'fifteenMinutes','fiveSeconds',playerField])[fieldToPlot].max().groupby([teamField,'fifteenMinutes']).sum()
+	except:
+		teamDataB = []
+		warn('\nWARNING: No dangerousity data for team B found.\n')
 
 	#add the stopage time to the last fifteen minutes
 	if len(teamDataA) > 3:

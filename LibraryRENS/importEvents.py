@@ -47,7 +47,7 @@ if __name__ == '__main__':
 	# 3 --> START time of the possession
 
 
-def process(rawPanda,eventsPanda,TeamAstring,TeamBstring,cleanFname,dataFolder,debuggingMode,skipComputeEvents_curFile):
+def process(rawPanda,eventsPanda,TeamAstring,TeamBstring,cleanFname,dataFolder,debuggingMode,skipComputeEvents_curFile,xmlFolder):
 	tImportEvents = time.time()
 	targetEvents = {}
 
@@ -78,7 +78,7 @@ def process(rawPanda,eventsPanda,TeamAstring,TeamBstring,cleanFname,dataFolder,d
 		targetEvents = fromFile(targetEvents,rawPanda,TeamAstring,TeamBstring,cleanFname,dataFolder)
 
 	targetEvents = \
-	student_LT_importEvents.process(targetEvents,cleanFname,TeamAstring,TeamBstring,dataFolder)
+	student_LT_importEvents.process(targetEvents,cleanFname,TeamAstring,TeamBstring,dataFolder,xmlFolder)
 
 	if debuggingMode:
 		elapsed = str(round(time.time() - tImportEvents, 2))

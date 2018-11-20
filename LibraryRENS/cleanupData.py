@@ -51,7 +51,7 @@ if __name__ == '__main__':
 	NP(dataFiles,cleanFname,folder,cleanedFolder,TeamAstring,TeamBstring)
 
 #########################################################################
-def process(dirtyFname,cleanFname,dataType,dataFolder,cleanedFolder,spatAggFname,spatAggFolder,eventAggFolder,eventAggFname,TeamAstring,TeamBstring,headers,readAttributeCols,timestampString,readEventColumns,conversionToMeter,skipCleanup,skipSpatAgg,skipEventAgg,exportData, exportDataString,includeCleanupInterpolation,datasetFramerate,debuggingMode,skipComputeEvents,aggregateLevel):
+def process(dirtyFname,cleanFname,dataType,dataFolder,cleanedFolder,spatAggFname,spatAggFolder,eventAggFolder,eventAggFname,TeamAstring,TeamBstring,headers,readAttributeCols,timestampString,readEventColumns,conversionToMeter,skipCleanup,skipSpatAgg,skipEventAgg,exportData, exportDataString,includeCleanupInterpolation,datasetFramerate,debuggingMode,skipComputeEvents,aggregateLevel,csvFolder):
 	tCleanup = time.time()	# do stuff
 
 	headers = headers.copy()
@@ -172,7 +172,7 @@ def process(dirtyFname,cleanFname,dataType,dataFolder,cleanedFolder,spatAggFname
 			# return 1,2,3,4,5
 		elif dataType == "KNVB":#LT: added!
 			df_cleaned,df_omitted,fatalTeamIDissue = \
-			student_LT_cleanUp.process(dirtyFname,cleanFname,dataFolder,cleanedFolder,headers,readAttributeCols,debugOmittedRows,readEventColumns,TeamAstring,TeamBstring)
+			student_LT_cleanUp.process(dirtyFname,cleanFname,dataFolder,cleanedFolder,headers,readAttributeCols,debugOmittedRows,readEventColumns,TeamAstring,TeamBstring,csvFolder)
 		else:
 			# overwrite cleanedFolder and add a warning that no cleanup had taken place
 			loadFolder = dataFolder

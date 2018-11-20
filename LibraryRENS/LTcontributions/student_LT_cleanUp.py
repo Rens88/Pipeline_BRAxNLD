@@ -31,7 +31,7 @@ if __name__ == '__main__':
 	omitXandY_equals0(df,x,y,ID)
 
 ## Here, you specifiy what each function does
-def process(dirtyFname,cleanFname,dataFolder,cleanedFolder,headers,readAttributeCols,debugOmittedRows,readEventColumns,TeamAstring,TeamBstring):
+def process(dirtyFname,cleanFname,dataFolder,cleanedFolder,headers,readAttributeCols,debugOmittedRows,readEventColumns,TeamAstring,TeamBstring,csvFolder):
 	# NB: Keys are standardized
 	# - Timestamp (in seconds) = 'Ts'
 	# - Locations (in meters) are 'X' and 'Y'
@@ -45,7 +45,7 @@ def process(dirtyFname,cleanFname,dataFolder,cleanedFolder,headers,readAttribute
 	# df_cropped01,df_omitted01 = \
 	# omitXandY_equals0(df)
 
-	df_cleaned,df_omitted,fatalTeamIDissue = KNVB(dirtyFname,cleanFname,dataFolder,cleanedFolder,headers,readAttributeCols,debugOmittedRows,readEventColumns,TeamAstring,TeamBstring)
+	df_cleaned,df_omitted,fatalTeamIDissue = KNVB(dirtyFname,cleanFname,dataFolder,cleanedFolder,headers,readAttributeCols,debugOmittedRows,readEventColumns,TeamAstring,TeamBstring,csvFolder)
 		
 
 	# df_omitted = pd.concat([df_omitted, df_omitted01]) # Only relevant when cleaning up in multiple steps.
@@ -56,7 +56,7 @@ def process(dirtyFname,cleanFname,dataFolder,cleanedFolder,headers,readAttribute
 	return df_cleaned,df_omitted,fatalTeamIDissue#,halfTime,secondHalfTime
 
 #LT: TODO: sort values by Ts
-def KNVB(fname,cleanFname,dataFolder,cleanedFolder,headers,readAttributeCols,debugOmittedRows,readEventColumns,TeamAstring,TeamBstring):
+def KNVB(fname,cleanFname,dataFolder,cleanedFolder,headers,readAttributeCols,debugOmittedRows,readEventColumns,TeamAstring,TeamBstring,csvFolder):
 	expectedVals = (-60,60,-40,40) # This should probably be dataset specific.
 	conversion_to_S = .001
 	# FDP specific function where the column 'Naam' is seperated into its PlayerID and TeamID
@@ -74,7 +74,7 @@ def KNVB(fname,cleanFname,dataFolder,cleanedFolder,headers,readAttributeCols,deb
 	newTeamIDstring = 'Team'
 
 	# Only read the headers as a check-up:
-	with open(dataFolder+fname, 'r') as f:
+	with open(csvFolder+fname, 'r') as f:
 		reader = csv.reader(f)
 		fileHeaders = list(next(reader))
 
@@ -83,7 +83,7 @@ def KNVB(fname,cleanFname,dataFolder,cleanedFolder,headers,readAttributeCols,deb
 			exit('EXIT: Column header <%s> not in column headers of the file:\n%s\n\nSOLUTION: Change the user input in \'process\' \n' %(i,fileHeaders))
   
 	#LT: TODO: sort values by Ts
-	df = pd.read_csv(dataFolder+fname,usecols=(colHeaders),low_memory=False)
+	df = pd.read_csv(csvFolder+fname,usecols=(colHeaders),low_memory=False)
 	df[ts] = df[ts]*conversion_to_S # Convert from ms to s.
 
 	

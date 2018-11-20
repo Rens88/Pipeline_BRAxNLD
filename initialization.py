@@ -16,7 +16,7 @@ if __name__ == '__main__':
 	addLibrary()
 	checkFolders(folder,aggregateEvent)
 
-def process(studentFolder,folder,aggregateEvent,allWindows_and_Lags,skipToDataSetLevel,skipCleanup,skipSpatAgg,skipEventAgg,includeTrialVisualization,timestampString,PlayerIDstring,TeamIDstring,XPositionString,YPositionString,readAttributeCols,readAttributeLabels,onlyAnalyzeFilesWithEventData,parallelProcess,skipComputeEvents,**kwargs):
+def process(studentFolder,folder,aggregateEvent,allWindows_and_Lags,skipToDataSetLevel,skipCleanup,skipSpatAgg,skipEventAgg,includeTrialVisualization,timestampString,PlayerIDstring,TeamIDstring,XPositionString,YPositionString,readAttributeCols,readAttributeLabels,onlyAnalyzeFilesWithEventData,parallelProcess,skipComputeEvents,saveFolder,csvFolder,xmlFolder,**kwargs):
 	skipEventAgg_MatchVerification = False
 	if 'skipEventAgg_MatchVerification' in kwargs:
 		skipEventAgg_MatchVerification = kwargs['skipEventAgg_MatchVerification']
@@ -39,7 +39,7 @@ def process(studentFolder,folder,aggregateEvent,allWindows_and_Lags,skipToDataSe
 		aggregateWindow = None
 
 	dataFolder,tmpFigFolder,outputFolder,cleanedFolder,spatAggFolder,eventAggFolder,aggregatedOutputFilename,outputDescriptionFilename,eventAggFname,backupEventAggFname,DirtyDataFiles,aggregateLevel,playerReportFolder = \
-	checkFolders(folder,aggregateEvent,aggregateWindow,aggregateLag,onlyAnalyzeFilesWithEventData,parallelProcess)
+	checkFolders(folder,aggregateEvent,aggregateWindow,aggregateLag,onlyAnalyzeFilesWithEventData,parallelProcess,saveFolder,csvFolder,xmlFolder)
 
 	# WARNING: any edits made to DirtyDataFiles in skipPartsOfPipeline will NOT apply to the back-up
 	if '35_ERE_XIV.csv' in DirtyDataFiles:
@@ -79,6 +79,9 @@ def process(studentFolder,folder,aggregateEvent,allWindows_and_Lags,skipToDataSe
 	# 		print(df['Unnamed: 0'])
 	# pdb.set_trace()
 
+	# dataFolder = csvFolder
+	# eventFolder = xmlFolder
+
 	return dataFolder,tmpFigFolder,outputFolder,cleanedFolder,spatAggFolder,eventAggFolder,aggregatedOutputFilename,outputDescriptionFilename,eventAggFname,backupEventAggFname,DirtyDataFiles,aggregateLevel,t,skipToDataSetLevel,skipCleanup,skipSpatAgg,skipEventAgg,includeTrialVisualization,rawHeaders, attrLabel,skipComputeEvents,DirtyDataFiles_backup,playerReportFolder
 
 def addLibrary(studentFolder):
@@ -113,7 +116,7 @@ def addLibrary(studentFolder):
 	#########################################
 
 
-def checkFolders(folder,aggregateEvent,aggregateWindow,aggregateLag,onlyAnalyzeFilesWithEventData,parallelProcess):
+def checkFolders(folder,aggregateEvent,aggregateWindow,aggregateLag,onlyAnalyzeFilesWithEventData,parallelProcess,saveFolder,csvFolder,xmlFolder):
 	aggregateLevel = (aggregateEvent,aggregateWindow,aggregateLag)
 
 	if folder[-1:] != sep:
@@ -121,21 +124,21 @@ def checkFolders(folder,aggregateEvent,aggregateWindow,aggregateLag,onlyAnalyzeF
 		folder = folder + sep
 
 	dataFolder = folder + 'Data' + sep
-	dataFolder_BRxNL = dataFolder + 'BRAxNLD Data' + sep
+	# dataFolder_BRxNL = dataFolder + 'BRAxNLD Data' + sep
 	tmpFigFolder = folder + 'Figs' + sep + 'Temp' + sep + aggregateLevel[0] + sep
-	playerReportFolder = folder + 'Figs' + sep + 'Player Reports' + sep
-	outputFolder = folder + 'Output' + sep# Folder where tabular output will be stored (aggregated spatially and temporally)
+	outputFolder = saveFolder # Folder where tabular output will be stored (aggregated spatially and temporally)
+	playerReportFolder = outputFolder + 'Player Reports' + sep
 	cleanedFolder = dataFolder + 'Cleaned' + sep    
 	spatAggFolder = dataFolder + 'SpatAgg' + sep
 	eventAggFolder = dataFolder + 'EventAgg' + sep
 
 	# Verify if folders exists
-	BRAxNLD = False
+	# BRAxNLD = False
 	if not exists(dataFolder):
 		warn('\nFATAL WARNING: dataFolder not found.\nMake sure that you put your data in the folder <%s>\n' %dataFolder)
 		exit()
-	if exists(dataFolder_BRxNL):
-		BRAxNLD = True
+	# if exists(dataFolder_BRxNL):
+	# 	BRAxNLD = True
 
 	if not exists(outputFolder):
 		makedirs(outputFolder)
@@ -171,7 +174,6 @@ def checkFolders(folder,aggregateEvent,aggregateWindow,aggregateLag,onlyAnalyzeF
 	# 	# use regular expression to extract window and lag
 
 	# 	# test for statements
-
 
 	if not theseFilesNeedToBeRemoved == []:
 		warn('\nFATAL WARNING: eventAggFolder <%s> contained files with other windows than currently analyzing.\nThis leads to a high risk of a memory error.\nBefore you can continue, either delete the old files entirely, or - if you do want to keep them - back them up somewhere else.\n' %eventAggFolder)
@@ -211,15 +213,16 @@ def checkFolders(folder,aggregateEvent,aggregateWindow,aggregateLag,onlyAnalyzeF
 	# 	# And eventfiles?
 
 	# 	# pdb.set_trace()
-	eventFolder = dataFolder + sep + 'existingTargets' + sep
-	preComputed_targetEventsFolder = eventFolder + 'preComputed' + sep
+	eventFolder = xmlFolder
+	eventFolder2 = dataFolder + sep + 'existingTargets' + sep
+	preComputed_targetEventsFolder = eventFolder2 + 'preComputed' + sep
 	
 	if onlyAnalyzeFilesWithEventData:			
 
 		# Check if target events already exist
 		if not exists(eventFolder):
 			warn('\nWARNING: Can only restrict analysis to files with eventData if a folder <existingTargets> exists in the dataFolder.\n')
-			DirtyDataFiles = [f for f in listdir(dataFolder) if isfile(join(dataFolder, f)) if '.csv' in f]
+			DirtyDataFiles = [f for f in listdir(csvFolder) if isfile(join(csvFolder, f)) if '.csv' in f]
 
 			if len(DirtyDataFiles) == 0:
 				warn('\nWARNING: No datafiles found that had a matching eventData file.\nNo files will be analyzed.\n')
@@ -242,13 +245,13 @@ def checkFolders(folder,aggregateEvent,aggregateWindow,aggregateLag,onlyAnalyzeF
 				if dataFname[-1] == '_':
 					dataFname = dataFname[:-1]
 				rawData_f = dataFname + '.csv'
-				if isfile(join(dataFolder, rawData_f)):
+				if isfile(join(csvFolder, rawData_f)):
 					DirtyDataFiles.append(rawData_f)
 				else:
 					warn('\nWARNING: Couldnt find the raw data of event file: <%s>.\nTherefore, it was excluded.' %f)
 				
 	else:
-		DirtyDataFiles = [f for f in listdir(dataFolder) if isfile(join(dataFolder, f)) if '.csv' in f]
+		DirtyDataFiles = [f for f in listdir(csvFolder) if isfile(join(csvFolder, f)) if '.csv' in f]
 
 	# divide dirtyDataFiles amongst parallel processes:
 	# print('parallelProcess = %s of %s' %parallelProcess)
