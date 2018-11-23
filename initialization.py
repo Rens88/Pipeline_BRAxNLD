@@ -16,13 +16,14 @@ if __name__ == '__main__':
 	addLibrary()
 	checkFolders(folder,aggregateEvent)
 
-def process(studentFolder,folder,aggregateEvent,allWindows_and_Lags,skipToDataSetLevel,skipCleanup,skipSpatAgg,skipEventAgg,includeTrialVisualization,timestampString,PlayerIDstring,TeamIDstring,XPositionString,YPositionString,readAttributeCols,readAttributeLabels,onlyAnalyzeFilesWithEventData,parallelProcess,skipComputeEvents,**kwargs):
+def process(studentFolderLT,studentFolderVP,folder,aggregateEvent,allWindows_and_Lags,skipToDataSetLevel,skipCleanup,skipSpatAgg,skipEventAgg,includeTrialVisualization,timestampString,PlayerIDstring,TeamIDstring,XPositionString,YPositionString,readAttributeCols,readAttributeLabels,onlyAnalyzeFilesWithEventData,parallelProcess,skipComputeEvents,**kwargs):
 	skipEventAgg_MatchVerification = False
 	if 'skipEventAgg_MatchVerification' in kwargs:
 		skipEventAgg_MatchVerification = kwargs['skipEventAgg_MatchVerification']
 
-	addLibrary(studentFolder)
-	
+	addLibrary(studentFolderLT)
+	addLibrary(studentFolderVP)
+
 	# if it works, put this in initialization
 	if not allWindows_and_Lags[0][0] == None:
 		maxStarts_and_Ends = [(i[1]*-1-i[0],i[1]*-1) for i in allWindows_and_Lags]
@@ -62,11 +63,11 @@ def process(studentFolder,folder,aggregateEvent,allWindows_and_Lags,skipToDataSe
 
 	t,skipToDataSetLevel,skipCleanup,skipSpatAgg,skipEventAgg,includeTrialVisualization,DirtyDataFiles,skipComputeEvents =\
 	skipPartsOfPipeline(backupEventAggFname,DirtyDataFiles,skipToDataSetLevel,skipCleanup,skipSpatAgg,skipEventAgg,includeTrialVisualization,eventAggFolder,eventAggFname,skipComputeEvents,cleanedFolder,skipEventAgg_MatchVerification,dataFolder)
-	
+
 	rawHeaders, attrLabel =\
 	processUserInput(timestampString,PlayerIDstring,TeamIDstring,XPositionString,YPositionString,readAttributeCols,readAttributeLabels)
 
-	
+
 	# Check if first DirtyDataFile did not have an empty clean
 	# if skipCleanup:
 	# 	firstDataFile = DirtyDataFiles[0]
@@ -98,7 +99,7 @@ def addLibrary(studentFolder):
 		warn('\nFATAL WARNING: Could not find the library. It should be named <libraryRENS> and either put in:\n%s\nor in:\n%s' %(current_folder,current_folder_process))
 
 	if library_folder not in sys.path:
-		sys.path.insert(0, library_folder) 	
+		sys.path.insert(0, library_folder)
 
 	library_subfolders = [library_folder + str(sep + "FDP")] # FDP = Football Data Project
 	library_subfolders.append(library_folder + str(sep + "" + studentFolder)) # Contributions of a Bachelor student
@@ -125,7 +126,7 @@ def checkFolders(folder,aggregateEvent,aggregateWindow,aggregateLag,onlyAnalyzeF
 	tmpFigFolder = folder + 'Figs' + sep + 'Temp' + sep + aggregateLevel[0] + sep
 	playerReportFolder = folder + 'Figs' + sep + 'Player Reports' + sep
 	outputFolder = folder + 'Output' + sep# Folder where tabular output will be stored (aggregated spatially and temporally)
-	cleanedFolder = dataFolder + 'Cleaned' + sep    
+	cleanedFolder = dataFolder + 'Cleaned' + sep
 	spatAggFolder = dataFolder + 'SpatAgg' + sep
 	eventAggFolder = dataFolder + 'EventAgg' + sep
 
@@ -151,7 +152,7 @@ def checkFolders(folder,aggregateEvent,aggregateWindow,aggregateLag,onlyAnalyzeF
 		makedirs(eventAggFolder)
 	if not exists(playerReportFolder):
 		makedirs(playerReportFolder)
-	
+
 	timeString = time.strftime("%Hh%Mm_%d_%B_%Y")
 	outputFilename = outputFolder + 'output_' + aggregateLevel[0] + '_window(' + str(aggregateLevel[1]) + ')_lag(' + str(aggregateLevel[2]) + ')_' + timeString + '_' + str(parallelProcess[0]) + 'of' + str(parallelProcess[1]) +  '.csv'
 	outputDescriptionFilename = outputFolder + 'output_Description_' + aggregateLevel[0] + '.txt'
@@ -213,8 +214,8 @@ def checkFolders(folder,aggregateEvent,aggregateWindow,aggregateLag,onlyAnalyzeF
 	# 	# pdb.set_trace()
 	eventFolder = dataFolder + sep + 'existingTargets' + sep
 	preComputed_targetEventsFolder = eventFolder + 'preComputed' + sep
-	
-	if onlyAnalyzeFilesWithEventData:			
+
+	if onlyAnalyzeFilesWithEventData:
 
 		# Check if target events already exist
 		if not exists(eventFolder):
@@ -231,11 +232,11 @@ def checkFolders(folder,aggregateEvent,aggregateWindow,aggregateLag,onlyAnalyzeF
 			if not exists(preComputed_targetEventsFolder):
 				makedirs(preComputed_targetEventsFolder)
 
-			DirtyEventFiles = [f for f in listdir(eventFolder) if isfile(join(eventFolder, f)) if '.csv' in f]				
+			DirtyEventFiles = [f for f in listdir(eventFolder) if isfile(join(eventFolder, f)) if '.csv' in f]
 			if DirtyEventFiles == []:
 				# if no csv files, then look for .xml files:
-				DirtyEventFiles = [f for f in listdir(eventFolder) if isfile(join(eventFolder, f)) if '.xml' in f]				
-			
+				DirtyEventFiles = [f for f in listdir(eventFolder) if isfile(join(eventFolder, f)) if '.xml' in f]
+
 			DirtyDataFiles = []
 			for f in DirtyEventFiles:
 				dataFname = f[:-10]
@@ -246,7 +247,7 @@ def checkFolders(folder,aggregateEvent,aggregateWindow,aggregateLag,onlyAnalyzeF
 					DirtyDataFiles.append(rawData_f)
 				else:
 					warn('\nWARNING: Couldnt find the raw data of event file: <%s>.\nTherefore, it was excluded.' %f)
-				
+
 	else:
 		DirtyDataFiles = [f for f in listdir(dataFolder) if isfile(join(dataFolder, f)) if '.csv' in f]
 
@@ -278,7 +279,7 @@ def checkFolders(folder,aggregateEvent,aggregateWindow,aggregateLag,onlyAnalyzeF
 		# print(nthBatch)
 		batchContent[str(nthBatch)].append(n)
 		# batchContent[nthBatch-1].append(n)
-		
+
 		if nthBatch == parallelProcess[1]:
 			nthBatch = 0
 	### Optional code to check the number of files in each batch
@@ -286,10 +287,10 @@ def checkFolders(folder,aggregateEvent,aggregateWindow,aggregateLag,onlyAnalyzeF
 	##for n in np.arange(parallelProcess[1]):
 	##	# print(len(batchContent[str(n+1)]))
 	##	nFilesInBatches = nFilesInBatches + len(batchContent[str(n+1)])
-	
+
 	# Convert the indices to the file string
 	DirtyDataFiles = [DirtyDataFiles[i] for i in batchContent[str(parallelProcess[0])]]
-	
+
 	return dataFolder,tmpFigFolder,outputFolder,cleanedFolder,spatAggFolder,eventAggFolder, outputFilename,outputDescriptionFilename,eventAggFname,backupEventAggFname,DirtyDataFiles,aggregateLevel,playerReportFolder
 
 def skipPartsOfPipeline(backupEventAggFname,DirtyDataFiles,skipToDataSetLevel,skipCleanup,skipSpatAgg,skipEventAgg,includeTrialVisualization,eventAggFolder,eventAggFname,skipComputeEvents,cleanedFolder,skipEventAgg_MatchVerification,dataFolder):
@@ -325,7 +326,7 @@ def skipPartsOfPipeline(backupEventAggFname,DirtyDataFiles,skipToDataSetLevel,sk
 			dfNeedsToBeStoredAgain = False
 			warn('\nWARNING: Currently, Im using something non-generic. It only works if your file has a MatchID column.\nTo make it more generic, I should store the filename of the match as a column and refer to that instead.\n!!!!!!!!!!!!\n!!!!!!!!!!!!!!!!!\n')
 			chunkedDf = pd.read_csv(backupEventAggFname, index_col = 'DataSetIndex',low_memory=True,chunksize = 1000000,usecols = ['DataSetIndex','MatchID'])
-			
+
 			nMatchesThatDontBelongInCurrentBatch = 0
 			for chunk in chunkedDf:
 				umCurChunk = chunk['MatchID'].unique()
@@ -344,7 +345,7 @@ def skipPartsOfPipeline(backupEventAggFname,DirtyDataFiles,skipToDataSetLevel,sk
 							# Break early to save time, you're gonna re-run this loop below anyway.
 							break
 
-			# issue some warnings 
+			# issue some warnings
 			if dfNeedsToBeStoredAgain and skipEventAgg_MatchVerification:
 				warn('\nWARNING: Found <%s> matches that did not belong in the current batch.\nWhen running the pipeline from a different operating system as where the eventAggFile was created, this may be a result storing files in listdir differently.\nIn that case, this is a known issue (and will be solved in the future).\nTo be sure, you could set <skipEventAgg_MatchVerification> to False, which checks the contents of the eventAgg file, but this is time-consuming...\n' %nMatchesThatDontBelongInCurrentBatch)
 
@@ -354,7 +355,7 @@ def skipPartsOfPipeline(backupEventAggFname,DirtyDataFiles,skipToDataSetLevel,sk
 				# Now read the whole thing, all columns.
 				chunkedDf = pd.read_csv(backupEventAggFname, index_col = 'DataSetIndex',low_memory=True,chunksize = 1000000)
 
-				# Do it again, but now actually drop it in store it			
+				# Do it again, but now actually drop it in store it
 				allChunksCombined = pd.DataFrame([])
 				uniqueMatches = []
 
@@ -400,12 +401,12 @@ def skipPartsOfPipeline(backupEventAggFname,DirtyDataFiles,skipToDataSetLevel,sk
 						warn_and_exit = True
 
 			else:
-				# It will crash (probably) if there are no targetEvents: 
+				# It will crash (probably) if there are no targetEvents:
 				# - in iterateWindows, it will go through a special part of temporalAggregation.py
 				# - in this section, it will read the targetEvents from file (which will go wrong if it doesnt exist)
 				# Also:
 				# - in countEvent2, it assumes that targetEvents with each key exist.
-				# 
+				#
 				# Therefore, now I'm choosing option 3
 				warn('\nWARNING: Pre-fatal: Could not find pre-computed events folder:\n<%s>' %preComputedTargetFolder)
 				warn_and_exit = True
@@ -417,7 +418,7 @@ def skipPartsOfPipeline(backupEventAggFname,DirtyDataFiles,skipToDataSetLevel,sk
 				print('Either:')
 				print('1) Find a way to export the eventAggregate features to the eventAgg file')
 				print('2) Edit temporalAggregation_towardsGeneric.py to be able to deal with the absence of a targetEvents file (and simply return None or Nan or 0 for event aggregates)')
-				print('But for now:') 
+				print('But for now:')
 				print('3) Exit the pipeline')
 				exit()
 
@@ -441,7 +442,7 @@ def skipPartsOfPipeline(backupEventAggFname,DirtyDataFiles,skipToDataSetLevel,sk
 			skipSpatAgg = False
 			warn('\nWARNING: Requested skipSpatAgg, but not skipCleanup.\nBy default, when not skipping cleanup, spatial aggregation can\'t be skipped.\n')
 		if skipEventAgg:
-			skipEventAgg = False		
+			skipEventAgg = False
 			warn('\nWARNING: Requested skipEventAgg, but not skipCleanup.\nBy default, when not skipping cleanup, event aggregation can\'t be skipped.\n')
 		if skipToDataSetLevel:
 			skipToDataSetLevel = False
@@ -449,7 +450,7 @@ def skipPartsOfPipeline(backupEventAggFname,DirtyDataFiles,skipToDataSetLevel,sk
 	else:
 		if skipSpatAgg == False: # NB: if False, skipEventAgg and skipToDataSetLevel become ineffective.
 			if skipEventAgg:
-				skipEventAgg = False		
+				skipEventAgg = False
 				warn('\nWARNING: Requested skipEventAgg, but not skipSpatAgg.\nBy default, when not skipping spatial aggregation, event aggregation can\'t be skipped.\n')
 			if skipToDataSetLevel:
 				skipToDataSetLevel = False
@@ -490,10 +491,10 @@ def processUserInput(timestampString,PlayerIDstring,TeamIDstring,XPositionString
 	'Location': (XPositionString,YPositionString) }
 	# if len(readAttributeCols) != len(readAttributeLabels):
 	# 	warn('\nFORMAT USER INPUT ERROR: The number of columns to be read as attributes does not correspond to the number of labels given.\nMake sure that for each column that is read from the data there is a label.\nAs a working solution, the attributes will be given <no_label> as a label.\n********* PLEASE UPDATE USER INPUT ********\n**********************************')
-	
+
 	attrLabel = {}
 	for ix,v in enumerate(readAttributeCols):
-		
+
 		if len(readAttributeLabels) >= ix:
 			attrLabel.update({readAttributeCols[ix]: readAttributeLabels[ix]})
 		else:
