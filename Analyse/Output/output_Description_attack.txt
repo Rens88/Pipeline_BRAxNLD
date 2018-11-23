@@ -1,0 +1,1019 @@
+MatchDate:			 Date of the match.
+HomeTeam:			 Home team.
+AwayTeam:			 Away Team.
+Half:			 First or second half.
+temporalAggregate:		 Level of temporal aggregation, based on <<attack>> event and counted chronologically
+EventUID:			 Unique identifier of the <<attack>> events.
+eventClassification:		 Classification of the current event.
+tStart:			 The starting time (in seconds) of the current event.
+tEnd:			 The end time (in seconds) of the current event.
+RefTeam:			 Teamstring of the reference team the <<attack>> events refer to.
+OthTeam:			 Teamstring of the other team (i.e., not reference) the <<attack>> events refer to.
+eventOverlap:			 Boolean that indicates whether there was overlap with the previous event (True) or if there was NO overlap (False).
+dtPrevEvent:			 Time (in seconds) between the instant (tEnd) of the previous and the current event.
+Speed_avg:			 Average of <Speed> (Speed (m/s)). For <playerRows>. During the whole duration of the events <attack>.
+Speed_avgGreaterThanZero:	 Average of <Speed> (Speed (m/s)) with only values greater than zero. For <playerRows>. During the whole duration of the events <attack>.
+Speed_std:			 Standard Deviation of <Speed> (Speed (m/s)). For <playerRows>. During the whole duration of the events <attack>.
+Speed_min:			 Minimum of <Speed> (Speed (m/s)). For <playerRows>. During the whole duration of the events <attack>.
+Speed_minGreaterThanZero:	 Minimum of <Speed> (Speed (m/s)) with only values greater than zero. For <playerRows>. During the whole duration of the events <attack>.
+Speed_max:			 Maximum of <Speed> (Speed (m/s)). For <playerRows>. During the whole duration of the events <attack>.
+Speed_avg_perTimePerPlayer_all_avg:	 Average of <Speed_avg_perTimePerPlayer_all> (Speed (m/s)). For <allTeam>. During the whole duration of the events <attack>.
+Speed_avg_perTimePerPlayer_all_avgGreaterThanZero:	 Average of <Speed_avg_perTimePerPlayer_all> (Speed (m/s)) with only values greater than zero. For <allTeam>. During the whole duration of the events <attack>.
+Speed_avg_perTimePerPlayer_all_std:	 Standard Deviation of <Speed_avg_perTimePerPlayer_all> (Speed (m/s)). For <allTeam>. During the whole duration of the events <attack>.
+Speed_avg_perTimePerPlayer_all_min:	 Minimum of <Speed_avg_perTimePerPlayer_all> (Speed (m/s)). For <allTeam>. During the whole duration of the events <attack>.
+Speed_avg_perTimePerPlayer_all_minGreaterThanZero:	 Minimum of <Speed_avg_perTimePerPlayer_all> (Speed (m/s)) with only values greater than zero. For <allTeam>. During the whole duration of the events <attack>.
+Speed_avg_perTimePerPlayer_all_max:	 Maximum of <Speed_avg_perTimePerPlayer_all> (Speed (m/s)). For <allTeam>. During the whole duration of the events <attack>.
+Speed_avg_perTimePerPlayer_ref_avg:	 Average of <Speed_avg_perTimePerPlayer_ref> (Speed (m/s)). For <refTeam>. During the whole duration of the events <attack>.
+Speed_avg_perTimePerPlayer_ref_avgGreaterThanZero:	 Average of <Speed_avg_perTimePerPlayer_ref> (Speed (m/s)) with only values greater than zero. For <refTeam>. During the whole duration of the events <attack>.
+Speed_avg_perTimePerPlayer_ref_std:	 Standard Deviation of <Speed_avg_perTimePerPlayer_ref> (Speed (m/s)). For <refTeam>. During the whole duration of the events <attack>.
+Speed_avg_perTimePerPlayer_ref_min:	 Minimum of <Speed_avg_perTimePerPlayer_ref> (Speed (m/s)). For <refTeam>. During the whole duration of the events <attack>.
+Speed_avg_perTimePerPlayer_ref_minGreaterThanZero:	 Minimum of <Speed_avg_perTimePerPlayer_ref> (Speed (m/s)) with only values greater than zero. For <refTeam>. During the whole duration of the events <attack>.
+Speed_avg_perTimePerPlayer_ref_max:	 Maximum of <Speed_avg_perTimePerPlayer_ref> (Speed (m/s)). For <refTeam>. During the whole duration of the events <attack>.
+Speed_avg_perTimePerPlayer_oth_avg:	 Average of <Speed_avg_perTimePerPlayer_oth> (Speed (m/s)). For <othTeam>. During the whole duration of the events <attack>.
+Speed_avg_perTimePerPlayer_oth_avgGreaterThanZero:	 Average of <Speed_avg_perTimePerPlayer_oth> (Speed (m/s)) with only values greater than zero. For <othTeam>. During the whole duration of the events <attack>.
+Speed_avg_perTimePerPlayer_oth_std:	 Standard Deviation of <Speed_avg_perTimePerPlayer_oth> (Speed (m/s)). For <othTeam>. During the whole duration of the events <attack>.
+Speed_avg_perTimePerPlayer_oth_min:	 Minimum of <Speed_avg_perTimePerPlayer_oth> (Speed (m/s)). For <othTeam>. During the whole duration of the events <attack>.
+Speed_avg_perTimePerPlayer_oth_minGreaterThanZero:	 Minimum of <Speed_avg_perTimePerPlayer_oth> (Speed (m/s)) with only values greater than zero. For <othTeam>. During the whole duration of the events <attack>.
+Speed_avg_perTimePerPlayer_oth_max:	 Maximum of <Speed_avg_perTimePerPlayer_oth> (Speed (m/s)). For <othTeam>. During the whole duration of the events <attack>.
+dist to closest home_avg:	 Average of <dist to closest home> (Distance to closest home player.). For <playerRows>. During the whole duration of the events <attack>.
+dist to closest home_avgGreaterThanZero:	 Average of <dist to closest home> (Distance to closest home player.) with only values greater than zero. For <playerRows>. During the whole duration of the events <attack>.
+dist to closest home_std:	 Standard Deviation of <dist to closest home> (Distance to closest home player.). For <playerRows>. During the whole duration of the events <attack>.
+dist to closest home_min:	 Minimum of <dist to closest home> (Distance to closest home player.). For <playerRows>. During the whole duration of the events <attack>.
+dist to closest home_minGreaterThanZero:	 Minimum of <dist to closest home> (Distance to closest home player.) with only values greater than zero. For <playerRows>. During the whole duration of the events <attack>.
+dist to closest home_max:	 Maximum of <dist to closest home> (Distance to closest home player.). For <playerRows>. During the whole duration of the events <attack>.
+dist to closest home_avg_perTimePerPlayer_all_avg:	 Average of <dist to closest home_avg_perTimePerPlayer_all> (Distance to closest home player.). For <allTeam>. During the whole duration of the events <attack>.
+dist to closest home_avg_perTimePerPlayer_all_avgGreaterThanZero:	 Average of <dist to closest home_avg_perTimePerPlayer_all> (Distance to closest home player.) with only values greater than zero. For <allTeam>. During the whole duration of the events <attack>.
+dist to closest home_avg_perTimePerPlayer_all_std:	 Standard Deviation of <dist to closest home_avg_perTimePerPlayer_all> (Distance to closest home player.). For <allTeam>. During the whole duration of the events <attack>.
+dist to closest home_avg_perTimePerPlayer_all_min:	 Minimum of <dist to closest home_avg_perTimePerPlayer_all> (Distance to closest home player.). For <allTeam>. During the whole duration of the events <attack>.
+dist to closest home_avg_perTimePerPlayer_all_minGreaterThanZero:	 Minimum of <dist to closest home_avg_perTimePerPlayer_all> (Distance to closest home player.) with only values greater than zero. For <allTeam>. During the whole duration of the events <attack>.
+dist to closest home_avg_perTimePerPlayer_all_max:	 Maximum of <dist to closest home_avg_perTimePerPlayer_all> (Distance to closest home player.). For <allTeam>. During the whole duration of the events <attack>.
+dist to closest home_avg_perTimePerPlayer_ref_avg:	 Average of <dist to closest home_avg_perTimePerPlayer_ref> (Distance to closest home player.). For <refTeam>. During the whole duration of the events <attack>.
+dist to closest home_avg_perTimePerPlayer_ref_avgGreaterThanZero:	 Average of <dist to closest home_avg_perTimePerPlayer_ref> (Distance to closest home player.) with only values greater than zero. For <refTeam>. During the whole duration of the events <attack>.
+dist to closest home_avg_perTimePerPlayer_ref_std:	 Standard Deviation of <dist to closest home_avg_perTimePerPlayer_ref> (Distance to closest home player.). For <refTeam>. During the whole duration of the events <attack>.
+dist to closest home_avg_perTimePerPlayer_ref_min:	 Minimum of <dist to closest home_avg_perTimePerPlayer_ref> (Distance to closest home player.). For <refTeam>. During the whole duration of the events <attack>.
+dist to closest home_avg_perTimePerPlayer_ref_minGreaterThanZero:	 Minimum of <dist to closest home_avg_perTimePerPlayer_ref> (Distance to closest home player.) with only values greater than zero. For <refTeam>. During the whole duration of the events <attack>.
+dist to closest home_avg_perTimePerPlayer_ref_max:	 Maximum of <dist to closest home_avg_perTimePerPlayer_ref> (Distance to closest home player.). For <refTeam>. During the whole duration of the events <attack>.
+dist to closest home_avg_perTimePerPlayer_oth_avg:	 Average of <dist to closest home_avg_perTimePerPlayer_oth> (Distance to closest home player.). For <othTeam>. During the whole duration of the events <attack>.
+dist to closest home_avg_perTimePerPlayer_oth_avgGreaterThanZero:	 Average of <dist to closest home_avg_perTimePerPlayer_oth> (Distance to closest home player.) with only values greater than zero. For <othTeam>. During the whole duration of the events <attack>.
+dist to closest home_avg_perTimePerPlayer_oth_std:	 Standard Deviation of <dist to closest home_avg_perTimePerPlayer_oth> (Distance to closest home player.). For <othTeam>. During the whole duration of the events <attack>.
+dist to closest home_avg_perTimePerPlayer_oth_min:	 Minimum of <dist to closest home_avg_perTimePerPlayer_oth> (Distance to closest home player.). For <othTeam>. During the whole duration of the events <attack>.
+dist to closest home_avg_perTimePerPlayer_oth_minGreaterThanZero:	 Minimum of <dist to closest home_avg_perTimePerPlayer_oth> (Distance to closest home player.) with only values greater than zero. For <othTeam>. During the whole duration of the events <attack>.
+dist to closest home_avg_perTimePerPlayer_oth_max:	 Maximum of <dist to closest home_avg_perTimePerPlayer_oth> (Distance to closest home player.). For <othTeam>. During the whole duration of the events <attack>.
+dist to closest visitor_avg:	 Average of <dist to closest visitor> (Distance to closest away player.). For <playerRows>. During the whole duration of the events <attack>.
+dist to closest visitor_avgGreaterThanZero:	 Average of <dist to closest visitor> (Distance to closest away player.) with only values greater than zero. For <playerRows>. During the whole duration of the events <attack>.
+dist to closest visitor_std:	 Standard Deviation of <dist to closest visitor> (Distance to closest away player.). For <playerRows>. During the whole duration of the events <attack>.
+dist to closest visitor_min:	 Minimum of <dist to closest visitor> (Distance to closest away player.). For <playerRows>. During the whole duration of the events <attack>.
+dist to closest visitor_minGreaterThanZero:	 Minimum of <dist to closest visitor> (Distance to closest away player.) with only values greater than zero. For <playerRows>. During the whole duration of the events <attack>.
+dist to closest visitor_max:	 Maximum of <dist to closest visitor> (Distance to closest away player.). For <playerRows>. During the whole duration of the events <attack>.
+dist to closest visitor_avg_perTimePerPlayer_all_avg:	 Average of <dist to closest visitor_avg_perTimePerPlayer_all> (Distance to closest away player.). For <allTeam>. During the whole duration of the events <attack>.
+dist to closest visitor_avg_perTimePerPlayer_all_avgGreaterThanZero:	 Average of <dist to closest visitor_avg_perTimePerPlayer_all> (Distance to closest away player.) with only values greater than zero. For <allTeam>. During the whole duration of the events <attack>.
+dist to closest visitor_avg_perTimePerPlayer_all_std:	 Standard Deviation of <dist to closest visitor_avg_perTimePerPlayer_all> (Distance to closest away player.). For <allTeam>. During the whole duration of the events <attack>.
+dist to closest visitor_avg_perTimePerPlayer_all_min:	 Minimum of <dist to closest visitor_avg_perTimePerPlayer_all> (Distance to closest away player.). For <allTeam>. During the whole duration of the events <attack>.
+dist to closest visitor_avg_perTimePerPlayer_all_minGreaterThanZero:	 Minimum of <dist to closest visitor_avg_perTimePerPlayer_all> (Distance to closest away player.) with only values greater than zero. For <allTeam>. During the whole duration of the events <attack>.
+dist to closest visitor_avg_perTimePerPlayer_all_max:	 Maximum of <dist to closest visitor_avg_perTimePerPlayer_all> (Distance to closest away player.). For <allTeam>. During the whole duration of the events <attack>.
+dist to closest visitor_avg_perTimePerPlayer_ref_avg:	 Average of <dist to closest visitor_avg_perTimePerPlayer_ref> (Distance to closest away player.). For <refTeam>. During the whole duration of the events <attack>.
+dist to closest visitor_avg_perTimePerPlayer_ref_avgGreaterThanZero:	 Average of <dist to closest visitor_avg_perTimePerPlayer_ref> (Distance to closest away player.) with only values greater than zero. For <refTeam>. During the whole duration of the events <attack>.
+dist to closest visitor_avg_perTimePerPlayer_ref_std:	 Standard Deviation of <dist to closest visitor_avg_perTimePerPlayer_ref> (Distance to closest away player.). For <refTeam>. During the whole duration of the events <attack>.
+dist to closest visitor_avg_perTimePerPlayer_ref_min:	 Minimum of <dist to closest visitor_avg_perTimePerPlayer_ref> (Distance to closest away player.). For <refTeam>. During the whole duration of the events <attack>.
+dist to closest visitor_avg_perTimePerPlayer_ref_minGreaterThanZero:	 Minimum of <dist to closest visitor_avg_perTimePerPlayer_ref> (Distance to closest away player.) with only values greater than zero. For <refTeam>. During the whole duration of the events <attack>.
+dist to closest visitor_avg_perTimePerPlayer_ref_max:	 Maximum of <dist to closest visitor_avg_perTimePerPlayer_ref> (Distance to closest away player.). For <refTeam>. During the whole duration of the events <attack>.
+dist to closest visitor_avg_perTimePerPlayer_oth_avg:	 Average of <dist to closest visitor_avg_perTimePerPlayer_oth> (Distance to closest away player.). For <othTeam>. During the whole duration of the events <attack>.
+dist to closest visitor_avg_perTimePerPlayer_oth_avgGreaterThanZero:	 Average of <dist to closest visitor_avg_perTimePerPlayer_oth> (Distance to closest away player.) with only values greater than zero. For <othTeam>. During the whole duration of the events <attack>.
+dist to closest visitor_avg_perTimePerPlayer_oth_std:	 Standard Deviation of <dist to closest visitor_avg_perTimePerPlayer_oth> (Distance to closest away player.). For <othTeam>. During the whole duration of the events <attack>.
+dist to closest visitor_avg_perTimePerPlayer_oth_min:	 Minimum of <dist to closest visitor_avg_perTimePerPlayer_oth> (Distance to closest away player.). For <othTeam>. During the whole duration of the events <attack>.
+dist to closest visitor_avg_perTimePerPlayer_oth_minGreaterThanZero:	 Minimum of <dist to closest visitor_avg_perTimePerPlayer_oth> (Distance to closest away player.) with only values greater than zero. For <othTeam>. During the whole duration of the events <attack>.
+dist to closest visitor_avg_perTimePerPlayer_oth_max:	 Maximum of <dist to closest visitor_avg_perTimePerPlayer_oth> (Distance to closest away player.). For <othTeam>. During the whole duration of the events <attack>.
+zone_avg:			 Average of <zone> (Value of player with ball in the final third (last 34 meters).). For <playerRows>. During the whole duration of the events <attack>.
+zone_avgGreaterThanZero:	 Average of <zone> (Value of player with ball in the final third (last 34 meters).) with only values greater than zero. For <playerRows>. During the whole duration of the events <attack>.
+zone_std:			 Standard Deviation of <zone> (Value of player with ball in the final third (last 34 meters).). For <playerRows>. During the whole duration of the events <attack>.
+zone_min:			 Minimum of <zone> (Value of player with ball in the final third (last 34 meters).). For <playerRows>. During the whole duration of the events <attack>.
+zone_minGreaterThanZero:	 Minimum of <zone> (Value of player with ball in the final third (last 34 meters).) with only values greater than zero. For <playerRows>. During the whole duration of the events <attack>.
+zone_max:			 Maximum of <zone> (Value of player with ball in the final third (last 34 meters).). For <playerRows>. During the whole duration of the events <attack>.
+zone_avg_perTimePerPlayer_ref_avg:	 Average of <zone_avg_perTimePerPlayer_ref> (Value of player with ball in the final third (last 34 meters).). For <refTeam>. During the whole duration of the events <attack>.
+zone_avg_perTimePerPlayer_ref_avgGreaterThanZero:	 Average of <zone_avg_perTimePerPlayer_ref> (Value of player with ball in the final third (last 34 meters).) with only values greater than zero. For <refTeam>. During the whole duration of the events <attack>.
+zone_avg_perTimePerPlayer_ref_std:	 Standard Deviation of <zone_avg_perTimePerPlayer_ref> (Value of player with ball in the final third (last 34 meters).). For <refTeam>. During the whole duration of the events <attack>.
+zone_avg_perTimePerPlayer_ref_min:	 Minimum of <zone_avg_perTimePerPlayer_ref> (Value of player with ball in the final third (last 34 meters).). For <refTeam>. During the whole duration of the events <attack>.
+zone_avg_perTimePerPlayer_ref_minGreaterThanZero:	 Minimum of <zone_avg_perTimePerPlayer_ref> (Value of player with ball in the final third (last 34 meters).) with only values greater than zero. For <refTeam>. During the whole duration of the events <attack>.
+zone_avg_perTimePerPlayer_ref_max:	 Maximum of <zone_avg_perTimePerPlayer_ref> (Value of player with ball in the final third (last 34 meters).). For <refTeam>. During the whole duration of the events <attack>.
+zone_01_avg:			 Average of <zone_01> (Value of player with ball in the final third (last 34 meters).). For <1th player>. During the whole duration of the events <attack>.
+zone_01_avgGreaterThanZero:	 Average of <zone_01> (Value of player with ball in the final third (last 34 meters).) with only values greater than zero. For <1th player>. During the whole duration of the events <attack>.
+zone_01_std:			 Standard Deviation of <zone_01> (Value of player with ball in the final third (last 34 meters).). For <1th player>. During the whole duration of the events <attack>.
+zone_01_min:			 Minimum of <zone_01> (Value of player with ball in the final third (last 34 meters).). For <1th player>. During the whole duration of the events <attack>.
+zone_01_minGreaterThanZero:	 Minimum of <zone_01> (Value of player with ball in the final third (last 34 meters).) with only values greater than zero. For <1th player>. During the whole duration of the events <attack>.
+zone_01_max:			 Maximum of <zone_01> (Value of player with ball in the final third (last 34 meters).). For <1th player>. During the whole duration of the events <attack>.
+zone_02_avg:			 Average of <zone_02> (Value of player with ball in the final third (last 34 meters).). For <2th player>. During the whole duration of the events <attack>.
+zone_02_avgGreaterThanZero:	 Average of <zone_02> (Value of player with ball in the final third (last 34 meters).) with only values greater than zero. For <2th player>. During the whole duration of the events <attack>.
+zone_02_std:			 Standard Deviation of <zone_02> (Value of player with ball in the final third (last 34 meters).). For <2th player>. During the whole duration of the events <attack>.
+zone_02_min:			 Minimum of <zone_02> (Value of player with ball in the final third (last 34 meters).). For <2th player>. During the whole duration of the events <attack>.
+zone_02_minGreaterThanZero:	 Minimum of <zone_02> (Value of player with ball in the final third (last 34 meters).) with only values greater than zero. For <2th player>. During the whole duration of the events <attack>.
+zone_02_max:			 Maximum of <zone_02> (Value of player with ball in the final third (last 34 meters).). For <2th player>. During the whole duration of the events <attack>.
+zone_03_avg:			 Average of <zone_03> (Value of player with ball in the final third (last 34 meters).). For <3th player>. During the whole duration of the events <attack>.
+zone_03_avgGreaterThanZero:	 Average of <zone_03> (Value of player with ball in the final third (last 34 meters).) with only values greater than zero. For <3th player>. During the whole duration of the events <attack>.
+zone_03_std:			 Standard Deviation of <zone_03> (Value of player with ball in the final third (last 34 meters).). For <3th player>. During the whole duration of the events <attack>.
+zone_03_min:			 Minimum of <zone_03> (Value of player with ball in the final third (last 34 meters).). For <3th player>. During the whole duration of the events <attack>.
+zone_03_minGreaterThanZero:	 Minimum of <zone_03> (Value of player with ball in the final third (last 34 meters).) with only values greater than zero. For <3th player>. During the whole duration of the events <attack>.
+zone_03_max:			 Maximum of <zone_03> (Value of player with ball in the final third (last 34 meters).). For <3th player>. During the whole duration of the events <attack>.
+zone_04_avg:			 Average of <zone_04> (Value of player with ball in the final third (last 34 meters).). For <4th player>. During the whole duration of the events <attack>.
+zone_04_avgGreaterThanZero:	 Average of <zone_04> (Value of player with ball in the final third (last 34 meters).) with only values greater than zero. For <4th player>. During the whole duration of the events <attack>.
+zone_04_std:			 Standard Deviation of <zone_04> (Value of player with ball in the final third (last 34 meters).). For <4th player>. During the whole duration of the events <attack>.
+zone_04_min:			 Minimum of <zone_04> (Value of player with ball in the final third (last 34 meters).). For <4th player>. During the whole duration of the events <attack>.
+zone_04_minGreaterThanZero:	 Minimum of <zone_04> (Value of player with ball in the final third (last 34 meters).) with only values greater than zero. For <4th player>. During the whole duration of the events <attack>.
+zone_04_max:			 Maximum of <zone_04> (Value of player with ball in the final third (last 34 meters).). For <4th player>. During the whole duration of the events <attack>.
+zone_05_avg:			 Average of <zone_05> (Value of player with ball in the final third (last 34 meters).). For <5th player>. During the whole duration of the events <attack>.
+zone_05_avgGreaterThanZero:	 Average of <zone_05> (Value of player with ball in the final third (last 34 meters).) with only values greater than zero. For <5th player>. During the whole duration of the events <attack>.
+zone_05_std:			 Standard Deviation of <zone_05> (Value of player with ball in the final third (last 34 meters).). For <5th player>. During the whole duration of the events <attack>.
+zone_05_min:			 Minimum of <zone_05> (Value of player with ball in the final third (last 34 meters).). For <5th player>. During the whole duration of the events <attack>.
+zone_05_minGreaterThanZero:	 Minimum of <zone_05> (Value of player with ball in the final third (last 34 meters).) with only values greater than zero. For <5th player>. During the whole duration of the events <attack>.
+zone_05_max:			 Maximum of <zone_05> (Value of player with ball in the final third (last 34 meters).). For <5th player>. During the whole duration of the events <attack>.
+zone_06_avg:			 Average of <zone_06> (Value of player with ball in the final third (last 34 meters).). For <6th player>. During the whole duration of the events <attack>.
+zone_06_avgGreaterThanZero:	 Average of <zone_06> (Value of player with ball in the final third (last 34 meters).) with only values greater than zero. For <6th player>. During the whole duration of the events <attack>.
+zone_06_std:			 Standard Deviation of <zone_06> (Value of player with ball in the final third (last 34 meters).). For <6th player>. During the whole duration of the events <attack>.
+zone_06_min:			 Minimum of <zone_06> (Value of player with ball in the final third (last 34 meters).). For <6th player>. During the whole duration of the events <attack>.
+zone_06_minGreaterThanZero:	 Minimum of <zone_06> (Value of player with ball in the final third (last 34 meters).) with only values greater than zero. For <6th player>. During the whole duration of the events <attack>.
+zone_06_max:			 Maximum of <zone_06> (Value of player with ball in the final third (last 34 meters).). For <6th player>. During the whole duration of the events <attack>.
+zone_07_avg:			 Average of <zone_07> (Value of player with ball in the final third (last 34 meters).). For <7th player>. During the whole duration of the events <attack>.
+zone_07_avgGreaterThanZero:	 Average of <zone_07> (Value of player with ball in the final third (last 34 meters).) with only values greater than zero. For <7th player>. During the whole duration of the events <attack>.
+zone_07_std:			 Standard Deviation of <zone_07> (Value of player with ball in the final third (last 34 meters).). For <7th player>. During the whole duration of the events <attack>.
+zone_07_min:			 Minimum of <zone_07> (Value of player with ball in the final third (last 34 meters).). For <7th player>. During the whole duration of the events <attack>.
+zone_07_minGreaterThanZero:	 Minimum of <zone_07> (Value of player with ball in the final third (last 34 meters).) with only values greater than zero. For <7th player>. During the whole duration of the events <attack>.
+zone_07_max:			 Maximum of <zone_07> (Value of player with ball in the final third (last 34 meters).). For <7th player>. During the whole duration of the events <attack>.
+zone_08_avg:			 Average of <zone_08> (Value of player with ball in the final third (last 34 meters).). For <8th player>. During the whole duration of the events <attack>.
+zone_08_avgGreaterThanZero:	 Average of <zone_08> (Value of player with ball in the final third (last 34 meters).) with only values greater than zero. For <8th player>. During the whole duration of the events <attack>.
+zone_08_std:			 Standard Deviation of <zone_08> (Value of player with ball in the final third (last 34 meters).). For <8th player>. During the whole duration of the events <attack>.
+zone_08_min:			 Minimum of <zone_08> (Value of player with ball in the final third (last 34 meters).). For <8th player>. During the whole duration of the events <attack>.
+zone_08_minGreaterThanZero:	 Minimum of <zone_08> (Value of player with ball in the final third (last 34 meters).) with only values greater than zero. For <8th player>. During the whole duration of the events <attack>.
+zone_08_max:			 Maximum of <zone_08> (Value of player with ball in the final third (last 34 meters).). For <8th player>. During the whole duration of the events <attack>.
+zone_09_avg:			 Average of <zone_09> (Value of player with ball in the final third (last 34 meters).). For <9th player>. During the whole duration of the events <attack>.
+zone_09_avgGreaterThanZero:	 Average of <zone_09> (Value of player with ball in the final third (last 34 meters).) with only values greater than zero. For <9th player>. During the whole duration of the events <attack>.
+zone_09_std:			 Standard Deviation of <zone_09> (Value of player with ball in the final third (last 34 meters).). For <9th player>. During the whole duration of the events <attack>.
+zone_09_min:			 Minimum of <zone_09> (Value of player with ball in the final third (last 34 meters).). For <9th player>. During the whole duration of the events <attack>.
+zone_09_minGreaterThanZero:	 Minimum of <zone_09> (Value of player with ball in the final third (last 34 meters).) with only values greater than zero. For <9th player>. During the whole duration of the events <attack>.
+zone_09_max:			 Maximum of <zone_09> (Value of player with ball in the final third (last 34 meters).). For <9th player>. During the whole duration of the events <attack>.
+zone_10_avg:			 Average of <zone_10> (Value of player with ball in the final third (last 34 meters).). For <10th player>. During the whole duration of the events <attack>.
+zone_10_avgGreaterThanZero:	 Average of <zone_10> (Value of player with ball in the final third (last 34 meters).) with only values greater than zero. For <10th player>. During the whole duration of the events <attack>.
+zone_10_std:			 Standard Deviation of <zone_10> (Value of player with ball in the final third (last 34 meters).). For <10th player>. During the whole duration of the events <attack>.
+zone_10_min:			 Minimum of <zone_10> (Value of player with ball in the final third (last 34 meters).). For <10th player>. During the whole duration of the events <attack>.
+zone_10_minGreaterThanZero:	 Minimum of <zone_10> (Value of player with ball in the final third (last 34 meters).) with only values greater than zero. For <10th player>. During the whole duration of the events <attack>.
+zone_10_max:			 Maximum of <zone_10> (Value of player with ball in the final third (last 34 meters).). For <10th player>. During the whole duration of the events <attack>.
+zone_11_avg:			 Average of <zone_11> (Value of player with ball in the final third (last 34 meters).). For <11th player>. During the whole duration of the events <attack>.
+zone_11_avgGreaterThanZero:	 Average of <zone_11> (Value of player with ball in the final third (last 34 meters).) with only values greater than zero. For <11th player>. During the whole duration of the events <attack>.
+zone_11_std:			 Standard Deviation of <zone_11> (Value of player with ball in the final third (last 34 meters).). For <11th player>. During the whole duration of the events <attack>.
+zone_11_min:			 Minimum of <zone_11> (Value of player with ball in the final third (last 34 meters).). For <11th player>. During the whole duration of the events <attack>.
+zone_11_minGreaterThanZero:	 Minimum of <zone_11> (Value of player with ball in the final third (last 34 meters).) with only values greater than zero. For <11th player>. During the whole duration of the events <attack>.
+zone_11_max:			 Maximum of <zone_11> (Value of player with ball in the final third (last 34 meters).). For <11th player>. During the whole duration of the events <attack>.
+zone_12_avg:			 Average of <zone_12> (Value of player with ball in the final third (last 34 meters).). For <12th player>. During the whole duration of the events <attack>.
+zone_12_avgGreaterThanZero:	 Average of <zone_12> (Value of player with ball in the final third (last 34 meters).) with only values greater than zero. For <12th player>. During the whole duration of the events <attack>.
+zone_12_std:			 Standard Deviation of <zone_12> (Value of player with ball in the final third (last 34 meters).). For <12th player>. During the whole duration of the events <attack>.
+zone_12_min:			 Minimum of <zone_12> (Value of player with ball in the final third (last 34 meters).). For <12th player>. During the whole duration of the events <attack>.
+zone_12_minGreaterThanZero:	 Minimum of <zone_12> (Value of player with ball in the final third (last 34 meters).) with only values greater than zero. For <12th player>. During the whole duration of the events <attack>.
+zone_12_max:			 Maximum of <zone_12> (Value of player with ball in the final third (last 34 meters).). For <12th player>. During the whole duration of the events <attack>.
+zone_13_avg:			 Average of <zone_13> (Value of player with ball in the final third (last 34 meters).). For <13th player>. During the whole duration of the events <attack>.
+zone_13_avgGreaterThanZero:	 Average of <zone_13> (Value of player with ball in the final third (last 34 meters).) with only values greater than zero. For <13th player>. During the whole duration of the events <attack>.
+zone_13_std:			 Standard Deviation of <zone_13> (Value of player with ball in the final third (last 34 meters).). For <13th player>. During the whole duration of the events <attack>.
+zone_13_min:			 Minimum of <zone_13> (Value of player with ball in the final third (last 34 meters).). For <13th player>. During the whole duration of the events <attack>.
+zone_13_minGreaterThanZero:	 Minimum of <zone_13> (Value of player with ball in the final third (last 34 meters).) with only values greater than zero. For <13th player>. During the whole duration of the events <attack>.
+zone_13_max:			 Maximum of <zone_13> (Value of player with ball in the final third (last 34 meters).). For <13th player>. During the whole duration of the events <attack>.
+zone_14_avg:			 Average of <zone_14> (Value of player with ball in the final third (last 34 meters).). For <14th player>. During the whole duration of the events <attack>.
+zone_14_avgGreaterThanZero:	 Average of <zone_14> (Value of player with ball in the final third (last 34 meters).) with only values greater than zero. For <14th player>. During the whole duration of the events <attack>.
+zone_14_std:			 Standard Deviation of <zone_14> (Value of player with ball in the final third (last 34 meters).). For <14th player>. During the whole duration of the events <attack>.
+zone_14_min:			 Minimum of <zone_14> (Value of player with ball in the final third (last 34 meters).). For <14th player>. During the whole duration of the events <attack>.
+zone_14_minGreaterThanZero:	 Minimum of <zone_14> (Value of player with ball in the final third (last 34 meters).) with only values greater than zero. For <14th player>. During the whole duration of the events <attack>.
+zone_14_max:			 Maximum of <zone_14> (Value of player with ball in the final third (last 34 meters).). For <14th player>. During the whole duration of the events <attack>.
+zone_15_avg:			 Average of <zone_15> (Value of player with ball in the final third (last 34 meters).). For <15th player>. During the whole duration of the events <attack>.
+zone_15_avgGreaterThanZero:	 Average of <zone_15> (Value of player with ball in the final third (last 34 meters).) with only values greater than zero. For <15th player>. During the whole duration of the events <attack>.
+zone_15_std:			 Standard Deviation of <zone_15> (Value of player with ball in the final third (last 34 meters).). For <15th player>. During the whole duration of the events <attack>.
+zone_15_min:			 Minimum of <zone_15> (Value of player with ball in the final third (last 34 meters).). For <15th player>. During the whole duration of the events <attack>.
+zone_15_minGreaterThanZero:	 Minimum of <zone_15> (Value of player with ball in the final third (last 34 meters).) with only values greater than zero. For <15th player>. During the whole duration of the events <attack>.
+zone_15_max:			 Maximum of <zone_15> (Value of player with ball in the final third (last 34 meters).). For <15th player>. During the whole duration of the events <attack>.
+zone_16_avg:			 Average of <zone_16> (Value of player with ball in the final third (last 34 meters).). For <16th player>. During the whole duration of the events <attack>.
+zone_16_avgGreaterThanZero:	 Average of <zone_16> (Value of player with ball in the final third (last 34 meters).) with only values greater than zero. For <16th player>. During the whole duration of the events <attack>.
+zone_16_std:			 Standard Deviation of <zone_16> (Value of player with ball in the final third (last 34 meters).). For <16th player>. During the whole duration of the events <attack>.
+zone_16_min:			 Minimum of <zone_16> (Value of player with ball in the final third (last 34 meters).). For <16th player>. During the whole duration of the events <attack>.
+zone_16_minGreaterThanZero:	 Minimum of <zone_16> (Value of player with ball in the final third (last 34 meters).) with only values greater than zero. For <16th player>. During the whole duration of the events <attack>.
+zone_16_max:			 Maximum of <zone_16> (Value of player with ball in the final third (last 34 meters).). For <16th player>. During the whole duration of the events <attack>.
+zone_17_avg:			 Average of <zone_17> (Value of player with ball in the final third (last 34 meters).). For <17th player>. During the whole duration of the events <attack>.
+zone_17_avgGreaterThanZero:	 Average of <zone_17> (Value of player with ball in the final third (last 34 meters).) with only values greater than zero. For <17th player>. During the whole duration of the events <attack>.
+zone_17_std:			 Standard Deviation of <zone_17> (Value of player with ball in the final third (last 34 meters).). For <17th player>. During the whole duration of the events <attack>.
+zone_17_min:			 Minimum of <zone_17> (Value of player with ball in the final third (last 34 meters).). For <17th player>. During the whole duration of the events <attack>.
+zone_17_minGreaterThanZero:	 Minimum of <zone_17> (Value of player with ball in the final third (last 34 meters).) with only values greater than zero. For <17th player>. During the whole duration of the events <attack>.
+zone_17_max:			 Maximum of <zone_17> (Value of player with ball in the final third (last 34 meters).). For <17th player>. During the whole duration of the events <attack>.
+zone_18_avg:			 Average of <zone_18> (Value of player with ball in the final third (last 34 meters).). For <18th player>. During the whole duration of the events <attack>.
+zone_18_avgGreaterThanZero:	 Average of <zone_18> (Value of player with ball in the final third (last 34 meters).) with only values greater than zero. For <18th player>. During the whole duration of the events <attack>.
+zone_18_std:			 Standard Deviation of <zone_18> (Value of player with ball in the final third (last 34 meters).). For <18th player>. During the whole duration of the events <attack>.
+zone_18_min:			 Minimum of <zone_18> (Value of player with ball in the final third (last 34 meters).). For <18th player>. During the whole duration of the events <attack>.
+zone_18_minGreaterThanZero:	 Minimum of <zone_18> (Value of player with ball in the final third (last 34 meters).) with only values greater than zero. For <18th player>. During the whole duration of the events <attack>.
+zone_18_max:			 Maximum of <zone_18> (Value of player with ball in the final third (last 34 meters).). For <18th player>. During the whole duration of the events <attack>.
+zone_19_avg:			 Average of <zone_19> (Value of player with ball in the final third (last 34 meters).). For <19th player>. During the whole duration of the events <attack>.
+zone_19_avgGreaterThanZero:	 Average of <zone_19> (Value of player with ball in the final third (last 34 meters).) with only values greater than zero. For <19th player>. During the whole duration of the events <attack>.
+zone_19_std:			 Standard Deviation of <zone_19> (Value of player with ball in the final third (last 34 meters).). For <19th player>. During the whole duration of the events <attack>.
+zone_19_min:			 Minimum of <zone_19> (Value of player with ball in the final third (last 34 meters).). For <19th player>. During the whole duration of the events <attack>.
+zone_19_minGreaterThanZero:	 Minimum of <zone_19> (Value of player with ball in the final third (last 34 meters).) with only values greater than zero. For <19th player>. During the whole duration of the events <attack>.
+zone_19_max:			 Maximum of <zone_19> (Value of player with ball in the final third (last 34 meters).). For <19th player>. During the whole duration of the events <attack>.
+zone_20_avg:			 Average of <zone_20> (Value of player with ball in the final third (last 34 meters).). For <20th player>. During the whole duration of the events <attack>.
+zone_20_avgGreaterThanZero:	 Average of <zone_20> (Value of player with ball in the final third (last 34 meters).) with only values greater than zero. For <20th player>. During the whole duration of the events <attack>.
+zone_20_std:			 Standard Deviation of <zone_20> (Value of player with ball in the final third (last 34 meters).). For <20th player>. During the whole duration of the events <attack>.
+zone_20_min:			 Minimum of <zone_20> (Value of player with ball in the final third (last 34 meters).). For <20th player>. During the whole duration of the events <attack>.
+zone_20_minGreaterThanZero:	 Minimum of <zone_20> (Value of player with ball in the final third (last 34 meters).) with only values greater than zero. For <20th player>. During the whole duration of the events <attack>.
+zone_20_max:			 Maximum of <zone_20> (Value of player with ball in the final third (last 34 meters).). For <20th player>. During the whole duration of the events <attack>.
+zone_21_avg:			 Average of <zone_21> (Value of player with ball in the final third (last 34 meters).). For <21th player>. During the whole duration of the events <attack>.
+zone_21_avgGreaterThanZero:	 Average of <zone_21> (Value of player with ball in the final third (last 34 meters).) with only values greater than zero. For <21th player>. During the whole duration of the events <attack>.
+zone_21_std:			 Standard Deviation of <zone_21> (Value of player with ball in the final third (last 34 meters).). For <21th player>. During the whole duration of the events <attack>.
+zone_21_min:			 Minimum of <zone_21> (Value of player with ball in the final third (last 34 meters).). For <21th player>. During the whole duration of the events <attack>.
+zone_21_minGreaterThanZero:	 Minimum of <zone_21> (Value of player with ball in the final third (last 34 meters).) with only values greater than zero. For <21th player>. During the whole duration of the events <attack>.
+zone_21_max:			 Maximum of <zone_21> (Value of player with ball in the final third (last 34 meters).). For <21th player>. During the whole duration of the events <attack>.
+zone_22_avg:			 Average of <zone_22> (Value of player with ball in the final third (last 34 meters).). For <22th player>. During the whole duration of the events <attack>.
+zone_22_avgGreaterThanZero:	 Average of <zone_22> (Value of player with ball in the final third (last 34 meters).) with only values greater than zero. For <22th player>. During the whole duration of the events <attack>.
+zone_22_std:			 Standard Deviation of <zone_22> (Value of player with ball in the final third (last 34 meters).). For <22th player>. During the whole duration of the events <attack>.
+zone_22_min:			 Minimum of <zone_22> (Value of player with ball in the final third (last 34 meters).). For <22th player>. During the whole duration of the events <attack>.
+zone_22_minGreaterThanZero:	 Minimum of <zone_22> (Value of player with ball in the final third (last 34 meters).) with only values greater than zero. For <22th player>. During the whole duration of the events <attack>.
+zone_22_max:			 Maximum of <zone_22> (Value of player with ball in the final third (last 34 meters).). For <22th player>. During the whole duration of the events <attack>.
+inZone_avg:			 Average of <inZone> (Is player with ball in the final third (last 34 meters)?). For <playerRows>. During the whole duration of the events <attack>.
+inZone_avgGreaterThanZero:	 Average of <inZone> (Is player with ball in the final third (last 34 meters)?) with only values greater than zero. For <playerRows>. During the whole duration of the events <attack>.
+inZone_std:			 Standard Deviation of <inZone> (Is player with ball in the final third (last 34 meters)?). For <playerRows>. During the whole duration of the events <attack>.
+inZone_min:			 Minimum of <inZone> (Is player with ball in the final third (last 34 meters)?). For <playerRows>. During the whole duration of the events <attack>.
+inZone_minGreaterThanZero:	 Minimum of <inZone> (Is player with ball in the final third (last 34 meters)?) with only values greater than zero. For <playerRows>. During the whole duration of the events <attack>.
+inZone_max:			 Maximum of <inZone> (Is player with ball in the final third (last 34 meters)?). For <playerRows>. During the whole duration of the events <attack>.
+inZone_avg_perTimePerPlayer_ref_avg:	 Average of <inZone_avg_perTimePerPlayer_ref> (Is player with ball in the final third (last 34 meters)?). For <refTeam>. During the whole duration of the events <attack>.
+inZone_avg_perTimePerPlayer_ref_avgGreaterThanZero:	 Average of <inZone_avg_perTimePerPlayer_ref> (Is player with ball in the final third (last 34 meters)?) with only values greater than zero. For <refTeam>. During the whole duration of the events <attack>.
+inZone_avg_perTimePerPlayer_ref_std:	 Standard Deviation of <inZone_avg_perTimePerPlayer_ref> (Is player with ball in the final third (last 34 meters)?). For <refTeam>. During the whole duration of the events <attack>.
+inZone_avg_perTimePerPlayer_ref_min:	 Minimum of <inZone_avg_perTimePerPlayer_ref> (Is player with ball in the final third (last 34 meters)?). For <refTeam>. During the whole duration of the events <attack>.
+inZone_avg_perTimePerPlayer_ref_minGreaterThanZero:	 Minimum of <inZone_avg_perTimePerPlayer_ref> (Is player with ball in the final third (last 34 meters)?) with only values greater than zero. For <refTeam>. During the whole duration of the events <attack>.
+inZone_avg_perTimePerPlayer_ref_max:	 Maximum of <inZone_avg_perTimePerPlayer_ref> (Is player with ball in the final third (last 34 meters)?). For <refTeam>. During the whole duration of the events <attack>.
+opponentsHalf_avg:		 Average of <opponentsHalf> (Boolean to decide if a player is on the half of the opponent.). For <playerRows>. During the whole duration of the events <attack>.
+opponentsHalf_avgGreaterThanZero:	 Average of <opponentsHalf> (Boolean to decide if a player is on the half of the opponent.) with only values greater than zero. For <playerRows>. During the whole duration of the events <attack>.
+opponentsHalf_std:		 Standard Deviation of <opponentsHalf> (Boolean to decide if a player is on the half of the opponent.). For <playerRows>. During the whole duration of the events <attack>.
+opponentsHalf_min:		 Minimum of <opponentsHalf> (Boolean to decide if a player is on the half of the opponent.). For <playerRows>. During the whole duration of the events <attack>.
+opponentsHalf_minGreaterThanZero:	 Minimum of <opponentsHalf> (Boolean to decide if a player is on the half of the opponent.) with only values greater than zero. For <playerRows>. During the whole duration of the events <attack>.
+opponentsHalf_max:		 Maximum of <opponentsHalf> (Boolean to decide if a player is on the half of the opponent.). For <playerRows>. During the whole duration of the events <attack>.
+opponentsHalf_avg_perTimePerPlayer_ref_avg:	 Average of <opponentsHalf_avg_perTimePerPlayer_ref> (Boolean to decide if a player is on the half of the opponent.). For <refTeam>. During the whole duration of the events <attack>.
+opponentsHalf_avg_perTimePerPlayer_ref_avgGreaterThanZero:	 Average of <opponentsHalf_avg_perTimePerPlayer_ref> (Boolean to decide if a player is on the half of the opponent.) with only values greater than zero. For <refTeam>. During the whole duration of the events <attack>.
+opponentsHalf_avg_perTimePerPlayer_ref_std:	 Standard Deviation of <opponentsHalf_avg_perTimePerPlayer_ref> (Boolean to decide if a player is on the half of the opponent.). For <refTeam>. During the whole duration of the events <attack>.
+opponentsHalf_avg_perTimePerPlayer_ref_min:	 Minimum of <opponentsHalf_avg_perTimePerPlayer_ref> (Boolean to decide if a player is on the half of the opponent.). For <refTeam>. During the whole duration of the events <attack>.
+opponentsHalf_avg_perTimePerPlayer_ref_minGreaterThanZero:	 Minimum of <opponentsHalf_avg_perTimePerPlayer_ref> (Boolean to decide if a player is on the half of the opponent.) with only values greater than zero. For <refTeam>. During the whole duration of the events <attack>.
+opponentsHalf_avg_perTimePerPlayer_ref_max:	 Maximum of <opponentsHalf_avg_perTimePerPlayer_ref> (Boolean to decide if a player is on the half of the opponent.). For <refTeam>. During the whole duration of the events <attack>.
+inPenaltyArea_avg:		 Average of <inPenaltyArea> (Boolean to decide if a player is in the penalty area.). For <playerRows>. During the whole duration of the events <attack>.
+inPenaltyArea_avgGreaterThanZero:	 Average of <inPenaltyArea> (Boolean to decide if a player is in the penalty area.) with only values greater than zero. For <playerRows>. During the whole duration of the events <attack>.
+inPenaltyArea_std:		 Standard Deviation of <inPenaltyArea> (Boolean to decide if a player is in the penalty area.). For <playerRows>. During the whole duration of the events <attack>.
+inPenaltyArea_min:		 Minimum of <inPenaltyArea> (Boolean to decide if a player is in the penalty area.). For <playerRows>. During the whole duration of the events <attack>.
+inPenaltyArea_minGreaterThanZero:	 Minimum of <inPenaltyArea> (Boolean to decide if a player is in the penalty area.) with only values greater than zero. For <playerRows>. During the whole duration of the events <attack>.
+inPenaltyArea_max:		 Maximum of <inPenaltyArea> (Boolean to decide if a player is in the penalty area.). For <playerRows>. During the whole duration of the events <attack>.
+inPenaltyArea_avg_perTimePerPlayer_ref_avg:	 Average of <inPenaltyArea_avg_perTimePerPlayer_ref> (Boolean to decide if a player is in the penalty area.). For <refTeam>. During the whole duration of the events <attack>.
+inPenaltyArea_avg_perTimePerPlayer_ref_avgGreaterThanZero:	 Average of <inPenaltyArea_avg_perTimePerPlayer_ref> (Boolean to decide if a player is in the penalty area.) with only values greater than zero. For <refTeam>. During the whole duration of the events <attack>.
+inPenaltyArea_avg_perTimePerPlayer_ref_std:	 Standard Deviation of <inPenaltyArea_avg_perTimePerPlayer_ref> (Boolean to decide if a player is in the penalty area.). For <refTeam>. During the whole duration of the events <attack>.
+inPenaltyArea_avg_perTimePerPlayer_ref_min:	 Minimum of <inPenaltyArea_avg_perTimePerPlayer_ref> (Boolean to decide if a player is in the penalty area.). For <refTeam>. During the whole duration of the events <attack>.
+inPenaltyArea_avg_perTimePerPlayer_ref_minGreaterThanZero:	 Minimum of <inPenaltyArea_avg_perTimePerPlayer_ref> (Boolean to decide if a player is in the penalty area.) with only values greater than zero. For <refTeam>. During the whole duration of the events <attack>.
+inPenaltyArea_avg_perTimePerPlayer_ref_max:	 Maximum of <inPenaltyArea_avg_perTimePerPlayer_ref> (Boolean to decide if a player is in the penalty area.). For <refTeam>. During the whole duration of the events <attack>.
+Link_Control_avg:		 Average of <Link_Control> (Ball control of player with ball.). For <playerRows>. During the whole duration of the events <attack>.
+Link_Control_avgGreaterThanZero:	 Average of <Link_Control> (Ball control of player with ball.) with only values greater than zero. For <playerRows>. During the whole duration of the events <attack>.
+Link_Control_std:		 Standard Deviation of <Link_Control> (Ball control of player with ball.). For <playerRows>. During the whole duration of the events <attack>.
+Link_Control_min:		 Minimum of <Link_Control> (Ball control of player with ball.). For <playerRows>. During the whole duration of the events <attack>.
+Link_Control_minGreaterThanZero:	 Minimum of <Link_Control> (Ball control of player with ball.) with only values greater than zero. For <playerRows>. During the whole duration of the events <attack>.
+Link_Control_max:		 Maximum of <Link_Control> (Ball control of player with ball.). For <playerRows>. During the whole duration of the events <attack>.
+Link_Control_avg_perTimePerPlayer_ref_avg:	 Average of <Link_Control_avg_perTimePerPlayer_ref> (Ball control of player with ball.). For <refTeam>. During the whole duration of the events <attack>.
+Link_Control_avg_perTimePerPlayer_ref_avgGreaterThanZero:	 Average of <Link_Control_avg_perTimePerPlayer_ref> (Ball control of player with ball.) with only values greater than zero. For <refTeam>. During the whole duration of the events <attack>.
+Link_Control_avg_perTimePerPlayer_ref_std:	 Standard Deviation of <Link_Control_avg_perTimePerPlayer_ref> (Ball control of player with ball.). For <refTeam>. During the whole duration of the events <attack>.
+Link_Control_avg_perTimePerPlayer_ref_min:	 Minimum of <Link_Control_avg_perTimePerPlayer_ref> (Ball control of player with ball.). For <refTeam>. During the whole duration of the events <attack>.
+Link_Control_avg_perTimePerPlayer_ref_minGreaterThanZero:	 Minimum of <Link_Control_avg_perTimePerPlayer_ref> (Ball control of player with ball.) with only values greater than zero. For <refTeam>. During the whole duration of the events <attack>.
+Link_Control_avg_perTimePerPlayer_ref_max:	 Maximum of <Link_Control_avg_perTimePerPlayer_ref> (Ball control of player with ball.). For <refTeam>. During the whole duration of the events <attack>.
+Link_Control_01_avg:		 Average of <Link_Control_01> (Ball control of player with ball.). For <1th player>. During the whole duration of the events <attack>.
+Link_Control_01_avgGreaterThanZero:	 Average of <Link_Control_01> (Ball control of player with ball.) with only values greater than zero. For <1th player>. During the whole duration of the events <attack>.
+Link_Control_01_std:		 Standard Deviation of <Link_Control_01> (Ball control of player with ball.). For <1th player>. During the whole duration of the events <attack>.
+Link_Control_01_min:		 Minimum of <Link_Control_01> (Ball control of player with ball.). For <1th player>. During the whole duration of the events <attack>.
+Link_Control_01_minGreaterThanZero:	 Minimum of <Link_Control_01> (Ball control of player with ball.) with only values greater than zero. For <1th player>. During the whole duration of the events <attack>.
+Link_Control_01_max:		 Maximum of <Link_Control_01> (Ball control of player with ball.). For <1th player>. During the whole duration of the events <attack>.
+Link_Control_02_avg:		 Average of <Link_Control_02> (Ball control of player with ball.). For <2th player>. During the whole duration of the events <attack>.
+Link_Control_02_avgGreaterThanZero:	 Average of <Link_Control_02> (Ball control of player with ball.) with only values greater than zero. For <2th player>. During the whole duration of the events <attack>.
+Link_Control_02_std:		 Standard Deviation of <Link_Control_02> (Ball control of player with ball.). For <2th player>. During the whole duration of the events <attack>.
+Link_Control_02_min:		 Minimum of <Link_Control_02> (Ball control of player with ball.). For <2th player>. During the whole duration of the events <attack>.
+Link_Control_02_minGreaterThanZero:	 Minimum of <Link_Control_02> (Ball control of player with ball.) with only values greater than zero. For <2th player>. During the whole duration of the events <attack>.
+Link_Control_02_max:		 Maximum of <Link_Control_02> (Ball control of player with ball.). For <2th player>. During the whole duration of the events <attack>.
+Link_Control_03_avg:		 Average of <Link_Control_03> (Ball control of player with ball.). For <3th player>. During the whole duration of the events <attack>.
+Link_Control_03_avgGreaterThanZero:	 Average of <Link_Control_03> (Ball control of player with ball.) with only values greater than zero. For <3th player>. During the whole duration of the events <attack>.
+Link_Control_03_std:		 Standard Deviation of <Link_Control_03> (Ball control of player with ball.). For <3th player>. During the whole duration of the events <attack>.
+Link_Control_03_min:		 Minimum of <Link_Control_03> (Ball control of player with ball.). For <3th player>. During the whole duration of the events <attack>.
+Link_Control_03_minGreaterThanZero:	 Minimum of <Link_Control_03> (Ball control of player with ball.) with only values greater than zero. For <3th player>. During the whole duration of the events <attack>.
+Link_Control_03_max:		 Maximum of <Link_Control_03> (Ball control of player with ball.). For <3th player>. During the whole duration of the events <attack>.
+Link_Control_04_avg:		 Average of <Link_Control_04> (Ball control of player with ball.). For <3th player>. During the whole duration of the events <attack>.
+Link_Control_04_avgGreaterThanZero:	 Average of <Link_Control_04> (Ball control of player with ball.) with only values greater than zero. For <3th player>. During the whole duration of the events <attack>.
+Link_Control_04_std:		 Standard Deviation of <Link_Control_04> (Ball control of player with ball.). For <3th player>. During the whole duration of the events <attack>.
+Link_Control_04_min:		 Minimum of <Link_Control_04> (Ball control of player with ball.). For <3th player>. During the whole duration of the events <attack>.
+Link_Control_04_minGreaterThanZero:	 Minimum of <Link_Control_04> (Ball control of player with ball.) with only values greater than zero. For <3th player>. During the whole duration of the events <attack>.
+Link_Control_04_max:		 Maximum of <Link_Control_04> (Ball control of player with ball.). For <3th player>. During the whole duration of the events <attack>.
+Link_Control_05_avg:		 Average of <Link_Control_05> (Ball control of player with ball.). For <3th player>. During the whole duration of the events <attack>.
+Link_Control_05_avgGreaterThanZero:	 Average of <Link_Control_05> (Ball control of player with ball.) with only values greater than zero. For <3th player>. During the whole duration of the events <attack>.
+Link_Control_05_std:		 Standard Deviation of <Link_Control_05> (Ball control of player with ball.). For <3th player>. During the whole duration of the events <attack>.
+Link_Control_05_min:		 Minimum of <Link_Control_05> (Ball control of player with ball.). For <3th player>. During the whole duration of the events <attack>.
+Link_Control_05_minGreaterThanZero:	 Minimum of <Link_Control_05> (Ball control of player with ball.) with only values greater than zero. For <3th player>. During the whole duration of the events <attack>.
+Link_Control_05_max:		 Maximum of <Link_Control_05> (Ball control of player with ball.). For <3th player>. During the whole duration of the events <attack>.
+Link_Control_06_avg:		 Average of <Link_Control_06> (Ball control of player with ball.). For <3th player>. During the whole duration of the events <attack>.
+Link_Control_06_avgGreaterThanZero:	 Average of <Link_Control_06> (Ball control of player with ball.) with only values greater than zero. For <3th player>. During the whole duration of the events <attack>.
+Link_Control_06_std:		 Standard Deviation of <Link_Control_06> (Ball control of player with ball.). For <3th player>. During the whole duration of the events <attack>.
+Link_Control_06_min:		 Minimum of <Link_Control_06> (Ball control of player with ball.). For <3th player>. During the whole duration of the events <attack>.
+Link_Control_06_minGreaterThanZero:	 Minimum of <Link_Control_06> (Ball control of player with ball.) with only values greater than zero. For <3th player>. During the whole duration of the events <attack>.
+Link_Control_06_max:		 Maximum of <Link_Control_06> (Ball control of player with ball.). For <3th player>. During the whole duration of the events <attack>.
+Link_Control_07_avg:		 Average of <Link_Control_07> (Ball control of player with ball.). For <3th player>. During the whole duration of the events <attack>.
+Link_Control_07_avgGreaterThanZero:	 Average of <Link_Control_07> (Ball control of player with ball.) with only values greater than zero. For <3th player>. During the whole duration of the events <attack>.
+Link_Control_07_std:		 Standard Deviation of <Link_Control_07> (Ball control of player with ball.). For <3th player>. During the whole duration of the events <attack>.
+Link_Control_07_min:		 Minimum of <Link_Control_07> (Ball control of player with ball.). For <3th player>. During the whole duration of the events <attack>.
+Link_Control_07_minGreaterThanZero:	 Minimum of <Link_Control_07> (Ball control of player with ball.) with only values greater than zero. For <3th player>. During the whole duration of the events <attack>.
+Link_Control_07_max:		 Maximum of <Link_Control_07> (Ball control of player with ball.). For <3th player>. During the whole duration of the events <attack>.
+Link_Control_08_avg:		 Average of <Link_Control_08> (Ball control of player with ball.). For <3th player>. During the whole duration of the events <attack>.
+Link_Control_08_avgGreaterThanZero:	 Average of <Link_Control_08> (Ball control of player with ball.) with only values greater than zero. For <3th player>. During the whole duration of the events <attack>.
+Link_Control_08_std:		 Standard Deviation of <Link_Control_08> (Ball control of player with ball.). For <3th player>. During the whole duration of the events <attack>.
+Link_Control_08_min:		 Minimum of <Link_Control_08> (Ball control of player with ball.). For <3th player>. During the whole duration of the events <attack>.
+Link_Control_08_minGreaterThanZero:	 Minimum of <Link_Control_08> (Ball control of player with ball.) with only values greater than zero. For <3th player>. During the whole duration of the events <attack>.
+Link_Control_08_max:		 Maximum of <Link_Control_08> (Ball control of player with ball.). For <3th player>. During the whole duration of the events <attack>.
+Link_Control_09_avg:		 Average of <Link_Control_09> (Ball control of player with ball.). For <3th player>. During the whole duration of the events <attack>.
+Link_Control_09_avgGreaterThanZero:	 Average of <Link_Control_09> (Ball control of player with ball.) with only values greater than zero. For <3th player>. During the whole duration of the events <attack>.
+Link_Control_09_std:		 Standard Deviation of <Link_Control_09> (Ball control of player with ball.). For <3th player>. During the whole duration of the events <attack>.
+Link_Control_09_min:		 Minimum of <Link_Control_09> (Ball control of player with ball.). For <3th player>. During the whole duration of the events <attack>.
+Link_Control_09_minGreaterThanZero:	 Minimum of <Link_Control_09> (Ball control of player with ball.) with only values greater than zero. For <3th player>. During the whole duration of the events <attack>.
+Link_Control_09_max:		 Maximum of <Link_Control_09> (Ball control of player with ball.). For <3th player>. During the whole duration of the events <attack>.
+Link_Control_10_avg:		 Average of <Link_Control_10> (Ball control of player with ball.). For <3th player>. During the whole duration of the events <attack>.
+Link_Control_10_avgGreaterThanZero:	 Average of <Link_Control_10> (Ball control of player with ball.) with only values greater than zero. For <3th player>. During the whole duration of the events <attack>.
+Link_Control_10_std:		 Standard Deviation of <Link_Control_10> (Ball control of player with ball.). For <3th player>. During the whole duration of the events <attack>.
+Link_Control_10_min:		 Minimum of <Link_Control_10> (Ball control of player with ball.). For <3th player>. During the whole duration of the events <attack>.
+Link_Control_10_minGreaterThanZero:	 Minimum of <Link_Control_10> (Ball control of player with ball.) with only values greater than zero. For <3th player>. During the whole duration of the events <attack>.
+Link_Control_10_max:		 Maximum of <Link_Control_10> (Ball control of player with ball.). For <3th player>. During the whole duration of the events <attack>.
+Link_Control_11_avg:		 Average of <Link_Control_11> (Ball control of player with ball.). For <3th player>. During the whole duration of the events <attack>.
+Link_Control_11_avgGreaterThanZero:	 Average of <Link_Control_11> (Ball control of player with ball.) with only values greater than zero. For <3th player>. During the whole duration of the events <attack>.
+Link_Control_11_std:		 Standard Deviation of <Link_Control_11> (Ball control of player with ball.). For <3th player>. During the whole duration of the events <attack>.
+Link_Control_11_min:		 Minimum of <Link_Control_11> (Ball control of player with ball.). For <3th player>. During the whole duration of the events <attack>.
+Link_Control_11_minGreaterThanZero:	 Minimum of <Link_Control_11> (Ball control of player with ball.) with only values greater than zero. For <3th player>. During the whole duration of the events <attack>.
+Link_Control_11_max:		 Maximum of <Link_Control_11> (Ball control of player with ball.). For <3th player>. During the whole duration of the events <attack>.
+Link_Control_12_avg:		 Average of <Link_Control_12> (Ball control of player with ball.). For <3th player>. During the whole duration of the events <attack>.
+Link_Control_12_avgGreaterThanZero:	 Average of <Link_Control_12> (Ball control of player with ball.) with only values greater than zero. For <3th player>. During the whole duration of the events <attack>.
+Link_Control_12_std:		 Standard Deviation of <Link_Control_12> (Ball control of player with ball.). For <3th player>. During the whole duration of the events <attack>.
+Link_Control_12_min:		 Minimum of <Link_Control_12> (Ball control of player with ball.). For <3th player>. During the whole duration of the events <attack>.
+Link_Control_12_minGreaterThanZero:	 Minimum of <Link_Control_12> (Ball control of player with ball.) with only values greater than zero. For <3th player>. During the whole duration of the events <attack>.
+Link_Control_12_max:		 Maximum of <Link_Control_12> (Ball control of player with ball.). For <3th player>. During the whole duration of the events <attack>.
+Link_Control_13_avg:		 Average of <Link_Control_13> (Ball control of player with ball.). For <3th player>. During the whole duration of the events <attack>.
+Link_Control_13_avgGreaterThanZero:	 Average of <Link_Control_13> (Ball control of player with ball.) with only values greater than zero. For <3th player>. During the whole duration of the events <attack>.
+Link_Control_13_std:		 Standard Deviation of <Link_Control_13> (Ball control of player with ball.). For <3th player>. During the whole duration of the events <attack>.
+Link_Control_13_min:		 Minimum of <Link_Control_13> (Ball control of player with ball.). For <3th player>. During the whole duration of the events <attack>.
+Link_Control_13_minGreaterThanZero:	 Minimum of <Link_Control_13> (Ball control of player with ball.) with only values greater than zero. For <3th player>. During the whole duration of the events <attack>.
+Link_Control_13_max:		 Maximum of <Link_Control_13> (Ball control of player with ball.). For <3th player>. During the whole duration of the events <attack>.
+Link_Control_14_avg:		 Average of <Link_Control_14> (Ball control of player with ball.). For <3th player>. During the whole duration of the events <attack>.
+Link_Control_14_avgGreaterThanZero:	 Average of <Link_Control_14> (Ball control of player with ball.) with only values greater than zero. For <3th player>. During the whole duration of the events <attack>.
+Link_Control_14_std:		 Standard Deviation of <Link_Control_14> (Ball control of player with ball.). For <3th player>. During the whole duration of the events <attack>.
+Link_Control_14_min:		 Minimum of <Link_Control_14> (Ball control of player with ball.). For <3th player>. During the whole duration of the events <attack>.
+Link_Control_14_minGreaterThanZero:	 Minimum of <Link_Control_14> (Ball control of player with ball.) with only values greater than zero. For <3th player>. During the whole duration of the events <attack>.
+Link_Control_14_max:		 Maximum of <Link_Control_14> (Ball control of player with ball.). For <3th player>. During the whole duration of the events <attack>.
+Link_Control_15_avg:		 Average of <Link_Control_15> (Ball control of player with ball.). For <3th player>. During the whole duration of the events <attack>.
+Link_Control_15_avgGreaterThanZero:	 Average of <Link_Control_15> (Ball control of player with ball.) with only values greater than zero. For <3th player>. During the whole duration of the events <attack>.
+Link_Control_15_std:		 Standard Deviation of <Link_Control_15> (Ball control of player with ball.). For <3th player>. During the whole duration of the events <attack>.
+Link_Control_15_min:		 Minimum of <Link_Control_15> (Ball control of player with ball.). For <3th player>. During the whole duration of the events <attack>.
+Link_Control_15_minGreaterThanZero:	 Minimum of <Link_Control_15> (Ball control of player with ball.) with only values greater than zero. For <3th player>. During the whole duration of the events <attack>.
+Link_Control_15_max:		 Maximum of <Link_Control_15> (Ball control of player with ball.). For <3th player>. During the whole duration of the events <attack>.
+Link_Control_16_avg:		 Average of <Link_Control_16> (Ball control of player with ball.). For <3th player>. During the whole duration of the events <attack>.
+Link_Control_16_avgGreaterThanZero:	 Average of <Link_Control_16> (Ball control of player with ball.) with only values greater than zero. For <3th player>. During the whole duration of the events <attack>.
+Link_Control_16_std:		 Standard Deviation of <Link_Control_16> (Ball control of player with ball.). For <3th player>. During the whole duration of the events <attack>.
+Link_Control_16_min:		 Minimum of <Link_Control_16> (Ball control of player with ball.). For <3th player>. During the whole duration of the events <attack>.
+Link_Control_16_minGreaterThanZero:	 Minimum of <Link_Control_16> (Ball control of player with ball.) with only values greater than zero. For <3th player>. During the whole duration of the events <attack>.
+Link_Control_16_max:		 Maximum of <Link_Control_16> (Ball control of player with ball.). For <3th player>. During the whole duration of the events <attack>.
+Link_Control_17_avg:		 Average of <Link_Control_17> (Ball control of player with ball.). For <3th player>. During the whole duration of the events <attack>.
+Link_Control_17_avgGreaterThanZero:	 Average of <Link_Control_17> (Ball control of player with ball.) with only values greater than zero. For <3th player>. During the whole duration of the events <attack>.
+Link_Control_17_std:		 Standard Deviation of <Link_Control_17> (Ball control of player with ball.). For <3th player>. During the whole duration of the events <attack>.
+Link_Control_17_min:		 Minimum of <Link_Control_17> (Ball control of player with ball.). For <3th player>. During the whole duration of the events <attack>.
+Link_Control_17_minGreaterThanZero:	 Minimum of <Link_Control_17> (Ball control of player with ball.) with only values greater than zero. For <3th player>. During the whole duration of the events <attack>.
+Link_Control_17_max:		 Maximum of <Link_Control_17> (Ball control of player with ball.). For <3th player>. During the whole duration of the events <attack>.
+Link_Control_18_avg:		 Average of <Link_Control_18> (Ball control of player with ball.). For <3th player>. During the whole duration of the events <attack>.
+Link_Control_18_avgGreaterThanZero:	 Average of <Link_Control_18> (Ball control of player with ball.) with only values greater than zero. For <3th player>. During the whole duration of the events <attack>.
+Link_Control_18_std:		 Standard Deviation of <Link_Control_18> (Ball control of player with ball.). For <3th player>. During the whole duration of the events <attack>.
+Link_Control_18_min:		 Minimum of <Link_Control_18> (Ball control of player with ball.). For <3th player>. During the whole duration of the events <attack>.
+Link_Control_18_minGreaterThanZero:	 Minimum of <Link_Control_18> (Ball control of player with ball.) with only values greater than zero. For <3th player>. During the whole duration of the events <attack>.
+Link_Control_18_max:		 Maximum of <Link_Control_18> (Ball control of player with ball.). For <3th player>. During the whole duration of the events <attack>.
+Link_Control_19_avg:		 Average of <Link_Control_19> (Ball control of player with ball.). For <3th player>. During the whole duration of the events <attack>.
+Link_Control_19_avgGreaterThanZero:	 Average of <Link_Control_19> (Ball control of player with ball.) with only values greater than zero. For <3th player>. During the whole duration of the events <attack>.
+Link_Control_19_std:		 Standard Deviation of <Link_Control_19> (Ball control of player with ball.). For <3th player>. During the whole duration of the events <attack>.
+Link_Control_19_min:		 Minimum of <Link_Control_19> (Ball control of player with ball.). For <3th player>. During the whole duration of the events <attack>.
+Link_Control_19_minGreaterThanZero:	 Minimum of <Link_Control_19> (Ball control of player with ball.) with only values greater than zero. For <3th player>. During the whole duration of the events <attack>.
+Link_Control_19_max:		 Maximum of <Link_Control_19> (Ball control of player with ball.). For <3th player>. During the whole duration of the events <attack>.
+Link_Control_20_avg:		 Average of <Link_Control_20> (Ball control of player with ball.). For <3th player>. During the whole duration of the events <attack>.
+Link_Control_20_avgGreaterThanZero:	 Average of <Link_Control_20> (Ball control of player with ball.) with only values greater than zero. For <3th player>. During the whole duration of the events <attack>.
+Link_Control_20_std:		 Standard Deviation of <Link_Control_20> (Ball control of player with ball.). For <3th player>. During the whole duration of the events <attack>.
+Link_Control_20_min:		 Minimum of <Link_Control_20> (Ball control of player with ball.). For <3th player>. During the whole duration of the events <attack>.
+Link_Control_20_minGreaterThanZero:	 Minimum of <Link_Control_20> (Ball control of player with ball.) with only values greater than zero. For <3th player>. During the whole duration of the events <attack>.
+Link_Control_20_max:		 Maximum of <Link_Control_20> (Ball control of player with ball.). For <3th player>. During the whole duration of the events <attack>.
+Link_Control_21_avg:		 Average of <Link_Control_21> (Ball control of player with ball.). For <3th player>. During the whole duration of the events <attack>.
+Link_Control_21_avgGreaterThanZero:	 Average of <Link_Control_21> (Ball control of player with ball.) with only values greater than zero. For <3th player>. During the whole duration of the events <attack>.
+Link_Control_21_std:		 Standard Deviation of <Link_Control_21> (Ball control of player with ball.). For <3th player>. During the whole duration of the events <attack>.
+Link_Control_21_min:		 Minimum of <Link_Control_21> (Ball control of player with ball.). For <3th player>. During the whole duration of the events <attack>.
+Link_Control_21_minGreaterThanZero:	 Minimum of <Link_Control_21> (Ball control of player with ball.) with only values greater than zero. For <3th player>. During the whole duration of the events <attack>.
+Link_Control_21_max:		 Maximum of <Link_Control_21> (Ball control of player with ball.). For <3th player>. During the whole duration of the events <attack>.
+Link_Control_22_avg:		 Average of <Link_Control_22> (Ball control of player with ball.). For <3th player>. During the whole duration of the events <attack>.
+Link_Control_22_avgGreaterThanZero:	 Average of <Link_Control_22> (Ball control of player with ball.) with only values greater than zero. For <3th player>. During the whole duration of the events <attack>.
+Link_Control_22_std:		 Standard Deviation of <Link_Control_22> (Ball control of player with ball.). For <3th player>. During the whole duration of the events <attack>.
+Link_Control_22_min:		 Minimum of <Link_Control_22> (Ball control of player with ball.). For <3th player>. During the whole duration of the events <attack>.
+Link_Control_22_minGreaterThanZero:	 Minimum of <Link_Control_22> (Ball control of player with ball.) with only values greater than zero. For <3th player>. During the whole duration of the events <attack>.
+Link_Control_22_max:		 Maximum of <Link_Control_22> (Ball control of player with ball.). For <3th player>. During the whole duration of the events <attack>.
+velRelToBall_avg:		 Average of <velRelToBall> (Relative velocity between player and ball.). For <playerRows>. During the whole duration of the events <attack>.
+velRelToBall_avgGreaterThanZero:	 Average of <velRelToBall> (Relative velocity between player and ball.) with only values greater than zero. For <playerRows>. During the whole duration of the events <attack>.
+velRelToBall_std:		 Standard Deviation of <velRelToBall> (Relative velocity between player and ball.). For <playerRows>. During the whole duration of the events <attack>.
+velRelToBall_min:		 Minimum of <velRelToBall> (Relative velocity between player and ball.). For <playerRows>. During the whole duration of the events <attack>.
+velRelToBall_minGreaterThanZero:	 Minimum of <velRelToBall> (Relative velocity between player and ball.) with only values greater than zero. For <playerRows>. During the whole duration of the events <attack>.
+velRelToBall_max:		 Maximum of <velRelToBall> (Relative velocity between player and ball.). For <playerRows>. During the whole duration of the events <attack>.
+velRelToBall_avg_perTimePerPlayer_ref_avg:	 Average of <velRelToBall_avg_perTimePerPlayer_ref> (Relative velocity between player and ball.). For <refTeam>. During the whole duration of the events <attack>.
+velRelToBall_avg_perTimePerPlayer_ref_avgGreaterThanZero:	 Average of <velRelToBall_avg_perTimePerPlayer_ref> (Relative velocity between player and ball.) with only values greater than zero. For <refTeam>. During the whole duration of the events <attack>.
+velRelToBall_avg_perTimePerPlayer_ref_std:	 Standard Deviation of <velRelToBall_avg_perTimePerPlayer_ref> (Relative velocity between player and ball.). For <refTeam>. During the whole duration of the events <attack>.
+velRelToBall_avg_perTimePerPlayer_ref_min:	 Minimum of <velRelToBall_avg_perTimePerPlayer_ref> (Relative velocity between player and ball.). For <refTeam>. During the whole duration of the events <attack>.
+velRelToBall_avg_perTimePerPlayer_ref_minGreaterThanZero:	 Minimum of <velRelToBall_avg_perTimePerPlayer_ref> (Relative velocity between player and ball.) with only values greater than zero. For <refTeam>. During the whole duration of the events <attack>.
+velRelToBall_avg_perTimePerPlayer_ref_max:	 Maximum of <velRelToBall_avg_perTimePerPlayer_ref> (Relative velocity between player and ball.). For <refTeam>. During the whole duration of the events <attack>.
+velRelToBallSquared_avg:	 Average of <velRelToBallSquared> (Square of relative velocity between player and ball.). For <playerRows>. During the whole duration of the events <attack>.
+velRelToBallSquared_avgGreaterThanZero:	 Average of <velRelToBallSquared> (Square of relative velocity between player and ball.) with only values greater than zero. For <playerRows>. During the whole duration of the events <attack>.
+velRelToBallSquared_std:	 Standard Deviation of <velRelToBallSquared> (Square of relative velocity between player and ball.). For <playerRows>. During the whole duration of the events <attack>.
+velRelToBallSquared_min:	 Minimum of <velRelToBallSquared> (Square of relative velocity between player and ball.). For <playerRows>. During the whole duration of the events <attack>.
+velRelToBallSquared_minGreaterThanZero:	 Minimum of <velRelToBallSquared> (Square of relative velocity between player and ball.) with only values greater than zero. For <playerRows>. During the whole duration of the events <attack>.
+velRelToBallSquared_max:	 Maximum of <velRelToBallSquared> (Square of relative velocity between player and ball.). For <playerRows>. During the whole duration of the events <attack>.
+velRelToBallSquared_avg_perTimePerPlayer_ref_avg:	 Average of <velRelToBallSquared_avg_perTimePerPlayer_ref> (Square of relative velocity between player and ball.). For <refTeam>. During the whole duration of the events <attack>.
+velRelToBallSquared_avg_perTimePerPlayer_ref_avgGreaterThanZero:	 Average of <velRelToBallSquared_avg_perTimePerPlayer_ref> (Square of relative velocity between player and ball.) with only values greater than zero. For <refTeam>. During the whole duration of the events <attack>.
+velRelToBallSquared_avg_perTimePerPlayer_ref_std:	 Standard Deviation of <velRelToBallSquared_avg_perTimePerPlayer_ref> (Square of relative velocity between player and ball.). For <refTeam>. During the whole duration of the events <attack>.
+velRelToBallSquared_avg_perTimePerPlayer_ref_min:	 Minimum of <velRelToBallSquared_avg_perTimePerPlayer_ref> (Square of relative velocity between player and ball.). For <refTeam>. During the whole duration of the events <attack>.
+velRelToBallSquared_avg_perTimePerPlayer_ref_minGreaterThanZero:	 Minimum of <velRelToBallSquared_avg_perTimePerPlayer_ref> (Square of relative velocity between player and ball.) with only values greater than zero. For <refTeam>. During the whole duration of the events <attack>.
+velRelToBallSquared_avg_perTimePerPlayer_ref_max:	 Maximum of <velRelToBallSquared_avg_perTimePerPlayer_ref> (Square of relative velocity between player and ball.). For <refTeam>. During the whole duration of the events <attack>.
+Link_Pressure_avg:		 Average of <Link_Pressure> (Pressure on player with ball.). For <playerRows>. During the whole duration of the events <attack>.
+Link_Pressure_avgGreaterThanZero:	 Average of <Link_Pressure> (Pressure on player with ball.) with only values greater than zero. For <playerRows>. During the whole duration of the events <attack>.
+Link_Pressure_std:		 Standard Deviation of <Link_Pressure> (Pressure on player with ball.). For <playerRows>. During the whole duration of the events <attack>.
+Link_Pressure_min:		 Minimum of <Link_Pressure> (Pressure on player with ball.). For <playerRows>. During the whole duration of the events <attack>.
+Link_Pressure_minGreaterThanZero:	 Minimum of <Link_Pressure> (Pressure on player with ball.) with only values greater than zero. For <playerRows>. During the whole duration of the events <attack>.
+Link_Pressure_max:		 Maximum of <Link_Pressure> (Pressure on player with ball.). For <playerRows>. During the whole duration of the events <attack>.
+Link_Pressure_avg_perTimePerPlayer_ref_avg:	 Average of <Link_Pressure_avg_perTimePerPlayer_ref> (Pressure on player with ball.). For <refTeam>. During the whole duration of the events <attack>.
+Link_Pressure_avg_perTimePerPlayer_ref_avgGreaterThanZero:	 Average of <Link_Pressure_avg_perTimePerPlayer_ref> (Pressure on player with ball.) with only values greater than zero. For <refTeam>. During the whole duration of the events <attack>.
+Link_Pressure_avg_perTimePerPlayer_ref_std:	 Standard Deviation of <Link_Pressure_avg_perTimePerPlayer_ref> (Pressure on player with ball.). For <refTeam>. During the whole duration of the events <attack>.
+Link_Pressure_avg_perTimePerPlayer_ref_min:	 Minimum of <Link_Pressure_avg_perTimePerPlayer_ref> (Pressure on player with ball.). For <refTeam>. During the whole duration of the events <attack>.
+Link_Pressure_avg_perTimePerPlayer_ref_minGreaterThanZero:	 Minimum of <Link_Pressure_avg_perTimePerPlayer_ref> (Pressure on player with ball.) with only values greater than zero. For <refTeam>. During the whole duration of the events <attack>.
+Link_Pressure_avg_perTimePerPlayer_ref_max:	 Maximum of <Link_Pressure_avg_perTimePerPlayer_ref> (Pressure on player with ball.). For <refTeam>. During the whole duration of the events <attack>.
+Link_Pressure_01_avg:		 Average of <Link_Pressure_01> (Pressure on player with ball.). For <1th player>. During the whole duration of the events <attack>.
+Link_Pressure_01_avgGreaterThanZero:	 Average of <Link_Pressure_01> (Pressure on player with ball.) with only values greater than zero. For <1th player>. During the whole duration of the events <attack>.
+Link_Pressure_01_std:		 Standard Deviation of <Link_Pressure_01> (Pressure on player with ball.). For <1th player>. During the whole duration of the events <attack>.
+Link_Pressure_01_min:		 Minimum of <Link_Pressure_01> (Pressure on player with ball.). For <1th player>. During the whole duration of the events <attack>.
+Link_Pressure_01_minGreaterThanZero:	 Minimum of <Link_Pressure_01> (Pressure on player with ball.) with only values greater than zero. For <1th player>. During the whole duration of the events <attack>.
+Link_Pressure_01_max:		 Maximum of <Link_Pressure_01> (Pressure on player with ball.). For <1th player>. During the whole duration of the events <attack>.
+Link_Pressure_02_avg:		 Average of <Link_Pressure_02> (Pressure on player with ball.). For <2th player>. During the whole duration of the events <attack>.
+Link_Pressure_02_avgGreaterThanZero:	 Average of <Link_Pressure_02> (Pressure on player with ball.) with only values greater than zero. For <2th player>. During the whole duration of the events <attack>.
+Link_Pressure_02_std:		 Standard Deviation of <Link_Pressure_02> (Pressure on player with ball.). For <2th player>. During the whole duration of the events <attack>.
+Link_Pressure_02_min:		 Minimum of <Link_Pressure_02> (Pressure on player with ball.). For <2th player>. During the whole duration of the events <attack>.
+Link_Pressure_02_minGreaterThanZero:	 Minimum of <Link_Pressure_02> (Pressure on player with ball.) with only values greater than zero. For <2th player>. During the whole duration of the events <attack>.
+Link_Pressure_02_max:		 Maximum of <Link_Pressure_02> (Pressure on player with ball.). For <2th player>. During the whole duration of the events <attack>.
+Link_Pressure_03_avg:		 Average of <Link_Pressure_03> (Pressure on player with ball.). For <3th player>. During the whole duration of the events <attack>.
+Link_Pressure_03_avgGreaterThanZero:	 Average of <Link_Pressure_03> (Pressure on player with ball.) with only values greater than zero. For <3th player>. During the whole duration of the events <attack>.
+Link_Pressure_03_std:		 Standard Deviation of <Link_Pressure_03> (Pressure on player with ball.). For <3th player>. During the whole duration of the events <attack>.
+Link_Pressure_03_min:		 Minimum of <Link_Pressure_03> (Pressure on player with ball.). For <3th player>. During the whole duration of the events <attack>.
+Link_Pressure_03_minGreaterThanZero:	 Minimum of <Link_Pressure_03> (Pressure on player with ball.) with only values greater than zero. For <3th player>. During the whole duration of the events <attack>.
+Link_Pressure_03_max:		 Maximum of <Link_Pressure_03> (Pressure on player with ball.). For <3th player>. During the whole duration of the events <attack>.
+Link_Pressure_04_avg:		 Average of <Link_Pressure_04> (Pressure on player with ball.). For <4th player>. During the whole duration of the events <attack>.
+Link_Pressure_04_avgGreaterThanZero:	 Average of <Link_Pressure_04> (Pressure on player with ball.) with only values greater than zero. For <4th player>. During the whole duration of the events <attack>.
+Link_Pressure_04_std:		 Standard Deviation of <Link_Pressure_04> (Pressure on player with ball.). For <4th player>. During the whole duration of the events <attack>.
+Link_Pressure_04_min:		 Minimum of <Link_Pressure_04> (Pressure on player with ball.). For <4th player>. During the whole duration of the events <attack>.
+Link_Pressure_04_minGreaterThanZero:	 Minimum of <Link_Pressure_04> (Pressure on player with ball.) with only values greater than zero. For <4th player>. During the whole duration of the events <attack>.
+Link_Pressure_04_max:		 Maximum of <Link_Pressure_04> (Pressure on player with ball.). For <4th player>. During the whole duration of the events <attack>.
+Link_Pressure_05_avg:		 Average of <Link_Pressure_05> (Pressure on player with ball.). For <5th player>. During the whole duration of the events <attack>.
+Link_Pressure_05_avgGreaterThanZero:	 Average of <Link_Pressure_05> (Pressure on player with ball.) with only values greater than zero. For <5th player>. During the whole duration of the events <attack>.
+Link_Pressure_05_std:		 Standard Deviation of <Link_Pressure_05> (Pressure on player with ball.). For <5th player>. During the whole duration of the events <attack>.
+Link_Pressure_05_min:		 Minimum of <Link_Pressure_05> (Pressure on player with ball.). For <5th player>. During the whole duration of the events <attack>.
+Link_Pressure_05_minGreaterThanZero:	 Minimum of <Link_Pressure_05> (Pressure on player with ball.) with only values greater than zero. For <5th player>. During the whole duration of the events <attack>.
+Link_Pressure_05_max:		 Maximum of <Link_Pressure_05> (Pressure on player with ball.). For <5th player>. During the whole duration of the events <attack>.
+Link_Pressure_06_avg:		 Average of <Link_Pressure_06> (Pressure on player with ball.). For <6th player>. During the whole duration of the events <attack>.
+Link_Pressure_06_avgGreaterThanZero:	 Average of <Link_Pressure_06> (Pressure on player with ball.) with only values greater than zero. For <6th player>. During the whole duration of the events <attack>.
+Link_Pressure_06_std:		 Standard Deviation of <Link_Pressure_06> (Pressure on player with ball.). For <6th player>. During the whole duration of the events <attack>.
+Link_Pressure_06_min:		 Minimum of <Link_Pressure_06> (Pressure on player with ball.). For <6th player>. During the whole duration of the events <attack>.
+Link_Pressure_06_minGreaterThanZero:	 Minimum of <Link_Pressure_06> (Pressure on player with ball.) with only values greater than zero. For <6th player>. During the whole duration of the events <attack>.
+Link_Pressure_06_max:		 Maximum of <Link_Pressure_06> (Pressure on player with ball.). For <6th player>. During the whole duration of the events <attack>.
+Link_Pressure_07_avg:		 Average of <Link_Pressure_07> (Pressure on player with ball.). For <7th player>. During the whole duration of the events <attack>.
+Link_Pressure_07_avgGreaterThanZero:	 Average of <Link_Pressure_07> (Pressure on player with ball.) with only values greater than zero. For <7th player>. During the whole duration of the events <attack>.
+Link_Pressure_07_std:		 Standard Deviation of <Link_Pressure_07> (Pressure on player with ball.). For <7th player>. During the whole duration of the events <attack>.
+Link_Pressure_07_min:		 Minimum of <Link_Pressure_07> (Pressure on player with ball.). For <7th player>. During the whole duration of the events <attack>.
+Link_Pressure_07_minGreaterThanZero:	 Minimum of <Link_Pressure_07> (Pressure on player with ball.) with only values greater than zero. For <7th player>. During the whole duration of the events <attack>.
+Link_Pressure_07_max:		 Maximum of <Link_Pressure_07> (Pressure on player with ball.). For <7th player>. During the whole duration of the events <attack>.
+Link_Pressure_08_avg:		 Average of <Link_Pressure_08> (Pressure on player with ball.). For <8th player>. During the whole duration of the events <attack>.
+Link_Pressure_08_avgGreaterThanZero:	 Average of <Link_Pressure_08> (Pressure on player with ball.) with only values greater than zero. For <8th player>. During the whole duration of the events <attack>.
+Link_Pressure_08_std:		 Standard Deviation of <Link_Pressure_08> (Pressure on player with ball.). For <8th player>. During the whole duration of the events <attack>.
+Link_Pressure_08_min:		 Minimum of <Link_Pressure_08> (Pressure on player with ball.). For <8th player>. During the whole duration of the events <attack>.
+Link_Pressure_08_minGreaterThanZero:	 Minimum of <Link_Pressure_08> (Pressure on player with ball.) with only values greater than zero. For <8th player>. During the whole duration of the events <attack>.
+Link_Pressure_08_max:		 Maximum of <Link_Pressure_08> (Pressure on player with ball.). For <8th player>. During the whole duration of the events <attack>.
+Link_Pressure_09_avg:		 Average of <Link_Pressure_09> (Pressure on player with ball.). For <9th player>. During the whole duration of the events <attack>.
+Link_Pressure_09_avgGreaterThanZero:	 Average of <Link_Pressure_09> (Pressure on player with ball.) with only values greater than zero. For <9th player>. During the whole duration of the events <attack>.
+Link_Pressure_09_std:		 Standard Deviation of <Link_Pressure_09> (Pressure on player with ball.). For <9th player>. During the whole duration of the events <attack>.
+Link_Pressure_09_min:		 Minimum of <Link_Pressure_09> (Pressure on player with ball.). For <9th player>. During the whole duration of the events <attack>.
+Link_Pressure_09_minGreaterThanZero:	 Minimum of <Link_Pressure_09> (Pressure on player with ball.) with only values greater than zero. For <9th player>. During the whole duration of the events <attack>.
+Link_Pressure_09_max:		 Maximum of <Link_Pressure_09> (Pressure on player with ball.). For <9th player>. During the whole duration of the events <attack>.
+Link_Pressure_10_avg:		 Average of <Link_Pressure_10> (Pressure on player with ball.). For <10th player>. During the whole duration of the events <attack>.
+Link_Pressure_10_avgGreaterThanZero:	 Average of <Link_Pressure_10> (Pressure on player with ball.) with only values greater than zero. For <10th player>. During the whole duration of the events <attack>.
+Link_Pressure_10_std:		 Standard Deviation of <Link_Pressure_10> (Pressure on player with ball.). For <10th player>. During the whole duration of the events <attack>.
+Link_Pressure_10_min:		 Minimum of <Link_Pressure_10> (Pressure on player with ball.). For <10th player>. During the whole duration of the events <attack>.
+Link_Pressure_10_minGreaterThanZero:	 Minimum of <Link_Pressure_10> (Pressure on player with ball.) with only values greater than zero. For <10th player>. During the whole duration of the events <attack>.
+Link_Pressure_10_max:		 Maximum of <Link_Pressure_10> (Pressure on player with ball.). For <10th player>. During the whole duration of the events <attack>.
+Link_Pressure_11_avg:		 Average of <Link_Pressure_11> (Pressure on player with ball.). For <11th player>. During the whole duration of the events <attack>.
+Link_Pressure_11_avgGreaterThanZero:	 Average of <Link_Pressure_11> (Pressure on player with ball.) with only values greater than zero. For <11th player>. During the whole duration of the events <attack>.
+Link_Pressure_11_std:		 Standard Deviation of <Link_Pressure_11> (Pressure on player with ball.). For <11th player>. During the whole duration of the events <attack>.
+Link_Pressure_11_min:		 Minimum of <Link_Pressure_11> (Pressure on player with ball.). For <11th player>. During the whole duration of the events <attack>.
+Link_Pressure_11_minGreaterThanZero:	 Minimum of <Link_Pressure_11> (Pressure on player with ball.) with only values greater than zero. For <11th player>. During the whole duration of the events <attack>.
+Link_Pressure_11_max:		 Maximum of <Link_Pressure_11> (Pressure on player with ball.). For <11th player>. During the whole duration of the events <attack>.
+Link_Pressure_12_avg:		 Average of <Link_Pressure_12> (Pressure on player with ball.). For <12th player>. During the whole duration of the events <attack>.
+Link_Pressure_12_avgGreaterThanZero:	 Average of <Link_Pressure_12> (Pressure on player with ball.) with only values greater than zero. For <12th player>. During the whole duration of the events <attack>.
+Link_Pressure_12_std:		 Standard Deviation of <Link_Pressure_12> (Pressure on player with ball.). For <12th player>. During the whole duration of the events <attack>.
+Link_Pressure_12_min:		 Minimum of <Link_Pressure_12> (Pressure on player with ball.). For <12th player>. During the whole duration of the events <attack>.
+Link_Pressure_12_minGreaterThanZero:	 Minimum of <Link_Pressure_12> (Pressure on player with ball.) with only values greater than zero. For <12th player>. During the whole duration of the events <attack>.
+Link_Pressure_12_max:		 Maximum of <Link_Pressure_12> (Pressure on player with ball.). For <12th player>. During the whole duration of the events <attack>.
+Link_Pressure_13_avg:		 Average of <Link_Pressure_13> (Pressure on player with ball.). For <13th player>. During the whole duration of the events <attack>.
+Link_Pressure_13_avgGreaterThanZero:	 Average of <Link_Pressure_13> (Pressure on player with ball.) with only values greater than zero. For <13th player>. During the whole duration of the events <attack>.
+Link_Pressure_13_std:		 Standard Deviation of <Link_Pressure_13> (Pressure on player with ball.). For <13th player>. During the whole duration of the events <attack>.
+Link_Pressure_13_min:		 Minimum of <Link_Pressure_13> (Pressure on player with ball.). For <13th player>. During the whole duration of the events <attack>.
+Link_Pressure_13_minGreaterThanZero:	 Minimum of <Link_Pressure_13> (Pressure on player with ball.) with only values greater than zero. For <13th player>. During the whole duration of the events <attack>.
+Link_Pressure_13_max:		 Maximum of <Link_Pressure_13> (Pressure on player with ball.). For <13th player>. During the whole duration of the events <attack>.
+Link_Pressure_14_avg:		 Average of <Link_Pressure_14> (Pressure on player with ball.). For <14th player>. During the whole duration of the events <attack>.
+Link_Pressure_14_avgGreaterThanZero:	 Average of <Link_Pressure_14> (Pressure on player with ball.) with only values greater than zero. For <14th player>. During the whole duration of the events <attack>.
+Link_Pressure_14_std:		 Standard Deviation of <Link_Pressure_14> (Pressure on player with ball.). For <14th player>. During the whole duration of the events <attack>.
+Link_Pressure_14_min:		 Minimum of <Link_Pressure_14> (Pressure on player with ball.). For <14th player>. During the whole duration of the events <attack>.
+Link_Pressure_14_minGreaterThanZero:	 Minimum of <Link_Pressure_14> (Pressure on player with ball.) with only values greater than zero. For <14th player>. During the whole duration of the events <attack>.
+Link_Pressure_14_max:		 Maximum of <Link_Pressure_14> (Pressure on player with ball.). For <14th player>. During the whole duration of the events <attack>.
+Link_Pressure_15_avg:		 Average of <Link_Pressure_15> (Pressure on player with ball.). For <15th player>. During the whole duration of the events <attack>.
+Link_Pressure_15_avgGreaterThanZero:	 Average of <Link_Pressure_15> (Pressure on player with ball.) with only values greater than zero. For <15th player>. During the whole duration of the events <attack>.
+Link_Pressure_15_std:		 Standard Deviation of <Link_Pressure_15> (Pressure on player with ball.). For <15th player>. During the whole duration of the events <attack>.
+Link_Pressure_15_min:		 Minimum of <Link_Pressure_15> (Pressure on player with ball.). For <15th player>. During the whole duration of the events <attack>.
+Link_Pressure_15_minGreaterThanZero:	 Minimum of <Link_Pressure_15> (Pressure on player with ball.) with only values greater than zero. For <15th player>. During the whole duration of the events <attack>.
+Link_Pressure_15_max:		 Maximum of <Link_Pressure_15> (Pressure on player with ball.). For <15th player>. During the whole duration of the events <attack>.
+Link_Pressure_16_avg:		 Average of <Link_Pressure_16> (Pressure on player with ball.). For <16th player>. During the whole duration of the events <attack>.
+Link_Pressure_16_avgGreaterThanZero:	 Average of <Link_Pressure_16> (Pressure on player with ball.) with only values greater than zero. For <16th player>. During the whole duration of the events <attack>.
+Link_Pressure_16_std:		 Standard Deviation of <Link_Pressure_16> (Pressure on player with ball.). For <16th player>. During the whole duration of the events <attack>.
+Link_Pressure_16_min:		 Minimum of <Link_Pressure_16> (Pressure on player with ball.). For <16th player>. During the whole duration of the events <attack>.
+Link_Pressure_16_minGreaterThanZero:	 Minimum of <Link_Pressure_16> (Pressure on player with ball.) with only values greater than zero. For <16th player>. During the whole duration of the events <attack>.
+Link_Pressure_16_max:		 Maximum of <Link_Pressure_16> (Pressure on player with ball.). For <16th player>. During the whole duration of the events <attack>.
+Link_Pressure_17_avg:		 Average of <Link_Pressure_17> (Pressure on player with ball.). For <17th player>. During the whole duration of the events <attack>.
+Link_Pressure_17_avgGreaterThanZero:	 Average of <Link_Pressure_17> (Pressure on player with ball.) with only values greater than zero. For <17th player>. During the whole duration of the events <attack>.
+Link_Pressure_17_std:		 Standard Deviation of <Link_Pressure_17> (Pressure on player with ball.). For <17th player>. During the whole duration of the events <attack>.
+Link_Pressure_17_min:		 Minimum of <Link_Pressure_17> (Pressure on player with ball.). For <17th player>. During the whole duration of the events <attack>.
+Link_Pressure_17_minGreaterThanZero:	 Minimum of <Link_Pressure_17> (Pressure on player with ball.) with only values greater than zero. For <17th player>. During the whole duration of the events <attack>.
+Link_Pressure_17_max:		 Maximum of <Link_Pressure_17> (Pressure on player with ball.). For <17th player>. During the whole duration of the events <attack>.
+Link_Pressure_18_avg:		 Average of <Link_Pressure_18> (Pressure on player with ball.). For <18th player>. During the whole duration of the events <attack>.
+Link_Pressure_18_avgGreaterThanZero:	 Average of <Link_Pressure_18> (Pressure on player with ball.) with only values greater than zero. For <18th player>. During the whole duration of the events <attack>.
+Link_Pressure_18_std:		 Standard Deviation of <Link_Pressure_18> (Pressure on player with ball.). For <18th player>. During the whole duration of the events <attack>.
+Link_Pressure_18_min:		 Minimum of <Link_Pressure_18> (Pressure on player with ball.). For <18th player>. During the whole duration of the events <attack>.
+Link_Pressure_18_minGreaterThanZero:	 Minimum of <Link_Pressure_18> (Pressure on player with ball.) with only values greater than zero. For <18th player>. During the whole duration of the events <attack>.
+Link_Pressure_18_max:		 Maximum of <Link_Pressure_18> (Pressure on player with ball.). For <18th player>. During the whole duration of the events <attack>.
+Link_Pressure_19_avg:		 Average of <Link_Pressure_19> (Pressure on player with ball.). For <19th player>. During the whole duration of the events <attack>.
+Link_Pressure_19_avgGreaterThanZero:	 Average of <Link_Pressure_19> (Pressure on player with ball.) with only values greater than zero. For <19th player>. During the whole duration of the events <attack>.
+Link_Pressure_19_std:		 Standard Deviation of <Link_Pressure_19> (Pressure on player with ball.). For <19th player>. During the whole duration of the events <attack>.
+Link_Pressure_19_min:		 Minimum of <Link_Pressure_19> (Pressure on player with ball.). For <19th player>. During the whole duration of the events <attack>.
+Link_Pressure_19_minGreaterThanZero:	 Minimum of <Link_Pressure_19> (Pressure on player with ball.) with only values greater than zero. For <19th player>. During the whole duration of the events <attack>.
+Link_Pressure_19_max:		 Maximum of <Link_Pressure_19> (Pressure on player with ball.). For <19th player>. During the whole duration of the events <attack>.
+Link_Pressure_20_avg:		 Average of <Link_Pressure_20> (Pressure on player with ball.). For <20th player>. During the whole duration of the events <attack>.
+Link_Pressure_20_avgGreaterThanZero:	 Average of <Link_Pressure_20> (Pressure on player with ball.) with only values greater than zero. For <20th player>. During the whole duration of the events <attack>.
+Link_Pressure_20_std:		 Standard Deviation of <Link_Pressure_20> (Pressure on player with ball.). For <20th player>. During the whole duration of the events <attack>.
+Link_Pressure_20_min:		 Minimum of <Link_Pressure_20> (Pressure on player with ball.). For <20th player>. During the whole duration of the events <attack>.
+Link_Pressure_20_minGreaterThanZero:	 Minimum of <Link_Pressure_20> (Pressure on player with ball.) with only values greater than zero. For <20th player>. During the whole duration of the events <attack>.
+Link_Pressure_20_max:		 Maximum of <Link_Pressure_20> (Pressure on player with ball.). For <20th player>. During the whole duration of the events <attack>.
+Link_Pressure_21_avg:		 Average of <Link_Pressure_21> (Pressure on player with ball.). For <21th player>. During the whole duration of the events <attack>.
+Link_Pressure_21_avgGreaterThanZero:	 Average of <Link_Pressure_21> (Pressure on player with ball.) with only values greater than zero. For <21th player>. During the whole duration of the events <attack>.
+Link_Pressure_21_std:		 Standard Deviation of <Link_Pressure_21> (Pressure on player with ball.). For <21th player>. During the whole duration of the events <attack>.
+Link_Pressure_21_min:		 Minimum of <Link_Pressure_21> (Pressure on player with ball.). For <21th player>. During the whole duration of the events <attack>.
+Link_Pressure_21_minGreaterThanZero:	 Minimum of <Link_Pressure_21> (Pressure on player with ball.) with only values greater than zero. For <21th player>. During the whole duration of the events <attack>.
+Link_Pressure_21_max:		 Maximum of <Link_Pressure_21> (Pressure on player with ball.). For <21th player>. During the whole duration of the events <attack>.
+Link_Pressure_22_avg:		 Average of <Link_Pressure_22> (Pressure on player with ball.). For <22th player>. During the whole duration of the events <attack>.
+Link_Pressure_22_avgGreaterThanZero:	 Average of <Link_Pressure_22> (Pressure on player with ball.) with only values greater than zero. For <22th player>. During the whole duration of the events <attack>.
+Link_Pressure_22_std:		 Standard Deviation of <Link_Pressure_22> (Pressure on player with ball.). For <22th player>. During the whole duration of the events <attack>.
+Link_Pressure_22_min:		 Minimum of <Link_Pressure_22> (Pressure on player with ball.). For <22th player>. During the whole duration of the events <attack>.
+Link_Pressure_22_minGreaterThanZero:	 Minimum of <Link_Pressure_22> (Pressure on player with ball.) with only values greater than zero. For <22th player>. During the whole duration of the events <attack>.
+Link_Pressure_22_max:		 Maximum of <Link_Pressure_22> (Pressure on player with ball.). For <22th player>. During the whole duration of the events <attack>.
+minDistToDef_avg:		 Average of <minDistToDef> (Distance to closest defender for player with ball.). For <playerRows>. During the whole duration of the events <attack>.
+minDistToDef_avgGreaterThanZero:	 Average of <minDistToDef> (Distance to closest defender for player with ball.) with only values greater than zero. For <playerRows>. During the whole duration of the events <attack>.
+minDistToDef_std:		 Standard Deviation of <minDistToDef> (Distance to closest defender for player with ball.). For <playerRows>. During the whole duration of the events <attack>.
+minDistToDef_min:		 Minimum of <minDistToDef> (Distance to closest defender for player with ball.). For <playerRows>. During the whole duration of the events <attack>.
+minDistToDef_minGreaterThanZero:	 Minimum of <minDistToDef> (Distance to closest defender for player with ball.) with only values greater than zero. For <playerRows>. During the whole duration of the events <attack>.
+minDistToDef_max:		 Maximum of <minDistToDef> (Distance to closest defender for player with ball.). For <playerRows>. During the whole duration of the events <attack>.
+minDistToDef_avg_perTimePerPlayer_ref_avg:	 Average of <minDistToDef_avg_perTimePerPlayer_ref> (Distance to closest defender for player with ball.). For <refTeam>. During the whole duration of the events <attack>.
+minDistToDef_avg_perTimePerPlayer_ref_avgGreaterThanZero:	 Average of <minDistToDef_avg_perTimePerPlayer_ref> (Distance to closest defender for player with ball.) with only values greater than zero. For <refTeam>. During the whole duration of the events <attack>.
+minDistToDef_avg_perTimePerPlayer_ref_std:	 Standard Deviation of <minDistToDef_avg_perTimePerPlayer_ref> (Distance to closest defender for player with ball.). For <refTeam>. During the whole duration of the events <attack>.
+minDistToDef_avg_perTimePerPlayer_ref_min:	 Minimum of <minDistToDef_avg_perTimePerPlayer_ref> (Distance to closest defender for player with ball.). For <refTeam>. During the whole duration of the events <attack>.
+minDistToDef_avg_perTimePerPlayer_ref_minGreaterThanZero:	 Minimum of <minDistToDef_avg_perTimePerPlayer_ref> (Distance to closest defender for player with ball.) with only values greater than zero. For <refTeam>. During the whole duration of the events <attack>.
+minDistToDef_avg_perTimePerPlayer_ref_max:	 Maximum of <minDistToDef_avg_perTimePerPlayer_ref> (Distance to closest defender for player with ball.). For <refTeam>. During the whole duration of the events <attack>.
+avgDistToDef2_avg:		 Average of <avgDistToDef2> (Average distance to the two closest defenders for player with ball.). For <playerRows>. During the whole duration of the events <attack>.
+avgDistToDef2_avgGreaterThanZero:	 Average of <avgDistToDef2> (Average distance to the two closest defenders for player with ball.) with only values greater than zero. For <playerRows>. During the whole duration of the events <attack>.
+avgDistToDef2_std:		 Standard Deviation of <avgDistToDef2> (Average distance to the two closest defenders for player with ball.). For <playerRows>. During the whole duration of the events <attack>.
+avgDistToDef2_min:		 Minimum of <avgDistToDef2> (Average distance to the two closest defenders for player with ball.). For <playerRows>. During the whole duration of the events <attack>.
+avgDistToDef2_minGreaterThanZero:	 Minimum of <avgDistToDef2> (Average distance to the two closest defenders for player with ball.) with only values greater than zero. For <playerRows>. During the whole duration of the events <attack>.
+avgDistToDef2_max:		 Maximum of <avgDistToDef2> (Average distance to the two closest defenders for player with ball.). For <playerRows>. During the whole duration of the events <attack>.
+avgDistToDef2_avg_perTimePerPlayer_ref_avg:	 Average of <avgDistToDef2_avg_perTimePerPlayer_ref> (Average distance to the two closest defenders for player with ball.). For <refTeam>. During the whole duration of the events <attack>.
+avgDistToDef2_avg_perTimePerPlayer_ref_avgGreaterThanZero:	 Average of <avgDistToDef2_avg_perTimePerPlayer_ref> (Average distance to the two closest defenders for player with ball.) with only values greater than zero. For <refTeam>. During the whole duration of the events <attack>.
+avgDistToDef2_avg_perTimePerPlayer_ref_std:	 Standard Deviation of <avgDistToDef2_avg_perTimePerPlayer_ref> (Average distance to the two closest defenders for player with ball.). For <refTeam>. During the whole duration of the events <attack>.
+avgDistToDef2_avg_perTimePerPlayer_ref_min:	 Minimum of <avgDistToDef2_avg_perTimePerPlayer_ref> (Average distance to the two closest defenders for player with ball.). For <refTeam>. During the whole duration of the events <attack>.
+avgDistToDef2_avg_perTimePerPlayer_ref_minGreaterThanZero:	 Minimum of <avgDistToDef2_avg_perTimePerPlayer_ref> (Average distance to the two closest defenders for player with ball.) with only values greater than zero. For <refTeam>. During the whole duration of the events <attack>.
+avgDistToDef2_avg_perTimePerPlayer_ref_max:	 Maximum of <avgDistToDef2_avg_perTimePerPlayer_ref> (Average distance to the two closest defenders for player with ball.). For <refTeam>. During the whole duration of the events <attack>.
+avgDistToDef3_avg:		 Average of <avgDistToDef3> (Average distance to the three closest defenders for player with ball.). For <playerRows>. During the whole duration of the events <attack>.
+avgDistToDef3_avgGreaterThanZero:	 Average of <avgDistToDef3> (Average distance to the three closest defenders for player with ball.) with only values greater than zero. For <playerRows>. During the whole duration of the events <attack>.
+avgDistToDef3_std:		 Standard Deviation of <avgDistToDef3> (Average distance to the three closest defenders for player with ball.). For <playerRows>. During the whole duration of the events <attack>.
+avgDistToDef3_min:		 Minimum of <avgDistToDef3> (Average distance to the three closest defenders for player with ball.). For <playerRows>. During the whole duration of the events <attack>.
+avgDistToDef3_minGreaterThanZero:	 Minimum of <avgDistToDef3> (Average distance to the three closest defenders for player with ball.) with only values greater than zero. For <playerRows>. During the whole duration of the events <attack>.
+avgDistToDef3_max:		 Maximum of <avgDistToDef3> (Average distance to the three closest defenders for player with ball.). For <playerRows>. During the whole duration of the events <attack>.
+avgDistToDef3_avg_perTimePerPlayer_ref_avg:	 Average of <avgDistToDef3_avg_perTimePerPlayer_ref> (Average distance to the three closest defenders for player with ball.). For <refTeam>. During the whole duration of the events <attack>.
+avgDistToDef3_avg_perTimePerPlayer_ref_avgGreaterThanZero:	 Average of <avgDistToDef3_avg_perTimePerPlayer_ref> (Average distance to the three closest defenders for player with ball.) with only values greater than zero. For <refTeam>. During the whole duration of the events <attack>.
+avgDistToDef3_avg_perTimePerPlayer_ref_std:	 Standard Deviation of <avgDistToDef3_avg_perTimePerPlayer_ref> (Average distance to the three closest defenders for player with ball.). For <refTeam>. During the whole duration of the events <attack>.
+avgDistToDef3_avg_perTimePerPlayer_ref_min:	 Minimum of <avgDistToDef3_avg_perTimePerPlayer_ref> (Average distance to the three closest defenders for player with ball.). For <refTeam>. During the whole duration of the events <attack>.
+avgDistToDef3_avg_perTimePerPlayer_ref_minGreaterThanZero:	 Minimum of <avgDistToDef3_avg_perTimePerPlayer_ref> (Average distance to the three closest defenders for player with ball.) with only values greater than zero. For <refTeam>. During the whole duration of the events <attack>.
+avgDistToDef3_avg_perTimePerPlayer_ref_max:	 Maximum of <avgDistToDef3_avg_perTimePerPlayer_ref> (Average distance to the three closest defenders for player with ball.). For <refTeam>. During the whole duration of the events <attack>.
+minAngleInPossDefGoal_avg:	 Average of <minAngleInPossDefGoal> (Angle between player with ball, defender and goal for the closest defender.). For <playerRows>. During the whole duration of the events <attack>.
+minAngleInPossDefGoal_avgGreaterThanZero:	 Average of <minAngleInPossDefGoal> (Angle between player with ball, defender and goal for the closest defender.) with only values greater than zero. For <playerRows>. During the whole duration of the events <attack>.
+minAngleInPossDefGoal_std:	 Standard Deviation of <minAngleInPossDefGoal> (Angle between player with ball, defender and goal for the closest defender.). For <playerRows>. During the whole duration of the events <attack>.
+minAngleInPossDefGoal_min:	 Minimum of <minAngleInPossDefGoal> (Angle between player with ball, defender and goal for the closest defender.). For <playerRows>. During the whole duration of the events <attack>.
+minAngleInPossDefGoal_minGreaterThanZero:	 Minimum of <minAngleInPossDefGoal> (Angle between player with ball, defender and goal for the closest defender.) with only values greater than zero. For <playerRows>. During the whole duration of the events <attack>.
+minAngleInPossDefGoal_max:	 Maximum of <minAngleInPossDefGoal> (Angle between player with ball, defender and goal for the closest defender.). For <playerRows>. During the whole duration of the events <attack>.
+minAngleInPossDefGoal_avg_perTimePerPlayer_ref_avg:	 Average of <minAngleInPossDefGoal_avg_perTimePerPlayer_ref> (Angle between player with ball, defender and goal for the closest defender.). For <refTeam>. During the whole duration of the events <attack>.
+minAngleInPossDefGoal_avg_perTimePerPlayer_ref_avgGreaterThanZero:	 Average of <minAngleInPossDefGoal_avg_perTimePerPlayer_ref> (Angle between player with ball, defender and goal for the closest defender.) with only values greater than zero. For <refTeam>. During the whole duration of the events <attack>.
+minAngleInPossDefGoal_avg_perTimePerPlayer_ref_std:	 Standard Deviation of <minAngleInPossDefGoal_avg_perTimePerPlayer_ref> (Angle between player with ball, defender and goal for the closest defender.). For <refTeam>. During the whole duration of the events <attack>.
+minAngleInPossDefGoal_avg_perTimePerPlayer_ref_min:	 Minimum of <minAngleInPossDefGoal_avg_perTimePerPlayer_ref> (Angle between player with ball, defender and goal for the closest defender.). For <refTeam>. During the whole duration of the events <attack>.
+minAngleInPossDefGoal_avg_perTimePerPlayer_ref_minGreaterThanZero:	 Minimum of <minAngleInPossDefGoal_avg_perTimePerPlayer_ref> (Angle between player with ball, defender and goal for the closest defender.) with only values greater than zero. For <refTeam>. During the whole duration of the events <attack>.
+minAngleInPossDefGoal_avg_perTimePerPlayer_ref_max:	 Maximum of <minAngleInPossDefGoal_avg_perTimePerPlayer_ref> (Angle between player with ball, defender and goal for the closest defender.). For <refTeam>. During the whole duration of the events <attack>.
+avgAngleInPossDefGoal2_avg:	 Average of <avgAngleInPossDefGoal2> (Average angle between player with ball, defender and goal for the two closest defenders.). For <playerRows>. During the whole duration of the events <attack>.
+avgAngleInPossDefGoal2_avgGreaterThanZero:	 Average of <avgAngleInPossDefGoal2> (Average angle between player with ball, defender and goal for the two closest defenders.) with only values greater than zero. For <playerRows>. During the whole duration of the events <attack>.
+avgAngleInPossDefGoal2_std:	 Standard Deviation of <avgAngleInPossDefGoal2> (Average angle between player with ball, defender and goal for the two closest defenders.). For <playerRows>. During the whole duration of the events <attack>.
+avgAngleInPossDefGoal2_min:	 Minimum of <avgAngleInPossDefGoal2> (Average angle between player with ball, defender and goal for the two closest defenders.). For <playerRows>. During the whole duration of the events <attack>.
+avgAngleInPossDefGoal2_minGreaterThanZero:	 Minimum of <avgAngleInPossDefGoal2> (Average angle between player with ball, defender and goal for the two closest defenders.) with only values greater than zero. For <playerRows>. During the whole duration of the events <attack>.
+avgAngleInPossDefGoal2_max:	 Maximum of <avgAngleInPossDefGoal2> (Average angle between player with ball, defender and goal for the two closest defenders.). For <playerRows>. During the whole duration of the events <attack>.
+avgAngleInPossDefGoal2_avg_perTimePerPlayer_ref_avg:	 Average of <avgAngleInPossDefGoal2_avg_perTimePerPlayer_ref> (Average angle between player with ball, defender and goal for the two closest defenders.). For <refTeam>. During the whole duration of the events <attack>.
+avgAngleInPossDefGoal2_avg_perTimePerPlayer_ref_avgGreaterThanZero:	 Average of <avgAngleInPossDefGoal2_avg_perTimePerPlayer_ref> (Average angle between player with ball, defender and goal for the two closest defenders.) with only values greater than zero. For <refTeam>. During the whole duration of the events <attack>.
+avgAngleInPossDefGoal2_avg_perTimePerPlayer_ref_std:	 Standard Deviation of <avgAngleInPossDefGoal2_avg_perTimePerPlayer_ref> (Average angle between player with ball, defender and goal for the two closest defenders.). For <refTeam>. During the whole duration of the events <attack>.
+avgAngleInPossDefGoal2_avg_perTimePerPlayer_ref_min:	 Minimum of <avgAngleInPossDefGoal2_avg_perTimePerPlayer_ref> (Average angle between player with ball, defender and goal for the two closest defenders.). For <refTeam>. During the whole duration of the events <attack>.
+avgAngleInPossDefGoal2_avg_perTimePerPlayer_ref_minGreaterThanZero:	 Minimum of <avgAngleInPossDefGoal2_avg_perTimePerPlayer_ref> (Average angle between player with ball, defender and goal for the two closest defenders.) with only values greater than zero. For <refTeam>. During the whole duration of the events <attack>.
+avgAngleInPossDefGoal2_avg_perTimePerPlayer_ref_max:	 Maximum of <avgAngleInPossDefGoal2_avg_perTimePerPlayer_ref> (Average angle between player with ball, defender and goal for the two closest defenders.). For <refTeam>. During the whole duration of the events <attack>.
+avgAngleInPossDefGoal3_avg:	 Average of <avgAngleInPossDefGoal3> (Average angle between player with ball, defender and goal for the three closest defenders.). For <playerRows>. During the whole duration of the events <attack>.
+avgAngleInPossDefGoal3_avgGreaterThanZero:	 Average of <avgAngleInPossDefGoal3> (Average angle between player with ball, defender and goal for the three closest defenders.) with only values greater than zero. For <playerRows>. During the whole duration of the events <attack>.
+avgAngleInPossDefGoal3_std:	 Standard Deviation of <avgAngleInPossDefGoal3> (Average angle between player with ball, defender and goal for the three closest defenders.). For <playerRows>. During the whole duration of the events <attack>.
+avgAngleInPossDefGoal3_min:	 Minimum of <avgAngleInPossDefGoal3> (Average angle between player with ball, defender and goal for the three closest defenders.). For <playerRows>. During the whole duration of the events <attack>.
+avgAngleInPossDefGoal3_minGreaterThanZero:	 Minimum of <avgAngleInPossDefGoal3> (Average angle between player with ball, defender and goal for the three closest defenders.) with only values greater than zero. For <playerRows>. During the whole duration of the events <attack>.
+avgAngleInPossDefGoal3_max:	 Maximum of <avgAngleInPossDefGoal3> (Average angle between player with ball, defender and goal for the three closest defenders.). For <playerRows>. During the whole duration of the events <attack>.
+avgAngleInPossDefGoal3_avg_perTimePerPlayer_ref_avg:	 Average of <avgAngleInPossDefGoal3_avg_perTimePerPlayer_ref> (Average angle between player with ball, defender and goal for the three closest defenders.). For <refTeam>. During the whole duration of the events <attack>.
+avgAngleInPossDefGoal3_avg_perTimePerPlayer_ref_avgGreaterThanZero:	 Average of <avgAngleInPossDefGoal3_avg_perTimePerPlayer_ref> (Average angle between player with ball, defender and goal for the three closest defenders.) with only values greater than zero. For <refTeam>. During the whole duration of the events <attack>.
+avgAngleInPossDefGoal3_avg_perTimePerPlayer_ref_std:	 Standard Deviation of <avgAngleInPossDefGoal3_avg_perTimePerPlayer_ref> (Average angle between player with ball, defender and goal for the three closest defenders.). For <refTeam>. During the whole duration of the events <attack>.
+avgAngleInPossDefGoal3_avg_perTimePerPlayer_ref_min:	 Minimum of <avgAngleInPossDefGoal3_avg_perTimePerPlayer_ref> (Average angle between player with ball, defender and goal for the three closest defenders.). For <refTeam>. During the whole duration of the events <attack>.
+avgAngleInPossDefGoal3_avg_perTimePerPlayer_ref_minGreaterThanZero:	 Minimum of <avgAngleInPossDefGoal3_avg_perTimePerPlayer_ref> (Average angle between player with ball, defender and goal for the three closest defenders.) with only values greater than zero. For <refTeam>. During the whole duration of the events <attack>.
+avgAngleInPossDefGoal3_avg_perTimePerPlayer_ref_max:	 Maximum of <avgAngleInPossDefGoal3_avg_perTimePerPlayer_ref> (Average angle between player with ball, defender and goal for the three closest defenders.). For <refTeam>. During the whole duration of the events <attack>.
+Link_Density_avg:		 Average of <Link_Density> (Density for player with ball.). For <playerRows>. During the whole duration of the events <attack>.
+Link_Density_avgGreaterThanZero:	 Average of <Link_Density> (Density for player with ball.) with only values greater than zero. For <playerRows>. During the whole duration of the events <attack>.
+Link_Density_std:		 Standard Deviation of <Link_Density> (Density for player with ball.). For <playerRows>. During the whole duration of the events <attack>.
+Link_Density_min:		 Minimum of <Link_Density> (Density for player with ball.). For <playerRows>. During the whole duration of the events <attack>.
+Link_Density_minGreaterThanZero:	 Minimum of <Link_Density> (Density for player with ball.) with only values greater than zero. For <playerRows>. During the whole duration of the events <attack>.
+Link_Density_max:		 Maximum of <Link_Density> (Density for player with ball.). For <playerRows>. During the whole duration of the events <attack>.
+Link_Density_avg_perTimePerPlayer_ref_avg:	 Average of <Link_Density_avg_perTimePerPlayer_ref> (Density for player with ball.). For <refTeam>. During the whole duration of the events <attack>.
+Link_Density_avg_perTimePerPlayer_ref_avgGreaterThanZero:	 Average of <Link_Density_avg_perTimePerPlayer_ref> (Density for player with ball.) with only values greater than zero. For <refTeam>. During the whole duration of the events <attack>.
+Link_Density_avg_perTimePerPlayer_ref_std:	 Standard Deviation of <Link_Density_avg_perTimePerPlayer_ref> (Density for player with ball.). For <refTeam>. During the whole duration of the events <attack>.
+Link_Density_avg_perTimePerPlayer_ref_min:	 Minimum of <Link_Density_avg_perTimePerPlayer_ref> (Density for player with ball.). For <refTeam>. During the whole duration of the events <attack>.
+Link_Density_avg_perTimePerPlayer_ref_minGreaterThanZero:	 Minimum of <Link_Density_avg_perTimePerPlayer_ref> (Density for player with ball.) with only values greater than zero. For <refTeam>. During the whole duration of the events <attack>.
+Link_Density_avg_perTimePerPlayer_ref_max:	 Maximum of <Link_Density_avg_perTimePerPlayer_ref> (Density for player with ball.). For <refTeam>. During the whole duration of the events <attack>.
+Link_Density_01_avg:		 Average of <Link_Density_01> (Density for player with ball.). For <1th player>. During the whole duration of the events <attack>.
+Link_Density_01_avgGreaterThanZero:	 Average of <Link_Density_01> (Density for player with ball.) with only values greater than zero. For <1th player>. During the whole duration of the events <attack>.
+Link_Density_01_std:		 Standard Deviation of <Link_Density_01> (Density for player with ball.). For <1th player>. During the whole duration of the events <attack>.
+Link_Density_01_min:		 Minimum of <Link_Density_01> (Density for player with ball.). For <1th player>. During the whole duration of the events <attack>.
+Link_Density_01_minGreaterThanZero:	 Minimum of <Link_Density_01> (Density for player with ball.) with only values greater than zero. For <1th player>. During the whole duration of the events <attack>.
+Link_Density_01_max:		 Maximum of <Link_Density_01> (Density for player with ball.). For <1th player>. During the whole duration of the events <attack>.
+Link_Density_02_avg:		 Average of <Link_Density_02> (Density for player with ball.). For <2th player>. During the whole duration of the events <attack>.
+Link_Density_02_avgGreaterThanZero:	 Average of <Link_Density_02> (Density for player with ball.) with only values greater than zero. For <2th player>. During the whole duration of the events <attack>.
+Link_Density_02_std:		 Standard Deviation of <Link_Density_02> (Density for player with ball.). For <2th player>. During the whole duration of the events <attack>.
+Link_Density_02_min:		 Minimum of <Link_Density_02> (Density for player with ball.). For <2th player>. During the whole duration of the events <attack>.
+Link_Density_02_minGreaterThanZero:	 Minimum of <Link_Density_02> (Density for player with ball.) with only values greater than zero. For <2th player>. During the whole duration of the events <attack>.
+Link_Density_02_max:		 Maximum of <Link_Density_02> (Density for player with ball.). For <2th player>. During the whole duration of the events <attack>.
+Link_Density_03_avg:		 Average of <Link_Density_03> (Density for player with ball.). For <3th player>. During the whole duration of the events <attack>.
+Link_Density_03_avgGreaterThanZero:	 Average of <Link_Density_03> (Density for player with ball.) with only values greater than zero. For <3th player>. During the whole duration of the events <attack>.
+Link_Density_03_std:		 Standard Deviation of <Link_Density_03> (Density for player with ball.). For <3th player>. During the whole duration of the events <attack>.
+Link_Density_03_min:		 Minimum of <Link_Density_03> (Density for player with ball.). For <3th player>. During the whole duration of the events <attack>.
+Link_Density_03_minGreaterThanZero:	 Minimum of <Link_Density_03> (Density for player with ball.) with only values greater than zero. For <3th player>. During the whole duration of the events <attack>.
+Link_Density_03_max:		 Maximum of <Link_Density_03> (Density for player with ball.). For <3th player>. During the whole duration of the events <attack>.
+Link_Density_04_avg:		 Average of <Link_Density_04> (Density for player with ball.). For <4th player>. During the whole duration of the events <attack>.
+Link_Density_04_avgGreaterThanZero:	 Average of <Link_Density_04> (Density for player with ball.) with only values greater than zero. For <4th player>. During the whole duration of the events <attack>.
+Link_Density_04_std:		 Standard Deviation of <Link_Density_04> (Density for player with ball.). For <4th player>. During the whole duration of the events <attack>.
+Link_Density_04_min:		 Minimum of <Link_Density_04> (Density for player with ball.). For <4th player>. During the whole duration of the events <attack>.
+Link_Density_04_minGreaterThanZero:	 Minimum of <Link_Density_04> (Density for player with ball.) with only values greater than zero. For <4th player>. During the whole duration of the events <attack>.
+Link_Density_04_max:		 Maximum of <Link_Density_04> (Density for player with ball.). For <4th player>. During the whole duration of the events <attack>.
+Link_Density_05_avg:		 Average of <Link_Density_05> (Density for player with ball.). For <5th player>. During the whole duration of the events <attack>.
+Link_Density_05_avgGreaterThanZero:	 Average of <Link_Density_05> (Density for player with ball.) with only values greater than zero. For <5th player>. During the whole duration of the events <attack>.
+Link_Density_05_std:		 Standard Deviation of <Link_Density_05> (Density for player with ball.). For <5th player>. During the whole duration of the events <attack>.
+Link_Density_05_min:		 Minimum of <Link_Density_05> (Density for player with ball.). For <5th player>. During the whole duration of the events <attack>.
+Link_Density_05_minGreaterThanZero:	 Minimum of <Link_Density_05> (Density for player with ball.) with only values greater than zero. For <5th player>. During the whole duration of the events <attack>.
+Link_Density_05_max:		 Maximum of <Link_Density_05> (Density for player with ball.). For <5th player>. During the whole duration of the events <attack>.
+Link_Density_06_avg:		 Average of <Link_Density_06> (Density for player with ball.). For <6th player>. During the whole duration of the events <attack>.
+Link_Density_06_avgGreaterThanZero:	 Average of <Link_Density_06> (Density for player with ball.) with only values greater than zero. For <6th player>. During the whole duration of the events <attack>.
+Link_Density_06_std:		 Standard Deviation of <Link_Density_06> (Density for player with ball.). For <6th player>. During the whole duration of the events <attack>.
+Link_Density_06_min:		 Minimum of <Link_Density_06> (Density for player with ball.). For <6th player>. During the whole duration of the events <attack>.
+Link_Density_06_minGreaterThanZero:	 Minimum of <Link_Density_06> (Density for player with ball.) with only values greater than zero. For <6th player>. During the whole duration of the events <attack>.
+Link_Density_06_max:		 Maximum of <Link_Density_06> (Density for player with ball.). For <6th player>. During the whole duration of the events <attack>.
+Link_Density_07_avg:		 Average of <Link_Density_07> (Density for player with ball.). For <7th player>. During the whole duration of the events <attack>.
+Link_Density_07_avgGreaterThanZero:	 Average of <Link_Density_07> (Density for player with ball.) with only values greater than zero. For <7th player>. During the whole duration of the events <attack>.
+Link_Density_07_std:		 Standard Deviation of <Link_Density_07> (Density for player with ball.). For <7th player>. During the whole duration of the events <attack>.
+Link_Density_07_min:		 Minimum of <Link_Density_07> (Density for player with ball.). For <7th player>. During the whole duration of the events <attack>.
+Link_Density_07_minGreaterThanZero:	 Minimum of <Link_Density_07> (Density for player with ball.) with only values greater than zero. For <7th player>. During the whole duration of the events <attack>.
+Link_Density_07_max:		 Maximum of <Link_Density_07> (Density for player with ball.). For <7th player>. During the whole duration of the events <attack>.
+Link_Density_08_avg:		 Average of <Link_Density_08> (Density for player with ball.). For <8th player>. During the whole duration of the events <attack>.
+Link_Density_08_avgGreaterThanZero:	 Average of <Link_Density_08> (Density for player with ball.) with only values greater than zero. For <8th player>. During the whole duration of the events <attack>.
+Link_Density_08_std:		 Standard Deviation of <Link_Density_08> (Density for player with ball.). For <8th player>. During the whole duration of the events <attack>.
+Link_Density_08_min:		 Minimum of <Link_Density_08> (Density for player with ball.). For <8th player>. During the whole duration of the events <attack>.
+Link_Density_08_minGreaterThanZero:	 Minimum of <Link_Density_08> (Density for player with ball.) with only values greater than zero. For <8th player>. During the whole duration of the events <attack>.
+Link_Density_08_max:		 Maximum of <Link_Density_08> (Density for player with ball.). For <8th player>. During the whole duration of the events <attack>.
+Link_Density_09_avg:		 Average of <Link_Density_09> (Density for player with ball.). For <9th player>. During the whole duration of the events <attack>.
+Link_Density_09_avgGreaterThanZero:	 Average of <Link_Density_09> (Density for player with ball.) with only values greater than zero. For <9th player>. During the whole duration of the events <attack>.
+Link_Density_09_std:		 Standard Deviation of <Link_Density_09> (Density for player with ball.). For <9th player>. During the whole duration of the events <attack>.
+Link_Density_09_min:		 Minimum of <Link_Density_09> (Density for player with ball.). For <9th player>. During the whole duration of the events <attack>.
+Link_Density_09_minGreaterThanZero:	 Minimum of <Link_Density_09> (Density for player with ball.) with only values greater than zero. For <9th player>. During the whole duration of the events <attack>.
+Link_Density_09_max:		 Maximum of <Link_Density_09> (Density for player with ball.). For <9th player>. During the whole duration of the events <attack>.
+Link_Density_10_avg:		 Average of <Link_Density_10> (Density for player with ball.). For <10th player>. During the whole duration of the events <attack>.
+Link_Density_10_avgGreaterThanZero:	 Average of <Link_Density_10> (Density for player with ball.) with only values greater than zero. For <10th player>. During the whole duration of the events <attack>.
+Link_Density_10_std:		 Standard Deviation of <Link_Density_10> (Density for player with ball.). For <10th player>. During the whole duration of the events <attack>.
+Link_Density_10_min:		 Minimum of <Link_Density_10> (Density for player with ball.). For <10th player>. During the whole duration of the events <attack>.
+Link_Density_10_minGreaterThanZero:	 Minimum of <Link_Density_10> (Density for player with ball.) with only values greater than zero. For <10th player>. During the whole duration of the events <attack>.
+Link_Density_10_max:		 Maximum of <Link_Density_10> (Density for player with ball.). For <10th player>. During the whole duration of the events <attack>.
+Link_Density_11_avg:		 Average of <Link_Density_11> (Density for player with ball.). For <11th player>. During the whole duration of the events <attack>.
+Link_Density_11_avgGreaterThanZero:	 Average of <Link_Density_11> (Density for player with ball.) with only values greater than zero. For <11th player>. During the whole duration of the events <attack>.
+Link_Density_11_std:		 Standard Deviation of <Link_Density_11> (Density for player with ball.). For <11th player>. During the whole duration of the events <attack>.
+Link_Density_11_min:		 Minimum of <Link_Density_11> (Density for player with ball.). For <11th player>. During the whole duration of the events <attack>.
+Link_Density_11_minGreaterThanZero:	 Minimum of <Link_Density_11> (Density for player with ball.) with only values greater than zero. For <11th player>. During the whole duration of the events <attack>.
+Link_Density_11_max:		 Maximum of <Link_Density_11> (Density for player with ball.). For <11th player>. During the whole duration of the events <attack>.
+Link_Density_12_avg:		 Average of <Link_Density_12> (Density for player with ball.). For <12th player>. During the whole duration of the events <attack>.
+Link_Density_12_avgGreaterThanZero:	 Average of <Link_Density_12> (Density for player with ball.) with only values greater than zero. For <12th player>. During the whole duration of the events <attack>.
+Link_Density_12_std:		 Standard Deviation of <Link_Density_12> (Density for player with ball.). For <12th player>. During the whole duration of the events <attack>.
+Link_Density_12_min:		 Minimum of <Link_Density_12> (Density for player with ball.). For <12th player>. During the whole duration of the events <attack>.
+Link_Density_12_minGreaterThanZero:	 Minimum of <Link_Density_12> (Density for player with ball.) with only values greater than zero. For <12th player>. During the whole duration of the events <attack>.
+Link_Density_12_max:		 Maximum of <Link_Density_12> (Density for player with ball.). For <12th player>. During the whole duration of the events <attack>.
+Link_Density_13_avg:		 Average of <Link_Density_13> (Density for player with ball.). For <13th player>. During the whole duration of the events <attack>.
+Link_Density_13_avgGreaterThanZero:	 Average of <Link_Density_13> (Density for player with ball.) with only values greater than zero. For <13th player>. During the whole duration of the events <attack>.
+Link_Density_13_std:		 Standard Deviation of <Link_Density_13> (Density for player with ball.). For <13th player>. During the whole duration of the events <attack>.
+Link_Density_13_min:		 Minimum of <Link_Density_13> (Density for player with ball.). For <13th player>. During the whole duration of the events <attack>.
+Link_Density_13_minGreaterThanZero:	 Minimum of <Link_Density_13> (Density for player with ball.) with only values greater than zero. For <13th player>. During the whole duration of the events <attack>.
+Link_Density_13_max:		 Maximum of <Link_Density_13> (Density for player with ball.). For <13th player>. During the whole duration of the events <attack>.
+Link_Density_14_avg:		 Average of <Link_Density_14> (Density for player with ball.). For <14th player>. During the whole duration of the events <attack>.
+Link_Density_14_avgGreaterThanZero:	 Average of <Link_Density_14> (Density for player with ball.) with only values greater than zero. For <14th player>. During the whole duration of the events <attack>.
+Link_Density_14_std:		 Standard Deviation of <Link_Density_14> (Density for player with ball.). For <14th player>. During the whole duration of the events <attack>.
+Link_Density_14_min:		 Minimum of <Link_Density_14> (Density for player with ball.). For <14th player>. During the whole duration of the events <attack>.
+Link_Density_14_minGreaterThanZero:	 Minimum of <Link_Density_14> (Density for player with ball.) with only values greater than zero. For <14th player>. During the whole duration of the events <attack>.
+Link_Density_14_max:		 Maximum of <Link_Density_14> (Density for player with ball.). For <14th player>. During the whole duration of the events <attack>.
+Link_Density_15_avg:		 Average of <Link_Density_15> (Density for player with ball.). For <15th player>. During the whole duration of the events <attack>.
+Link_Density_15_avgGreaterThanZero:	 Average of <Link_Density_15> (Density for player with ball.) with only values greater than zero. For <15th player>. During the whole duration of the events <attack>.
+Link_Density_15_std:		 Standard Deviation of <Link_Density_15> (Density for player with ball.). For <15th player>. During the whole duration of the events <attack>.
+Link_Density_15_min:		 Minimum of <Link_Density_15> (Density for player with ball.). For <15th player>. During the whole duration of the events <attack>.
+Link_Density_15_minGreaterThanZero:	 Minimum of <Link_Density_15> (Density for player with ball.) with only values greater than zero. For <15th player>. During the whole duration of the events <attack>.
+Link_Density_15_max:		 Maximum of <Link_Density_15> (Density for player with ball.). For <15th player>. During the whole duration of the events <attack>.
+Link_Density_16_avg:		 Average of <Link_Density_16> (Density for player with ball.). For <16th player>. During the whole duration of the events <attack>.
+Link_Density_16_avgGreaterThanZero:	 Average of <Link_Density_16> (Density for player with ball.) with only values greater than zero. For <16th player>. During the whole duration of the events <attack>.
+Link_Density_16_std:		 Standard Deviation of <Link_Density_16> (Density for player with ball.). For <16th player>. During the whole duration of the events <attack>.
+Link_Density_16_min:		 Minimum of <Link_Density_16> (Density for player with ball.). For <16th player>. During the whole duration of the events <attack>.
+Link_Density_16_minGreaterThanZero:	 Minimum of <Link_Density_16> (Density for player with ball.) with only values greater than zero. For <16th player>. During the whole duration of the events <attack>.
+Link_Density_16_max:		 Maximum of <Link_Density_16> (Density for player with ball.). For <16th player>. During the whole duration of the events <attack>.
+Link_Density_17_avg:		 Average of <Link_Density_17> (Density for player with ball.). For <17th player>. During the whole duration of the events <attack>.
+Link_Density_17_avgGreaterThanZero:	 Average of <Link_Density_17> (Density for player with ball.) with only values greater than zero. For <17th player>. During the whole duration of the events <attack>.
+Link_Density_17_std:		 Standard Deviation of <Link_Density_17> (Density for player with ball.). For <17th player>. During the whole duration of the events <attack>.
+Link_Density_17_min:		 Minimum of <Link_Density_17> (Density for player with ball.). For <17th player>. During the whole duration of the events <attack>.
+Link_Density_17_minGreaterThanZero:	 Minimum of <Link_Density_17> (Density for player with ball.) with only values greater than zero. For <17th player>. During the whole duration of the events <attack>.
+Link_Density_17_max:		 Maximum of <Link_Density_17> (Density for player with ball.). For <17th player>. During the whole duration of the events <attack>.
+Link_Density_18_avg:		 Average of <Link_Density_18> (Density for player with ball.). For <18th player>. During the whole duration of the events <attack>.
+Link_Density_18_avgGreaterThanZero:	 Average of <Link_Density_18> (Density for player with ball.) with only values greater than zero. For <18th player>. During the whole duration of the events <attack>.
+Link_Density_18_std:		 Standard Deviation of <Link_Density_18> (Density for player with ball.). For <18th player>. During the whole duration of the events <attack>.
+Link_Density_18_min:		 Minimum of <Link_Density_18> (Density for player with ball.). For <18th player>. During the whole duration of the events <attack>.
+Link_Density_18_minGreaterThanZero:	 Minimum of <Link_Density_18> (Density for player with ball.) with only values greater than zero. For <18th player>. During the whole duration of the events <attack>.
+Link_Density_18_max:		 Maximum of <Link_Density_18> (Density for player with ball.). For <18th player>. During the whole duration of the events <attack>.
+Link_Density_19_avg:		 Average of <Link_Density_19> (Density for player with ball.). For <19th player>. During the whole duration of the events <attack>.
+Link_Density_19_avgGreaterThanZero:	 Average of <Link_Density_19> (Density for player with ball.) with only values greater than zero. For <19th player>. During the whole duration of the events <attack>.
+Link_Density_19_std:		 Standard Deviation of <Link_Density_19> (Density for player with ball.). For <19th player>. During the whole duration of the events <attack>.
+Link_Density_19_min:		 Minimum of <Link_Density_19> (Density for player with ball.). For <19th player>. During the whole duration of the events <attack>.
+Link_Density_19_minGreaterThanZero:	 Minimum of <Link_Density_19> (Density for player with ball.) with only values greater than zero. For <19th player>. During the whole duration of the events <attack>.
+Link_Density_19_max:		 Maximum of <Link_Density_19> (Density for player with ball.). For <19th player>. During the whole duration of the events <attack>.
+Link_Density_20_avg:		 Average of <Link_Density_20> (Density for player with ball.). For <20th player>. During the whole duration of the events <attack>.
+Link_Density_20_avgGreaterThanZero:	 Average of <Link_Density_20> (Density for player with ball.) with only values greater than zero. For <20th player>. During the whole duration of the events <attack>.
+Link_Density_20_std:		 Standard Deviation of <Link_Density_20> (Density for player with ball.). For <20th player>. During the whole duration of the events <attack>.
+Link_Density_20_min:		 Minimum of <Link_Density_20> (Density for player with ball.). For <20th player>. During the whole duration of the events <attack>.
+Link_Density_20_minGreaterThanZero:	 Minimum of <Link_Density_20> (Density for player with ball.) with only values greater than zero. For <20th player>. During the whole duration of the events <attack>.
+Link_Density_20_max:		 Maximum of <Link_Density_20> (Density for player with ball.). For <20th player>. During the whole duration of the events <attack>.
+Link_Density_21_avg:		 Average of <Link_Density_21> (Density for player with ball.). For <21th player>. During the whole duration of the events <attack>.
+Link_Density_21_avgGreaterThanZero:	 Average of <Link_Density_21> (Density for player with ball.) with only values greater than zero. For <21th player>. During the whole duration of the events <attack>.
+Link_Density_21_std:		 Standard Deviation of <Link_Density_21> (Density for player with ball.). For <21th player>. During the whole duration of the events <attack>.
+Link_Density_21_min:		 Minimum of <Link_Density_21> (Density for player with ball.). For <21th player>. During the whole duration of the events <attack>.
+Link_Density_21_minGreaterThanZero:	 Minimum of <Link_Density_21> (Density for player with ball.) with only values greater than zero. For <21th player>. During the whole duration of the events <attack>.
+Link_Density_21_max:		 Maximum of <Link_Density_21> (Density for player with ball.). For <21th player>. During the whole duration of the events <attack>.
+Link_Density_22_avg:		 Average of <Link_Density_22> (Density for player with ball.). For <22th player>. During the whole duration of the events <attack>.
+Link_Density_22_avgGreaterThanZero:	 Average of <Link_Density_22> (Density for player with ball.) with only values greater than zero. For <22th player>. During the whole duration of the events <attack>.
+Link_Density_22_std:		 Standard Deviation of <Link_Density_22> (Density for player with ball.). For <22th player>. During the whole duration of the events <attack>.
+Link_Density_22_min:		 Minimum of <Link_Density_22> (Density for player with ball.). For <22th player>. During the whole duration of the events <attack>.
+Link_Density_22_minGreaterThanZero:	 Minimum of <Link_Density_22> (Density for player with ball.) with only values greater than zero. For <22th player>. During the whole duration of the events <attack>.
+Link_Density_22_max:		 Maximum of <Link_Density_22> (Density for player with ball.). For <22th player>. During the whole duration of the events <attack>.
+Link_SDPlayerWithBall_avg:	 Average of <Link_SDPlayerWithBall> (Shot Density for player with ball.). For <playerRows>. During the whole duration of the events <attack>.
+Link_SDPlayerWithBall_avgGreaterThanZero:	 Average of <Link_SDPlayerWithBall> (Shot Density for player with ball.) with only values greater than zero. For <playerRows>. During the whole duration of the events <attack>.
+Link_SDPlayerWithBall_std:	 Standard Deviation of <Link_SDPlayerWithBall> (Shot Density for player with ball.). For <playerRows>. During the whole duration of the events <attack>.
+Link_SDPlayerWithBall_min:	 Minimum of <Link_SDPlayerWithBall> (Shot Density for player with ball.). For <playerRows>. During the whole duration of the events <attack>.
+Link_SDPlayerWithBall_minGreaterThanZero:	 Minimum of <Link_SDPlayerWithBall> (Shot Density for player with ball.) with only values greater than zero. For <playerRows>. During the whole duration of the events <attack>.
+Link_SDPlayerWithBall_max:	 Maximum of <Link_SDPlayerWithBall> (Shot Density for player with ball.). For <playerRows>. During the whole duration of the events <attack>.
+Link_SDPlayerWithBall_avg_perTimePerPlayer_ref_avg:	 Average of <Link_SDPlayerWithBall_avg_perTimePerPlayer_ref> (Shot Density for player with ball.). For <refTeam>. During the whole duration of the events <attack>.
+Link_SDPlayerWithBall_avg_perTimePerPlayer_ref_avgGreaterThanZero:	 Average of <Link_SDPlayerWithBall_avg_perTimePerPlayer_ref> (Shot Density for player with ball.) with only values greater than zero. For <refTeam>. During the whole duration of the events <attack>.
+Link_SDPlayerWithBall_avg_perTimePerPlayer_ref_std:	 Standard Deviation of <Link_SDPlayerWithBall_avg_perTimePerPlayer_ref> (Shot Density for player with ball.). For <refTeam>. During the whole duration of the events <attack>.
+Link_SDPlayerWithBall_avg_perTimePerPlayer_ref_min:	 Minimum of <Link_SDPlayerWithBall_avg_perTimePerPlayer_ref> (Shot Density for player with ball.). For <refTeam>. During the whole duration of the events <attack>.
+Link_SDPlayerWithBall_avg_perTimePerPlayer_ref_minGreaterThanZero:	 Minimum of <Link_SDPlayerWithBall_avg_perTimePerPlayer_ref> (Shot Density for player with ball.) with only values greater than zero. For <refTeam>. During the whole duration of the events <attack>.
+Link_SDPlayerWithBall_avg_perTimePerPlayer_ref_max:	 Maximum of <Link_SDPlayerWithBall_avg_perTimePerPlayer_ref> (Shot Density for player with ball.). For <refTeam>. During the whole duration of the events <attack>.
+Link_PDPlayerWithBall_avg:	 Average of <Link_PDPlayerWithBall> (Pass Density for player with ball.). For <playerRows>. During the whole duration of the events <attack>.
+Link_PDPlayerWithBall_avgGreaterThanZero:	 Average of <Link_PDPlayerWithBall> (Pass Density for player with ball.) with only values greater than zero. For <playerRows>. During the whole duration of the events <attack>.
+Link_PDPlayerWithBall_std:	 Standard Deviation of <Link_PDPlayerWithBall> (Pass Density for player with ball.). For <playerRows>. During the whole duration of the events <attack>.
+Link_PDPlayerWithBall_min:	 Minimum of <Link_PDPlayerWithBall> (Pass Density for player with ball.). For <playerRows>. During the whole duration of the events <attack>.
+Link_PDPlayerWithBall_minGreaterThanZero:	 Minimum of <Link_PDPlayerWithBall> (Pass Density for player with ball.) with only values greater than zero. For <playerRows>. During the whole duration of the events <attack>.
+Link_PDPlayerWithBall_max:	 Maximum of <Link_PDPlayerWithBall> (Pass Density for player with ball.). For <playerRows>. During the whole duration of the events <attack>.
+Link_PDPlayerWithBall_avg_perTimePerPlayer_ref_avg:	 Average of <Link_PDPlayerWithBall_avg_perTimePerPlayer_ref> (Pass Density for player with ball.). For <refTeam>. During the whole duration of the events <attack>.
+Link_PDPlayerWithBall_avg_perTimePerPlayer_ref_avgGreaterThanZero:	 Average of <Link_PDPlayerWithBall_avg_perTimePerPlayer_ref> (Pass Density for player with ball.) with only values greater than zero. For <refTeam>. During the whole duration of the events <attack>.
+Link_PDPlayerWithBall_avg_perTimePerPlayer_ref_std:	 Standard Deviation of <Link_PDPlayerWithBall_avg_perTimePerPlayer_ref> (Pass Density for player with ball.). For <refTeam>. During the whole duration of the events <attack>.
+Link_PDPlayerWithBall_avg_perTimePerPlayer_ref_min:	 Minimum of <Link_PDPlayerWithBall_avg_perTimePerPlayer_ref> (Pass Density for player with ball.). For <refTeam>. During the whole duration of the events <attack>.
+Link_PDPlayerWithBall_avg_perTimePerPlayer_ref_minGreaterThanZero:	 Minimum of <Link_PDPlayerWithBall_avg_perTimePerPlayer_ref> (Pass Density for player with ball.) with only values greater than zero. For <refTeam>. During the whole duration of the events <attack>.
+Link_PDPlayerWithBall_avg_perTimePerPlayer_ref_max:	 Maximum of <Link_PDPlayerWithBall_avg_perTimePerPlayer_ref> (Pass Density for player with ball.). For <refTeam>. During the whole duration of the events <attack>.
+angleToGoal_avg:		 Average of <angleToGoal> (Angle to goal for player with ball.). For <playerRows>. During the whole duration of the events <attack>.
+angleToGoal_avgGreaterThanZero:	 Average of <angleToGoal> (Angle to goal for player with ball.) with only values greater than zero. For <playerRows>. During the whole duration of the events <attack>.
+angleToGoal_std:		 Standard Deviation of <angleToGoal> (Angle to goal for player with ball.). For <playerRows>. During the whole duration of the events <attack>.
+angleToGoal_min:		 Minimum of <angleToGoal> (Angle to goal for player with ball.). For <playerRows>. During the whole duration of the events <attack>.
+angleToGoal_minGreaterThanZero:	 Minimum of <angleToGoal> (Angle to goal for player with ball.) with only values greater than zero. For <playerRows>. During the whole duration of the events <attack>.
+angleToGoal_max:		 Maximum of <angleToGoal> (Angle to goal for player with ball.). For <playerRows>. During the whole duration of the events <attack>.
+angleToGoal_avg_perTimePerPlayer_ref_avg:	 Average of <angleToGoal_avg_perTimePerPlayer_ref> (Angle to goal for player with ball.). For <refTeam>. During the whole duration of the events <attack>.
+angleToGoal_avg_perTimePerPlayer_ref_avgGreaterThanZero:	 Average of <angleToGoal_avg_perTimePerPlayer_ref> (Angle to goal for player with ball.) with only values greater than zero. For <refTeam>. During the whole duration of the events <attack>.
+angleToGoal_avg_perTimePerPlayer_ref_std:	 Standard Deviation of <angleToGoal_avg_perTimePerPlayer_ref> (Angle to goal for player with ball.). For <refTeam>. During the whole duration of the events <attack>.
+angleToGoal_avg_perTimePerPlayer_ref_min:	 Minimum of <angleToGoal_avg_perTimePerPlayer_ref> (Angle to goal for player with ball.). For <refTeam>. During the whole duration of the events <attack>.
+angleToGoal_avg_perTimePerPlayer_ref_minGreaterThanZero:	 Minimum of <angleToGoal_avg_perTimePerPlayer_ref> (Angle to goal for player with ball.) with only values greater than zero. For <refTeam>. During the whole duration of the events <attack>.
+angleToGoal_avg_perTimePerPlayer_ref_max:	 Maximum of <angleToGoal_avg_perTimePerPlayer_ref> (Angle to goal for player with ball.). For <refTeam>. During the whole duration of the events <attack>.
+majority_avg:			 Average of <majority> (Difference between the number of defenders and attackers within the Interception Zone.). For <playerRows>. During the whole duration of the events <attack>.
+majority_avgGreaterThanZero:	 Average of <majority> (Difference between the number of defenders and attackers within the Interception Zone.) with only values greater than zero. For <playerRows>. During the whole duration of the events <attack>.
+majority_std:			 Standard Deviation of <majority> (Difference between the number of defenders and attackers within the Interception Zone.). For <playerRows>. During the whole duration of the events <attack>.
+majority_min:			 Minimum of <majority> (Difference between the number of defenders and attackers within the Interception Zone.). For <playerRows>. During the whole duration of the events <attack>.
+majority_minGreaterThanZero:	 Minimum of <majority> (Difference between the number of defenders and attackers within the Interception Zone.) with only values greater than zero. For <playerRows>. During the whole duration of the events <attack>.
+majority_max:			 Maximum of <majority> (Difference between the number of defenders and attackers within the Interception Zone.). For <playerRows>. During the whole duration of the events <attack>.
+majority_avg_perTimePerPlayer_ref_avg:	 Average of <majority_avg_perTimePerPlayer_ref> (Difference between the number of defenders and attackers within the Interception Zone.). For <refTeam>. During the whole duration of the events <attack>.
+majority_avg_perTimePerPlayer_ref_avgGreaterThanZero:	 Average of <majority_avg_perTimePerPlayer_ref> (Difference between the number of defenders and attackers within the Interception Zone.) with only values greater than zero. For <refTeam>. During the whole duration of the events <attack>.
+majority_avg_perTimePerPlayer_ref_std:	 Standard Deviation of <majority_avg_perTimePerPlayer_ref> (Difference between the number of defenders and attackers within the Interception Zone.). For <refTeam>. During the whole duration of the events <attack>.
+majority_avg_perTimePerPlayer_ref_min:	 Minimum of <majority_avg_perTimePerPlayer_ref> (Difference between the number of defenders and attackers within the Interception Zone.). For <refTeam>. During the whole duration of the events <attack>.
+majority_avg_perTimePerPlayer_ref_minGreaterThanZero:	 Minimum of <majority_avg_perTimePerPlayer_ref> (Difference between the number of defenders and attackers within the Interception Zone.) with only values greater than zero. For <refTeam>. During the whole duration of the events <attack>.
+majority_avg_perTimePerPlayer_ref_max:	 Maximum of <majority_avg_perTimePerPlayer_ref> (Difference between the number of defenders and attackers within the Interception Zone.). For <refTeam>. During the whole duration of the events <attack>.
+centrality_avg:			 Average of <centrality> (Centrality for the player with ball.). For <playerRows>. During the whole duration of the events <attack>.
+centrality_avgGreaterThanZero:	 Average of <centrality> (Centrality for the player with ball.) with only values greater than zero. For <playerRows>. During the whole duration of the events <attack>.
+centrality_std:			 Standard Deviation of <centrality> (Centrality for the player with ball.). For <playerRows>. During the whole duration of the events <attack>.
+centrality_min:			 Minimum of <centrality> (Centrality for the player with ball.). For <playerRows>. During the whole duration of the events <attack>.
+centrality_minGreaterThanZero:	 Minimum of <centrality> (Centrality for the player with ball.) with only values greater than zero. For <playerRows>. During the whole duration of the events <attack>.
+centrality_max:			 Maximum of <centrality> (Centrality for the player with ball.). For <playerRows>. During the whole duration of the events <attack>.
+centrality_avg_perTimePerPlayer_ref_avg:	 Average of <centrality_avg_perTimePerPlayer_ref> (Centrality for the player with ball.). For <refTeam>. During the whole duration of the events <attack>.
+centrality_avg_perTimePerPlayer_ref_avgGreaterThanZero:	 Average of <centrality_avg_perTimePerPlayer_ref> (Centrality for the player with ball.) with only values greater than zero. For <refTeam>. During the whole duration of the events <attack>.
+centrality_avg_perTimePerPlayer_ref_std:	 Standard Deviation of <centrality_avg_perTimePerPlayer_ref> (Centrality for the player with ball.). For <refTeam>. During the whole duration of the events <attack>.
+centrality_avg_perTimePerPlayer_ref_min:	 Minimum of <centrality_avg_perTimePerPlayer_ref> (Centrality for the player with ball.). For <refTeam>. During the whole duration of the events <attack>.
+centrality_avg_perTimePerPlayer_ref_minGreaterThanZero:	 Minimum of <centrality_avg_perTimePerPlayer_ref> (Centrality for the player with ball.) with only values greater than zero. For <refTeam>. During the whole duration of the events <attack>.
+centrality_avg_perTimePerPlayer_ref_max:	 Maximum of <centrality_avg_perTimePerPlayer_ref> (Centrality for the player with ball.). For <refTeam>. During the whole duration of the events <attack>.
+distToGoal_avg:			 Average of <distToGoal> (Distance from player with ball to the goal.). For <playerRows>. During the whole duration of the events <attack>.
+distToGoal_avgGreaterThanZero:	 Average of <distToGoal> (Distance from player with ball to the goal.) with only values greater than zero. For <playerRows>. During the whole duration of the events <attack>.
+distToGoal_std:			 Standard Deviation of <distToGoal> (Distance from player with ball to the goal.). For <playerRows>. During the whole duration of the events <attack>.
+distToGoal_min:			 Minimum of <distToGoal> (Distance from player with ball to the goal.). For <playerRows>. During the whole duration of the events <attack>.
+distToGoal_minGreaterThanZero:	 Minimum of <distToGoal> (Distance from player with ball to the goal.) with only values greater than zero. For <playerRows>. During the whole duration of the events <attack>.
+distToGoal_max:			 Maximum of <distToGoal> (Distance from player with ball to the goal.). For <playerRows>. During the whole duration of the events <attack>.
+distToGoal_avg_perTimePerPlayer_ref_avg:	 Average of <distToGoal_avg_perTimePerPlayer_ref> (Distance from player with ball to the goal.). For <refTeam>. During the whole duration of the events <attack>.
+distToGoal_avg_perTimePerPlayer_ref_avgGreaterThanZero:	 Average of <distToGoal_avg_perTimePerPlayer_ref> (Distance from player with ball to the goal.) with only values greater than zero. For <refTeam>. During the whole duration of the events <attack>.
+distToGoal_avg_perTimePerPlayer_ref_std:	 Standard Deviation of <distToGoal_avg_perTimePerPlayer_ref> (Distance from player with ball to the goal.). For <refTeam>. During the whole duration of the events <attack>.
+distToGoal_avg_perTimePerPlayer_ref_min:	 Minimum of <distToGoal_avg_perTimePerPlayer_ref> (Distance from player with ball to the goal.). For <refTeam>. During the whole duration of the events <attack>.
+distToGoal_avg_perTimePerPlayer_ref_minGreaterThanZero:	 Minimum of <distToGoal_avg_perTimePerPlayer_ref> (Distance from player with ball to the goal.) with only values greater than zero. For <refTeam>. During the whole duration of the events <attack>.
+distToGoal_avg_perTimePerPlayer_ref_max:	 Maximum of <distToGoal_avg_perTimePerPlayer_ref> (Distance from player with ball to the goal.). For <refTeam>. During the whole duration of the events <attack>.
+dangerousity_avg:		 Average of <dangerousity> (Dangerousity for player with ball based on Zone, Control, Pressure and Density.). For <playerRows>. During the whole duration of the events <attack>.
+dangerousity_avgGreaterThanZero:	 Average of <dangerousity> (Dangerousity for player with ball based on Zone, Control, Pressure and Density.) with only values greater than zero. For <playerRows>. During the whole duration of the events <attack>.
+dangerousity_std:		 Standard Deviation of <dangerousity> (Dangerousity for player with ball based on Zone, Control, Pressure and Density.). For <playerRows>. During the whole duration of the events <attack>.
+dangerousity_min:		 Minimum of <dangerousity> (Dangerousity for player with ball based on Zone, Control, Pressure and Density.). For <playerRows>. During the whole duration of the events <attack>.
+dangerousity_minGreaterThanZero:	 Minimum of <dangerousity> (Dangerousity for player with ball based on Zone, Control, Pressure and Density.) with only values greater than zero. For <playerRows>. During the whole duration of the events <attack>.
+dangerousity_max:		 Maximum of <dangerousity> (Dangerousity for player with ball based on Zone, Control, Pressure and Density.). For <playerRows>. During the whole duration of the events <attack>.
+dangerousity_avg_perTimePerPlayer_ref_avg:	 Average of <dangerousity_avg_perTimePerPlayer_ref> (Dangerousity for player with ball based on Zone, Control, Pressure and Density.). For <refTeam>. During the whole duration of the events <attack>.
+dangerousity_avg_perTimePerPlayer_ref_avgGreaterThanZero:	 Average of <dangerousity_avg_perTimePerPlayer_ref> (Dangerousity for player with ball based on Zone, Control, Pressure and Density.) with only values greater than zero. For <refTeam>. During the whole duration of the events <attack>.
+dangerousity_avg_perTimePerPlayer_ref_std:	 Standard Deviation of <dangerousity_avg_perTimePerPlayer_ref> (Dangerousity for player with ball based on Zone, Control, Pressure and Density.). For <refTeam>. During the whole duration of the events <attack>.
+dangerousity_avg_perTimePerPlayer_ref_min:	 Minimum of <dangerousity_avg_perTimePerPlayer_ref> (Dangerousity for player with ball based on Zone, Control, Pressure and Density.). For <refTeam>. During the whole duration of the events <attack>.
+dangerousity_avg_perTimePerPlayer_ref_minGreaterThanZero:	 Minimum of <dangerousity_avg_perTimePerPlayer_ref> (Dangerousity for player with ball based on Zone, Control, Pressure and Density.) with only values greater than zero. For <refTeam>. During the whole duration of the events <attack>.
+dangerousity_avg_perTimePerPlayer_ref_max:	 Maximum of <dangerousity_avg_perTimePerPlayer_ref> (Dangerousity for player with ball based on Zone, Control, Pressure and Density.). For <refTeam>. During the whole duration of the events <attack>.
+DA_ZOCOPR_avg:			 Average of <DA_ZOCOPR> (Dangerousity with the missing feature set to 1.). For <playerRows>. During the whole duration of the events <attack>.
+DA_ZOCOPR_avgGreaterThanZero:	 Average of <DA_ZOCOPR> (Dangerousity with the missing feature set to 1.) with only values greater than zero. For <playerRows>. During the whole duration of the events <attack>.
+DA_ZOCOPR_std:			 Standard Deviation of <DA_ZOCOPR> (Dangerousity with the missing feature set to 1.). For <playerRows>. During the whole duration of the events <attack>.
+DA_ZOCOPR_min:			 Minimum of <DA_ZOCOPR> (Dangerousity with the missing feature set to 1.). For <playerRows>. During the whole duration of the events <attack>.
+DA_ZOCOPR_minGreaterThanZero:	 Minimum of <DA_ZOCOPR> (Dangerousity with the missing feature set to 1.) with only values greater than zero. For <playerRows>. During the whole duration of the events <attack>.
+DA_ZOCOPR_max:			 Maximum of <DA_ZOCOPR> (Dangerousity with the missing feature set to 1.). For <playerRows>. During the whole duration of the events <attack>.
+DA_ZOCOPR_avg_perTimePerPlayer_ref_avg:	 Average of <DA_ZOCOPR_avg_perTimePerPlayer_ref> (Dangerousity with the missing feature set to 1.). For <refTeam>. During the whole duration of the events <attack>.
+DA_ZOCOPR_avg_perTimePerPlayer_ref_avgGreaterThanZero:	 Average of <DA_ZOCOPR_avg_perTimePerPlayer_ref> (Dangerousity with the missing feature set to 1.) with only values greater than zero. For <refTeam>. During the whole duration of the events <attack>.
+DA_ZOCOPR_avg_perTimePerPlayer_ref_std:	 Standard Deviation of <DA_ZOCOPR_avg_perTimePerPlayer_ref> (Dangerousity with the missing feature set to 1.). For <refTeam>. During the whole duration of the events <attack>.
+DA_ZOCOPR_avg_perTimePerPlayer_ref_min:	 Minimum of <DA_ZOCOPR_avg_perTimePerPlayer_ref> (Dangerousity with the missing feature set to 1.). For <refTeam>. During the whole duration of the events <attack>.
+DA_ZOCOPR_avg_perTimePerPlayer_ref_minGreaterThanZero:	 Minimum of <DA_ZOCOPR_avg_perTimePerPlayer_ref> (Dangerousity with the missing feature set to 1.) with only values greater than zero. For <refTeam>. During the whole duration of the events <attack>.
+DA_ZOCOPR_avg_perTimePerPlayer_ref_max:	 Maximum of <DA_ZOCOPR_avg_perTimePerPlayer_ref> (Dangerousity with the missing feature set to 1.). For <refTeam>. During the whole duration of the events <attack>.
+DA_ZOCODE_avg:			 Average of <DA_ZOCODE> (Dangerousity with the missing feature set to 1.). For <playerRows>. During the whole duration of the events <attack>.
+DA_ZOCODE_avgGreaterThanZero:	 Average of <DA_ZOCODE> (Dangerousity with the missing feature set to 1.) with only values greater than zero. For <playerRows>. During the whole duration of the events <attack>.
+DA_ZOCODE_std:			 Standard Deviation of <DA_ZOCODE> (Dangerousity with the missing feature set to 1.). For <playerRows>. During the whole duration of the events <attack>.
+DA_ZOCODE_min:			 Minimum of <DA_ZOCODE> (Dangerousity with the missing feature set to 1.). For <playerRows>. During the whole duration of the events <attack>.
+DA_ZOCODE_minGreaterThanZero:	 Minimum of <DA_ZOCODE> (Dangerousity with the missing feature set to 1.) with only values greater than zero. For <playerRows>. During the whole duration of the events <attack>.
+DA_ZOCODE_max:			 Maximum of <DA_ZOCODE> (Dangerousity with the missing feature set to 1.). For <playerRows>. During the whole duration of the events <attack>.
+DA_ZOCODE_avg_perTimePerPlayer_ref_avg:	 Average of <DA_ZOCODE_avg_perTimePerPlayer_ref> (Dangerousity with the missing feature set to 1.). For <refTeam>. During the whole duration of the events <attack>.
+DA_ZOCODE_avg_perTimePerPlayer_ref_avgGreaterThanZero:	 Average of <DA_ZOCODE_avg_perTimePerPlayer_ref> (Dangerousity with the missing feature set to 1.) with only values greater than zero. For <refTeam>. During the whole duration of the events <attack>.
+DA_ZOCODE_avg_perTimePerPlayer_ref_std:	 Standard Deviation of <DA_ZOCODE_avg_perTimePerPlayer_ref> (Dangerousity with the missing feature set to 1.). For <refTeam>. During the whole duration of the events <attack>.
+DA_ZOCODE_avg_perTimePerPlayer_ref_min:	 Minimum of <DA_ZOCODE_avg_perTimePerPlayer_ref> (Dangerousity with the missing feature set to 1.). For <refTeam>. During the whole duration of the events <attack>.
+DA_ZOCODE_avg_perTimePerPlayer_ref_minGreaterThanZero:	 Minimum of <DA_ZOCODE_avg_perTimePerPlayer_ref> (Dangerousity with the missing feature set to 1.) with only values greater than zero. For <refTeam>. During the whole duration of the events <attack>.
+DA_ZOCODE_avg_perTimePerPlayer_ref_max:	 Maximum of <DA_ZOCODE_avg_perTimePerPlayer_ref> (Dangerousity with the missing feature set to 1.). For <refTeam>. During the whole duration of the events <attack>.
+DA_ZOPRDE_avg:			 Average of <DA_ZOPRDE> (Dangerousity with the missing feature set to 1.). For <playerRows>. During the whole duration of the events <attack>.
+DA_ZOPRDE_avgGreaterThanZero:	 Average of <DA_ZOPRDE> (Dangerousity with the missing feature set to 1.) with only values greater than zero. For <playerRows>. During the whole duration of the events <attack>.
+DA_ZOPRDE_std:			 Standard Deviation of <DA_ZOPRDE> (Dangerousity with the missing feature set to 1.). For <playerRows>. During the whole duration of the events <attack>.
+DA_ZOPRDE_min:			 Minimum of <DA_ZOPRDE> (Dangerousity with the missing feature set to 1.). For <playerRows>. During the whole duration of the events <attack>.
+DA_ZOPRDE_minGreaterThanZero:	 Minimum of <DA_ZOPRDE> (Dangerousity with the missing feature set to 1.) with only values greater than zero. For <playerRows>. During the whole duration of the events <attack>.
+DA_ZOPRDE_max:			 Maximum of <DA_ZOPRDE> (Dangerousity with the missing feature set to 1.). For <playerRows>. During the whole duration of the events <attack>.
+DA_ZOPRDE_avg_perTimePerPlayer_ref_avg:	 Average of <DA_ZOPRDE_avg_perTimePerPlayer_ref> (Dangerousity with the missing feature set to 1.). For <refTeam>. During the whole duration of the events <attack>.
+DA_ZOPRDE_avg_perTimePerPlayer_ref_avgGreaterThanZero:	 Average of <DA_ZOPRDE_avg_perTimePerPlayer_ref> (Dangerousity with the missing feature set to 1.) with only values greater than zero. For <refTeam>. During the whole duration of the events <attack>.
+DA_ZOPRDE_avg_perTimePerPlayer_ref_std:	 Standard Deviation of <DA_ZOPRDE_avg_perTimePerPlayer_ref> (Dangerousity with the missing feature set to 1.). For <refTeam>. During the whole duration of the events <attack>.
+DA_ZOPRDE_avg_perTimePerPlayer_ref_min:	 Minimum of <DA_ZOPRDE_avg_perTimePerPlayer_ref> (Dangerousity with the missing feature set to 1.). For <refTeam>. During the whole duration of the events <attack>.
+DA_ZOPRDE_avg_perTimePerPlayer_ref_minGreaterThanZero:	 Minimum of <DA_ZOPRDE_avg_perTimePerPlayer_ref> (Dangerousity with the missing feature set to 1.) with only values greater than zero. For <refTeam>. During the whole duration of the events <attack>.
+DA_ZOPRDE_avg_perTimePerPlayer_ref_max:	 Maximum of <DA_ZOPRDE_avg_perTimePerPlayer_ref> (Dangerousity with the missing feature set to 1.). For <refTeam>. During the whole duration of the events <attack>.
+DA_COPRDE_avg:			 Average of <DA_COPRDE> (Dangerousity with the missing feature set to 1.). For <playerRows>. During the whole duration of the events <attack>.
+DA_COPRDE_avgGreaterThanZero:	 Average of <DA_COPRDE> (Dangerousity with the missing feature set to 1.) with only values greater than zero. For <playerRows>. During the whole duration of the events <attack>.
+DA_COPRDE_std:			 Standard Deviation of <DA_COPRDE> (Dangerousity with the missing feature set to 1.). For <playerRows>. During the whole duration of the events <attack>.
+DA_COPRDE_min:			 Minimum of <DA_COPRDE> (Dangerousity with the missing feature set to 1.). For <playerRows>. During the whole duration of the events <attack>.
+DA_COPRDE_minGreaterThanZero:	 Minimum of <DA_COPRDE> (Dangerousity with the missing feature set to 1.) with only values greater than zero. For <playerRows>. During the whole duration of the events <attack>.
+DA_COPRDE_max:			 Maximum of <DA_COPRDE> (Dangerousity with the missing feature set to 1.). For <playerRows>. During the whole duration of the events <attack>.
+DA_COPRDE_avg_perTimePerPlayer_ref_avg:	 Average of <DA_COPRDE_avg_perTimePerPlayer_ref> (Dangerousity with the missing feature set to 1.). For <refTeam>. During the whole duration of the events <attack>.
+DA_COPRDE_avg_perTimePerPlayer_ref_avgGreaterThanZero:	 Average of <DA_COPRDE_avg_perTimePerPlayer_ref> (Dangerousity with the missing feature set to 1.) with only values greater than zero. For <refTeam>. During the whole duration of the events <attack>.
+DA_COPRDE_avg_perTimePerPlayer_ref_std:	 Standard Deviation of <DA_COPRDE_avg_perTimePerPlayer_ref> (Dangerousity with the missing feature set to 1.). For <refTeam>. During the whole duration of the events <attack>.
+DA_COPRDE_avg_perTimePerPlayer_ref_min:	 Minimum of <DA_COPRDE_avg_perTimePerPlayer_ref> (Dangerousity with the missing feature set to 1.). For <refTeam>. During the whole duration of the events <attack>.
+DA_COPRDE_avg_perTimePerPlayer_ref_minGreaterThanZero:	 Minimum of <DA_COPRDE_avg_perTimePerPlayer_ref> (Dangerousity with the missing feature set to 1.) with only values greater than zero. For <refTeam>. During the whole duration of the events <attack>.
+DA_COPRDE_avg_perTimePerPlayer_ref_max:	 Maximum of <DA_COPRDE_avg_perTimePerPlayer_ref> (Dangerousity with the missing feature set to 1.). For <refTeam>. During the whole duration of the events <attack>.
+DA_ZOCO_avg:			 Average of <DA_ZOCO> (Dangerousity with the missing feature set to 1.). For <playerRows>. During the whole duration of the events <attack>.
+DA_ZOCO_avgGreaterThanZero:	 Average of <DA_ZOCO> (Dangerousity with the missing feature set to 1.) with only values greater than zero. For <playerRows>. During the whole duration of the events <attack>.
+DA_ZOCO_std:			 Standard Deviation of <DA_ZOCO> (Dangerousity with the missing feature set to 1.). For <playerRows>. During the whole duration of the events <attack>.
+DA_ZOCO_min:			 Minimum of <DA_ZOCO> (Dangerousity with the missing feature set to 1.). For <playerRows>. During the whole duration of the events <attack>.
+DA_ZOCO_minGreaterThanZero:	 Minimum of <DA_ZOCO> (Dangerousity with the missing feature set to 1.) with only values greater than zero. For <playerRows>. During the whole duration of the events <attack>.
+DA_ZOCO_max:			 Maximum of <DA_ZOCO> (Dangerousity with the missing feature set to 1.). For <playerRows>. During the whole duration of the events <attack>.
+DA_ZOCO_avg_perTimePerPlayer_ref_avg:	 Average of <DA_ZOCO_avg_perTimePerPlayer_ref> (Dangerousity with the missing feature set to 1.). For <refTeam>. During the whole duration of the events <attack>.
+DA_ZOCO_avg_perTimePerPlayer_ref_avgGreaterThanZero:	 Average of <DA_ZOCO_avg_perTimePerPlayer_ref> (Dangerousity with the missing feature set to 1.) with only values greater than zero. For <refTeam>. During the whole duration of the events <attack>.
+DA_ZOCO_avg_perTimePerPlayer_ref_std:	 Standard Deviation of <DA_ZOCO_avg_perTimePerPlayer_ref> (Dangerousity with the missing feature set to 1.). For <refTeam>. During the whole duration of the events <attack>.
+DA_ZOCO_avg_perTimePerPlayer_ref_min:	 Minimum of <DA_ZOCO_avg_perTimePerPlayer_ref> (Dangerousity with the missing feature set to 1.). For <refTeam>. During the whole duration of the events <attack>.
+DA_ZOCO_avg_perTimePerPlayer_ref_minGreaterThanZero:	 Minimum of <DA_ZOCO_avg_perTimePerPlayer_ref> (Dangerousity with the missing feature set to 1.) with only values greater than zero. For <refTeam>. During the whole duration of the events <attack>.
+DA_ZOCO_avg_perTimePerPlayer_ref_max:	 Maximum of <DA_ZOCO_avg_perTimePerPlayer_ref> (Dangerousity with the missing feature set to 1.). For <refTeam>. During the whole duration of the events <attack>.
+DA_ZOPR_avg:			 Average of <DA_ZOPR> (Dangerousity with the missing feature set to 1.). For <playerRows>. During the whole duration of the events <attack>.
+DA_ZOPR_avgGreaterThanZero:	 Average of <DA_ZOPR> (Dangerousity with the missing feature set to 1.) with only values greater than zero. For <playerRows>. During the whole duration of the events <attack>.
+DA_ZOPR_std:			 Standard Deviation of <DA_ZOPR> (Dangerousity with the missing feature set to 1.). For <playerRows>. During the whole duration of the events <attack>.
+DA_ZOPR_min:			 Minimum of <DA_ZOPR> (Dangerousity with the missing feature set to 1.). For <playerRows>. During the whole duration of the events <attack>.
+DA_ZOPR_minGreaterThanZero:	 Minimum of <DA_ZOPR> (Dangerousity with the missing feature set to 1.) with only values greater than zero. For <playerRows>. During the whole duration of the events <attack>.
+DA_ZOPR_max:			 Maximum of <DA_ZOPR> (Dangerousity with the missing feature set to 1.). For <playerRows>. During the whole duration of the events <attack>.
+DA_ZOPR_avg_perTimePerPlayer_ref_avg:	 Average of <DA_ZOPR_avg_perTimePerPlayer_ref> (Dangerousity with the missing feature set to 1.). For <refTeam>. During the whole duration of the events <attack>.
+DA_ZOPR_avg_perTimePerPlayer_ref_avgGreaterThanZero:	 Average of <DA_ZOPR_avg_perTimePerPlayer_ref> (Dangerousity with the missing feature set to 1.) with only values greater than zero. For <refTeam>. During the whole duration of the events <attack>.
+DA_ZOPR_avg_perTimePerPlayer_ref_std:	 Standard Deviation of <DA_ZOPR_avg_perTimePerPlayer_ref> (Dangerousity with the missing feature set to 1.). For <refTeam>. During the whole duration of the events <attack>.
+DA_ZOPR_avg_perTimePerPlayer_ref_min:	 Minimum of <DA_ZOPR_avg_perTimePerPlayer_ref> (Dangerousity with the missing feature set to 1.). For <refTeam>. During the whole duration of the events <attack>.
+DA_ZOPR_avg_perTimePerPlayer_ref_minGreaterThanZero:	 Minimum of <DA_ZOPR_avg_perTimePerPlayer_ref> (Dangerousity with the missing feature set to 1.) with only values greater than zero. For <refTeam>. During the whole duration of the events <attack>.
+DA_ZOPR_avg_perTimePerPlayer_ref_max:	 Maximum of <DA_ZOPR_avg_perTimePerPlayer_ref> (Dangerousity with the missing feature set to 1.). For <refTeam>. During the whole duration of the events <attack>.
+DA_ZODE_avg:			 Average of <DA_ZODE> (Dangerousity with the missing feature set to 1.). For <playerRows>. During the whole duration of the events <attack>.
+DA_ZODE_avgGreaterThanZero:	 Average of <DA_ZODE> (Dangerousity with the missing feature set to 1.) with only values greater than zero. For <playerRows>. During the whole duration of the events <attack>.
+DA_ZODE_std:			 Standard Deviation of <DA_ZODE> (Dangerousity with the missing feature set to 1.). For <playerRows>. During the whole duration of the events <attack>.
+DA_ZODE_min:			 Minimum of <DA_ZODE> (Dangerousity with the missing feature set to 1.). For <playerRows>. During the whole duration of the events <attack>.
+DA_ZODE_minGreaterThanZero:	 Minimum of <DA_ZODE> (Dangerousity with the missing feature set to 1.) with only values greater than zero. For <playerRows>. During the whole duration of the events <attack>.
+DA_ZODE_max:			 Maximum of <DA_ZODE> (Dangerousity with the missing feature set to 1.). For <playerRows>. During the whole duration of the events <attack>.
+DA_ZODE_avg_perTimePerPlayer_ref_avg:	 Average of <DA_ZODE_avg_perTimePerPlayer_ref> (Dangerousity with the missing feature set to 1.). For <refTeam>. During the whole duration of the events <attack>.
+DA_ZODE_avg_perTimePerPlayer_ref_avgGreaterThanZero:	 Average of <DA_ZODE_avg_perTimePerPlayer_ref> (Dangerousity with the missing feature set to 1.) with only values greater than zero. For <refTeam>. During the whole duration of the events <attack>.
+DA_ZODE_avg_perTimePerPlayer_ref_std:	 Standard Deviation of <DA_ZODE_avg_perTimePerPlayer_ref> (Dangerousity with the missing feature set to 1.). For <refTeam>. During the whole duration of the events <attack>.
+DA_ZODE_avg_perTimePerPlayer_ref_min:	 Minimum of <DA_ZODE_avg_perTimePerPlayer_ref> (Dangerousity with the missing feature set to 1.). For <refTeam>. During the whole duration of the events <attack>.
+DA_ZODE_avg_perTimePerPlayer_ref_minGreaterThanZero:	 Minimum of <DA_ZODE_avg_perTimePerPlayer_ref> (Dangerousity with the missing feature set to 1.) with only values greater than zero. For <refTeam>. During the whole duration of the events <attack>.
+DA_ZODE_avg_perTimePerPlayer_ref_max:	 Maximum of <DA_ZODE_avg_perTimePerPlayer_ref> (Dangerousity with the missing feature set to 1.). For <refTeam>. During the whole duration of the events <attack>.
+DA_COPR_avg:			 Average of <DA_COPR> (Dangerousity with the missing feature set to 1.). For <playerRows>. During the whole duration of the events <attack>.
+DA_COPR_avgGreaterThanZero:	 Average of <DA_COPR> (Dangerousity with the missing feature set to 1.) with only values greater than zero. For <playerRows>. During the whole duration of the events <attack>.
+DA_COPR_std:			 Standard Deviation of <DA_COPR> (Dangerousity with the missing feature set to 1.). For <playerRows>. During the whole duration of the events <attack>.
+DA_COPR_min:			 Minimum of <DA_COPR> (Dangerousity with the missing feature set to 1.). For <playerRows>. During the whole duration of the events <attack>.
+DA_COPR_minGreaterThanZero:	 Minimum of <DA_COPR> (Dangerousity with the missing feature set to 1.) with only values greater than zero. For <playerRows>. During the whole duration of the events <attack>.
+DA_COPR_max:			 Maximum of <DA_COPR> (Dangerousity with the missing feature set to 1.). For <playerRows>. During the whole duration of the events <attack>.
+DA_COPR_avg_perTimePerPlayer_ref_avg:	 Average of <DA_COPR_avg_perTimePerPlayer_ref> (Dangerousity with the missing feature set to 1.). For <refTeam>. During the whole duration of the events <attack>.
+DA_COPR_avg_perTimePerPlayer_ref_avgGreaterThanZero:	 Average of <DA_COPR_avg_perTimePerPlayer_ref> (Dangerousity with the missing feature set to 1.) with only values greater than zero. For <refTeam>. During the whole duration of the events <attack>.
+DA_COPR_avg_perTimePerPlayer_ref_std:	 Standard Deviation of <DA_COPR_avg_perTimePerPlayer_ref> (Dangerousity with the missing feature set to 1.). For <refTeam>. During the whole duration of the events <attack>.
+DA_COPR_avg_perTimePerPlayer_ref_min:	 Minimum of <DA_COPR_avg_perTimePerPlayer_ref> (Dangerousity with the missing feature set to 1.). For <refTeam>. During the whole duration of the events <attack>.
+DA_COPR_avg_perTimePerPlayer_ref_minGreaterThanZero:	 Minimum of <DA_COPR_avg_perTimePerPlayer_ref> (Dangerousity with the missing feature set to 1.) with only values greater than zero. For <refTeam>. During the whole duration of the events <attack>.
+DA_COPR_avg_perTimePerPlayer_ref_max:	 Maximum of <DA_COPR_avg_perTimePerPlayer_ref> (Dangerousity with the missing feature set to 1.). For <refTeam>. During the whole duration of the events <attack>.
+DA_CODE_avg:			 Average of <DA_CODE> (Dangerousity with the missing feature set to 1.). For <playerRows>. During the whole duration of the events <attack>.
+DA_CODE_avgGreaterThanZero:	 Average of <DA_CODE> (Dangerousity with the missing feature set to 1.) with only values greater than zero. For <playerRows>. During the whole duration of the events <attack>.
+DA_CODE_std:			 Standard Deviation of <DA_CODE> (Dangerousity with the missing feature set to 1.). For <playerRows>. During the whole duration of the events <attack>.
+DA_CODE_min:			 Minimum of <DA_CODE> (Dangerousity with the missing feature set to 1.). For <playerRows>. During the whole duration of the events <attack>.
+DA_CODE_minGreaterThanZero:	 Minimum of <DA_CODE> (Dangerousity with the missing feature set to 1.) with only values greater than zero. For <playerRows>. During the whole duration of the events <attack>.
+DA_CODE_max:			 Maximum of <DA_CODE> (Dangerousity with the missing feature set to 1.). For <playerRows>. During the whole duration of the events <attack>.
+DA_CODE_avg_perTimePerPlayer_ref_avg:	 Average of <DA_CODE_avg_perTimePerPlayer_ref> (Dangerousity with the missing feature set to 1.). For <refTeam>. During the whole duration of the events <attack>.
+DA_CODE_avg_perTimePerPlayer_ref_avgGreaterThanZero:	 Average of <DA_CODE_avg_perTimePerPlayer_ref> (Dangerousity with the missing feature set to 1.) with only values greater than zero. For <refTeam>. During the whole duration of the events <attack>.
+DA_CODE_avg_perTimePerPlayer_ref_std:	 Standard Deviation of <DA_CODE_avg_perTimePerPlayer_ref> (Dangerousity with the missing feature set to 1.). For <refTeam>. During the whole duration of the events <attack>.
+DA_CODE_avg_perTimePerPlayer_ref_min:	 Minimum of <DA_CODE_avg_perTimePerPlayer_ref> (Dangerousity with the missing feature set to 1.). For <refTeam>. During the whole duration of the events <attack>.
+DA_CODE_avg_perTimePerPlayer_ref_minGreaterThanZero:	 Minimum of <DA_CODE_avg_perTimePerPlayer_ref> (Dangerousity with the missing feature set to 1.) with only values greater than zero. For <refTeam>. During the whole duration of the events <attack>.
+DA_CODE_avg_perTimePerPlayer_ref_max:	 Maximum of <DA_CODE_avg_perTimePerPlayer_ref> (Dangerousity with the missing feature set to 1.). For <refTeam>. During the whole duration of the events <attack>.
+DA_PRDE_avg:			 Average of <DA_PRDE> (Dangerousity with the missing feature set to 1.). For <playerRows>. During the whole duration of the events <attack>.
+DA_PRDE_avgGreaterThanZero:	 Average of <DA_PRDE> (Dangerousity with the missing feature set to 1.) with only values greater than zero. For <playerRows>. During the whole duration of the events <attack>.
+DA_PRDE_std:			 Standard Deviation of <DA_PRDE> (Dangerousity with the missing feature set to 1.). For <playerRows>. During the whole duration of the events <attack>.
+DA_PRDE_min:			 Minimum of <DA_PRDE> (Dangerousity with the missing feature set to 1.). For <playerRows>. During the whole duration of the events <attack>.
+DA_PRDE_minGreaterThanZero:	 Minimum of <DA_PRDE> (Dangerousity with the missing feature set to 1.) with only values greater than zero. For <playerRows>. During the whole duration of the events <attack>.
+DA_PRDE_max:			 Maximum of <DA_PRDE> (Dangerousity with the missing feature set to 1.). For <playerRows>. During the whole duration of the events <attack>.
+DA_PRDE_avg_perTimePerPlayer_ref_avg:	 Average of <DA_PRDE_avg_perTimePerPlayer_ref> (Dangerousity with the missing feature set to 1.). For <refTeam>. During the whole duration of the events <attack>.
+DA_PRDE_avg_perTimePerPlayer_ref_avgGreaterThanZero:	 Average of <DA_PRDE_avg_perTimePerPlayer_ref> (Dangerousity with the missing feature set to 1.) with only values greater than zero. For <refTeam>. During the whole duration of the events <attack>.
+DA_PRDE_avg_perTimePerPlayer_ref_std:	 Standard Deviation of <DA_PRDE_avg_perTimePerPlayer_ref> (Dangerousity with the missing feature set to 1.). For <refTeam>. During the whole duration of the events <attack>.
+DA_PRDE_avg_perTimePerPlayer_ref_min:	 Minimum of <DA_PRDE_avg_perTimePerPlayer_ref> (Dangerousity with the missing feature set to 1.). For <refTeam>. During the whole duration of the events <attack>.
+DA_PRDE_avg_perTimePerPlayer_ref_minGreaterThanZero:	 Minimum of <DA_PRDE_avg_perTimePerPlayer_ref> (Dangerousity with the missing feature set to 1.) with only values greater than zero. For <refTeam>. During the whole duration of the events <attack>.
+DA_PRDE_avg_perTimePerPlayer_ref_max:	 Maximum of <DA_PRDE_avg_perTimePerPlayer_ref> (Dangerousity with the missing feature set to 1.). For <refTeam>. During the whole duration of the events <attack>.
+Player_01:			 The PlayerID of the <0th> player as represented in the individually aggregated variables for the current event.
+Player_02:			 The PlayerID of the <1th> player as represented in the individually aggregated variables for the current event.
+Player_03:			 The PlayerID of the <2th> player as represented in the individually aggregated variables for the current event.
+Player_04:			 The PlayerID of the <3th> player as represented in the individually aggregated variables for the current event.
+Player_05:			 The PlayerID of the <4th> player as represented in the individually aggregated variables for the current event.
+Player_06:			 The PlayerID of the <5th> player as represented in the individually aggregated variables for the current event.
+Player_07:			 The PlayerID of the <6th> player as represented in the individually aggregated variables for the current event.
+Player_08:			 The PlayerID of the <7th> player as represented in the individually aggregated variables for the current event.
+Player_09:			 The PlayerID of the <8th> player as represented in the individually aggregated variables for the current event.
+Player_10:			 The PlayerID of the <9th> player as represented in the individually aggregated variables for the current event.
+Player_11:			 The PlayerID of the <10th> player as represented in the individually aggregated variables for the current event.
+Player_12:			 The PlayerID of the <11th> player as represented in the individually aggregated variables for the current event.
+Player_13:			 The PlayerID of the <12th> player as represented in the individually aggregated variables for the current event.
+Player_14:			 The PlayerID of the <13th> player as represented in the individually aggregated variables for the current event.
+Player_15:			 The PlayerID of the <14th> player as represented in the individually aggregated variables for the current event.
+Player_16:			 The PlayerID of the <15th> player as represented in the individually aggregated variables for the current event.
+Player_17:			 The PlayerID of the <16th> player as represented in the individually aggregated variables for the current event.
+Player_18:			 The PlayerID of the <17th> player as represented in the individually aggregated variables for the current event.
+Player_19:			 The PlayerID of the <18th> player as represented in the individually aggregated variables for the current event.
+Player_20:			 The PlayerID of the <19th> player as represented in the individually aggregated variables for the current event.
+Player_21:			 The PlayerID of the <20th> player as represented in the individually aggregated variables for the current event.
+Player_22:			 The PlayerID of the <21th> player as represented in the individually aggregated variables for the current event.

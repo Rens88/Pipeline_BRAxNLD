@@ -13,6 +13,7 @@ from os import listdir, path, makedirs, sep
 import re
 import pandas as pd
 import student_LT_dissectFilename
+import student_VP_dissectFilename
 import time
 
 if __name__ == '__main__':
@@ -36,13 +37,13 @@ def process(fname,dataType,TeamAstring,TeamBstring,debuggingMode):
 		exportData, exportDataString, exportDataFullExplanation,cleanFname,TeamAstring,TeamBstring = FDP(fname)
 	elif dataType == "KNVB":
 		exportData, exportDataString, exportDataFullExplanation,cleanFname,TeamAstring,TeamBstring = \
-		student_LT_dissectFilename.process(fname,dataType,TeamAstring,TeamBstring)
+		student_VP_dissectFilename.process(fname,dataType,TeamAstring,TeamBstring)
 		# exportData, exportDataString, exportDataFullExplanation,cleanFname = default(fname)
 	else:
 		exportData, exportDataString, exportDataFullExplanation,cleanFname = \
-		student_LT_dissectFilename.process(fname,dataType,TeamAstring,TeamBstring)
+		student_VP_dissectFilename.process(fname,dataType,TeamAstring,TeamBstring)
 		# exportData, exportDataString, exportDataFullExplanation,cleanFname = default(fname)
-	
+
 	# if the raw data was organized in subfolders, this is the way to omit the last subfolders
 	cleanFname = cleanFname.split(sep)[-1]
 
@@ -54,9 +55,9 @@ def process(fname,dataType,TeamAstring,TeamBstring,debuggingMode):
 	return exportData, exportDataString, exportDataFullExplanation,cleanFname,spatAggFname,TeamAstring,TeamBstring
 
 
-def FDP(fname):	
+def FDP(fname):
 	cleanFname = fname[:-4] + '_cleaned.csv'
-	# Using regular expression to extract info from filename		
+	# Using regular expression to extract info from filename
 	regex = r'([a-zA-Z]{1})([a-zA-Z]{1})(\d+)_([a-zA-Z]{1})([a-zA-Z]{1})(\d{1})(\d{3})_v_([a-zA-Z]{1})([a-zA-Z]{1})(\d{1})(\d{3})'
 	match = re.search(regex,fname)
 	if match:
@@ -126,7 +127,7 @@ def NP(fname):
 			elif Class in ['1E1', '1E2']:
 				Exp = 'LP'
 			else:
-				warn('\nWARNING: Could not identify experimental gruop: <%s>' %fname)				
+				warn('\nWARNING: Could not identify experimental gruop: <%s>' %fname)
 
 		else:
 			warn('\nWARNING: Could not identify class: <%s>' %fname)
