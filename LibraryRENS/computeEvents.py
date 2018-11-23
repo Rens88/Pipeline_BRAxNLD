@@ -14,6 +14,7 @@ import safetyWarning
 import pandas as pd
 import time
 import student_LT_computeEvents
+import student_VP_computeEvents
 
 if __name__ == '__main__':
 
@@ -31,7 +32,7 @@ def process(targetEvents,aggregateLevel,rawPanda,attrPanda,eventsPanda,TeamAstri
 		# Load previously computed target events
 		targetFolder = dataFolder + sep + 'existingTargets' + sep
 		preComputedTargetFolder = targetFolder + 'preComputed' + sep
-		
+
 		# find a way to iterate over all keys.
 		files = listdir(preComputedTargetFolder)
 		curFiles = [f[:-4] for f in files if cleanFname[:-12] + '_preComputed_Event_' in f]
@@ -60,22 +61,22 @@ def process(targetEvents,aggregateLevel,rawPanda,attrPanda,eventsPanda,TeamAstri
 		if debuggingMode:
 			elapsed = str(round(time.time() - tComputeEvents, 2))
 			print('***** Time elapsed during computeEvents: %ss' %elapsed)
-		
+
 		return targetEvents
 
 	# For demonstration purposes, generate some random events
 	if aggregateLevel[0].lower() == 'random':
 		targetEvents = \
-		addRandomEvents(rawPanda,targetEvents,TeamAstring,TeamBstring)	
+		addRandomEvents(rawPanda,targetEvents,TeamAstring,TeamBstring)
 
 	if aggregateLevel[0].lower() == 'regular':
 		targetEvents = \
-		addRegularEvents(rawPanda,targetEvents,TeamAstring,TeamBstring,aggregateLevel)	
+		addRegularEvents(rawPanda,targetEvents,TeamAstring,TeamBstring,aggregateLevel)
 
 	### TO DO, PUT IN SEPARATE FUNCTION
 	if 'Turnovers' in targetEvents and targetEvents['Turnovers'] != []:
-		
-		if len(targetEvents['Turnovers'][0]) == 6: 
+
+		if len(targetEvents['Turnovers'][0]) == 6:
 			# it's the Turnovers with XY
 			# So determine in or outside of 16m
 			for idx,val in enumerate(targetEvents['Turnovers']):
@@ -91,7 +92,7 @@ def process(targetEvents,aggregateLevel,rawPanda,attrPanda,eventsPanda,TeamAstri
 
 				curX = val[5][0]
 				curY = val[5][1]
-				
+
 				# NOT TAKING FIELD DIMENSIONS INTO ACCOUNT
 				warn('\nWARNING: I\'m not (yet) taking field dimensions into account.\nPenalty box is based on generic measures (same as in plotSnapshot)\n')
 				warn('\nWARNING: At computEvents, I\'m now only very crudely verifying if the Turnovers happened on the refTeam\'s side of the pitch.\n')
@@ -110,7 +111,7 @@ def process(targetEvents,aggregateLevel,rawPanda,attrPanda,eventsPanda,TeamAstri
 						if avgRefTeam > avgOthTeam:
 							warn('\nWARNING: Suspected turnover on own half.\nCheck event data and mismatches in Turnovers.\nCurrently, these event labels are overwritten as <outside_16m>.\n')
 							label = 'outside_16m'
-			
+
 				# write a checkup based on the guessed data driven playing side
 				# only for inside
 				eventClassified = True
@@ -120,32 +121,35 @@ def process(targetEvents,aggregateLevel,rawPanda,attrPanda,eventsPanda,TeamAstri
 	targetEvents,eventClassified = \
 	student_LT_computeEvents.process(targetEvents,aggregateLevel,rawPanda,attrPanda,eventsPanda,TeamAstring,TeamBstring,eventClassified)
 
+	targetEvents,eventClassified = \
+	student_VP_computeEvents.process(targetEvents,aggregateLevel,rawPanda,attrPanda,eventsPanda,TeamAstring,TeamBstring,eventClassified)
+
 	# export it
 	targetFolder = dataFolder + sep + 'existingTargets' + sep
 	if not exists(targetFolder):
 		warn('\nFATAL WARNING: folder <existingTargets> in dataFolder <%s> NOT found.\nShould have been created in initialization.py\n' %dataFolder)
 
 	preComputedTargetFolder = targetFolder + 'preComputed' + sep
-	
+
 
 	# Deal with overlapping targets
 	# by default, the last value added to the tuple informs about whether there was any overlap with the previous event. The second to last about the time difference between events
-	# & export it 
+	# & export it
 	for key in targetEvents.keys():
 		# Deal with overlap
 		excludeOverlappingEvents= True
 		methodOverlap = 'include' # or 'limitWindow' or 'exclude'
 		targetEvents = overlappingTargets(targetEvents,key,aggregateLevel,excludeOverlappingEvents,methodOverlap)
-		
+
 		# Export it
 		targetEventsFname = preComputedTargetFolder + cleanFname[:-12] + '_preComputed_Event_' + key +  '.csv'
 		tmp = pd.DataFrame.from_dict(targetEvents[key])
-		tmp.to_csv(targetEventsFname) # filename only needs match	
-	
+		tmp.to_csv(targetEventsFname) # filename only needs match
+
 	if debuggingMode:
 		elapsed = str(round(time.time() - tComputeEvents, 2))
 		print('***** Time elapsed during computeEvents: %ss' %elapsed)
-	
+
 	return targetEvents,eventClassified
 
 ############################################################
@@ -165,7 +169,7 @@ def overlappingTargets(targetEvents,key,aggregateLevel,excludeOverlappingEvents,
 			try:
 				warn('\nWARNING: Event had no time of occurrence. Therefore, it was skipped.\nThese are the event contents:\ntime of event = %s\nRefTeam of event = %s\nend of event = %s' %currentEvent)
 			except: # a lazy way to catch currentEvents with only 2 bits of info.
-				warn('\nWARNING: Event had no time of occurrence. Therefore, it was skipped.\nThese are the event contents:\ntime of event = %s\nRefTeam of event = %s\n' %currentEvent)				
+				warn('\nWARNING: Event had no time of occurrence. Therefore, it was skipped.\nThese are the event contents:\ntime of event = %s\nRefTeam of event = %s\n' %currentEvent)
 			continue
 		## Determine the window
 		if aggregateLevel[1] != None:
@@ -176,9 +180,9 @@ def overlappingTargets(targetEvents,key,aggregateLevel,excludeOverlappingEvents,
 			# No window indicated, so take the full event (if possible)
 			if len(currentEvent) < 3 or aggregateLevel[2] == None:
 				warn('\nWARNING: No tStart indicated for this event, nor a window was given for the temporal aggregation.\nCould not determine whether the event overlapped the previous event.\n')
-				tStart = None		
-			else:				
-				tStart = currentEvent[2]# - aggregateLevel[1]			
+				tStart = None
+			else:
+				tStart = currentEvent[2]# - aggregateLevel[1]
 
 
 		dtPrev = tEnd # by default, dtPrev is as big as the window (only relevant for the first event)
@@ -196,14 +200,14 @@ def overlappingTargets(targetEvents,key,aggregateLevel,excludeOverlappingEvents,
 					targetEvents_new[key][-1] = currentEvent + (dtPrev,True,)
 					currentEvent = targetEvents_new[key][-1]
 
-					if excludeOverlappingEvents:					
+					if excludeOverlappingEvents:
 						if methodOverlap == 'exclude':
 							# simply exclude
 
 							targetEvents_new[key].remove(currentEvent)
 
 						elif methodOverlap == 'limitWindow':
-							# or limit the window size 
+							# or limit the window size
 							# and report window limit
 							tStart = tEnd_prevEvent
 							warn('UNFINISHED')
@@ -232,12 +236,12 @@ def addRandomEvents(rawPanda,targetEvents,TeamAstring,TeamBstring):
 	tEnd = math.floor(targetEvents['Full'][0][0])
 
 	timeRange = range(tStart,tEnd)
-	
+
 	if nRandom > len(timeRange):
 		warn('\nWARNING: Number of random events was larger than seconds in the datasets.\nThe number was reduced to the number of seconds in the dataset.\n')
 		nRandom = len(timeRange)
 	randomTimes = random.sample(timeRange, nRandom)
-	
+
 	randomEvents = []
 	teamStrings = (TeamAstring,TeamBstring)
 
@@ -247,9 +251,9 @@ def addRandomEvents(rawPanda,targetEvents,TeamAstring,TeamBstring):
 		randomTeam = random.randint(0,1)
 
 		if not type(idxEqual) == np.int64:
-			randomEvents.append((rawPanda['Ts'][idxEqual[0]],teamStrings[randomTeam]))	
+			randomEvents.append((rawPanda['Ts'][idxEqual[0]],teamStrings[randomTeam]))
 		else:
-			randomEvents.append((rawPanda['Ts'][idxEqual],teamStrings[randomTeam]))	
+			randomEvents.append((rawPanda['Ts'][idxEqual],teamStrings[randomTeam]))
 
 	targetEvents = {**targetEvents,'Random':randomEvents}
 	# If an error occurs here, then this may be a problem with Linux.
@@ -272,7 +276,7 @@ def addRegularEvents(rawPanda,targetEvents,TeamAstring,TeamBstring,aggregateLeve
 	# Number of random events
 	nRandom = 5
 	timeRange = range(tStart,tEnd)
-	# From end to start, to make sure that the end is included	
+	# From end to start, to make sure that the end is included
 	regularTimes = np.arange(tEnd,tStart,-aggregateLevel[1])
 	regularTimes = np.sort(regularTimes)
 
@@ -285,9 +289,9 @@ def addRegularEvents(rawPanda,targetEvents,TeamAstring,TeamBstring,aggregateLeve
 		# randomTeam = random.randint(0,1)
 
 		if not type(idxEqual) == np.int64:
-			regularEvents.append((rawPanda['Ts'][idxEqual[0]],TeamAstring))	
+			regularEvents.append((rawPanda['Ts'][idxEqual[0]],TeamAstring))
 		else:
-			regularEvents.append((rawPanda['Ts'][idxEqual],TeamAstring))	
+			regularEvents.append((rawPanda['Ts'][idxEqual],TeamAstring))
 
 	targetEvents = {**targetEvents,'Regular':regularEvents}
 	# If an error occurs here, then this may be a problem with Linux.

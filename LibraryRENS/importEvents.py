@@ -22,6 +22,7 @@ import pandas as pd
 
 import safetyWarning
 import student_LT_importEvents
+import student_VP_importEvents
 import time
 
 from os import listdir, path, makedirs, sep
@@ -33,13 +34,13 @@ if __name__ == '__main__':
 	# 1 --> Time of event
 	# 2 --> Reference Team
 	# 3 --> varies per event:
-	
+
 	goals(eventsPanda,TeamAstring,TeamBstring,targetEvents)
 	# no 3
 
-	possession(eventsPanda,TeamAstring,TeamBstring,targetEvents)	
+	possession(eventsPanda,TeamAstring,TeamBstring,targetEvents)
 	# 3 --> START time of the possession
-	
+
 	passes(eventsPanda,TeamAstring,TeamBstring,possessionCharacteristics,targetEvents)
 	# 3 --> nth possession this pass was a part of (to determine number of consqutive passes)
 
@@ -78,7 +79,7 @@ def process(rawPanda,eventsPanda,TeamAstring,TeamBstring,cleanFname,dataFolder,d
 		targetEvents = fromFile(targetEvents,rawPanda,TeamAstring,TeamBstring,cleanFname,dataFolder)
 
 	targetEvents = \
-	student_LT_importEvents.process(targetEvents,cleanFname,TeamAstring,TeamBstring,dataFolder)
+	student_VP_importEvents.process(targetEvents,cleanFname,TeamAstring,TeamBstring,dataFolder)
 
 	if debuggingMode:
 		elapsed = str(round(time.time() - tImportEvents, 2))
@@ -106,7 +107,7 @@ def fromFile(targetEvents,rawPanda,TeamAstring,TeamBstring,cleanFname,dataFolder
 
 	rawTargetEvents = pd.read_csv(existingTargetsFname, low_memory = False)
 
-	## All events that typically occur: 
+	## All events that typically occur:
 	theseAreTheKnownEvents = ['Near ball', 'Transition A-H', 'BP Home', 'Pass', 'Reception', 'Running with ball', 'Transition H-A', 'BP Away', 'Interception']
 	# Near ball --> all players close to the ball
 	# Transition --> instant new team has possession
@@ -124,14 +125,14 @@ def fromFile(targetEvents,rawPanda,TeamAstring,TeamBstring,cleanFname,dataFolder
 
 	TeamA_Players = rawPanda.loc[rawPanda['TeamID'] == TeamAstring,'PlayerID'].unique()
 	TeamB_Players = rawPanda.loc[rawPanda['TeamID'] == TeamBstring,'PlayerID'].unique()
-	
+
 	template = False ########################################################################################################################################################################################################################################################################################################################################################################################################
 	if template:
 		tmp = pd.read_csv('C:\\Users\\rensm\\Documents\\SURFDRIVE\\Repositories\\BRAxNLD repository_newStyle\\Data\\Cleaned\\1_EL_XIV_cleaned.csv')
 
 		TeamA_Players = tmp.loc[tmp['TeamID'] == TeamAstring,'PlayerID'].unique()
 		TeamB_Players = tmp.loc[tmp['TeamID'] == TeamBstring,'PlayerID'].unique()
-	
+
 	# Check if no overlap between players
 	DuplPlayers = [i for i in TeamA_Players if i in TeamB_Players]
 	if DuplPlayers != []:
@@ -166,16 +167,16 @@ def fromFile(targetEvents,rawPanda,TeamAstring,TeamBstring,cleanFname,dataFolder
 		targetPlayer = rawTargetEvents.loc[idx,'Target']
 		eventString = rawTargetEvents.loc[idx,'Event']
 
-		# Volgens mij worden de events bepaald aan de hand van het veranderen van snelheid en 
-		# richting van de bal in de buurt van een speler. Reception betekent dat een pass 
-		# ontvangen is door een teamgenoot, interception door een tegenstander. BP is de 
-		# start van een bal possession en transition geeft het einde van een possession weer. 
-		# Een possession duurt van het eerste balcontact van team A tot het eerste balcontact 
-		# van team B.  Running with the ball zou overeen moeten komen met een bal en speler 
+		# Volgens mij worden de events bepaald aan de hand van het veranderen van snelheid en
+		# richting van de bal in de buurt van een speler. Reception betekent dat een pass
+		# ontvangen is door een teamgenoot, interception door een tegenstander. BP is de
+		# start van een bal possession en transition geeft het einde van een possession weer.
+		# Een possession duurt van het eerste balcontact van team A tot het eerste balcontact
+		# van team B.  Running with the ball zou overeen moeten komen met een bal en speler
 		# die in dezelfde richting bewegen in elkaars nabijheid.
 
 		## Check some assumptions (within current event only)
-		
+
 		# Check who is the current team
 		if refPlayer in TeamA_Players:
 			curTeam = TeamAstring
@@ -184,7 +185,7 @@ def fromFile(targetEvents,rawPanda,TeamAstring,TeamBstring,cleanFname,dataFolder
 			if not curTeam == []:
 				warn('\nFATAL WARNING: A player <%s> was linked to both Team A <%s> and Team B <%s>.\nThis will lead to problems later on.\n' %(refPlayer,TeamAstring,TeamBstring))
 			curTeam = TeamBstring
-		
+
 		# When curTeam is failed to be allocated
 		if curTeam == []:
 			# if home and away team not yet allocated:
@@ -195,7 +196,7 @@ def fromFile(targetEvents,rawPanda,TeamAstring,TeamBstring,cleanFname,dataFolder
 
 			# if home and away team already allocated, just use the previous allocation
 			# determine whether current event refers to home or away
-			if eventString in ['Transition A-H', 'BP Home']: 
+			if eventString in ['Transition A-H', 'BP Home']:
 				curTeam = HomeTeam
 			else:
 				curTeam = AwayTeam
@@ -208,35 +209,35 @@ def fromFile(targetEvents,rawPanda,TeamAstring,TeamBstring,cleanFname,dataFolder
 
 				if curTeam == TeamBstring:
 					TeamB_Players = np.append(TeamB_Players,refPlayer)
-			
+
 			# Export the players that couldnt be found: (printed in a warning after the loop)
 			if not refPlayer in couldnotfindthese:
 				couldnotfindthese.append(refPlayer)
 		# else:
 		# 	print('Found <%s>' %refPlayer)
 
-		# Check who is the home and away team		
-		if eventString in ['Transition A-H', 'BP Home']: 
+		# Check who is the home and away team
+		if eventString in ['Transition A-H', 'BP Home']:
 			if HomeTeam == []:
 				HomeTeam = curTeam
 				if HomeTeam == TeamAstring:
 					AwayTeam = TeamBstring
 				else:
 					AwayTeam = TeamAstring
-			
+
 			elif not HomeTeam == curTeam:
 				# warn('\nFATAL WARNING: Inconsistent labelling of Home and Away.\nCurrent \'Home\'-Event referred to refPlayer <%s> of team <%s>.\nBut, previously, an event was used to deduce that team <%s> was the home team...\nThis means that the event refTeam cannot be trusted.\nTo be sure, this event was skipped.\n' %(refPlayer,curTeam,HomeTeam))
 				skippedTheseInconsistencies.append('Event <%s> of refPlayer <%s> and targetPlayer <%s> was skipped.' %(eventString,refPlayer,targetPlayer))
 				continue
 
-		if eventString in ['Transition H-A', 'BP Away']: 
+		if eventString in ['Transition H-A', 'BP Away']:
 			if AwayTeam == []:
 				AwayTeam = curTeam
 				if AwayTeam == TeamAstring:
 					HomeTeam = TeamBstring
 				else:
 					HomeTeam = TeamAstring
-			
+
 			elif not AwayTeam == curTeam:
 				# warn('\nFATAL WARNING: Inconsistent labelling of Home and Away.\nCurrent \'Away\'-Event referred to refPlayer <%s> of team <%s>.\nBut, previously, an event was used to deduce that team <%s> was the away team...\nThis means that the event refTeam cannot be trusted.\nTo be sure, this event was skipped.\n' %(refPlayer,curTeam,AwayTeam))
 				skippedTheseInconsistencies.append('Event <%s> of refPlayer <%s> and targetPlayer <%s> was skipped.' %(eventString,refPlayer,targetPlayer))
@@ -257,7 +258,7 @@ def fromFile(targetEvents,rawPanda,TeamAstring,TeamBstring,cleanFname,dataFolder
 		## Export the data
 		if 'BP' in eventString:
 
-			
+
 			Possessions.append([tEnd,curTeam,tStart])
 			# curPossessions = pd.DataFrame([tEnd,curTeam,tStart],columns = ['tEvent','refTeam','tStart'])
 
@@ -270,7 +271,7 @@ def fromFile(targetEvents,rawPanda,TeamAstring,TeamBstring,cleanFname,dataFolder
 			# 	pdb.set_trace()
 
 			# For possession, add a duplicate with all possession changes within 16m
-			
+
 
 			continue
 
@@ -296,7 +297,7 @@ def fromFile(targetEvents,rawPanda,TeamAstring,TeamBstring,cleanFname,dataFolder
 			continue
 
 		if 'Interception' == eventString:
-			
+
 			nthpossession = None
 			Turnovers.append([tStart,curTeam,nthpossession,refPlayer,targetPlayer,(X,Y)])
 			# curTurnovers = pd.DataFrame([[tStart,curTeam,nthpossession,refPlayer,targetPlayer]],columns = ['tEvent','refTeam','nthPossession','Intercepter','Interceptee'])
@@ -309,7 +310,7 @@ def fromFile(targetEvents,rawPanda,TeamAstring,TeamBstring,cleanFname,dataFolder
 	if not skippedTheseInconsistencies == []:
 		warn('\nWARNING: Skipped the following events because of inconsistent labelling of Home and Away:\n\n%s' %skippedTheseInconsistencies)
 
-	
+
 	# Check some between-event assumptions:
 	mismatchedPass = []
 	matchedPass = []
@@ -336,7 +337,7 @@ def fromFile(targetEvents,rawPanda,TeamAstring,TeamBstring,cleanFname,dataFolder
 				else:
 					warn('\nFATAL WARNING: Sometings wrong. Pass belongs to multiple possesions.\n')
 					pdb.set_trace()
-				
+
 				if refTeam != refTeam_p:
 					mismatchedPass.append('Possession refTeam = <%s>, Pass refTeam = <%s>. nth pass = <%s>.' %(refTeam,refTeam_p,nthCurPass))
 					# warn('\nWARNING: refTeam based upon possession <%s> does not correspond with refTeam based on Passes.\n' %val)
@@ -350,7 +351,7 @@ def fromFile(targetEvents,rawPanda,TeamAstring,TeamBstring,cleanFname,dataFolder
 			elif tEvent_p >= tEnd:
 
 				# print(mismatchedPass[-1])
-			
+
 				if lastPass == 'mismatched':
 					mismatchedPass[-1] = mismatchedPass[-1] + ' LAST PASS'
 				elif lastPass == 'matched':
@@ -463,7 +464,7 @@ def goals(eventsPanda,TeamAstring,TeamBstring,targetEvents):
 #################################################################
 
 def runs(eventsPanda,TeamAstring,TeamBstring,targetEvents):
-	targetEvents = {**targetEvents,'Run':[]} 
+	targetEvents = {**targetEvents,'Run':[]}
 	# If an error occurs here, then this may be a problem with Linux.
 	# Replace with: (and an if statement to check if targetEvents isempty)
 	# targetEvents = targetEvents.update({'Run':[]})
@@ -500,7 +501,7 @@ def runs(eventsPanda,TeamAstring,TeamBstring,targetEvents):
 	return targetEvents
 
 def possession(eventsPanda,TeamAstring,TeamBstring,targetEvents):
-	targetEvents = {**targetEvents,'Possession':[],'Turnovers':[]} 
+	targetEvents = {**targetEvents,'Possession':[],'Turnovers':[]}
 
 	# If an error occurs here, then this may be a problem with Linux.
 	# Replace with: (and an if statement to check if targetEvents isempty)
@@ -512,8 +513,8 @@ def possession(eventsPanda,TeamAstring,TeamBstring,targetEvents):
 
 	# possessionEvents either have starts, ends or turnovers (starts and ends)
 
-	possessionEvents = eventsPanda[eventsPanda['Possession/Turnover'].notnull()]	
-	# look for all starts	
+	possessionEvents = eventsPanda[eventsPanda['Possession/Turnover'].notnull()]
+	# look for all starts
 	possessionStarts_idx = [idx for idx in possessionEvents.index if 'start' in possessionEvents.loc[idx,'Possession/Turnover'].lower() or 'turnover' in possessionEvents.loc[idx,'Possession/Turnover'].lower()]
 
 	# look for all ends
@@ -526,7 +527,7 @@ def possession(eventsPanda,TeamAstring,TeamBstring,targetEvents):
 	# for all starts, look for the corresponding ends. make sure they're later in time and only used once
 	for s in possessionStarts_idx:
 		tStart = possessionEvents.loc[s,'Ts']
-		
+
 		# look for first end with a larger Ts
 		# difference in time
 		dt = possessionEvents.loc[possessionEnds_idx,'Ts'] - possessionEvents.loc[s,'Ts']
@@ -543,7 +544,7 @@ def possession(eventsPanda,TeamAstring,TeamBstring,targetEvents):
 			if TeamAstring.lower() in curStatus.lower():
 				# it's about Team A
 				startBased_currentPossession = TeamAstring
-			elif TeamBstring.lower() in curStatus.lower():		
+			elif TeamBstring.lower() in curStatus.lower():
 				# it's about Team B
 				startBased_currentPossession = TeamBstring
 			else:
@@ -553,7 +554,7 @@ def possession(eventsPanda,TeamAstring,TeamBstring,targetEvents):
 				else:
 					warn('\nCouldnt identify possession.\n<%s>' %curStatus)
 					pdb.set_trace()
-		elif 'turnover' in curStatus.lower():		
+		elif 'turnover' in curStatus.lower():
 			if TeamAstring.lower()+ ' to' in curStatus.lower():
 				# team a to team b
 				startBased_currentPossession = TeamBstring
@@ -570,18 +571,18 @@ def possession(eventsPanda,TeamAstring,TeamBstring,targetEvents):
 			pdb.set_trace()
 		# based on end
 		endStatus = possessionEvents.loc[correspondingEnd_idx[0],'Possession/Turnover']
-		
+
 		if 'end' in endStatus.lower(): # 'start'-based start (and not turnover based)
 			if TeamAstring in endStatus:
 				# it's about Team A
 				endBased_currentPossession = TeamAstring
-			elif TeamBstring in endStatus:		
+			elif TeamBstring in endStatus:
 				# it's about Team B
 				endBased_currentPossession = TeamBstring
 			else:
 				warn('\nCouldnt identify possession.\n<%s>' %endStatus)
 				pdb.set_trace()
-		elif 'turnover' in endStatus.lower():		
+		elif 'turnover' in endStatus.lower():
 			if TeamAstring.lower() + ' to' in endStatus.lower():
 				# team a to team b
 				endBased_currentPossession = TeamAstring
@@ -599,8 +600,8 @@ def possession(eventsPanda,TeamAstring,TeamBstring,targetEvents):
 
 		if startBased_currentPossession != endBased_currentPossession:
 			warn('\nWARNING: Mismatch in determining refteam for possession.\nStartPossession = <%s>\nEndPossession = <%s>.\n!!!!!!!!!!!!!!!' %((curStatus,endStatus)))
-			
-		targetEvents['Possession'].append((tEnd,startBased_currentPossession,tStart))								
+
+		targetEvents['Possession'].append((tEnd,startBased_currentPossession,tStart))
 
 	# ###########################################
 	# # the old way
@@ -625,7 +626,7 @@ def possession(eventsPanda,TeamAstring,TeamBstring,targetEvents):
 	# 		if TeamAstring in curStatus:
 	# 			# it's about Team A
 	# 			currentPossession = TeamAstring
-	# 		elif TeamBstring in curStatus:		
+	# 		elif TeamBstring in curStatus:
 	# 			# it's about Team B
 	# 			currentPossession = TeamBstring
 	# 		else:
@@ -638,7 +639,7 @@ def possession(eventsPanda,TeamAstring,TeamBstring,targetEvents):
 	# 	elif 'End' in curStatus:
 	# 		currentPossession = None
 
-	# 	elif 'Turnover' in curStatus:		
+	# 	elif 'Turnover' in curStatus:
 	# 		dt.append(float(eventsPanda['Ts'][curFrame+1]-eventsPanda['Ts'][curFrame])) # a cheecky way to read frame rate from data
 	# 		if currentPossession == TeamAstring:
 	# 			currentPossession = TeamBstring
@@ -650,7 +651,7 @@ def possession(eventsPanda,TeamAstring,TeamBstring,targetEvents):
 	# 			currentPossession = None
 
 	# 	else:
-	# 		# Based on next status 
+	# 		# Based on next status
 	# 		if possessionEvent[idx+1][1][0:8] == 'Turnover' and possessionEvent[idx+1][1][-len(TeamAstring)-1:-1] == TeamAstring:
 	# 			# The next turnover goes to TeamA, so:
 	# 			currentPossession = TeamBstring
@@ -658,7 +659,7 @@ def possession(eventsPanda,TeamAstring,TeamBstring,targetEvents):
 
 	# 		elif possessionEvent[idx+1][1][0:8] == 'Turnover' and possessionEvent[idx+1][1][-len(TeamBstring)-1:-1] == TeamBstring:
 	# 			currentPossession = TeamAstring
-	# 			warn('\nIndirectly assessed event (based on next event):\n<<%s>>\nas <<%s>>' %(curStatus,currentPossession))			
+	# 			warn('\nIndirectly assessed event (based on next event):\n<<%s>>\nas <<%s>>' %(curStatus,currentPossession))
 	# 		else:
 	# 			warn('\nCouldnt identify event:\n%s\n\n' %curStatus)
 	# 			currentPossession = None
@@ -671,7 +672,7 @@ def possession(eventsPanda,TeamAstring,TeamBstring,targetEvents):
 	# 		in2 = None
 	# 	else:
 	# 		in2 = float(eventsPanda['Ts'][endPossession])
-	# 	targetEvents['Possession'].append((in2,currentPossession,in1))								
+	# 	targetEvents['Possession'].append((in2,currentPossession,in1))
 	# 	if not in2 == None and in1-in2<1:
 	# 		print('end = %s' %in1)
 	# 		print('start = %s\n' %in2)
@@ -710,9 +711,9 @@ def passes(eventsPanda,TeamAstring,TeamBstring,targetEvents):
 	for idx,i in enumerate(eventsPanda['Pass']):
 		if not i == '' and pd.notnull(i):
 			if TeamAstring in i:
-				targetEvents['Passes'].append((float(eventsPanda['Ts'][idx]),TeamAstring,None))				
+				targetEvents['Passes'].append((float(eventsPanda['Ts'][idx]),TeamAstring,None))
 			elif TeamBstring in i:
-				targetEvents['Passes'].append((float(eventsPanda['Ts'][idx]),TeamBstring,None))								
+				targetEvents['Passes'].append((float(eventsPanda['Ts'][idx]),TeamBstring,None))
 			else:
 				warn('\n\nCould not recognize team:\n<<%s>>' %i)
 			if 'oal' in i:
