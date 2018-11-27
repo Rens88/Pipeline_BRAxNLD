@@ -17,7 +17,7 @@ def process(rawPanda,attrPanda,TeamAstring,TeamBstring,playerReportFolder,matchN
 	teamField = 'TeamID'
 	# playerReportFolder = "D:\\KNVB\\Output\\Figs\\Player Reports\\"
 	#TODO: check for dangerousity
-	fieldToPlot = 'dangerousity'
+	fieldToPlot = 'dangerousity' #buildUp
 	# print(attrPanda)
 	# pdb.set_trace()
 	# print(type(attrPanda[playerField].iloc[0]))
@@ -39,6 +39,7 @@ def process(rawPanda,attrPanda,TeamAstring,TeamBstring,playerReportFolder,matchN
 	#count timestamps in final third per player
 	secondsInFinalThirdPlayer = dfDanger.groupby([teamField,playerField])['Ts'].count()/10
 	secondsInFinalThirdTeam = dfDanger.groupby([teamField])['Ts'].count()/10
+
 	# print(secondsInFinalThirdPlayer)
 
 	#add every fifteenMinutes a zero value so that every team has always a value in fifteen minutes
@@ -46,7 +47,7 @@ def process(rawPanda,attrPanda,TeamAstring,TeamBstring,playerReportFolder,matchN
 		for quart in range(0,4):#loop till 4 because of stoppage time
 			dfDanger = dfDanger.append({teamField:team,'Ts':quart*900,fieldToPlot:0,'fiveSeconds':quart*180,'fifteenMinutes':quart},ignore_index=True)
 
-	#Decide which team is the Netherlands
+	#Dangerousity waarden per team bepalen
 	try:
 		teamDataA = dfDanger[dfDanger[teamField] == TeamAstring].groupby([teamField,'fifteenMinutes','fiveSeconds',playerField])[fieldToPlot].max().groupby([teamField,'fifteenMinutes']).sum()
 	except:
@@ -156,6 +157,7 @@ def plotTeam(teamDataA,teamDataB,dfTeams,playerReportFolder,maxDangerTeam,matchN
 		os.remove(strFile)
 	plt.savefig(strFile)
 
+#LT: kan weg
 def plotPlayer(playerData,player,playerReportFolder,maxDangerPlayer,team,matchName,TeamAstring):
 	# print(playerData,player)
 	# if(not playerData.empty):
@@ -200,12 +202,12 @@ def plotAllPlayers(playerData,player,playerReportFolder,maxDangerPlayer,TeamStri
 		plt.savefig(strFile)
 		plt.close()
 
-def dataToCSV(allPlayerData,secondsInFinalThirdPlayer,playerReportFolder,name,matchName):
+def dataToCSV(allPlayerData,secondsInFinalThird,playerReportFolder,name,matchName):
 	pivotAllPlayerData = allPlayerData.unstack()
 	pivotAllPlayerData['Total'] = pivotAllPlayerData.select_dtypes(float).sum(1)
 
 	#add seconds to series and sort
-	pivotAllPlayerData = pivotAllPlayerData.join(secondsInFinalThirdPlayer)
+	pivotAllPlayerData = pivotAllPlayerData.join(secondsInFinalThird)
 	pivotAllPlayerData['Dangerousity per Second'] = pivotAllPlayerData['Total'] / pivotAllPlayerData['Ts']
 	pivotAllPlayerData = pivotAllPlayerData.sort_values('Total',ascending=False)
 

@@ -88,7 +88,9 @@ def saveFolder():
 		return
 	dirInfo[2].set(saveFilePath)
 	
-def analyse():
+def analyse(checkVictor,checkLars):
+	# print(checkVictor,checkLars)
+	# return
 	if saveSettingsFile():
 		dirOpenCSV = dirInfo[0].get().replace('/',sep).replace('\\',sep) + sep
 		dirOpenXML = dirInfo[1].get().replace('/',sep).replace('\\',sep) + sep
@@ -98,8 +100,8 @@ def analyse():
 			messagebox.showinfo("Export klaar", "Export gelukt!")
 
 root = tk.Tk()
-frame = tk.Frame()
-frame.winfo_toplevel().title("Speler Analyse")
+masterFrame = tk.Frame()
+masterFrame.winfo_toplevel().title("Speler Analyse")
 
 dirInfo = []
 csvLabel = tk.Label(width = textboxWidth, text="Locatie CSV bestanden")
@@ -117,11 +119,17 @@ dirInfo.append(tk.StringVar())
 saveTextbox = tk.Entry(width = textboxWidth, textvariable=dirInfo[2])
 saveButton = tk.Button(text='Opslaan', width = buttonWidth, command=saveFolder)
 
+checkVictor = tk.IntVar()
+checkLars = tk.IntVar()
+
+checkButtonVictor = tk.Checkbutton(text = "Off-ball Performance", variable=checkVictor, onvalue = 1, offvalue = 0, height=1, width = 20)
+checkButtonLars = tk.Checkbutton(text = "Dangerousity", variable=checkLars, onvalue = 1, offvalue = 0, height=1, width = 20)
+
 #Werkt nog niet!
 # progressMsgBox = messagebox.showinfo("Export bezig", "!")
 # progressBar = ttk.Progressbar(progressMsgBox,orient="horizontal",length=250, mode="determinate")
 
-startButton = tk.Button(text='Start', width = buttonWidth, command=analyse)
+startButton = tk.Button(text='Start', width = buttonWidth, command= lambda: analyse(checkVictor.get(),checkLars.get()))
 openSettingsFile()
 
 csvLabel.grid(row=0,column=0)
@@ -133,6 +141,8 @@ xmlTextbox.grid(row=3,column=0)
 saveLabel.grid(row=4,column=0)
 saveButton.grid(row=5,column=2)
 saveTextbox.grid(row=5,column=0)
+checkButtonVictor.grid(row=6,column=0)
+checkButtonLars.grid(row=7,column=0)
 #progressBar.grid(row=7,column=0)
 startButton.grid(row=8,column=0)
 
