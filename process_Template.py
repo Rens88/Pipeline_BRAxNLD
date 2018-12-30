@@ -1,14 +1,23 @@
 # If you want to edit something in the code and you're not sure where it is,
 # just ask. l.a.meerhoff@liacs.leidenuniv.nl
 
-def process(csvFolder,xmlFolder,saveFolder):
+def process(csvFolder,xmlFolder,saveFolder,checkVictor,checkLars,tsText,playerText,teamText,xText,yText,shirtText,possText,speedText):
 	# pre-initialization
 	from shutil import copyfile	
 	import pdb; #pdb.set_trace()
 	import inspect
 	from warnings import warn
-	from os.path import isfile, join, exists, realpath, abspath, split,dirname, isdir#, isdir, exists
+	from os.path import isfile, join, exists, realpath, abspath, split,dirname, isdir, basename
 	from os import listdir, stat, sep, rename#, path, makedirs
+	import logging
+	from datetime import datetime
+	logging.basicConfig(filename='example.log',level=logging.DEBUG)
+	logging.info(datetime.now().strftime("%Y-%m-%d %H:%M:%S") + ' - ' + realpath(__file__) + ' - Start')
+	# logging.info('WE ZIJN GESTART!')
+	# import logging
+	# import os
+	# from datetime import datetime
+	# logging.warning(datetime.now().strftime("%Y-%m-%d %H:%M:%S") + ' ' + os.path.basename(__file__) + ' ')
 
 	# print("GEHAALD!!!")
 	# return
@@ -17,7 +26,8 @@ def process(csvFolder,xmlFolder,saveFolder):
 	#########################
 	## CHANGE THIS all these variables until 'END USER INPUT'
 	# Here, you provide the string name of the student folder that you want to include.
-	studentFolder = 'LTcontributions' 
+	studentFolderLT = 'LTcontributions'
+	studentFolderVP = 'VPcontributions' 
 
 	# Temporary inputs (whilst updating to using pandas)
 	debuggingMode = True # whether yo want to print the times that each script took
@@ -37,14 +47,15 @@ def process(csvFolder,xmlFolder,saveFolder):
 	TeamBstring = 'Provide the string that represents the other team'
 
 	# Input of raw data, indicate at least timestamp, entity and Location info
-	timestampString = 'Timestamp' 						#'enter the string in the header of the column that represents TIMESTAMP' 	# 'Video time (s)'
-	PlayerIDstring = 'PlrID' 							#'enter the string in the header of the column that represents PLAYERID' 	# 'jersey n.'
-	TeamIDstring = 'Name'									#'enter the string in the header of the column that represents TEAMID' 			# Optional
-	XPositionString = 'X' 								#'enter the string in the header of the column that represents X-POSITION'			# 'x'
-	YPositionString = 'Y' 								#'enter the string in the header of the column that represents Y-POSITION'			# 'y'
+	timestampString = tsText.get() #'Timestamp' 						#'enter the string in the header of the column that represents TIMESTAMP' 	# 'Video time (s)'
+	PlayerIDstring = playerText.get() #'PlrID' 							#'enter the string in the header of the column that represents PLAYERID' 	# 'jersey n.'
+	TeamIDstring = teamText.get() #'Name'									#'enter the string in the header of the column that represents TEAMID' 			# Optional
+	XPositionString = xText.get() #'X' 								#'enter the string in the header of the column that represents X-POSITION'			# 'x'
+	YPositionString = yText.get() #'Y' 								#'enter the string in the header of the column that represents Y-POSITION'			# 'y'
 
 	# Case-sensitive string rawHeaders of attribute columns that already exist in the data (optional). NB: String also sensitive for extra spaces.
-	readAttributeCols = ['Speed','dist to closest home','dist to closest visitor','Shirt','InBallPos']
+	# readAttributeCols = ['Speed','dist to closest home','dist to closest visitor','Shirt','InBallPos']
+	readAttributeCols = [speedText.get(),'dist to closest home','dist to closest visitor',shirtText.get(),possText.get()]
 	readAttributeLabels = ['Speed (m/s)', 'Distance to closest home player.', 'Distance to closest away player.', 'Shirt Number.', 'Player in ball possession.']
 
 	# When event columns exist in the raw data, they can be read to export an event file
@@ -77,7 +88,7 @@ def process(csvFolder,xmlFolder,saveFolder):
 	skipCleanup = True # Only works if cleaned file exists. NB: if False, all other skips become ineffective.
 	skipSpatAgg = True # Only works if spat agg export exists. NB: if False, skipEventAgg and skipToDataSetLevel become ineffective.
 	skipPlayerReports = False
-	skipComputeEvents = False #
+	skipComputeEvents = False
 
 	# If both True, then files are not verified to be analyzed previously
 	# If skipToDataSetLevel == False, then it is verified that every match exists in eventAggregate
@@ -110,7 +121,7 @@ def process(csvFolder,xmlFolder,saveFolder):
 
 	cdir = realpath(abspath(split(inspect.getfile( inspect.currentframe() ))[0]))
 	pdir = dirname(cdir) # parent directory
-	library_folder = cdir + str(sep + "LibraryRENS")
+	library_folder = cdir + str(sep + "Library")#LT: aangepast!
 
 	if not isdir(library_folder):
 		# if the process.py is in a subfolder, then copy the initialization module
@@ -121,7 +132,7 @@ def process(csvFolder,xmlFolder,saveFolder):
 	# This allows Python to import the custom modules in our library. 
 	# If you add new subfolders in the library, they need to be added in addLibary (in initialization.py) as well.
 	dataFolder,tmpFigFolder,outputFolder,cleanedFolder,spatAggFolder,eventAggFolder,aggregatedOutputFilename,outputDescriptionFilename,eventAggFname,backupEventAggFname,DirtyDataFiles,aggregateLevel,t,skipToDataSetLevel,skipCleanup,skipSpatAgg,skipEventAgg,includeTrialVisualization,rawHeaders, attrLabel,skipComputeEvents,DirtyDataFiles_backup,playerReportFolder = \
-	initialization.process(studentFolder,folder,aggregateEvent,allWindows_and_Lags,skipToDataSetLevel,skipCleanup,skipSpatAgg,skipEventAgg,includeTrialVisualization,timestampString,PlayerIDstring,TeamIDstring,XPositionString,YPositionString,readAttributeCols,readAttributeLabels,onlyAnalyzeFilesWithEventData,parallelProcess,skipComputeEvents,saveFolder,csvFolder,xmlFolder,skipEventAgg_MatchVerification = skipEventAgg_MatchVerification)
+	initialization.process(studentFolderLT,studentFolderVP,folder,aggregateEvent,allWindows_and_Lags,skipToDataSetLevel,skipCleanup,skipSpatAgg,skipEventAgg,includeTrialVisualization,timestampString,PlayerIDstring,TeamIDstring,XPositionString,YPositionString,readAttributeCols,readAttributeLabels,onlyAnalyzeFilesWithEventData,parallelProcess,skipComputeEvents,saveFolder,csvFolder,xmlFolder,skipEventAgg_MatchVerification = skipEventAgg_MatchVerification)
 
 	# Custom modules (from LibrarRENS)
 	import datasetVisualization
@@ -228,10 +239,8 @@ def process(csvFolder,xmlFolder,saveFolder):
 		####### Compute new attributes #########################################################
 		########################################################################################
 
-		attrPanda,attrLabel = spatialAggregation.process(rawPanda,attrPanda,attrLabel,TeamAstring,TeamBstring,skipSpatAgg_curFile,eventsPanda,spatAggFolder,spatAggFname,debuggingMode)
+		attrPanda,attrLabel = spatialAggregation.process(rawPanda,attrPanda,attrLabel,TeamAstring,TeamBstring,skipSpatAgg_curFile,eventsPanda,spatAggFolder,spatAggFname,debuggingMode,targetEventsImported,checkVictor,checkLars)
 		
-		playerReports.process(rawPanda,attrPanda,TeamAstring,TeamBstring,playerReportFolder,dirtyFname[:-4],debuggingMode,skipPlayerReports)
-		continue #LT: stoppen na playerReports
 		# pdb.set_trace()
 		# NB: targetEVents is a dictionary with the key corresponding to the type of event.
 		# For each key, there is a tuple that contains (timeOfEvent,TeamID,..) 
@@ -239,9 +248,12 @@ def process(csvFolder,xmlFolder,saveFolder):
 		# (for example, possession contains the starting time and the nubmer of passes made within that possession)
 		# NB2: For attack - events, use the 4th place in the tuple for the label (e.g., 1 = no shot, 2 = shot off target, 3 = shot on target, 4 = goals)
 
+		targetEvents,eventClassified,allDict = \
+		computeEvents.process(targetEventsImported,aggregateLevel,rawPanda,attrPanda,eventsPanda,TeamAstring,TeamBstring,dataFolder,cleanFname,debuggingMode,skipComputeEvents_curFile,checkVictor,checkLars)
+		#LT: Dit wordt nog gebruikt om de aanvallen te bepalen en seconds in final third per player te bepalen.
 
-		targetEvents,eventClassified = \
-		computeEvents.process(targetEventsImported,aggregateLevel,rawPanda,attrPanda,eventsPanda,TeamAstring,TeamBstring,dataFolder,cleanFname,debuggingMode,skipComputeEvents_curFile)
+		playerReports.process(rawPanda,attrPanda,TeamAstring,TeamBstring,playerReportFolder,dirtyFname[:-4],debuggingMode,skipPlayerReports,allDict)
+		continue #LT: stoppen na playerReports
 
 		# print(attrPanda.columns.values,attrLabel)
 		#LT: drop all variables where no temporal aggregation is needed

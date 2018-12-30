@@ -16,7 +16,7 @@ if __name__ == '__main__':
 	addLibrary()
 	checkFolders(folder,aggregateEvent)
 
-def process(studentFolder,folder,aggregateEvent,allWindows_and_Lags,skipToDataSetLevel,skipCleanup,skipSpatAgg,skipEventAgg,includeTrialVisualization,timestampString,PlayerIDstring,TeamIDstring,XPositionString,YPositionString,readAttributeCols,readAttributeLabels,onlyAnalyzeFilesWithEventData,parallelProcess,skipComputeEvents,saveFolder,csvFolder,xmlFolder,**kwargs):
+def process(studentFolderLT,studentFolderVP,folder,aggregateEvent,allWindows_and_Lags,skipToDataSetLevel,skipCleanup,skipSpatAgg,skipEventAgg,includeTrialVisualization,timestampString,PlayerIDstring,TeamIDstring,XPositionString,YPositionString,readAttributeCols,readAttributeLabels,onlyAnalyzeFilesWithEventData,parallelProcess,skipComputeEvents,saveFolder,csvFolder,xmlFolder,**kwargs):
 	skipEventAgg_MatchVerification = False
 	if 'skipEventAgg_MatchVerification' in kwargs:
 		skipEventAgg_MatchVerification = kwargs['skipEventAgg_MatchVerification']
@@ -92,14 +92,14 @@ def addLibrary(studentFolder):
 	current_folder_process = path.realpath(path.abspath(path.split(inspect.getfile( inspect.currentframe() ))[0]))
 	current_folder = current_folder_process
 
-	library_folder = current_folder + str(sep + "LibraryRENS")
+	library_folder = current_folder + str(sep + "Library")
 	if not path.isdir(library_folder):
 		# either the current, or the foler above
 		current_folder = path.dirname(current_folder)
-		library_folder = current_folder + str(sep + "LibraryRENS")
+		library_folder = current_folder + str(sep + "Library")
 
 	if not path.isdir(library_folder):
-		warn('\nFATAL WARNING: Could not find the library. It should be named <libraryRENS> and either put in:\n%s\nor in:\n%s' %(current_folder,current_folder_process))
+		warn('\nFATAL WARNING: Could not find the library. It should be named <Library> and either put in:\n%s\nor in:\n%s' %(current_folder,current_folder_process))
 
 	if library_folder not in sys.path:
 		sys.path.insert(0, library_folder)
