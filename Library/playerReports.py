@@ -353,8 +353,6 @@ def reportOffBall(rawPanda,attrPanda,TeamAstring,TeamBstring,playerReportFolder,
 		maxDangerTeam = maxDangerB
 
 	plotTeam(teamDataA,teamDataB,dfTeams,playerReportFolder,maxDangerTeam,matchName,TeamAstring,TeamBstring, 'Off-ball performance')
-	print("GEHAAALDD!!!!")
-	return
 	# print(dfPlayers)
 	# print(allDict[teamField][allDict[playerField]=='1214'])
 	# pdb.set_trace()
@@ -365,8 +363,8 @@ def reportOffBall(rawPanda,attrPanda,TeamAstring,TeamBstring,playerReportFolder,
 			# pdb.set_trace()
 			dfDanger = dfDanger.append({playerField:player,teamField:allDict[teamField][allDict[playerField]==player].iloc[0],'Ts':quart*900,fieldToPlot:0,'fiveSeconds':quart*180,'fifteenMinutes':quart},ignore_index=True)
 
-	allPlayerData = dfDanger.groupby([teamField,'fifteenMinutes','fiveSeconds',playerField])[fieldToPlot].max().groupby([teamField,playerField,'fifteenMinutes']).sum()
-	allTeamData = dfDanger.groupby([teamField,'fifteenMinutes','fiveSeconds',playerField])[fieldToPlot].max().groupby([teamField,'fifteenMinutes']).sum()
+	allPlayerData = dfDanger.groupby([teamField,playerField,'fifteenMinutes'])[fieldToPlot].sum()
+	allTeamData = dfDanger.groupby([teamField,'fifteenMinutes'])[fieldToPlot].sum()
 	# print(allPlayerData)
 	# pdb.set_trace()
 
