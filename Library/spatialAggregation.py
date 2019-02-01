@@ -94,8 +94,8 @@ def process(rawDict,attributeDict,attributeLabel,TeamAstring,TeamBstring,skipSpa
 			tSpatAgg_student = time.time()
 
 	if checkVictor:
-		# attributeDict,attributeLabel = \
-		# student_VP_spatialAggregation.process(rawDict,attributeDict,attributeLabel,TeamAstring,TeamBstring,skipSpatAgg,targetEvents)
+		attributeDict,attributeLabel = \
+		student_VP_spatialAggregation.process(rawDict,attributeDict,attributeLabel,TeamAstring,TeamBstring,skipSpatAgg,targetEvents)
 		if debuggingMode:
 			elapsed = str(round(time.time() - tSpatAgg_vNorm, 2))
 			print('*****----- Time elapsed during spatialAggregation.student_VP_spatialAggregation(): %ss' %elapsed)

@@ -123,7 +123,7 @@ def process(targetEvents,aggregateLevel,rawPanda,attrPanda,eventsPanda,TeamAstri
 		student_LT_computeEvents.process(targetEvents,aggregateLevel,rawPanda,attrPanda,eventsPanda,TeamAstring,TeamBstring,eventClassified)
 
 	if checkVictor:
-		targetEvents,eventClassified = \
+		targetEvents,eventClassified,allDict = \
 		student_VP_computeEvents.process(targetEvents,aggregateLevel,rawPanda,attrPanda,eventsPanda,TeamAstring,TeamBstring,eventClassified)
 
 	# export it
@@ -152,10 +152,10 @@ def process(targetEvents,aggregateLevel,rawPanda,attrPanda,eventsPanda,TeamAstri
 		elapsed = str(round(time.time() - tComputeEvents, 2))
 		print('***** Time elapsed during computeEvents: %ss' %elapsed)
 
-	if checkLars:
-		return targetEvents,eventClassified,allDict
+	# if checkLars:
+	# 	return targetEvents,eventClassified,allDict
 
-	return targetEvents,eventClassified
+	return targetEvents,eventClassified,allDict
 
 ############################################################
 ############################################################

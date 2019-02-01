@@ -381,8 +381,8 @@ def distanceToInPossession(rawDict,attributeDict,attributeLabel,TeamAstring,Team
 	# Export a string label of each new attribute in the labels dictionary (useful for plotting purposes)
 	attributeLabel_tmp = {'distanceToInPossession': tmpdistanceToInPossession}
 	attributeLabel.update(attributeLabel_tmp)
-	altogether = pd.concat([rawDict,attributeDict], axis=1)
-	altogether.to_csv('/Users/Victor/Desktop/Universiteit/AnalyseKNVB/test.csv')
+	# altogether = pd.concat([rawDict,attributeDict], axis=1)
+	# altogether.to_csv('/Users/Victor/Desktop/Universiteit/AnalyseKNVB/test.csv')
 
 	return attributeDict,attributeLabel
 
@@ -510,8 +510,8 @@ def angleOpponentToPassline(rawDict,attributeDict,attributeLabel,TeamAstring,Tea
 	# Export a string label of each new attribute in the labels dictionary (useful for plotting purposes)
 	attributeLabel_tmp = {'angleOpponentToPassline': angleToPassline}
 	attributeLabel.update(attributeLabel_tmp)
-	altogether = pd.concat([rawDict,attributeDict], axis=1)
-	altogether.to_csv('/Users/Victor/Desktop/Universiteit/AnalyseKNVB/test.csv')
+	# altogether = pd.concat([rawDict,attributeDict], axis=1)
+	# altogether.to_csv('/Users/Victor/Desktop/Universiteit/AnalyseKNVB/test.csv')
 
 	return attributeDict,attributeLabel
 
@@ -559,8 +559,8 @@ def distanceToBall(rawDict,attributeDict,attributeLabel,TeamAstring,TeamBstring,
 	# Export a string label of each new attribute in the labels dictionary (useful for plotting purposes)
 	attributeLabel_tmp = {'distanceToBall': tmpdistanceToBall}
 	attributeLabel.update(attributeLabel_tmp)
-	altogether = pd.concat([rawDict,attributeDict], axis=1)
-	altogether.to_csv('/Users/Victor/Desktop/Universiteit/AnalyseKNVB/test.csv')
+	# altogether = pd.concat([rawDict,attributeDict], axis=1)
+	# altogether.to_csv('/Users/Victor/Desktop/Universiteit/AnalyseKNVB/test.csv')
 
 	return attributeDict,attributeLabel
 
@@ -690,8 +690,8 @@ def distanceToGoal(rawDict,attributeDict,attributeLabel,TeamAstring,TeamBstring,
 	# Export a string label of each new attribute in the labels dictionary (useful for plotting purposes)
 	attributeLabel_tmp = {'distanceToOpponentGoal': tmpdistanceToOpponentGoal, 'distanceToOwnGoal': tmpdistanceToOwnGoal}
 	attributeLabel.update(attributeLabel_tmp)
-	altogether = pd.concat([rawDict,attributeDict], axis=1)
-	altogether.to_csv('/Users/Victor/Desktop/Universiteit/AnalyseKNVB/test.csv')
+	# altogether = pd.concat([rawDict,attributeDict], axis=1)
+	# altogether.to_csv('/Users/Victor/Desktop/Universiteit/AnalyseKNVB/test.csv')
 
 	return attributeDict,attributeLabel
 
@@ -826,8 +826,8 @@ def rankPlayersPerFeature(rawDict,attributeDict,attributeLabel,TeamAstring,TeamB
 	# Export a string label of each new attribute in the labels dictionary (useful for plotting purposes)
 	attributeLabel_tmp = {'distanceToOpponentRank': tmp_distanceToOpponentRank, 'angleToPasslineRank': tmp_angleToPasslineRank, 'distanceToPossessionRank': tmp_distanceToPossessionRank, 'distanceToOpponentGoalRank': tmp_distanceToOpponentGoalRank, 'curPositioningRank': tmp_curPositioningRank}
 	attributeLabel.update(attributeLabel_tmp)
-	altogether = pd.concat([rawDict,attributeDict], axis=1)
-	altogether.to_csv('/Users/Victor/Desktop/Universiteit/AnalyseKNVB/test.csv')
+	# altogether = pd.concat([rawDict,attributeDict], axis=1)
+	# altogether.to_csv('/Users/Victor/Desktop/Universiteit/AnalyseKNVB/test.csv')
 
 	return attributeDict,attributeLabel
 
@@ -967,8 +967,8 @@ def ratePlayersPerFeature(rawDict,attributeDict,attributeLabel,TeamAstring,TeamB
 	# Export a string label of each new attribute in the labels dictionary (useful for plotting purposes)
 	attributeLabel_tmp = {'distanceToOpponentRating': tmp_distanceToOpponentRating, 'angleToPasslineRating': tmp_angleToPasslineRating, 'distanceToPossessionRating': tmp_distanceToPossessionRating, 'distanceToOpponentGoalRating': tmp_distanceToOpponentGoalRating, 'curPositioningRating': tmp_curPositioningRating}
 	attributeLabel.update(attributeLabel_tmp)
-	altogether = pd.concat([rawDict,attributeDict], axis=1)
-	altogether.to_csv('/Users/Victor/Desktop/Universiteit/AnalyseKNVB/test.csv')
+	# altogether = pd.concat([rawDict,attributeDict], axis=1)
+	# altogether.to_csv('/Users/Victor/Desktop/Universiteit/AnalyseKNVB/test.csv')
 
 	return attributeDict,attributeLabel
 
@@ -1076,8 +1076,8 @@ def playerPassedToRating(rawDict,attributeDict,attributeLabel,TeamAstring,TeamBs
 	# Export a string label of each new attribute in the labels dictionary (useful for plotting purposes)
 	attributeLabel_tmp = {'ballPassedTo': tmp_ballPassedTo,'passRating': tmp_passRating,'passDistanceToGoalRating': tmp_passDistanceToGoalRating,'passAngleRating': tmp_passAngleRating,'passDistToOpRating': tmp_passDistToOpRating,'passDistToPosRating': tmp_passDistToPosRating,'passDistanceToGoal': tmp_passDistanceToGoal,'passAngle': tmp_passAngle,'passDistToOp': tmp_passDistToOp,'passDistToPos': tmp_passDistToPos}
 	attributeLabel.update(attributeLabel_tmp)
-	altogether = pd.concat([rawDict,attributeDict], axis=1)
-	altogether.to_csv('/Users/Victor/Desktop/Universiteit/AnalyseKNVB/test.csv')
+	# altogether = pd.concat([rawDict,attributeDict], axis=1)
+	# altogether.to_csv('/Users/Victor/Desktop/Universiteit/AnalyseKNVB/test.csv')
 
 	return attributeDict,attributeLabel
 
@@ -1207,8 +1207,8 @@ def playerPassedToRank(rawDict,attributeDict,attributeLabel,TeamAstring,TeamBstr
 	attributeLabel_tmp = {'ballPassedTo': tmp_ballPassedTo,'passRank': tmp_passRating,'passDistanceToGoalRank': tmp_passDistanceToGoalRating,'passAngleRank': tmp_passAngleRating,'passDistToOpRank': tmp_passDistToOpRating,'passDistToPosRank': tmp_passDistToPosRating,'passDistanceToGoal': tmp_passDistanceToGoal,'passAngle': tmp_passAngle,'passDistToOp': tmp_passDistToOp,'passDistToPos': tmp_passDistToPos,
 	'passPopRank': tmp_passPopRating, 'passPopDistanceToGoalRank': tmp_passPopDistanceToGoalRating, 'passPopDistToOpRank': tmp_passPopDistToOpRating, 'passPopDistToPosRank': tmp_passPopDistToPosRating, 'passPopAngleRank': tmp_passPopAngleRating}
 	attributeLabel.update(attributeLabel_tmp)
-	altogether = pd.concat([rawDict,attributeDict], axis=1)
-	altogether.to_csv('/Users/Victor/Desktop/Universiteit/AnalyseKNVB/test.csv')
+	# altogether = pd.concat([rawDict,attributeDict], axis=1)
+	# altogether.to_csv('/Users/Victor/Desktop/Universiteit/AnalyseKNVB/test.csv')
 
 	return attributeDict,attributeLabel
 
@@ -1357,7 +1357,7 @@ def zone(rawDict,attributeDict,attributeLabel,TeamAstring,TeamBstring,skipSpatAg
 	attributeLabel_tmp = {'zone': tmpZone, 'inZone': tmpInZone, 'opponentsHalf': tmpOpponentsHalf}
 	attributeLabel.update(attributeLabel_tmp)
 
-	altogether = pd.concat([rawDict,attributeDict], axis=1)
+	# altogether = pd.concat([rawDict,attributeDict], axis=1)
 	# altogether.to_csv('D:\\KNVB\\test.csv')
 
 	# pdb.set_trace()
@@ -1448,8 +1448,8 @@ def lastBuildUpPassRating(rawDict,attributeDict,attributeLabel,TeamAstring,TeamB
 	attributeLabel_tmp = {'lastPassRating': tmp_lastPassRank,'lastPassDistanceToGoalRating': tmp_lastPassDistanceToGoalRank,'lastPassAngleRating': tmp_lastPassAngleRank,'lastPassDistToOpRating': tmp_lastPassDistToOpRank,'lastPassDistToPosRating': tmp_lastPassDistToPosRank,'lastPassDistanceToGoal': tmp_lastPassDistanceToGoal,'lastPassAngle': tmp_lastPassAngle,'lastPassDistToOp': tmp_lastPassDistToOp,'lastPassDistToPos': tmp_lastPassDistToPos,'finalDistanceToGoal': tmp_finalDistanceToGoal}
 
 	attributeLabel.update(attributeLabel_tmp)
-	altogether = pd.concat([rawDict,attributeDict], axis=1)
-	altogether.to_csv('/Users/Victor/Desktop/Universiteit/AnalyseKNVB/test.csv')
+	# altogether = pd.concat([rawDict,attributeDict], axis=1)
+	# altogether.to_csv('/Users/Victor/Desktop/Universiteit/AnalyseKNVB/test.csv')
 
 	return attributeDict,attributeLabel
 
@@ -1561,8 +1561,8 @@ def lastBuildUpPassRank(rawDict,attributeDict,attributeLabel,TeamAstring,TeamBst
 	attributeLabel_tmp = {'lastPassRank': tmp_lastPassRank,'lastPassDistanceToGoalRank': tmp_lastPassDistanceToGoalRank,'lastPassAngleRank': tmp_lastPassAngleRank,'lastPassDistToOpRank': tmp_lastPassDistToOpRank,'lastPassDistToPosRank': tmp_lastPassDistToPosRank,'lastPassDistanceToGoal': tmp_lastPassDistanceToGoal,'lastPassAngle': tmp_lastPassAngle,'lastPassDistToOp': tmp_lastPassDistToOp,'lastPassDistToPos': tmp_lastPassDistToPos,'finalDistanceToGoal': tmp_finalDistanceToGoal, 'lastPassPopRank': tmp_lastPassPopRank, 'lastPassPopDistanceToGoalRank': tmp_lastPassPopDistanceToGoalRank, 'lastPassPopAngleRank': tmp_lastPassPopAngleRank, 'lastPassPopDistToOpRank': tmp_lastPassPopDistToOpRank, 'lastPassPopDistToPosRank': tmp_lastPassPopDistToPosRank}
 
 	attributeLabel.update(attributeLabel_tmp)
-	altogether = pd.concat([rawDict,attributeDict], axis=1)
-	altogether.to_csv('/Users/Victor/Desktop/Universiteit/AnalyseKNVB/test.csv')
+	# altogether = pd.concat([rawDict,attributeDict], axis=1)
+	# altogether.to_csv('/Users/Victor/Desktop/Universiteit/AnalyseKNVB/test.csv')
 
 	return attributeDict,attributeLabel
 
@@ -1644,7 +1644,7 @@ def populationBasedRankings(rawDict,attributeDict,attributeLabel,TeamAstring,Tea
 	attributeLabel_tmp = {'popAngleRank': tmp_popAngleRank,'popDistanceToGoalRank': tmp_popDistanceToGoalRank,'popDistToPosRank': tmp_popDistToPosRank,'popDistToOpRank': tmp_popDistToOpRank,'popPositioningRank': tmp_popPositioningRank}
 
 	attributeLabel.update(attributeLabel_tmp)
-	altogether = pd.concat([rawDict,attributeDict], axis=1)
-	altogether.to_csv('/Users/Victor/Desktop/Universiteit/AnalyseKNVB/test.csv')
+	# altogether = pd.concat([rawDict,attributeDict], axis=1)
+	# altogether.to_csv('/Users/Victor/Desktop/Universiteit/AnalyseKNVB/test.csv')
 
 	return attributeDict,attributeLabel

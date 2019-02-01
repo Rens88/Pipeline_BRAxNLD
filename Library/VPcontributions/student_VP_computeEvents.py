@@ -39,8 +39,10 @@ def process(targetEvents,aggregateLevel,rawPanda,attrPanda,eventsPanda,TeamAstri
 	# print(len(targetEvents['attack']))
 	# print(attrPanda)
 	# pdb.set_trace()
+	allDict = pd.concat([rawPanda, attrPanda], axis=1)
+	allDict = allDict.loc[:,~allDict.columns.duplicated()]
 
-	return targetEvents,eventClassified
+	return targetEvents,eventClassified,allDict
 
 def buildUpLabels(rawPanda,attrPanda,targetEvents,TeamAstring,TeamBstring,eventClassified,passDF):
 	#labels for event result

@@ -1,0 +1,106 @@
+INFO:root:2018-12-19 15:50:57 - C:\Users\Lars\Documents\GitHub\Pipeline_BRAxNLD\process_Template.py - Start
+CRITICAL:root:2018-12-19 15:50:58 - student_LT_cleanUp.py
+ Column header <a> not in column headers of the file:
+['Timestamp', 'X', 'Y', 'Speed', 'dist to closest home', 'dist to closest visitor', 'Shirt', 'PlrID', 'InBallPos', 'Name']
+SOLUTION: Change the user input in 'parameters'.
+
+INFO:root:2018-12-21 12:20:08 - C:\Users\Lars\Documents\GitHub\Pipeline_BRAxNLD\process_Template.py - Start
+INFO:root:2018-12-21 12:20:53 - C:\Users\Lars\Documents\GitHub\Pipeline_BRAxNLD\process_Template.py - Start
+CRITICAL:root:2018-12-21 12:21:00 - student_LT_cleanUp.py
+Column header <a> not in column headers of the file:
+['Timestamp', 'X', 'Y', 'Speed', 'dist to closest home', 'dist to closest visitor', 'Shirt', 'PlrID', 'InBallPos', 'Name']
+SOLUTION: Change the user input in 'parameters'.
+
+INFO:root:2018-12-21 12:21:48 - C:\Users\Lars\Documents\GitHub\Pipeline_BRAxNLD\process_Template.py - Start
+CRITICAL:root:2018-12-21 12:22:02 - student_LT_cleanUp.py
+Column header <a> not in column headers of the file:
+['Timestamp', 'X', 'Y', 'Speed', 'dist to closest home', 'dist to closest visitor', 'Shirt', 'PlrID', 'InBallPos', 'Name']
+SOLUTION: Change the user input in 'parameters'.
+
+INFO:root:2018-12-21 12:24:13 - C:\Users\Lars\Documents\GitHub\Pipeline_BRAxNLD\process_Template.py - Start
+CRITICAL:root:2018-12-21 12:24:24 - student_LT_cleanUp.py
+Column header <a> not in column headers of the file:
+['Timestamp', 'X', 'Y', 'Speed', 'dist to closest home', 'dist to closest visitor', 'Shirt', 'PlrID', 'InBallPos', 'Name']
+SOLUTION: Change the user input in 'parameters'.
+
+INFO:root:2018-12-21 12:27:18 - C:\Users\Lars\Documents\GitHub\Pipeline_BRAxNLD\process_Template.py - Start
+CRITICAL:root:2018-12-21 12:27:33 - student_LT_cleanUp.py
+Column header <a> not in column headers of the file:
+['Timestamp', 'X', 'Y', 'Speed', 'dist to closest home', 'dist to closest visitor', 'Shirt', 'PlrID', 'InBallPos', 'Name']
+SOLUTION: Change the user input in 'parameters'.
+
+INFO:root:2018-12-21 12:29:06 - C:\Users\Lars\Documents\GitHub\Pipeline_BRAxNLD\process_Template.py - Start
+CRITICAL:root:2018-12-21 12:29:17 - student_LT_cleanUp.py
+Column header <a> not in column headers of the file:
+['Timestamp', 'X', 'Y', 'Speed', 'dist to closest home', 'dist to closest visitor', 'Shirt', 'PlrID', 'InBallPos', 'Name']
+SOLUTION: Change the user input in 'parameters'.
+
+INFO:root:2018-12-21 12:44:58 - C:\Users\Lars\Documents\GitHub\Pipeline_BRAxNLD\process_Template.py - Start
+INFO:root:2018-12-21 12:46:12 - C:\Users\Lars\Documents\GitHub\Pipeline_BRAxNLD\process_Template.py - Start
+CRITICAL:root:2018-12-21 12:46:14 - student_LT_cleanUp.py
+Column header <a> not in column headers of the file:
+['Timestamp', 'X', 'Y', 'Speed', 'dist to closest home', 'dist to closest visitor', 'Shirt', 'PlrID', 'InBallPos', 'Name']
+SOLUTION: Change the user input in 'parameters'.
+
+INFO:root:2019-02-01 13:54:02 - C:\Users\Lars\Documents\GitHub\Pipeline_BRAxNLD\process_Template.py - Start
+INFO:root:2019-02-01 14:16:24 - C:\Users\Lars\Documents\GitHub\Pipeline_BRAxNLD\process_Template.py - Start
+CRITICAL:root:2019-02-01 14:17:05 - student_LT_cleanUp.py
+Column header <Ts> not in column headers of the file:
+['Timestamp', 'X', 'Y', 'Speed', 'dist to closest home', 'dist to closest visitor', 'Shirt', 'PlrID', 'InBallPos', 'Name']
+SOLUTION: Change the user input in 'parameters'.
+
+INFO:root:2019-02-01 14:23:54 - C:\Users\Lars\Documents\GitHub\Pipeline_BRAxNLD\process_Template.py - Start
+CRITICAL:root:2019-02-01 14:24:26 - student_LT_cleanUp.py
+Column header <Ts> not in column headers of the file:
+['Timestamp', 'X', 'Y', 'Speed', 'dist to closest home', 'dist to closest visitor', 'Shirt', 'PlrID', 'InBallPos', 'Name']
+SOLUTION: Change the user input in 'parameters'.
+
+INFO:root:2019-02-01 14:27:18 - C:\Users\Lars\Documents\GitHub\Pipeline_BRAxNLD\process_Template.py - Start
+CRITICAL:root:2019-02-01 14:27:44 - student_LT_cleanUp.py
+Column header <Ballposs> not in column headers of the file:
+['Timestamp', 'X', 'Y', 'Speed', 'dist to closest home', 'dist to closest visitor', 'Shirt', 'PlrID', 'InBallPos', 'Name']
+SOLUTION: Change the user input in 'parameters'.
+
+INFO:root:2019-02-01 14:29:27 - C:\Users\Lars\Documents\GitHub\Pipeline_BRAxNLD\process_Template.py - Start
+CRITICAL:root:2019-02-01 14:29:34 - student_LT_cleanUp.py
+Column header <> not in column headers of the file:
+['Timestamp', 'X', 'Y', 'Speed', 'dist to closest home', 'dist to closest visitor', 'Shirt', 'PlrID', 'InBallPos', 'Name']
+SOLUTION: Change the user input in 'parameters'.
+
+INFO:root:2019-02-01 14:35:59 - C:\Users\Lars\Documents\GitHub\Pipeline_BRAxNLD\process_Template.py - Start
+CRITICAL:root:2019-02-01 14:36:07 - student_LT_cleanUp.py
+Column header <InBallPoss> not in column headers of the file:
+['Timestamp', 'X', 'Y', 'Speed', 'dist to closest home', 'dist to closest visitor', 'Shirt', 'PlrID', 'InBallPos', 'Name']
+SOLUTION: Change the user input in 'parameters'.
+
+INFO:root:2019-02-01 14:36:15 - C:\Users\Lars\Documents\GitHub\Pipeline_BRAxNLD\process_Template.py - Start
+INFO:root:2019-02-01 14:39:23 - C:\Users\Lars\Documents\GitHub\Pipeline_BRAxNLD\process_Template.py - Start
+INFO:root:2019-02-01 14:40:41 - C:\Users\Lars\Documents\GitHub\Pipeline_BRAxNLD\process_Template.py - Start
+INFO:root:2019-02-01 14:41:07 - C:\Users\Lars\Documents\GitHub\Pipeline_BRAxNLD\process_Template.py - Start
+INFO:root:2019-02-01 14:41:29 - C:\Users\Lars\Documents\GitHub\Pipeline_BRAxNLD\process_Template.py - Start
+INFO:root:2019-02-01 14:42:00 - C:\Users\Lars\Documents\GitHub\Pipeline_BRAxNLD\process_Template.py - Start
+INFO:root:2019-02-01 14:46:24 - C:\Users\Lars\Documents\GitHub\Pipeline_BRAxNLD\process_Template.py - Start
+INFO:root:2019-02-01 14:47:45 - C:\Users\Lars\Documents\GitHub\Pipeline_BRAxNLD\process_Template.py - Start
+INFO:root:2019-02-01 14:51:28 - C:\Users\Lars\Documents\GitHub\Pipeline_BRAxNLD\process_Template.py - Start
+INFO:root:2019-02-01 14:54:09 - C:\Users\Lars\Documents\GitHub\Pipeline_BRAxNLD\process_Template.py - Start
+INFO:root:2019-02-01 14:55:11 - C:\Users\Lars\Documents\GitHub\Pipeline_BRAxNLD\process_Template.py - Start
+INFO:root:2019-02-01 15:10:17 - C:\Users\Lars\Documents\GitHub\Pipeline_BRAxNLD\process_Template.py - Start
+INFO:root:2019-02-01 15:11:15 - C:\Users\Lars\Documents\GitHub\Pipeline_BRAxNLD\process_Template.py - Start
+INFO:root:2019-02-01 15:12:52 - C:\Users\Lars\Documents\GitHub\Pipeline_BRAxNLD\process_Template.py - Start
+INFO:root:2019-02-01 15:14:14 - C:\Users\Lars\Documents\GitHub\Pipeline_BRAxNLD\process_Template.py - Start
+INFO:root:2019-02-01 15:16:57 - C:\Users\Lars\Documents\GitHub\Pipeline_BRAxNLD\process_Template.py - Start
+INFO:root:2019-02-01 15:19:43 - C:\Users\Lars\Documents\GitHub\Pipeline_BRAxNLD\process_Template.py - Start
+INFO:root:2019-02-01 15:22:26 - C:\Users\Lars\Documents\GitHub\Pipeline_BRAxNLD\process_Template.py - Start
+INFO:root:2019-02-01 15:28:03 - C:\Users\Lars\Documents\GitHub\Pipeline_BRAxNLD\process_Template.py - Start
+INFO:root:2019-02-01 15:30:17 - C:\Users\Lars\Documents\GitHub\Pipeline_BRAxNLD\process_Template.py - Start
+INFO:root:2019-02-01 15:31:20 - C:\Users\Lars\Documents\GitHub\Pipeline_BRAxNLD\process_Template.py - Start
+INFO:root:2019-02-01 15:38:42 - C:\Users\Lars\Documents\GitHub\Pipeline_BRAxNLD\process_Template.py - Start
+INFO:root:2019-02-01 15:45:14 - C:\Users\Lars\Documents\GitHub\Pipeline_BRAxNLD\process_Template.py - Start
+INFO:root:2019-02-01 15:46:31 - C:\Users\Lars\Documents\GitHub\Pipeline_BRAxNLD\process_Template.py - Start
+INFO:root:2019-02-01 15:48:14 - C:\Users\Lars\Documents\GitHub\Pipeline_BRAxNLD\process_Template.py - Start
+INFO:root:2019-02-01 15:54:12 - C:\Users\Lars\Documents\GitHub\Pipeline_BRAxNLD\process_Template.py - Start
+INFO:root:2019-02-01 15:56:23 - C:\Users\Lars\Documents\GitHub\Pipeline_BRAxNLD\process_Template.py - Start
+INFO:root:2019-02-01 15:59:10 - C:\Users\Lars\Documents\GitHub\Pipeline_BRAxNLD\process_Template.py - Start
+INFO:root:2019-02-01 16:00:38 - C:\Users\Lars\Documents\GitHub\Pipeline_BRAxNLD\process_Template.py - Start
+INFO:root:2019-02-01 16:01:18 - C:\Users\Lars\Documents\GitHub\Pipeline_BRAxNLD\process_Template.py - Start
+INFO:root:2019-02-01 16:02:15 - C:\Users\Lars\Documents\GitHub\Pipeline_BRAxNLD\process_Template.py - Start

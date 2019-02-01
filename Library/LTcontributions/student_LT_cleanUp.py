@@ -84,7 +84,7 @@ def KNVB(fname,cleanFname,dataFolder,cleanedFolder,headers,readAttributeCols,deb
 	for i in colHeaders:
 		if not i in fileHeaders:
 			from tkinter import messagebox
-			messagebox.showerror('Kolomkoppen komen niet overeen', 'De kolomkop <%s> komt niet in de kolomkoppen van <%s> voor:\n%s\n\nOPLOSSING: Pas de user input op het tabblad \'parameters\' aan.\nHet programma wordt gesloten.' %(i,cleanFname,fileHeaders))
+			messagebox.showerror('Kolomkoppen komen niet overeen', 'De kolomkop <%s> komt niet in de kolomkoppen van <%s> voor:\n%s\n\nOPLOSSING: Pas de user input op het tabblad \'parameters\' aan.\nHet programma wordt afgesloten.' %(i,cleanFname,fileHeaders))
 			logging.critical(datetime.now().strftime("%Y-%m-%d %H:%M:%S") + ' - ' + basename(__file__) + '\nColumn header <%s> not in column headers of the file:\n%s\nSOLUTION: Change the user input in \'parameters\'.\n'%(i,fileHeaders))
 			exit('EXIT: Column header <%s> not in column headers of the file:\n%s\n\nSOLUTION: Change the user input in \'process\' \n' %(i,fileHeaders))
 

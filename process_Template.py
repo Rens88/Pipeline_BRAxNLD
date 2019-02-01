@@ -85,8 +85,8 @@ def process(csvFolder,xmlFolder,saveFolder,checkVictor,checkLars,tsText,playerTe
 	plotTheseAttributes_atDatasetLevel = ['distToGoal','minDistToDef','avgDistToDef2','avgDistToDef3','minAngleInPossDefGoal','avgAngleInPossDefGoal2','avgAngleInPossDefGoal3']#['velRelToBall','angleInPossDefGoal','distToPlayerWithBall','angleToGoal','majority','centrality','distToGoal']
 
 	# Parts of the pipeline can be skipped
-	skipCleanup = True # Only works if cleaned file exists. NB: if False, all other skips become ineffective.
-	skipSpatAgg = True # Only works if spat agg export exists. NB: if False, skipEventAgg and skipToDataSetLevel become ineffective.
+	skipCleanup = False # Only works if cleaned file exists. NB: if False, all other skips become ineffective.
+	skipSpatAgg = False # Only works if spat agg export exists. NB: if False, skipEventAgg and skipToDataSetLevel become ineffective.
 	skipPlayerReports = False
 	skipComputeEvents = False
 
@@ -252,7 +252,7 @@ def process(csvFolder,xmlFolder,saveFolder,checkVictor,checkLars,tsText,playerTe
 		computeEvents.process(targetEventsImported,aggregateLevel,rawPanda,attrPanda,eventsPanda,TeamAstring,TeamBstring,dataFolder,cleanFname,debuggingMode,skipComputeEvents_curFile,checkVictor,checkLars)
 		#LT: Dit wordt nog gebruikt om de aanvallen te bepalen en seconds in final third per player te bepalen.
 
-		playerReports.process(rawPanda,attrPanda,TeamAstring,TeamBstring,playerReportFolder,dirtyFname[:-4],debuggingMode,skipPlayerReports,allDict)
+		playerReports.process(rawPanda,attrPanda,TeamAstring,TeamBstring,playerReportFolder,dirtyFname[:-4],debuggingMode,skipPlayerReports,allDict,checkVictor,checkLars)
 		continue #LT: stoppen na playerReports
 
 		# print(attrPanda.columns.values,attrLabel)
