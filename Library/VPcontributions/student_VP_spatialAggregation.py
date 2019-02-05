@@ -24,6 +24,8 @@ fieldWidth = 68
 #Op True zetten als een testbestand wordt gebruikt
 korteWedstrijd = False
 
+KNVB = True #Geeft aan of de analyse voor de KNVB of voor de Universiteit is
+
 ## Here, you can clarify which functions exist in this module.
 if __name__ == '__main__':
 
@@ -760,17 +762,17 @@ def rankPlayersPerFeature(rawDict,attributeDict,attributeLabel,TeamAstring,TeamB
 
 		if all(curTeamInPossession == TeamAstring):
 			#Rate distance to nearest opponent
-			distanceToOpponentRank = curTeamA['dist to closest visitor'].rank(ascending=0)
+			distanceToOpponentRank = curTeamA['dist to closest visitor'].rank(ascending=0) #0 voor Leiden, 1 voor KNVB
 
 			#Rate angle to Opponent
 			curTeamA['angleOpponentToPassline'] = curTeamA['angleOpponentToPassline'].replace(np.nan, 200)
 			angleRank = curTeamA['angleOpponentToPassline'].rank(ascending=0)
 
 			#Rate distance to player in possession
-			distanceToPossessionRank = curTeamA['distanceToInPossession'].rank(ascending=0)
+			distanceToPossessionRank = curTeamA['distanceToInPossession'].rank(ascending=0) #0 voor Leiden, 1 voor KNVB
 
 			#Rank distanceToOpponentGoal
-			distanceToOpponentGoalRank = curTeamA['distanceToOpponentGoal'].rank(ascending=1)
+			distanceToOpponentGoalRank = curTeamA['distanceToOpponentGoal'].rank(ascending=1) #1 voor Leiden, 0 voor KNVB
 
 			newAttributes['distanceToOpponentRank'][curTeamA.index] = distanceToOpponentRank
 			newAttributes['angleToPasslineRank'][curTeamA.index] = angleRank
@@ -779,7 +781,7 @@ def rankPlayersPerFeature(rawDict,attributeDict,attributeLabel,TeamAstring,TeamB
 
 			curPositioningRank = newAttributes['distanceToOpponentRank'][curTeamA.index] + newAttributes['angleToPasslineRank'][curTeamA.index] + newAttributes['distanceToPossessionRank'][curTeamA.index] + newAttributes['distanceToOpponentGoalRank'][curTeamA.index]
 
-			curPositioningRank = curPositioningRank.rank(ascending=1)
+			curPositioningRank = curPositioningRank.rank(ascending=1) #1 voor Leiden, 0 voor KNVB
 
 			newAttributes['curPositioningRank'][curTeamA.index] = curPositioningRank
 
@@ -1596,39 +1598,66 @@ def populationBasedRankings(rawDict,attributeDict,attributeLabel,TeamAstring,Tea
 			#AngleOpponentToPassline
 			anglePlayers = players[players['angleOpponentToPassline'] >= angleValues[x]]
 			anglePlayers = anglePlayers[anglePlayers['angleOpponentToPassline'] < angleValues[x+1]]
-			newAttributes['popAngleRank'][anglePlayers.index] = 9 - x * 1
+			if KNVB:
+				newAttributes['popAngleRank'][anglePlayers.index] = x+1 #KNVB
+			else:
+				newAttributes['popAngleRank'][anglePlayers.index] = 9 - x * 1 #Leiden
 
 			#distanceToGoal
 			distToGoalPlayers = players[players['distanceToOpponentGoal'] >= distToGoalValues[x]]
 			distToGoalPlayers = distToGoalPlayers[distToGoalPlayers['distanceToOpponentGoal'] < distToGoalValues[x+1]]
-			newAttributes['popDistanceToGoalRank'][distToGoalPlayers.index] = x+1
+			if KNVB:
+				newAttributes['popDistanceToGoalRank'][distToGoalPlayers.index] = 9 - x * 1 #KNVB
+			else:
+				newAttributes['popDistanceToGoalRank'][distToGoalPlayers.index] = x+1 #Leiden
 
 			#distanceToPossession
 			distToPoslayers = players[players['distanceToInPossession'] >= distToPosValues[x]]
 			distToPoslayers = distToPoslayers[distToPoslayers['distanceToInPossession'] < distToPosValues[x+1]]
-			newAttributes['popDistToPosRank'][distToPoslayers.index] = 9 - x * 1
+			if KNVB:
+				newAttributes['popDistToPosRank'][distToPoslayers.index] = x+1 #KNVB
+			else:
+				newAttributes['popDistToPosRank'][distToPoslayers.index] = 9 - x * 1 #Leiden
 
 			#distanceToOpponent
 			distToOplayers = players[players['dist to closest visitor'] >= distToOpValues[x]]
 			distToOplayers = distToOplayers[distToOplayers['dist to closest visitor'] < distToOpValues[x+1]]
-			newAttributes['popDistToOpRank'][distToOplayers.index] = 9 - x * 1
+			if KNVB:
+				newAttributes['popDistToOpRank'][distToOplayers.index] = x+1 #KNVB
+			else:
+				newAttributes['popDistToOpRank'][distToOplayers.index] = 9 - x * 1 #Leiden
 
 		else:
 			anglePlayers = players[players['angleOpponentToPassline'] >= angleValues[x]]
-			newAttributes['popAngleRank'][anglePlayers.index] = 1
+			if (KNVB):
+				newAttributes['popAngleRank'][anglePlayers.index] = 9 #KNVB
+			else:
+				newAttributes['popAngleRank'][anglePlayers.index] = 1 #Leiden
 
 			distToGoalPlayers = players[players['distanceToOpponentGoal'] >= distToGoalValues[x]]
-			newAttributes['popDistanceToGoalRank'][distToGoalPlayers.index] = 9
+			if (KNVB):
+				newAttributes['popDistanceToGoalRank'][distToGoalPlayers.index] = 1 #KNVB
+			else:
+				newAttributes['popDistanceToGoalRank'][distToGoalPlayers.index] = 9 #Leiden
 
 			distToPoslayers = players[players['distanceToInPossession'] >= distToPosValues[x]]
-			newAttributes['popDistToPosRank'][distToPoslayers.index] = 1
+			if (KNVB):
+				newAttributes['popDistToPosRank'][distToPoslayers.index] = 9 #KNVB
+			else:
+				newAttributes['popDistToPosRank'][distToPoslayers.index] = 1 #Leiden
 
 			#distanceToOpponent
 			distToOplayers = players[players['dist to closest visitor'] >= distToOpValues[x]]
-			newAttributes['popDistToOpRank'][distToPoslayers.index] = 1
+			if (KNVB):
+				newAttributes['popDistToOpRank'][distToPoslayers.index] = 9 #KNVB
+			else:
+				newAttributes['popDistToOpRank'][distToPoslayers.index] = 1 #Leiden
 
 	nanAngle = players[players['angleOpponentToPassline'].isnull()]
-	newAttributes['popAngleRank'][nanAngle.index] = 1
+	if (KNVB):
+		newAttributes['popAngleRank'][nanAngle.index] = 9 #Leiden
+	else:
+		newAttributes['popAngleRank'][nanAngle.index] = 1 #Leiden
 
 	newAttributes['popPositioningRank'][players.index] = newAttributes['popAngleRank'][players.index] + newAttributes['popDistanceToGoalRank'][players.index] + newAttributes['popDistToPosRank'][players.index] + newAttributes['popDistToOpRank'][players.index]
 
