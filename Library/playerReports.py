@@ -271,7 +271,7 @@ def dataToCSV(allPlayerData,secondsInFinalThird,playerReportFolder,name,matchNam
 	pivotAllPlayerData['Dangerousity per Second'] = pivotAllPlayerData['Total Dangerousity'] / pivotAllPlayerData['Total Seconds']
 	pivotAllPlayerData = pivotAllPlayerData.sort_values('Total Dangerousity',ascending=False)
 
-	pivotAllPlayerData = pivotAllPlayerData.rename(columns={'0.0_Danger':'0-15 Danger','1.0_Danger':'16-30 Danger','2.0_Danger':'31-45+ Danger'})
+	pivotAllPlayerData = pivotAllPlayerData.rename(columns={'0.0_Danger':'0-15 Danger','1.0_Danger':'16-30 Danger','2.0_Danger':'31-45+ Danger','0.0_Seconds':'0-15 Seconds','1.0_Seconds':'16-30 Seconds','2.0_Seconds':'31-45+ Seconds'})
 	pivotAllPlayerData.to_csv(playerReportFolder + matchName + ' ' + name +'.csv',header=True)
 	# pdb.set_trace()
 
