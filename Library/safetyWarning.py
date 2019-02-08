@@ -6,6 +6,9 @@
 import pdb; #pdb.set_trace()
 from warnings import warn
 import numpy as np
+import logging
+from datetime import datetime
+from os.path import isfile, join, exists, realpath, abspath, split,dirname, isdir, basename
 
 if __name__ == '__main__':		
 	checkWindow(rawDict,firstFrameTimeseries,windowTimeseries)

@@ -7,8 +7,9 @@ from os.path import isfile, join, exists#, isdir, exists
 from os import listdir, stat#, path, makedirs
 from warnings import warn
 import temporalAggregation_towardsGeneric
-
-
+import logging
+from datetime import datetime
+from os.path import isfile, join, exists, realpath, abspath, split,dirname, isdir, basename
 
 if __name__ == '__main__':
 

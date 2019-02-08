@@ -12,6 +12,9 @@ from os import listdir#, startfile
 import os, sys, subprocess
 import pandas as pd
 import time
+import logging
+from datetime import datetime
+from os.path import isfile, join, exists, realpath, abspath, split,dirname, isdir, basename
 
 # import CSVexcerpt
 
@@ -215,7 +218,7 @@ def eventAggregate(eventAggFolder,eventAggFname,appendEventAggregate,trialEvents
 		appendEventAggregate = True
 
 	else: # apparently trialEventsSpatAggExcerpt was empty..
-	logging.critical(datetime.now().strftime("%Y-%m-%d %H:%M:%S") + ' - ' + basename(__file__) + '\nTargetevents were empty. \nNo Data exported.')
+		logging.critical(datetime.now().strftime("%Y-%m-%d %H:%M:%S") + ' - ' + basename(__file__) + '\nTargetevents were empty. \nNo Data exported.')
 		warn('\nWARNING: Targetevents were empty. \nNo Data exported.\n')
 		return appendEventAggregate
 
