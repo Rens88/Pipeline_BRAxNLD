@@ -78,12 +78,12 @@ def process(dirtyFname,cleanFname,dataType,dataFolder,cleanedFolder,spatAggFname
 		targetEventsFname = preComputedTargetFolder + cleanFname[:-12] + '_preComputed_Event_' + key +  '.csv'
 
 		if not isfile(targetEventsFname):
-			logging.critical(datetime.now().strftime("%Y-%m-%d %H:%M:%S") + ' - ' + basename(__file__) + '\nAlthough skipComputeEvents was requested, no targetEventsFname with name <%s> was found. Therefore, it couldnt be skipped.')
+			logging.warning(datetime.now().strftime("%Y-%m-%d %H:%M:%S") + ' - ' + basename(__file__) + '\nAlthough skipComputeEvents was requested, no targetEventsFname with name <%s> was found. Therefore, it couldnt be skipped.')
 			warn('\nWARNING: Although skipComputeEvents was requested, no targetEventsFname with name <%s> was found. Therefore, it couldnt be skipped.' %targetEventsFname)
 			skipComputeEvents_curFile = False
 
 	if spatAggFname in spatAggFnames and skipSpatAgg == True:
-		logging.critical(datetime.now().strftime("%Y-%m-%d %H:%M:%S") + ' - ' + basename(__file__) + '\nContinued with previously cleaned and spatially aggregated data.\nIf you want to add new spatial aggregates, change <skipSpatAgg> into <False>.')
+		logging.warning(datetime.now().strftime("%Y-%m-%d %H:%M:%S") + ' - ' + basename(__file__) + '\nContinued with previously cleaned and spatially aggregated data.\nIf you want to add new spatial aggregates, change <skipSpatAgg> into <False>.')
 		warn('\nContinued with previously cleaned and spatially aggregated data.\nIf you want to add new spatial aggregates, change <skipSpatAgg> into <False>.\n')
 		# Spat agg files don't exist if there was a fatal error, so:
 		fatalIssue = False
@@ -183,7 +183,7 @@ def process(dirtyFname,cleanFname,dataType,dataFolder,cleanedFolder,spatAggFname
 			# overwrite cleanedFolder and add a warning that no cleanup had taken place
 			loadFolder = dataFolder
 			loadFname = dirtyFname
-			logging.critical(datetime.now().strftime("%Y-%m-%d %H:%M:%S") + ' - ' + basename(__file__) + '\nNo clean-up function available for file <%s>.\nContinued without cleaning the data.')
+			logging.warning(datetime.now().strftime("%Y-%m-%d %H:%M:%S") + ' - ' + basename(__file__) + '\nNo clean-up function available for file <%s>.\nContinued without cleaning the data.'%dirtyFname)
 			warn('\nWARNING: No clean-up function available for file <%s>.\nContinued without cleaning the data.' %dirtyFname)
 
 			if debuggingMode:
@@ -218,7 +218,7 @@ def process(dirtyFname,cleanFname,dataType,dataFolder,cleanedFolder,spatAggFname
 		# student_LT_cleanUp.process(dirtyFname,cleanFname,dataFolder,cleanedFolder,headers,readAttributeCols,debugOmittedRows,readEventColumns,TeamAstring,TeamBstring)
 
 		if exists(cleanedFolder + cleanFname):
-			logging.critical(datetime.now().strftime("%Y-%m-%d %H:%M:%S") + ' - ' + basename(__file__) + '\nOverwriting file <%s> \nin cleanedFolder <%s>.\n' %(cleanFname,cleanedFolder))
+			logging.warning(datetime.now().strftime("%Y-%m-%d %H:%M:%S") + ' - ' + basename(__file__) + '\nOverwriting file <%s> \nin cleanedFolder <%s>.\n' %(cleanFname,cleanedFolder))
 			warn('\nOverwriting file <%s> \nin cleanedFolder <%s>.\n' %(cleanFname,cleanedFolder))
 
 		# Export cleaned data to CSV
@@ -338,7 +338,7 @@ def FDP(fname,cleanFname,dataFolder,cleanedFolder,headers,readAttributeCols,debu
 	refRows = (df[ headers['TeamID']].isnull()) & (df[x].notnull()) & (df[ID] != 'ball')
 	if any(refRows):
 		df.drop(df[refRows].index,inplace = True)
-		logging.critical(datetime.now().strftime("%Y-%m-%d %H:%M:%S") + ' - ' + basename(__file__) + '\nSome rows were identified as referee rows. These were dropped.')
+		logging.warning(datetime.now().strftime("%Y-%m-%d %H:%M:%S") + ' - ' + basename(__file__) + '\nSome rows were identified as referee rows. These were dropped.')
 		warn('\nWARNING: Some rows were identified as referee rows. These were dropped.\n')
 
 	df_cropped01,df_omitted01 = omitXandY_equals0(df,x,y,ID)
@@ -369,7 +369,7 @@ def NP(fname,newfname,folder,cleanedFolder,headers,readAttributeCols,debugOmitte
 		# if not [True for j in fileHeaders if re.search(i,j)]:
 		if not [True for j in fileHeaders if i == j]:
 			print('WARNING (potentially fatal): Column header \n<%s>' %i)
-			logging.critical(datetime.now().strftime("%Y-%m-%d %H:%M:%S") + ' - ' + basename(__file__) + '\nnot in column headers of the file:\n%s\n\n' %fileHeaders)
+			logging.warning(datetime.now().strftime("%Y-%m-%d %H:%M:%S") + ' - ' + basename(__file__) + '\nnot in column headers of the file:\n%s\n\n' %fileHeaders)
 			warn('\nnot in column headers of the file:\n%s\n\n' %fileHeaders)
 	df = pd.read_csv(folder+fname,usecols=(colHeaders),low_memory=False,skip_blank_lines  = True,skipinitialspace  = True)
 
@@ -412,11 +412,11 @@ def splitName_and_Team(df,headers,ID,newPlayerIDstring,newTeamIDstring,TeamAstri
 
 	fatalTeamIDissue = False
 	if sum(TeamA_rows) == 0:
-		logging.critical(datetime.now().strftime("%Y-%m-%d %H:%M:%S") + ' - ' + basename(__file__) + '\nCould not find any <%s> values in the data.\nCheck whether the identification of the team''s ID string worked correctly.\n' %TeamAstring)
+		logging.warning(datetime.now().strftime("%Y-%m-%d %H:%M:%S") + ' - ' + basename(__file__) + '\nCould not find any <%s> values in the data.\nCheck whether the identification of the team''s ID string worked correctly.\n' %TeamAstring)
 		warn('\nFATAL WARNING: Could not find any <%s> values in the data.\nCheck whether the identification of the team''s ID string worked correctly.\n' %TeamAstring)
 		fatalTeamIDissue = True
 	if sum(TeamB_rows) == 0:
-		logging.critical(datetime.now().strftime("%Y-%m-%d %H:%M:%S") + ' - ' + basename(__file__) + '\nCould not find any <%s> values in the data.\nCheck whether the identification of the team''s ID string worked correctly.\n' %TeamBstring)
+		logging.warning(datetime.now().strftime("%Y-%m-%d %H:%M:%S") + ' - ' + basename(__file__) + '\nCould not find any <%s> values in the data.\nCheck whether the identification of the team''s ID string worked correctly.\n' %TeamBstring)
 		warn('\nFATAL WARNING: Could not find any <%s> values in the data.\nCheck whether the identification of the team''s ID string worked correctly.\n' %TeamBstring)
 		fatalTeamIDissue = True
 	df = pd.concat([df, df_temp], axis=1, join='inner')
@@ -441,7 +441,7 @@ def omitRowsWithout_XandY(df,x,y):
 
 	df_cleaned = df[rowsWith_XandY == True ]
 	df_omitted = df[rowsWith_XandY == False ]
-	logging.critical(datetime.now().strftime("%Y-%m-%d %H:%M:%S") + ' - ' + basename(__file__) + '\nOmitted rows without X and Y. These could have been goupRows.\nConsider using <skip_blank_lines  = True> in pd.read_csv.')
+	logging.warning(datetime.now().strftime("%Y-%m-%d %H:%M:%S") + ' - ' + basename(__file__) + '\nOmitted rows without X and Y. These could have been goupRows.\nConsider using <skip_blank_lines  = True> in pd.read_csv.')
 	warn('\nWARNING: Omitted rows without X and Y. These could have been goupRows.\nConsider using <skip_blank_lines  = True> in pd.read_csv.' )
 
 	return df_cleaned, df_omitted
@@ -494,7 +494,7 @@ def verifyTimestampConsistency(df,TeamAstring,TeamBstring):
 		tsConsistent = True
 	else:
 		tsConsistent = False
-		logging.critical(datetime.now().strftime("%Y-%m-%d %H:%M:%S") + ' - ' + basename(__file__) + '\nTimestamp not consistent for every player.\nConsider adding a function in cleanupData.py to add empty rows for missing data.\nBe careful indexing based on timestamp.\nConsider interpolation to make sure timestamps match up.\n')
+		logging.warning(datetime.now().strftime("%Y-%m-%d %H:%M:%S") + ' - ' + basename(__file__) + '\nTimestamp not consistent for every player.\nConsider adding a function in cleanupData.py to add empty rows for missing data.\nBe careful indexing based on timestamp.\nConsider interpolation to make sure timestamps match up.\n')
 		warn('WARNING: Timestamp not consistent for every player.\nConsider adding a function in cleanupData.py to add empty rows for missing data.\nBe careful indexing based on timestamp.\nConsider interpolation to make sure timestamps match up.\n')
 		for i in uniquePlayerID:
 			# Take the unique timestamps per player
@@ -525,12 +525,12 @@ def checkForFatalTimestampIssue(rawDict):
 	# 	fatalTimeStampIssue = True
 
 	if any(freqUniqueTs != np.median(freqUniqueTs)) or len(uniqueTsS) != len(PlayerID) / len(uniquePlayers):
-		logging.critical(datetime.now().strftime("%Y-%m-%d %H:%M:%S") + ' - ' + basename(__file__) + '\nPotential problem with timestamp. Not every timestamp occurred equally often.')
+		logging.warning(datetime.now().strftime("%Y-%m-%d %H:%M:%S") + ' - ' + basename(__file__) + '\nPotential problem with timestamp. Not every timestamp occurred equally often.')
 		warn('\nWARNING: Potential problem with timestamp. Not every timestamp occurred equally often.')
 
 	if max(freqUniqueTs) > len(uniquePlayers):
 		# Problem with timestamp. Not every timestamp occurs equally often and/or there isn't the expected number of unique timestamps
-		logging.critical(datetime.now().strftime("%Y-%m-%d %H:%M:%S") + ' - ' + basename(__file__) + '\nSome timestamps occurred more often than unique players exist')
+		logging.warning(datetime.now().strftime("%Y-%m-%d %H:%M:%S") + ' - ' + basename(__file__) + '\nSome timestamps occurred more often than unique players exist')
 		warn('\nFATAL WARNING: Some timestamps occurred more often than unique players exist:')
 		print('Duplicate timestamps?')
 
@@ -600,28 +600,28 @@ def verifyGroupRows(df_cleaned):
 			# df_cleaned['PlayerID'][groupRows] = 'groupRow'
 			timeString = time.strftime("%Hh%Mm_%d_%B_%Y")
 			df_cleaned.loc[groupRows].to_csv('debug_overwritten_as_grouprows_' + timeString + '.csv')
-			logging.critical(datetime.now().strftime("%Y-%m-%d %H:%M:%S") + ' - ' + basename(__file__) + '\nContents of PlayerID overwritten for group rows.\nBe sure that group rows were identified correctly.')
+			logging.warning(datetime.now().strftime("%Y-%m-%d %H:%M:%S") + ' - ' + basename(__file__) + '\nContents of PlayerID overwritten for group rows.\nBe sure that group rows were identified correctly.')
 			warn('\nWARNING: Contents of PlayerID overwritten for group rows.\nBe sure that group rows were identified correctly.\n')
 			df_cleaned.loc[groupRows,('PlayerID')] = 'groupRow'
 
 		# Verify that x, y, and TeamID are empty
 		if not all(df_cleaned['X'][(groupRows)].isnull()):
 			warn('\nFATAL WARNING: X values of groupRows are not empty.\Consider cleaning. ')
-			logging.critical(datetime.now().strftime("%Y-%m-%d %H:%M:%S") + ' - ' + basename(__file__) + '\nX values of groupRows are not empty.\Consider cleaning.')
+			logging.warning(datetime.now().strftime("%Y-%m-%d %H:%M:%S") + ' - ' + basename(__file__) + '\nX values of groupRows are not empty.\Consider cleaning.')
 			fatalGroupRowIssue = True
 
 		if not all(df_cleaned['Y'][(groupRows)].isnull()):
-			logging.critical(datetime.now().strftime("%Y-%m-%d %H:%M:%S") + ' - ' + basename(__file__) + '\nY values of groupRows are not empty.\Consider cleaning.')
+			logging.warning(datetime.now().strftime("%Y-%m-%d %H:%M:%S") + ' - ' + basename(__file__) + '\nY values of groupRows are not empty.\Consider cleaning.')
 			warn('\nFATAL WARNING: Y values of groupRows are not empty.\Consider cleaning. ')
 			fatalGroupRowIssue = True
 
 		if not all(df_cleaned['TeamID'][(groupRows)].isnull()):
-			logging.critical(datetime.now().strftime("%Y-%m-%d %H:%M:%S") + ' - ' + basename(__file__) + '\nTeamID values of groupRows are not empty.\Consider cleaning. ')
+			logging.warning(datetime.now().strftime("%Y-%m-%d %H:%M:%S") + ' - ' + basename(__file__) + '\nTeamID values of groupRows are not empty.\Consider cleaning. ')
 			warn('\nWARNING: TeamID values of groupRows are not empty.\Consider cleaning. ')
 
 		# and finally, verify that there is a group row for every timestamp.
 		if len(df_cleaned['PlayerID'][groupRows]) != len(uniqueTs):
-			logging.critical(datetime.now().strftime("%Y-%m-%d %H:%M:%S") + ' - ' + basename(__file__) + '\nNot as many groupRows as unique timestamps.\nSolved it by appending the missing timestamps as groupRows to the end of the file.\nThis may result in a non-ordered dataset!! (if groupRows were not originally at the end of the file)\nCould consider re-ordering dataFrame after inserting these missing timestamps.\n')
+			logging.warning(datetime.now().strftime("%Y-%m-%d %H:%M:%S") + ' - ' + basename(__file__) + '\nNot as many groupRows as unique timestamps.\nSolved it by appending the missing timestamps as groupRows to the end of the file.\nThis may result in a non-ordered dataset!! (if groupRows were not originally at the end of the file)\nCould consider re-ordering dataFrame after inserting these missing timestamps.\n')
 			warn('\nWARNING: Not as many groupRows as unique timestamps.\nSolved it by appending the missing timestamps as groupRows to the end of the file.\nThis may result in a non-ordered dataset!! (if groupRows were not originally at the end of the file)\nCould consider re-ordering dataFrame after inserting these missing timestamps.\n')
 
 			# Definitely not the fastest way. But it works.
@@ -774,7 +774,7 @@ def convertHHMMSS_to_s(df,ts):
 							int(grp[1])*1*DecimalCorrection +\
 							int(grp[2])
 			else:
-				logging.critical(datetime.now().strftime("%Y-%m-%d %H:%M:%S") + ' - ' + basename(__file__) + '\nCould not decipher timestamp.')
+				logging.warning(datetime.now().strftime("%Y-%m-%d %H:%M:%S") + ' - ' + basename(__file__) + '\nCould not decipher timestamp.')
 				warn('\nCould not decipher timestamp.')
 
 		newdf[ts][idx] = timestamp / DecimalCorrection
@@ -999,7 +999,7 @@ def checkGroupRows_withInformation(df,headers,readEventColumns,TeamAstring,TeamB
 		tmp = [i for i in idx_eventWithInfo if not i in idx_groupRows ]
 
 		if tmp != []: # just a safety measure
-			logging.critical(datetime.now().strftime("%Y-%m-%d %H:%M:%S") + ' - ' + basename(__file__) + '\nA none groupRow contains <%s> information:\n<%s>'%(i,tmp))
+			logging.warning(datetime.now().strftime("%Y-%m-%d %H:%M:%S") + ' - ' + basename(__file__) + '\nA none groupRow contains <%s> information:\n<%s>'%(i,tmp))
 			warn('\nWARNING: a none groupRow contains <%s> information:\n<%s>'%(i,tmp))
 
 		if 'Run' == i: # specific for columns that are Runs
@@ -1008,18 +1008,18 @@ def checkGroupRows_withInformation(df,headers,readEventColumns,TeamAstring,TeamB
 			for j in idx_eventWithInfo:
 				curCell = df[i][j]
 				if not ('nd' in curCell or 'un' in curCell):
-					logging.critical(datetime.now().strftime("%Y-%m-%d %H:%M:%S") + ' - ' + basename(__file__) + '\nDidnt recognize run: <%s>' %curCell)
+					logging.warning(datetime.now().strftime("%Y-%m-%d %H:%M:%S") + ' - ' + basename(__file__) + '\nDidnt recognize run: <%s>' %curCell)
 					warn('\nWARNING: Didnt recognize run: <%s>' %curCell)
 
 		elif 'Goal' == i:
 			for j in idx_eventWithInfo:
 				curCell = df[i][j]
 				if not ('oal' in curCell):
-					logging.critical(datetime.now().strftime("%Y-%m-%d %H:%M:%S") + ' - ' + basename(__file__) + '\nDidnt recognize goal: <%s>' %curCell)
+					logging.warning(datetime.now().strftime("%Y-%m-%d %H:%M:%S") + ' - ' + basename(__file__) + '\nDidnt recognize goal: <%s>' %curCell)
 					warn('\nWARNING: Didnt recognize goal: <%s>' %curCell)
 
 				if not (TeamAstring[1:] in curCell or TeamBstring[1:] in curCell):
-					logging.critical(datetime.now().strftime("%Y-%m-%d %H:%M:%S") + ' - ' + basename(__file__) + '\ncould not identify team: <%s>' %curCell)
+					logging.warning(datetime.now().strftime("%Y-%m-%d %H:%M:%S") + ' - ' + basename(__file__) + '\ncould not identify team: <%s>' %curCell)
 					warn('\nWARNING: could not identify team: <%s>' %curCell)
 
 		elif 'Possession' in i:
@@ -1032,17 +1032,17 @@ def checkGroupRows_withInformation(df,headers,readEventColumns,TeamAstring,TeamB
 						df[i][j] = 'Start %s possession' %TeamAstring
 
 					else:
-						logging.critical(datetime.now().strftime("%Y-%m-%d %H:%M:%S") + ' - ' + basename(__file__) + '\nWARNING: could not identify team: <%s>' %curCell)
+						logging.warning(datetime.now().strftime("%Y-%m-%d %H:%M:%S") + ' - ' + basename(__file__) + '\nWARNING: could not identify team: <%s>' %curCell)
 						warn('\nWARNING: could not identify team: <%s>' %curCell)
 
 		elif 'Pass' == i:
 			for j in idx_eventWithInfo:
 				curCell = df[i][j]
 				if not (TeamAstring[1:] in curCell or TeamBstring[1:] in curCell):
-					logging.critical(datetime.now().strftime("%Y-%m-%d %H:%M:%S") + ' - ' + basename(__file__) + '\ncould not identify team: <%s>' %curCell)
+					logging.warning(datetime.now().strftime("%Y-%m-%d %H:%M:%S") + ' - ' + basename(__file__) + '\ncould not identify team: <%s>' %curCell)
 					warn('\nWARNING: could not identify team: <%s>' %curCell)
 		else:
-			logging.critical(datetime.now().strftime("%Y-%m-%d %H:%M:%S") + ' - ' + basename(__file__) + '\nDid not recognize event column <%s>.\nConsider writing clean-up protocol in cleanupData.py.' %i)
+			logging.warning(datetime.now().strftime("%Y-%m-%d %H:%M:%S") + ' - ' + basename(__file__) + '\nDid not recognize event column <%s>.\nConsider writing clean-up protocol in cleanupData.py.' %i)
 			warn('\nWARNING: Did not recognize event column <%s>.\nConsider writing clean-up protocol in cleanupData.py.' %i)
 
 	return df
@@ -1061,10 +1061,10 @@ def dataDrivenTeamstring(TeamID_Data):
 	if len(uniqueTeams) == 2:
 		TeamAstring = uniqueTeams[0]
 		TeamBstring = uniqueTeams[1]
-		logging.critical(datetime.now().strftime("%Y-%m-%d %H:%M:%S") + ' - ' + basename(__file__) + '\nTeamstring had to be determined based on the data.\nTeamAstring = <%s>\nTeamBstring = <%s>' %(TeamAstring,TeamBstring))
+		logging.warning(datetime.now().strftime("%Y-%m-%d %H:%M:%S") + ' - ' + basename(__file__) + '\nTeamstring had to be determined based on the data.\nTeamAstring = <%s>\nTeamBstring = <%s>' %(TeamAstring,TeamBstring))
 		warn('\nWARNING: Teamstring had to be determined based on the data.\nTeamAstring = <%s>\nTeamBstring = <%s>' %(TeamAstring,TeamBstring))
 	else:
-		logging.critical(datetime.now().strftime("%Y-%m-%d %H:%M:%S") + ' - ' + basename(__file__) + '\nTeamstrings are non-existent and there were not precisely 2 unique team strings in the data.\nIt was thus impossible to determine the Team strings based on the data.\nTeamstrings in data:\n%s' %uniqueTeams)
+		logging.warning(datetime.now().strftime("%Y-%m-%d %H:%M:%S") + ' - ' + basename(__file__) + '\nTeamstrings are non-existent and there were not precisely 2 unique team strings in the data.\nIt was thus impossible to determine the Team strings based on the data.\nTeamstrings in data:\n%s' %uniqueTeams)
 		warn('\nFATAL WARNING: Teamstrings are non-existent and there were not precisely 2 unique team strings in the data.\nIt was thus impossible to determine the Team strings based on the data.\nTeamstrings in data:\n%s' %uniqueTeams)
 
 	return TeamAstring, TeamBstring

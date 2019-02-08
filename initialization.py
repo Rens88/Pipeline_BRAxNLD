@@ -128,7 +128,7 @@ def checkFolders(folder,aggregateEvent,aggregateWindow,aggregateLag,onlyAnalyzeF
 	# dataFolder_BRxNL = dataFolder + 'BRAxNLD Data' + sep
 	tmpFigFolder = folder + 'Figs' + sep + 'Temp' + sep + aggregateLevel[0] + sep
 	outputFolder = saveFolder # Folder where tabular output will be stored (aggregated spatially and temporally)
-	playerReportFolder = outputFolder + 'Player Reports' + sep
+	playerReportFolder = outputFolder
 	cleanedFolder = dataFolder + 'Cleaned' + sep    
 	spatAggFolder = dataFolder + 'SpatAgg' + sep
 	eventAggFolder = dataFolder + 'EventAgg' + sep

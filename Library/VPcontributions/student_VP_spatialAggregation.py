@@ -82,7 +82,7 @@ def timing(f):
     return wrap
 
 ## Here, you specifiy what each function does
-def process(rawDict,attributeDict,attributeLabel,TeamAstring,TeamBstring,skipSpatAgg,targetEvents):
+def process(rawDict,attributeDict,attributeLabel,TeamAstring,TeamBstring,skipSpatAgg,targetEvents,progressWindow,progressText):
 	# Use this is an example for a GROUP level aggregate
 	# attributeDict_EXAMPLE,attributeLabel_EXAMPLE = \
 	# teamCentroid_panda(rawDict,attributeDict,attributeLabel,TeamAstring,TeamBstring)
@@ -103,34 +103,44 @@ def process(rawDict,attributeDict,attributeLabel,TeamAstring,TeamBstring,skipSpa
 
 	pd.options.mode.chained_assignment = None
 
+	import process_Template
+	process_Template.updateProgressBox(progressWindow,progressText,'-- Off-ball Performance features:')
+	process_Template.updateProgressBox(progressWindow,progressText,'--- distanceToGoal berekenen...')
 	print("Start distanceToGoal")
 	attributeDict,attributeLabel = \
 	distanceToGoal(rawDict,attributeDict,attributeLabel,TeamAstring,TeamBstring,passDF,skipSpatAgg)
 
+	process_Template.updateProgressBox(progressWindow,progressText,'--- distanceToInPossession berekenen...')
 	print("Start distanceToInPossession")
 	attributeDict,attributeLabel = \
 	distanceToInPossession(rawDict,attributeDict,attributeLabel,TeamAstring,TeamBstring,passDF,skipSpatAgg)
 
+	process_Template.updateProgressBox(progressWindow,progressText,'--- angleOpponentToPassline berekenen...')
 	print("Start angleOpponentToPassline")
 	attributeDict,attributeLabel = \
 	angleOpponentToPassline(rawDict,attributeDict,attributeLabel,TeamAstring,TeamBstring,passDF,skipSpatAgg)
 
+	process_Template.updateProgressBox(progressWindow,progressText,'--- populationBasedRankings berekenen...')
 	print("Start populationBasedRankings")
 	attributeDict,attributeLabel = \
 	populationBasedRankings(rawDict,attributeDict,attributeLabel,TeamAstring,TeamBstring,passDF,skipSpatAgg)
 
+	process_Template.updateProgressBox(progressWindow,progressText,'--- distanceToBall berekenen...')
 	print("Start distanceToBall")
 	attributeDict,attributeLabel = \
 	distanceToBall(rawDict,attributeDict,attributeLabel,TeamAstring,TeamBstring,passDF,skipSpatAgg)
 
+	process_Template.updateProgressBox(progressWindow,progressText,'--- zone berekenen...')
 	print("Start zone")
 	attributeDict,attributeLabel = \
 	zone(rawDict,attributeDict,attributeLabel,TeamAstring,TeamBstring,skipSpatAgg)
 
+	process_Template.updateProgressBox(progressWindow,progressText,'--- ratePlayersPerFeature berekenen...')
 	print("Start ratePlayersPerFeature")
 	attributeDict,attributeLabel = \
 	rankPlayersPerFeature(rawDict,attributeDict,attributeLabel,TeamAstring,TeamBstring,passDF,skipSpatAgg)
 
+	process_Template.updateProgressBox(progressWindow,progressText,'--- playerPassedTo berekenen...')
 	print("Start Player Passed To")
 	attributeDict,attributeLabel = \
 	playerPassedToRank(rawDict,attributeDict,attributeLabel,TeamAstring,TeamBstring,passDF,skipSpatAgg)

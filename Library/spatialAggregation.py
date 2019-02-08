@@ -5,7 +5,7 @@ import csv
 import pdb; #pdb.set_trace()
 import numpy as np
 from os.path import isfile, join, isdir
-from os import listdir, path
+from os import listdir, path, sep, makedirs
 from warnings import warn
 import math
 # From my own library:
@@ -40,7 +40,7 @@ if __name__ == '__main__':
 	#####################################################################################
 	#####################################################################################
 
-def process(rawDict,attributeDict,attributeLabel,TeamAstring,TeamBstring,skipSpatAgg,eventsPanda,spatAggFolder,spatAggFname,debuggingMode,targetEvents,checkVictor,checkLars,skipSpatAggVictor,skipSpatAggLars):
+def process(rawDict,attributeDict,attributeLabel,TeamAstring,TeamBstring,skipSpatAgg,eventsPanda,spatAggFolder,spatAggFname,debuggingMode,targetEvents,checkVictor,checkLars,skipSpatAggVictor,skipSpatAggLars,progressWindow,progressText,playerReportFolder,dirtyFname):
 	tSpatAgg = time.time()
 	# Per Match (i.e., file)
 	# Per Team and for both teams
@@ -93,7 +93,7 @@ def process(rawDict,attributeDict,attributeLabel,TeamAstring,TeamBstring,skipSpa
 
 	if checkLars:
 		attributeDict,attributeLabel = \
-		student_LT_spatialAggregation.process(rawDict,attributeDict,attributeLabel,TeamAstring,TeamBstring,skipSpatAggLars)
+		student_LT_spatialAggregation.process(rawDict,attributeDict,attributeLabel,TeamAstring,TeamBstring,skipSpatAggLars,progressWindow,progressText)
 		if debuggingMode:
 			elapsed = str(round(time.time() - tSpatAgg_vNorm, 2))
 			print('*****----- Time elapsed during spatialAggregation.student_LT_spatialAggregation(): %ss' %elapsed)
@@ -101,7 +101,7 @@ def process(rawDict,attributeDict,attributeLabel,TeamAstring,TeamBstring,skipSpa
 
 	if checkVictor:
 		attributeDict,attributeLabel = \
-		student_VP_spatialAggregation.process(rawDict,attributeDict,attributeLabel,TeamAstring,TeamBstring,skipSpatAggVictor,targetEvents)
+		student_VP_spatialAggregation.process(rawDict,attributeDict,attributeLabel,TeamAstring,TeamBstring,skipSpatAggVictor,targetEvents,progressWindow,progressText)
 		if debuggingMode:
 			elapsed = str(round(time.time() - tSpatAgg_vNorm, 2))
 			print('*****----- Time elapsed during spatialAggregation.student_VP_spatialAggregation(): %ss' %elapsed)
@@ -115,6 +115,11 @@ def process(rawDict,attributeDict,attributeLabel,TeamAstring,TeamBstring,skipSpa
 	if not skipSpatAggLars or not skipSpatAggVictor:
 		spatAggPanda = pd.concat([rawDict, eventsPanda.loc[:, eventsPanda.columns != 'Ts'], attributeDict.loc[:, attributeDict.columns != 'Ts']], axis=1) # Skip the duplicate 'Ts' columns
 		spatAggPanda.to_csv(spatAggFolder + spatAggFname)
+
+		playerReportFolder = playerReportFolder + dirtyFname + sep
+		if not path.exists(playerReportFolder):
+			makedirs(playerReportFolder)
+		spatAggPanda.to_csv(playerReportFolder + spatAggFname)
 
 	# print(attributeDict.columns.values,attributeLabel)
 	# #LT: drop defender variables

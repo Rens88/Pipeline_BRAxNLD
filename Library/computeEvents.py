@@ -125,9 +125,9 @@ def process(targetEvents,aggregateLevel,rawPanda,attrPanda,eventsPanda,TeamAstri
 		targetEvents,eventClassified,allDict = \
 		student_LT_computeEvents.process(targetEvents,aggregateLevel,rawPanda,attrPanda,eventsPanda,TeamAstring,TeamBstring,eventClassified)
 
-	if checkVictor:
-		targetEvents,eventClassified,allDict = \
-		student_VP_computeEvents.process(targetEvents,aggregateLevel,rawPanda,attrPanda,eventsPanda,TeamAstring,TeamBstring,eventClassified)
+	# if checkVictor:
+	# 	targetEvents,eventClassified,allDict = \
+	# 	student_VP_computeEvents.process(targetEvents,aggregateLevel,rawPanda,attrPanda,eventsPanda,TeamAstring,TeamBstring,eventClassified)
 
 	# export it
 	targetFolder = dataFolder + sep + 'existingTargets' + sep

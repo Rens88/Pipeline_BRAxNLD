@@ -14,6 +14,10 @@ import time
 import matplotlib.pyplot as plt
 from warnings import warn
 from heapq import nsmallest
+from tkinter import messagebox
+import inspect
+import logging
+from datetime import datetime
 import pdb;
 
 #standard KNVB settings
@@ -64,7 +68,7 @@ if __name__ == '__main__':
 	distanceToCentroid(rawDict,attributeDict,attributeLabel,TeamAstring,TeamBstring)
 
 ## Here, you specifiy what each function does
-def process(rawDict,attributeDict,attributeLabel,TeamAstring,TeamBstring,skipSpatAgg):
+def process(rawDict,attributeDict,attributeLabel,TeamAstring,TeamBstring,skipSpatAgg,progressWindow,progressText):
 	# attributeDict,attributeLabel = \
 	# heatMap(rawDict,attributeDict,attributeLabel,TeamAstring,TeamBstring)
 
@@ -80,19 +84,26 @@ def process(rawDict,attributeDict,attributeLabel,TeamAstring,TeamBstring,skipSpa
 	# 	attributeDict,attributeLabel = \
 	# 	dangerousity(rawDict,attributeDict,attributeLabel,TeamAstring,TeamBstring)
 	# 	return attributeDict,attributeLabel
+	import process_Template
+	process_Template.updateProgressBox(progressWindow,progressText,'-- Dangerousity features:')
+	process_Template.updateProgressBox(progressWindow,progressText,'--- Zone berekenen...')
 
 	attributeDict,attributeLabel = \
 	zone(rawDict,attributeDict,attributeLabel,TeamAstring,TeamBstring,skipSpatAgg)#,secondHalfTime)
 
+	process_Template.updateProgressBox(progressWindow,progressText,'--- Control berekenen...')
 	attributeDict,attributeLabel = \
 	control(rawDict,attributeDict,attributeLabel,TeamAstring,TeamBstring,skipSpatAgg)
 
+	process_Template.updateProgressBox(progressWindow,progressText,'--- Pressure berekenen...')
 	attributeDict,attributeLabel = \
 	pressure(rawDict,attributeDict,attributeLabel,TeamAstring,TeamBstring,skipSpatAgg)#,secondHalfTime)
 
+	process_Template.updateProgressBox(progressWindow,progressText,'--- Density berekenen...')
 	attributeDict,attributeLabel = \
 	density(rawDict,attributeDict,attributeLabel,TeamAstring,TeamBstring,skipSpatAgg)#,secondHalfTime)
 
+	process_Template.updateProgressBox(progressWindow,progressText,'--- Dangerousity berekenen...')
 	attributeDict,attributeLabel = \
 	dangerousity(rawDict,attributeDict,attributeLabel,TeamAstring,TeamBstring,skipSpatAgg)
 
@@ -170,7 +181,9 @@ def determineSide(rawDict,attributeDict,attributeLabel,TeamAstring,TeamBstring):
 		goal_Y = 0
 		return TeamBstring, goal_A_X, goal_B_X, goal_Y
 	else:
-		exit('\nWARNING: Can not determine the side, because the players of the teams are not on the same side at the first timestamp.\n')
+		messagebox.showerror('Spelers staan niet aan dezelfde kant', 'Kan niet bepalen aan welke kant de teams moeten scoren, omdat de spelers niet op dezelfde helft staan tijdens de eerste timestamp.\n\nOPLOSSING: Controleer of de data vanaf de eerste minuut beschikbaar is.\nHet programma wordt afgesloten.')
+		logging.critical(datetime.now().strftime("%Y-%m-%d %H:%M:%S") + ' - ' + basename(__file__) + '\nFATAL ERROR: Can not determine the side, because the players of the teams are not on the same side at the first timestamp.\n')
+		exit('\nFATAL ERROR: Can not determine the side, because the players of the teams are not on the same side at the first timestamp.\n')
 		return 'Err','Err','Err','Err'
 
 def switchSides(goal_A_X,goal_B_X,zoneA,zoneB,zoneMin_A_X,zoneMax_A_X,zoneMin_B_X,zoneMax_B_X):
@@ -209,7 +222,9 @@ def determineFinalThird(leftSide,TeamAstring,TeamBstring,goal_A_X,goal_B_X):
 		zoneMin_B_X = goal_A_X - beginZone
 		zoneMax_B_X = goal_A_X
 	else:
-		warn('\nWARNING: Cannot determine the side, because the players of the teams are not on the same side at the first timestamp.\n')
+		messagebox.showerror('Spelers staan niet aan dezelfde kant', 'Kan niet bepalen aan welke kant de teams moeten scoren, omdat de spelers niet op dezelfde helft staan tijdens de eerste timestamp.\n\nOPLOSSING: Controleer of de data vanaf de eerste minuut beschikbaar is.\nHet programma wordt afgesloten.')
+		logging.critical(datetime.now().strftime("%Y-%m-%d %H:%M:%S") + ' - ' + basename(__file__) + '\nFATAL ERROR: Can not determine the side, because the players of the teams are not on the same side at the first timestamp.\n')
+		exit('\nFATAL ERROR: Can not determine the side, because the players of the teams are not on the same side at the first timestamp.\n')
 		return 'Err','Err','Err','Err','Err','Err','Err','Err'
 
 	#determine zone Y, For both teams the same
@@ -262,7 +277,12 @@ def zone(rawDict,attributeDict,attributeLabel,TeamAstring,TeamBstring,skipSpatAg
 	##############   READ ZONE CSV   ###############
 	dirPath = os.path.dirname(os.path.realpath(__file__))
 	fileName = dirPath + os.sep + 'Zone.csv'
-	zoneMatrix = np.loadtxt(open(fileName, 'r'),delimiter=';')
+	if(os.path.isfile(fileName)):
+		zoneMatrix = np.loadtxt(open(fileName, 'r'),delimiter=';')
+	else:
+		messagebox.showerror('Zone.CSV verwijderd', 'Kan Zone.CSV niet vinden.\n\nVoeg Zone.CSV aan de map ' + os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe()))) + ' toe.')
+		logging.critical(datetime.now().strftime("%Y-%m-%d %H:%M:%S") + ' - ' + os.path.basename(__file__) + '\nFATAL ERROR: Cannot find Zone.CSV.\n')
+		exit('\nFATAL ERROR: Cannot find Zone.CSV.\n')
 
 	##############   DETERMINE SIDE FIRST HALF   ###############
 	leftSide, goal_A_X, goal_B_X, goal_Y = determineSide(rawDict,attributeDict,attributeLabel,TeamAstring,TeamBstring)

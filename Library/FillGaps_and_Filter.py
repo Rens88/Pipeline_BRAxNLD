@@ -35,12 +35,14 @@ def process(df,**kwargs):
 
 	if max(df_filled['Ts']) == float("inf"):
 		# an issue with filtering.. Havent resolved it yet.
+		logging.warning(datetime.now().strftime("%Y-%m-%d %H:%M:%S") + ' - ' + basename(__file__) + '\n(potentially FATAL) WARNING: Max Ts after filling gaps = %s' %max(df_filled['Ts']))
 		warn('\n(potentially FATAL) WARNING: Max Ts after filling gaps = %s' %max(df_filled['Ts']))
 
 	df_filled_filtered = filterData(df_filled)
 
 	if max(df_filled_filtered['Ts']) == float("inf"):
 		# an issue with filtering.. Havent resolved it yet.
+		logging.warning(datetime.now().strftime("%Y-%m-%d %H:%M:%S") + ' - ' + basename(__file__) + '\n(potentially FATAL) WARNING: Max Ts after filtering = %s' %max(df_filled_filtered['Ts']))
 		warn('\n(potentially FATAL) WARNING: Max Ts after filtering = %s' %max(df_filled_filtered['Ts']))
 	return df_filled_filtered,fatalGroupRowIssueAfterFiltering
 ########################################################################	
@@ -83,6 +85,7 @@ def filterData(df):
 
 			starts,ends = findJumps(curTs,dataDrivenThreshold,dataDrivenFrameRate,returnStartsEnds = True)
 			if len(starts) > 1:
+				logging.warning(datetime.now().strftime("%Y-%m-%d %H:%M:%S") + ' - ' + basename(__file__) + '\nWARNING: Jump in the data detected. Pipeline currently not equiped to deal with this.\nFinish the filterData module in FillGaps_and_filter.py.\n**********\n!!!!!!!!!!!')
 				warn('\WARNING: Jump in the data detected. Pipeline currently not equiped to deal with this.\nFinish the filterData module in FillGaps_and_filter.py.\n**********\n!!!!!!!!!!!')
 
 			# for idx,st in enumerate(starts):
@@ -167,6 +170,7 @@ def fillGaps(df,**kwargs):
 				fixed_X_int = kwargs['fixed_X_int']
 				aggregateLevel = kwargs['aggregateLevel']
 			else:
+				logging.critical(datetime.now().strftime("%Y-%m-%d %H:%M:%S") + ' - ' + basename(__file__) + '\nFATAL WARNING: When using fillGaps to interpolate before an event (in order to have the exact same timestamps), the module HAS TO BE CALLED with <fixed_X_int> as a keyword argument.\n<fixed_X_int> and <aggregateLevel> are used as a consistent timestamp to be able to compare with each event.\nWithout these, the pipeline will crash at the plotting at dataset level.')
 				warn('\nFATAL WARNING: When using fillGaps to interpolate before an event (in order to have the exact same timestamps), the module HAS TO BE CALLED with <fixed_X_int> as a keyword argument.\n<fixed_X_int> and <aggregateLevel> are used as a consistent timestamp to be able to compare with each event.\nWithout these, the pipeline will crash at the plotting at dataset level.')
 
 	# Check if 'jumps' exist, because it should crop the window selected
@@ -180,6 +184,7 @@ def fillGaps(df,**kwargs):
 	# print(everyPlayerIDs)
 	# # everyPlayerIDs = everyPlayerIDs[~np.isnan(everyPlayerIDs)]
 	if any(everyPlayerIDs['everyPlayerIDs'].isnull()):
+		logging.warning(datetime.now().strftime("%Y-%m-%d %H:%M:%S") + ' - ' + basename(__file__) + '\nWARNING: Found a row without a PlayerID that could neither be labelled as a ball-row, nor a groupRow.\nConsider checking the raw data file and filling in the empty PlayerID rows.')
 		warn('\nWARNING: Found a row without a PlayerID that could neither be labelled as a ball-row, nor a groupRow.\nConsider checking the raw data file and filling in the empty PlayerID rows.\n')
 
 	everyPlayerIDs = everyPlayerIDs[everyPlayerIDs['everyPlayerIDs'].notnull()]
@@ -191,6 +196,7 @@ def fillGaps(df,**kwargs):
 	biggestTime = max(uniqueTimes)
 
 	if smallestTime == biggestTime:
+		logging.warning(datetime.now().strftime("%Y-%m-%d %H:%M:%S") + ' - ' + basename(__file__) + '\nFATAL WARNING: There seems to be a problem with the length of the timeseries that is currently being interpolated.\nThe timeseries as the same tStart <%s> as tEnd <%s>.\nIn other words, it has a length of only 1 timestamp.\nThe working solution is to simply return the original eventExcerpt.\n' %(smallestTime,biggestTime))
 		warn('\nFATAL WARNING: There seems to be a problem with the length of the timeseries that is currently being interpolated.\nThe timeseries as the same tStart <%s> as tEnd <%s>.\nIn other words, it has a length of only 1 timestamp.\nThe working solution is to simply return the original eventExcerpt.\n' %(smallestTime,biggestTime))
 		return df
 
@@ -199,6 +205,7 @@ def fillGaps(df,**kwargs):
 		datasetFramerate = kwargs['datasetFramerate']
 		frameRateForInterpolation = datasetFramerate
 		if not dataDrivenFrameRate == datasetFramerate:
+			logging.warning(datetime.now().strftime("%Y-%m-%d %H:%M:%S") + ' - ' + basename(__file__) + '\nWARNING: The specified datasetFramerate <%s> does not correspond with the dataDrivenFrameRate <%s>.\nIf the difference is substantial, this may affect the reliability of the results.\n' %(datasetFramerate,dataDrivenFrameRate))
 			warn('\nWARNING: The specified datasetFramerate <%s> does not correspond with the dataDrivenFrameRate <%s>.\nIf the difference is substantial, this may affect the reliability of the results.\n' %(datasetFramerate,dataDrivenFrameRate))
 	else:
 		frameRateForInterpolation = dataDrivenFrameRate
@@ -260,6 +267,7 @@ def fillGaps(df,**kwargs):
 		
 
 		if len(X_int) != len(np.unique(X_int)):
+			logging.warning(datetime.now().strftime("%Y-%m-%d %H:%M:%S") + ' - ' + basename(__file__) + '\nWARNING: For some reason, the to be interpolated time had duplicate values.\nRemoved them, not sure about consequences.\nMight have something to do with jumps close together.\nCould avoid by making the threshold for jumps larger.')
 			warn('\nWARNING: For some reason, the to be interpolated time had duplicate values.\nRemoved them, not sure about consequences.\nMight have something to do with jumps close together.\nCould avoid by making the threshold for jumps larger.\n')
 			X_int = np.unique(X_int)
 		# print(X_int)
@@ -335,6 +343,7 @@ def fillGaps(df,**kwargs):
 					df.loc[curRows].to_csv('debug_df[curRows]_' + timeString + '.csv')
 					df.to_csv('debug_df_' + timeString + '.csv')
 
+					logging.warning(datetime.now().strftime("%Y-%m-%d %H:%M:%S") + ' - ' + basename(__file__) + '\nSometimes, this causes a problem. I think it has something to do with a window that overlaps a time period that doesn\'t exist. (before tStart or after tEnd)).\nIf it occurs, let me know and give me as many details as you can (about the excerpt as well).\n!!!!!!!!\nOr maybe something with duplicate timestamps (see also firstData and lastData when determining jumps.')
 					warn('Sometimes, this causes a problem. I think it has something to do with a window that overlaps a time period that doesn\'t exist. (before tStart or after tEnd)).\nIf it occurs, let me know and give me as many details as you can (about the excerpt as well).\n!!!!!!!!\nOr maybe something with duplicate timestamps (see also firstData and lastData when determining jumps.')
 					f = InterpolatedUnivariateSpline(curTs,Y, k = 3) # order 1) = linear, 2) = quadratic, 3) = cubic
 
@@ -366,6 +375,7 @@ def fillGaps(df,**kwargs):
 					###int_curKey = pd.DataFrame([df.loc[curRows[0],key]]*len(X_int), columns = [key], index = [int_curPlayer.index])
 					int_curPlayer[key] = df.loc[curRows[0],key]
 					if not key in ['TeamID', 'PlayerID', 'temporalAggregate','RefTeam','EventUID','School','Class','Group', 'Test', 'Exp','MatchContinent','MatchCountry','MatchID','HomeTeamContinent','HomeTeamCountry','HomeTeamAgeGroup','HomeTeamID','AwayTeamContinent','AwayTeamCountry','AwayTeamAgeGroup','AwayTeamID' ]:
+						logging.warning(datetime.now().strftime("%Y-%m-%d %H:%M:%S") + ' - ' + basename(__file__) + '\nWARNING: Key <%s> was identified as an event identifier.\nTherefore, no data was interpolated, instead, the same value was copied for all cells.\n' %key)
 						warn('\nWARNING: Key <%s> was identified as an event identifier.\nTherefore, no data was interpolated, instead, the same value was copied for all cells.\n' %key)
 				else:
 					# Create an empty dataframe
@@ -373,6 +383,7 @@ def fillGaps(df,**kwargs):
 
 					# Event Strings
 					if not key in ['Goal','Run','Possession/Turnover','Pass']:
+						logging.warning(datetime.now().strftime("%Y-%m-%d %H:%M:%S") + ' - ' + basename(__file__) + '\nWARNING: Key <%s> was identified as a string event.\nTherefore, no data was interpolated, instead, the same value was copied to the cell with the interpolated time index closest to the original time index.\nMAKE SURE YOU HAVE FORCED THE DATATYPE CORRECTLY.' %key)
 						warn('\nWARNING: Key <%s> was identified as a string event.\nTherefore, no data was interpolated, instead, the same value was copied to the cell with the interpolated time index closest to the original time index.\nMAKE SURE YOU HAVE FORCED THE DATATYPE CORRECTLY.' %key)
 						# if key == 'vNorm':
 						# 	print(df.loc[curRows,key].dtype )
@@ -385,6 +396,7 @@ def fillGaps(df,**kwargs):
 
 					# Check whether there are less cells with content than cells in X_int AND the original X
 					if len(isString) >= len(X_int) or len(isString) >= len(curRows):
+						logging.warning(datetime.now().strftime("%Y-%m-%d %H:%M:%S") + ' - ' + basename(__file__) + '\nWARNING: Identified key <%s> as a column with string events.\n(String events have a string in the row where the event happens, the remaining rows are empty.)\nBut this seems unlikely, as there were more events than time indices.\nThis may result in an error, is there are no cells to interpolate the string events to (they\'re currently transferred to the interpolated time value that lies closest to the original time value, i.e., 1 on 1)\n' %key)
 						warn('\nWARNING: Identified key <%s> as a column with string events.\n(String events have a string in the row where the event happens, the remaining rows are empty.)\nBut this seems unlikely, as there were more events than time indices.\nThis may result in an error, is there are no cells to interpolate the string events to (they\'re currently transferred to the interpolated time value that lies closest to the original time value, i.e., 1 on 1)\n' %key)
 						# (if there are more, it can't have been a string event)
 
@@ -411,8 +423,10 @@ def fillGaps(df,**kwargs):
 	# pdb.set_trace()
 
 	if beforeWarning != []:
+		logging.warning(datetime.now().strftime("%Y-%m-%d %H:%M:%S") + ' - ' + basename(__file__) + '\nWARNING:Found jumps in time BEFORE the first frame.\nCurrently, this gap is ignored when filling gaps.\n Adjust code here if you want to do something with it.\n\n(n seconds before, by this player)\n%s' %beforeWarning)
 		warn('\nWARNING:Found jumps in time BEFORE the first frame.\nCurrently, this gap is ignored when filling gaps.\n Adjust code here if you want to do something with it.\n\n(n seconds before, by this player)\n%s' %beforeWarning)
 	if afterWarning != []:
+		logging.warning(datetime.now().strftime("%Y-%m-%d %H:%M:%S") + ' - ' + basename(__file__) + '\nWARNING:Found jumps in time AFTER the last frame.\nCurrently, this gap is ignored when filling gaps.\n Adjust code here if you want to do something with it.\n\n(n seconds after, by this player)\n%s' %afterWarning)
 		warn('\nWARNING:Found jumps in time AFTER the last frame.\nCurrently, this gap is ignored when filling gaps.\n Adjust code here if you want to do something with it.\n\n(n seconds after, by this player)\n%s' %afterWarning)
 
 	# print(interpolatedVals)
@@ -425,8 +439,9 @@ def fillGaps(df,**kwargs):
 	if uniqueGroupRowsAtStart != uniqueGroupRowsAtEnd:
 
 		interpolatedVals,fatalGroupRowIssueAfterFiltering = cleanupData.verifyGroupRows(interpolatedVals)
-
+		logging.warning(datetime.now().strftime("%Y-%m-%d %H:%M:%S") + ' - ' + basename(__file__) + '\nWARNING: It was required to doubly verify the groupRows, as there were too few after the interpolation.\nThis is a solution for a problem in spatialAggregation with pivotting.\nIt may affect the pipeline elsewhere...\n')
 		warn('\nWARNING: It was required to doubly verify the groupRows, as there were too few after the interpolation.\nThis is a solution for a problem in spatialAggregation with pivotting.\nIt may affect the pipeline elsewhere...\n')
+	logging.warning(datetime.now().strftime("%Y-%m-%d %H:%M:%S") + ' - ' + basename(__file__) + '\nWARNING: The threshold for the size of a gap to be determined as a gap was based on the median of the data-driven sampling frequency <%sHz>.\nWith the current sampling frequency, any gap in time longer than <%ss> was considered a jump (and not interpolated between).\nYou may want to manually set the size of a gap that needs to be filled..\n' %(dataDrivenFrameRate, dataDrivenThreshold))
 	warn('\nWARNING: The threshold for the size of a gap to be determined as a gap was based on the median of the data-driven sampling frequency <%sHz>.\nWith the current sampling frequency, any gap in time longer than <%ss> was considered a jump (and not interpolated between).\nYou may want to manually set the size of a gap that needs to be filled..\n' %(dataDrivenFrameRate, dataDrivenThreshold))
 	df_filled = interpolatedVals
 	return df_filled,fatalGroupRowIssueAfterFiltering
@@ -469,6 +484,7 @@ def findJumps(curTs,dataDrivenThreshold,frameRateForInterpolation,**kwargs):
 		# A small work-around for the cases where there are multiple min curTs
 		# Kinda strange, but I suppose it's possible (before interpolation).
 		# Throw a warning just in case it links to problems later on.
+		logging.warning(datetime.now().strftime("%Y-%m-%d %H:%M:%S") + ' - ' + basename(__file__) + '\nWARNING: Multiple occurrences of minimum Ts found. Causes an issue with skipping jumps.\nThe work-around simply takes the first of the multiple occurrences.\nIt may cause a problem later.\nOriginal firstdata:\n%s\n' %firstData)
 		warn('\nWARNING: Multiple occurrences of minimum Ts found. Causes an issue with skipping jumps.\nThe work-around simply takes the first of the multiple occurrences.\nIt may cause a problem later.\nOriginal firstdata:\n%s\n' %firstData)
 		firstData.drop(firstData.index[1:],inplace = True)
 		
@@ -480,6 +496,7 @@ def findJumps(curTs,dataDrivenThreshold,frameRateForInterpolation,**kwargs):
 		# A small work-around for the cases where there are multiple max curTs
 		# Kinda strange, but I suppose it's possible (before interpolation).
 		# Throw a warning just in case it links to problems later on.
+		logging.warning(datetime.now().strftime("%Y-%m-%d %H:%M:%S") + ' - ' + basename(__file__) + '\nWARNING: Multiple occurrences of maximum Ts found. Causes an issue with skipping jumps.\nThe work-around simply takes the first of the multiple occurrences.\nIt may cause a problem later.\nOriginal lastdata:\n%s\n' %lastData)
 		warn('\nWARNING: Multiple occurrences of maximum Ts found. Causes an issue with skipping jumps.\nThe work-around simply takes the first of the multiple occurrences.\nIt may cause a problem later.\nOriginal lastdata:\n%s\n' %lastData)
 		lastData.drop(lastData.index[1:],inplace = True)
 
@@ -616,6 +633,7 @@ def findJumps_Fixed_X_int(curTs,dataDrivenThreshold,frameRateForInterpolation,fi
 		X_int_cropped = X_int[X_int >= endOfLastJump]
 
 		windowWithoutJumps = max(curTs_cropped) - endOfLastJump
+		logging.warning(datetime.now().strftime("%Y-%m-%d %H:%M:%S") + ' - ' + basename(__file__) + '\nWARNING: Could not use the whole window leading up to this event due to temporal jumps in the data.\nThe intended window was <%ss>, whereas the window from the last jump until the event was <%ss>.\n\n**********\n**********\n**********\nSTILL TO DO: Write an exception for <full> and for other events with a start AND an end.\n**********\n**********\n**********\n' %(aggregateLevel[1],windowWithoutJumps))
 		warn('\nWARNING: Could not use the whole window leading up to this event due to temporal jumps in the data.\nThe intended window was <%ss>, whereas the window from the last jump until the event was <%ss>.\n\n**********\n**********\n**********\nSTILL TO DO: Write an exception for <full> and for other events with a start AND an end.\n**********\n**********\n**********\n' %(aggregateLevel[1],windowWithoutJumps))
 
 		"""
@@ -652,6 +670,7 @@ def fillGapsConsistentTimestamps(curEventExcerptPanda,X_int,aggregateLevel,refTe
 	newIndex = np.arange(0,len(everyPlayerIDs) * len(X_int))
 
 	if len(newIndex) < 2:
+		logging.critical(datetime.now().strftime("%Y-%m-%d %H:%M:%S") + ' - ' + basename(__file__) + '\nFATAL WARNING: There seems to be a problem with the length of the timeseries that is currently being interpolated.\nThe timeseries as the same tStart <%s> as tEnd <%s>.\nIn other words, it has a length of only 1 timestamp.\nThe working solution is to simply return the original eventExcerpt.\n' %(smallestTime,biggestTime))
 		warn('\nFATAL WARNING: There seems to be a problem with the length of the timeseries that is currently being interpolated.\nThe timeseries as the same tStart <%s> as tEnd <%s>.\nIn other words, it has a length of only 1 timestamp.\nThe working solution is to simply return the original eventExcerpt.\n' %(smallestTime,biggestTime))
 		return curEventExcerptPanda
 	# Create an array that is empty and has the same size as the interpoloated values will have.
@@ -774,6 +793,7 @@ def fillGapsConsistentTimestamps(curEventExcerptPanda,X_int,aggregateLevel,refTe
 					# start_ix = start_ix + tmp[-1] +1
 
 					windowWithoutJumps = max(curX_cropped) - endOfLastJump
+					logging.warning(datetime.now().strftime("%Y-%m-%d %H:%M:%S") + ' - ' + basename(__file__) + '\nWARNING: Could not use the whole window leading up to this event due to temporal jumps in the data.\nThe intended window was <%ss>, whereas the window from the last jump until the event was <%ss>.\n\n**********\n**********\n**********\nSTILL TO DO: Write an exception for <full> and for other events with a start AND an end.\n**********\n**********\n**********\n' %(aggregateLevel[1],windowWithoutJumps))
 					warn('\nWARNING: Could not use the whole window leading up to this event due to temporal jumps in the data.\nThe intended window was <%ss>, whereas the window from the last jump until the event was <%ss>.\n\n**********\n**********\n**********\nSTILL TO DO: Write an exception for <full> and for other events with a start AND an end.\n**********\n**********\n**********\n' %(aggregateLevel[1],windowWithoutJumps))
 
 					## Using interp1d here to avoid (for example) negative values where they can't exist.
@@ -813,6 +833,7 @@ def fillGapsConsistentTimestamps(curEventExcerptPanda,X_int,aggregateLevel,refTe
 					interpolatedVals.loc[start_ix : end_ix,key] = curEventExcerptPanda.loc[curRows[0],key]
 
 					if not key in ['TeamID', 'PlayerID', 'temporalAggregate','RefTeam','EventUID','School','Class','Group', 'Test', 'Exp','MatchContinent','MatchCountry','MatchID','HomeTeamContinent','HomeTeamCountry','HomeTeamAgeGroup','HomeTeamID','AwayTeamContinent','AwayTeamCountry','AwayTeamAgeGroup','AwayTeamID','OthTeam' ]:
+						logging.warning(datetime.now().strftime("%Y-%m-%d %H:%M:%S") + ' - ' + basename(__file__) + '\nWARNING: Key <%s> was identified as an event identifier.\nTherefore, no data was interpolated, instead, the same value was copied for all cells.\n' %key)
 						warn('\nWARNING: Key <%s> was identified as an event identifier.\nTherefore, no data was interpolated, instead, the same value was copied for all cells.\n' %key)
 				else:
 					# Create an empty dataframe
@@ -820,6 +841,7 @@ def fillGapsConsistentTimestamps(curEventExcerptPanda,X_int,aggregateLevel,refTe
 
 					# Event Strings
 					if not key in ['Goal','Run','Possession/Turnover','Pass']:
+						logging.warning(datetime.now().strftime("%Y-%m-%d %H:%M:%S") + ' - ' + basename(__file__) + '\nWARNING: Key <%s> was identified as a string event.\nTherefore, no data was interpolated, instead, the same value was copied to the cell with the interpolated time index closest to the original time index.\nMAKE SURE YOU HAVE FORCED THE DATATYPE CORRECTLY.' %key)
 						warn('\nWARNING: Key <%s> was identified as a string event.\nTherefore, no data was interpolated, instead, the same value was copied to the cell with the interpolated time index closest to the original time index.\nMAKE SURE YOU HAVE FORCED THE DATATYPE CORRECTLY.' %key)
 						# if key == 'vNorm':
 						# 	print(curEventExcerptPanda.loc[curRows,key].dtype )
@@ -832,6 +854,7 @@ def fillGapsConsistentTimestamps(curEventExcerptPanda,X_int,aggregateLevel,refTe
 
 					# Check whether there are less cells with content than cells in X_int AND the original X
 					if len(isString) >= len(X_int) or len(isString) >= len(curRows):
+						logging.warning(datetime.now().strftime("%Y-%m-%d %H:%M:%S") + ' - ' + basename(__file__) + '\nWARNING: Identified key <%s> as a column with string events.\n(String events have a string in the row where the event happens, the remaining rows are empty.)\nBut this seems unlikely, as there were more events than time indices.\nThis may result in an error, is there are no cells to interpolate the string events to (they\'re currently transferred to the interpolated time value that lies closest to the original time value, i.e., 1 on 1)\n' %key)
 						warn('\nWARNING: Identified key <%s> as a column with string events.\n(String events have a string in the row where the event happens, the remaining rows are empty.)\nBut this seems unlikely, as there were more events than time indices.\nThis may result in an error, is there are no cells to interpolate the string events to (they\'re currently transferred to the interpolated time value that lies closest to the original time value, i.e., 1 on 1)\n' %key)
 						# (if there are more, it can't have been a string event)
 
