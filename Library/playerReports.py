@@ -134,7 +134,7 @@ def reportDanger(rawPanda,attrPanda,TeamAstring,TeamBstring,playerReportFolder,m
 	# 	playerData = playerData.drop(playerData.index[3])
 	# 	team = allDict[teamField][allDict[playerField]==player].iloc[0]
 	# 	plotPlayer(playerData,player,playerReportFolder,maxDangerPlayer,team,matchName,TeamAstring)
-	
+
 	#generate graph for team A
 	nrOfPlayersA = len(dfPlayersA)
 	for player in dfPlayersA:
@@ -175,12 +175,40 @@ def plotTeam(teamDataA,teamDataB,dfTeams,playerReportFolder,maxDangerTeam,matchN
 	plt.xlabel('Fifteen Minutes')
 	plt.xticks(np.arange(0, 3, step=1),['0-15','16-30','31-45+'])
 	plt.ylim(bottom=0)
-	plt.ylim(top=maxDangerTeam)
+	plt.ylim(top=maxDangerTeam+10)
 
 	strFile = playerReportFolder + matchName + ' Team ' + method + '.png'
 	if os.path.isfile(strFile):
 		os.remove(strFile)
 	plt.savefig(strFile)
+
+def plotTeamOffBall(teamDataA,teamDataB,dfTeams,playerReportFolder,maxDangerTeam,matchName,TeamAstring,TeamBstring,method):
+	# print(teamDataA,teamDataB)
+	if len(teamDataA) == 0 and len(teamDataB) != 0:
+		ax = teamDataB.plot(color='royalblue')
+		plt.legend([TeamBstring])
+	elif len(teamDataB) == 0:
+		ax = teamDataA.plot(color='orange')
+		plt.legend([TeamAstring])
+	else:
+		ax = teamDataA.plot(color='orange')
+		teamDataB.plot(ax=ax,color='royalblue')
+		plt.legend([TeamAstring,TeamBstring])
+
+	plt.title('Team Performance')
+	plt.ylabel(method + ' score')
+	plt.xlabel('Fifteen Minutes')
+	plt.xticks(np.arange(0, 3, step=1),['0-15','16-30','31-45+'])
+	plt.ylim(bottom=0)
+	plt.ylim(top=maxDangerTeam+20)
+
+	strFile = playerReportFolder + matchName + ' Team ' + method + '.png'
+	if os.path.isfile(strFile):
+		os.remove(strFile)
+	plt.savefig(strFile)
+
+
+
 
 # LT: kan weg
 def plotPlayer(playerData,player,playerReportFolder,maxDangerPlayer,team,matchName,TeamAstring):
@@ -213,19 +241,43 @@ def plotAllPlayers(playerData,player,playerReportFolder,maxDangerPlayer,TeamStri
 	plt.xlabel('Fifteen Minutes')
 	plt.xticks(np.arange(0, 3, step=1),['0-15','16-30','31-45+'])
 	plt.ylim(bottom=0)
-	plt.ylim(top=maxDangerPlayer)
+	plt.ylim(top=maxDangerPlayer + 10)
 
 	if boolLast:
 		plt.title('Player Performance ' + TeamString )
-		strFile = playerReportFolder + matchName + ' AllPlayers ' + TeamString + '.png'
+		strFile = playerReportFolder + matchName + ' AllPlayers ' + TeamString + ' dangerousity.png'
 		plt.legend(dfPlayers)
 		# plt.show()
 		# plt.close()
-		
+
 		if os.path.isfile(strFile):
 			os.remove(strFile)
 		plt.savefig(strFile)
 		plt.close()
+
+def plotAllPlayersOffBall(playerData,player,playerReportFolder,maxDangerPlayer,TeamString,dfPlayers,boolLast,matchName):
+	# print(player,boolLast)
+	# if(not playerData.empty):
+	ax = playerData.plot(figsize=(12,10))
+
+	plt.ylabel('Off-the-ball performance score')
+	plt.xlabel('Fifteen Minutes')
+	plt.xticks(np.arange(0, 3, step=1),['0-15','16-30','31-45+'])
+	plt.ylim(bottom=0)
+	plt.ylim(top=maxDangerPlayer + 10)
+
+	if boolLast:
+		plt.title('Player Performance ' + TeamString )
+		strFile = playerReportFolder + matchName + ' AllPlayers ' + TeamString + ' off-the-ball performance.png'
+		plt.legend(dfPlayers)
+		# plt.show()
+		# plt.close()
+
+		if os.path.isfile(strFile):
+			os.remove(strFile)
+		plt.savefig(strFile)
+		plt.close()
+
 
 def plotPlayersCumulative(playerData,player,playerReportFolder,maxDangerPlayer,TeamString,dfPlayers,boolLast,matchName):
 	# print(player,boolLast)
@@ -236,7 +288,7 @@ def plotPlayersCumulative(playerData,player,playerReportFolder,maxDangerPlayer,T
 	plt.xlabel('Fifteen Minutes')
 	plt.xticks(np.arange(0, 3, step=1),['0-15','16-30','31-45+'])
 	plt.ylim(bottom=0)
-	plt.ylim(top=maxDangerPlayer)
+	plt.ylim(top=maxDangerPlayer + 10)
 
 	if boolLast:
 		plt.title('Player Performance ' + TeamString )
@@ -244,7 +296,7 @@ def plotPlayersCumulative(playerData,player,playerReportFolder,maxDangerPlayer,T
 		plt.legend(dfPlayers)
 		# plt.show()
 		# plt.close()
-		
+
 		if os.path.isfile(strFile):
 			os.remove(strFile)
 		plt.savefig(strFile)
@@ -273,7 +325,25 @@ def dataToCSV(allPlayerData,secondsInFinalThird,playerReportFolder,name,matchNam
 
 	pivotAllPlayerData = pivotAllPlayerData.rename(columns={'0.0_Danger':'0-15 Danger','1.0_Danger':'16-30 Danger','2.0_Danger':'31-45+ Danger','0.0_Seconds':'0-15 Seconds','1.0_Seconds':'16-30 Seconds','2.0_Seconds':'31-45+ Seconds'})
 	pivotAllPlayerData.to_csv(playerReportFolder + matchName + ' ' + name +'.csv',header=True)
-	# pdb.set_trace()
+
+def dataToCSVOffBall(allPlayerData,playerReportFolder,name,matchName,fourPeriods):
+	pivotAllPlayerData = allPlayerData.unstack()
+	pivotAllPlayerData.fillna(0,inplace=True)
+	#pivotSecInFinalThird = secondsInFinalThird.unstack()
+	#pivotSecInFinalThird.fillna(0,inplace=True)
+	pivotAllPlayerData['Total off the ball performance'] = pivotAllPlayerData[0] + pivotAllPlayerData[1] + pivotAllPlayerData[2]
+	#pivotSecInFinalThird['Total Seconds'] = pivotSecInFinalThird.select_dtypes(float).sum(1)
+
+	#add the stopage time to the last fifteen minutes and rename the columns
+	if fourPeriods:
+		pivotAllPlayerData[2] = pivotAllPlayerData[2] + pivotAllPlayerData[3]
+		pivotAllPlayerData = pivotAllPlayerData.drop(pivotAllPlayerData.columns[3],axis=1)
+
+	pivotAllPlayerData = pivotAllPlayerData.sort_values('Total off the ball performance',ascending=False)
+	pivotAllPlayerData = pivotAllPlayerData.set_axis(['0-15 off-the-ball performance', '16-30 off-the-ball performance', '31-45+ off-the-ball performance', 'Total off-the-ball performance'], axis='columns', inplace=False)
+
+	#pivotAllPlayerData = pivotAllPlayerData.rename(columns={'0.0':'0-15 OffBal','1.0':'16-30 OffBal','2.0':'31-45+ OffBal', 'Total off the ball performance':'Total off the ball performance'})
+	pivotAllPlayerData.to_csv(playerReportFolder + matchName + ' ' + name +'.csv',header=True)
 
 def reportOffBall(rawPanda,attrPanda,TeamAstring,TeamBstring,playerReportFolder,matchName,debuggingMode,skipPlayerReports,allDict,fieldToPlot):
 	playerField = 'PlayerID'
@@ -304,7 +374,6 @@ def reportOffBall(rawPanda,attrPanda,TeamAstring,TeamBstring,playerReportFolder,
 	# secondsInFinalThirdPlayer = dfDanger[dfDanger['inAttack']>0].groupby([teamField,playerField,'fifteenMinutes'])['Ts'].count()/10 #LT: fifteenMinutes hier ook toevoegen en dan in groupby toevoegen
 	# secondsInFinalThirdPlayer = secondsInFinalThirdPlayer.rename(columns={'Ts': 'Seconds'})
 	# secondsInFinalThirdTeam = dfDanger[dfDanger['inAttack']>0].groupby([teamField,'fifteenMinutes'])['Ts'].count()/10
-	# secondsInFinalThirdTeam = secondsInFinalThirdTeam.rename(columns={'Ts': 'Seconds'})
 
 	# print(secondsInFinalThirdPlayer)
 
@@ -352,7 +421,7 @@ def reportOffBall(rawPanda,attrPanda,TeamAstring,TeamBstring,playerReportFolder,
 	else:
 		maxDangerTeam = maxDangerB
 
-	plotTeam(teamDataA,teamDataB,dfTeams,playerReportFolder,maxDangerTeam,matchName,TeamAstring,TeamBstring, 'Off-ball performance')
+	plotTeamOffBall(teamDataA,teamDataB,dfTeams,playerReportFolder,maxDangerTeam,matchName,TeamAstring,TeamBstring, 'Off-ball performance')
 	# print(dfPlayers)
 	# print(allDict[teamField][allDict[playerField]=='1214'])
 	# pdb.set_trace()
@@ -368,11 +437,11 @@ def reportOffBall(rawPanda,attrPanda,TeamAstring,TeamBstring,playerReportFolder,
 	# print(allPlayerData)
 	# pdb.set_trace()
 
-	dataToCSV(allTeamData,secondsInFinalThirdTeam,playerReportFolder,'Team',matchName,fourPeriods)
-	dataToCSV(allPlayerData,secondsInFinalThirdPlayer,playerReportFolder,'Player',matchName,fourPeriods)
+	dataToCSVOffBall(allTeamData,playerReportFolder,'Team',matchName,fourPeriods)
+	dataToCSVOffBall(allPlayerData,playerReportFolder,'Player',matchName,fourPeriods)
 
 	#max of all the players to make a good comparison between the players
-	maxDangerPlayer = math.ceil(max(allPlayerData)*10)/10
+
 
 	#generate player individual graphs
 	# for player in dfPlayers:
@@ -382,7 +451,7 @@ def reportOffBall(rawPanda,attrPanda,TeamAstring,TeamBstring,playerReportFolder,
 	# 	playerData = playerData.drop(playerData.index[3])
 	# 	team = allDict[teamField][allDict[playerField]==player].iloc[0]
 	# 	plotPlayer(playerData,player,playerReportFolder,maxDangerPlayer,team,matchName,TeamAstring)
-	
+
 	#generate graph for team A
 	nrOfPlayersA = len(dfPlayersA)
 	for player in dfPlayersA:
@@ -391,7 +460,7 @@ def reportOffBall(rawPanda,attrPanda,TeamAstring,TeamBstring,playerReportFolder,
 		if fourPeriods:
 			playerData[2] = playerData[2] + playerData[3]
 			playerData = playerData.drop(playerData.index[3])
-		plotAllPlayers(playerData,player,playerReportFolder,maxDangerPlayer,TeamAstring,dfPlayersA,player==dfPlayersA[nrOfPlayersA-1],matchName)
+		plotAllPlayersOffBall(playerData,player,playerReportFolder,maxDangerPlayer,TeamAstring,dfPlayersA,player==dfPlayersA[nrOfPlayersA-1],matchName)
 
 	#generate graph for Opponnent
 	nrOfPlayersB = len(dfPlayersB)
@@ -401,6 +470,6 @@ def reportOffBall(rawPanda,attrPanda,TeamAstring,TeamBstring,playerReportFolder,
 		if fourPeriods:
 			playerData[2] = playerData[2] + playerData[3]
 			playerData = playerData.drop(playerData.index[3])
-		plotAllPlayers(playerData,player,playerReportFolder,maxDangerPlayer,TeamBstring,dfPlayersB,player==dfPlayersB[nrOfPlayersB-1],matchName)
+		plotAllPlayersOffBall(playerData,player,playerReportFolder,maxDangerPlayer,TeamBstring,dfPlayersB,player==dfPlayersB[nrOfPlayersB-1],matchName)
 
 	return
