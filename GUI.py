@@ -8,7 +8,7 @@ import csv
 import process_Template
 
 textboxWidth = 50
-labelWidth = 12
+labelWidth = 14
 buttonWidth = 10
 csvFile = "settings.csv"
 
@@ -26,6 +26,7 @@ def openSettingsFile():
 	parameterInfo[5].set(csvData[0][8])
 	parameterInfo[6].set(csvData[0][9])
 	parameterInfo[7].set(csvData[0][10])
+	parameterInfo[8].set(csvData[0][11])
 
 def saveSettingsFile():
 	"""Store the information from dirInfo[] to the settings.csv file."""
@@ -57,6 +58,7 @@ def saveSettingsFile():
 	writeData.append(str(parameterInfo[5].get()))
 	writeData.append(str(parameterInfo[6].get()))
 	writeData.append(str(parameterInfo[7].get()))
+	writeData.append(str(parameterInfo[8].get()))
 	writeCSV(writeData)
 	return True
 
@@ -70,7 +72,7 @@ def readCSV():
 				data.append(row)
 		return data
 	except IOError:#beta
-		return [["","","","","","","","","","",""]]
+		return [["","","","","","","","","","","",""]]
 
 def writeCSV(writeData):
 	"""The list given as parameter is written to the .csv file"""
@@ -103,7 +105,7 @@ def saveFolder():
 		return
 	dirInfo[2].set(saveFilePath)
 	
-def analyse(checkVictor,checkLars):
+def analyse(checkVictor,checkLars):#,checkCleanup,checkSpatAgg):
 	# print(checkVictor,checkLars)
 	if not checkLars and not checkVictor:
 		messagebox.showwarning("Geen selectie", "Maak een selectie voor Off-ball Performance of Dangerousity.")
@@ -113,7 +115,7 @@ def analyse(checkVictor,checkLars):
 		dirOpenXML = dirInfo[1].get().replace('/',sep).replace('\\',sep) + sep
 		dirSave = dirInfo[2].get().replace('/',sep).replace('\\',sep) + sep
 		# print(dirOpenCSV,dirOpenXML,dirSave)
-		if process_Template.process(dirOpenCSV,dirOpenXML,dirSave,checkVictor,checkLars,parameterInfo[0],parameterInfo[1],parameterInfo[2],parameterInfo[3],parameterInfo[4],parameterInfo[5],parameterInfo[6],parameterInfo[7]):
+		if process_Template.process(dirOpenCSV,dirOpenXML,dirSave,checkVictor,checkLars,checkCleanup.get(),checkSpatAgg.get(),parameterInfo[0],parameterInfo[1],parameterInfo[2],parameterInfo[3],parameterInfo[4],parameterInfo[5],parameterInfo[6],parameterInfo[7],parameterInfo[8]):
 			messagebox.showinfo("Export klaar", "Export gelukt!")
 
 root = tk.Tk()
@@ -125,9 +127,9 @@ tab1 = ttk.Frame(note)
 tab2 = ttk.Frame(note)
 tab3 = ttk.Frame(note)
 
-note.add(tab1, text = "Instellingen")
+note.add(tab1, text = "Locaties")
 note.add(tab2, text = "Parameters")
-note.add(tab3, text = "Export")
+note.add(tab3, text = "Instellingen")
 note.pack()
 
 ########################   TAB 1   ########################
@@ -150,8 +152,8 @@ saveButton = tk.Button(tab1,text='Opslaan', width = buttonWidth, command=saveFol
 checkVictor = tk.IntVar()
 checkLars = tk.IntVar()
 
-checkButtonVictor = tk.Checkbutton(tab1,text = "Off-ball Performance", variable=checkVictor, onvalue = 1, offvalue = 0, height=1, width = 20)
-checkButtonLars = tk.Checkbutton(tab1,text = "Dangerousity", variable=checkLars, onvalue = 1, offvalue = 0, height=1, width = 20)
+checkButtonVictor = tk.Checkbutton(tab1,text = "Off-ball Performance", variable=checkVictor, onvalue = 1, offvalue = 0, height=1, width = 20, anchor="w")
+checkButtonLars = tk.Checkbutton(tab1,text = "Dangerousity", variable=checkLars, onvalue = 1, offvalue = 0, height=1, width = 20, anchor="w")
 
 #Werkt nog niet!
 # progressMsgBox = messagebox.showinfo("Export bezig", "!")
@@ -192,10 +194,18 @@ speedLabel = tk.Label(tab2,width = labelWidth, anchor='w', text="Speed")
 parameterInfo.append(tk.StringVar())
 speedTextbox = tk.Entry(tab2,width = textboxWidth, textvariable=parameterInfo[7])
 
+distClosestAwayLabel = tk.Label(tab2,width = labelWidth, anchor='w', text="Dist Closest Away")
+parameterInfo.append(tk.StringVar())
+distClosestAwayTextbox = tk.Entry(tab2,width = textboxWidth, textvariable=parameterInfo[8])
+
 ########################   TAB 3   ########################
+checkCleanup = tk.IntVar()
+checkSpatAgg = tk.IntVar()
 
+checkButtonCleanup = tk.Checkbutton(tab3,text = "Skip Cleanup", variable=checkCleanup, onvalue = 1, offvalue = 0, height=1, width = 20, anchor="w")
+checkButtonSpatAgg = tk.Checkbutton(tab3,text = "Skip Spatagg", variable=checkSpatAgg, onvalue = 1, offvalue = 0, height=1, width = 20, anchor="w")
 
-
+#######################   START    #########################
 startButton = tk.Button(tab1,text='Start', width = buttonWidth, command= lambda: analyse(checkVictor.get(),checkLars.get()))
 openSettingsFile()
 
@@ -229,6 +239,11 @@ possLabel.grid(row=6,column=0)
 possTextbox.grid(row=6,column=1)
 speedLabel.grid(row=7,column=0)
 speedTextbox.grid(row=7,column=1)
+distClosestAwayLabel.grid(row=8,column=0)
+distClosestAwayTextbox.grid(row=8,column=1)
+
+checkButtonCleanup.grid(row=0,column=0)
+checkButtonSpatAgg.grid(row=1,column=0)
 
 root.mainloop()
 exit()

@@ -30,21 +30,23 @@ if __name__ == '__main__':
 	rawData(filename,folder)
 	existingAttributes(filename,folder,rawHeaders)
 
-def process(loadFname,loadFolder,skipSpatAgg_curFile,readAttributeCols,readEventColumns,attrLabel,outputFolder,debuggingMode):
+def process(loadFname,loadFolder,skipSpatAgg_curFile,readAttributeCols,readEventColumns,attrLabel,outputFolder,debuggingMode,checkLars,checkVictor):
 
 	tImport = time.time()	# do stuff
 
 	rawPanda = rawData(loadFname,loadFolder)
-	attrPanda,attrLabel = existingAttributes(loadFname,loadFolder,skipSpatAgg_curFile,readAttributeCols,attrLabel,outputFolder)
-	eventsPanda,eventsLabel = existingAttributes(loadFname,loadFolder,False,readEventColumns,attrLabel,outputFolder)
-
+	eventsPanda,eventsLabel,skipSpatAggLars,skipSpatAggVictor = existingAttributes(loadFname,loadFolder,False,readEventColumns,attrLabel,outputFolder,checkLars,checkVictor)
+	attrPanda,attrLabel,skipSpatAggLars,skipSpatAggVictor = existingAttributes(loadFname,loadFolder,skipSpatAgg_curFile,readAttributeCols,attrLabel,outputFolder,checkLars,checkVictor)
+	
 	if debuggingMode:
 		elapsed = str(round(time.time() - tImport, 2))
 		print('***** Time elapsed during imporTimeseries: %ss' %elapsed)
 
-	return rawPanda,attrPanda,attrLabel,eventsPanda,eventsLabel
+	return rawPanda,attrPanda,attrLabel,eventsPanda,eventsLabel,skipSpatAggLars,skipSpatAggVictor
 
-def existingAttributes(filename,folder,skipSpatAgg,headers,attrLabel,outputFolder):
+def existingAttributes(filename,folder,skipSpatAgg,headers,attrLabel,outputFolder,checkLars,checkVictor):
+	skipSpatAggLars = False
+	skipSpatAggVictor = False
 
 	# Add time to the attribute columns (easy for indexing)
 	if 'Ts' not in headers:
@@ -58,8 +60,21 @@ def existingAttributes(filename,folder,skipSpatAgg,headers,attrLabel,outputFolde
 		tmpHeaders = list(next(reader))
 
 	if skipSpatAgg:
+		if checkLars and checkVictor and 'dangerousity' in tmpHeaders and 'passPopRank' in tmpHeaders:
+			colHeaders = tmpHeaders[1:]
+			skipSpatAggLars = True
+			skipSpatAggVictor = True
+		elif checkLars and 'dangerousity' in tmpHeaders:
+			colHeaders = tmpHeaders[1:]
+			skipSpatAggLars = True
+		elif checkVictor and 'passPopRank' in tmpHeaders:
+			colHeaders = tmpHeaders[1:]
+			skipSpatAggVictor = True
+		else:
+			print("ERRROORRRR")
+			return
 		# Import all headers
-		colHeaders = tmpHeaders[1:] # Skip the index column which is empty
+		# colHeaders = tmpHeaders[1:] # Skip the index column which is empty
 		## EDIT: Instead of exporting the attributes labels,
 		## it's easier to create the attribute lables,
 		## EVEN if spatAgg is being skipped.
@@ -67,7 +82,6 @@ def existingAttributes(filename,folder,skipSpatAgg,headers,attrLabel,outputFolde
 		# if isfile(join(outputFolder, 'attributeLabel.csv')):
 		# 	print('loaded attributeLabel')
 		# 	pdb.set_trace()
-
 		# 	tmp = pd.read_csv(outputFolder + 'attributeLabel.csv')
 		# 	attrLabel = pd.DataFrame.to_dict(tmp)
 		# else:
@@ -85,7 +99,7 @@ def existingAttributes(filename,folder,skipSpatAgg,headers,attrLabel,outputFolde
 		usecols=(colHeaders),low_memory=True,
 		dtype = {'Ts': float,'X': float, 'Y': float, 'PlayerID': str,'TeamID': str})#LT: added. playerID moet als string
 
-	return Loaded_Attr_Data,attrLabel
+	return Loaded_Attr_Data,attrLabel,skipSpatAggLars,skipSpatAggVictor 
 
 def rawData(filename,folder):
 

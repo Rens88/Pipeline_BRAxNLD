@@ -1,7 +1,7 @@
 # If you want to edit something in the code and you're not sure where it is,
 # just ask. l.a.meerhoff@liacs.leidenuniv.nl
 
-def process(csvFolder,xmlFolder,saveFolder,checkVictor,checkLars,tsText,playerText,teamText,xText,yText,shirtText,possText,speedText):
+def process(csvFolder,xmlFolder,saveFolder,checkVictor,checkLars,skipCleanup,skipSpatAgg,tsText,playerText,teamText,xText,yText,shirtText,possText,speedText,distClosestAwayText):
 	# pre-initialization
 	from shutil import copyfile	
 	import pdb; #pdb.set_trace()
@@ -55,8 +55,8 @@ def process(csvFolder,xmlFolder,saveFolder,checkVictor,checkLars,tsText,playerTe
 
 	# Case-sensitive string rawHeaders of attribute columns that already exist in the data (optional). NB: String also sensitive for extra spaces.
 	# readAttributeCols = ['Speed','dist to closest home','dist to closest visitor','Shirt','InBallPos']
-	readAttributeCols = [speedText.get(),'dist to closest home','dist to closest visitor',shirtText.get(),possText.get()]
-	readAttributeLabels = ['Speed (m/s)', 'Distance to closest home player.', 'Distance to closest away player.', 'Shirt Number.', 'Player in ball possession.']
+	readAttributeCols = [speedText.get(),distClosestAwayText.get(),shirtText.get(),possText.get()]
+	readAttributeLabels = ['Speed (m/s)', 'Distance to closest away player.', 'Shirt Number.', 'Player in ball possession.']
 
 	# When event columns exist in the raw data, they can be read to export an event file
 	readEventColumns = []
@@ -85,8 +85,8 @@ def process(csvFolder,xmlFolder,saveFolder,checkVictor,checkLars,tsText,playerTe
 	plotTheseAttributes_atDatasetLevel = ['distToGoal','minDistToDef','avgDistToDef2','avgDistToDef3','minAngleInPossDefGoal','avgAngleInPossDefGoal2','avgAngleInPossDefGoal3']#['velRelToBall','angleInPossDefGoal','distToPlayerWithBall','angleToGoal','majority','centrality','distToGoal']
 
 	# Parts of the pipeline can be skipped
-	skipCleanup = False # Only works if cleaned file exists. NB: if False, all other skips become ineffective.
-	skipSpatAgg = False # Only works if spat agg export exists. NB: if False, skipEventAgg and skipToDataSetLevel become ineffective.
+	# skipCleanup = False # Only works if cleaned file exists. NB: if False, all other skips become ineffective.
+	# skipSpatAgg = False # Only works if spat agg export exists. NB: if False, skipEventAgg and skipToDataSetLevel become ineffective.
 	skipPlayerReports = False
 	skipComputeEvents = False
 
@@ -226,8 +226,8 @@ def process(csvFolder,xmlFolder,saveFolder,checkVictor,checkLars,tsText,playerTe
 		fieldDimensions = importFieldDimensions.process(dataFolder,dirtyFname,exportData,exportDataString,debuggingMode)
 		# TO DO: add code to rotate based on fieldDimensions !!!!!!!!!!!!!!!!
 		# TO DO: add filtering here. !!!!!!!!! THIS IS WHERE YOU SHOULD CONTINE
-		rawPanda,attrPanda,attrLabel,eventsPanda,eventsLabel = \
-		importTimeseries_aspanda.process(loadFname,loadFolder,skipSpatAgg_curFile,readAttributeCols,readEventColumns,attrLabel,outputFolder,debuggingMode)
+		rawPanda,attrPanda,attrLabel,eventsPanda,eventsLabel,skipSpatAggLars,skipSpatAggVictor = \
+		importTimeseries_aspanda.process(loadFname,loadFolder,skipSpatAgg_curFile,readAttributeCols,readEventColumns,attrLabel,outputFolder,debuggingMode,checkLars,checkVictor)
 
 		# Here you can write the code to import targetEvents. 
 		# Events can be imported from columns in the rawPanda.
@@ -240,7 +240,7 @@ def process(csvFolder,xmlFolder,saveFolder,checkVictor,checkLars,tsText,playerTe
 		####### Compute new attributes #########################################################
 		########################################################################################
 
-		attrPanda,attrLabel = spatialAggregation.process(rawPanda,attrPanda,attrLabel,TeamAstring,TeamBstring,skipSpatAgg_curFile,eventsPanda,spatAggFolder,spatAggFname,debuggingMode,targetEventsImported,checkVictor,checkLars)
+		attrPanda,attrLabel = spatialAggregation.process(rawPanda,attrPanda,attrLabel,TeamAstring,TeamBstring,skipSpatAgg_curFile,eventsPanda,spatAggFolder,spatAggFname,debuggingMode,targetEventsImported,checkVictor,checkLars,skipSpatAggVictor,skipSpatAggLars)
 		
 		# pdb.set_trace()
 		# NB: targetEVents is a dictionary with the key corresponding to the type of event.

@@ -37,7 +37,7 @@ if __name__ == '__main__':
 	#####################################################################################
 	#####################################################################################
 
-def process(rawDict,attributeDict,attributeLabel,TeamAstring,TeamBstring,skipSpatAgg,eventsPanda,spatAggFolder,spatAggFname,debuggingMode,targetEvents,checkVictor,checkLars):
+def process(rawDict,attributeDict,attributeLabel,TeamAstring,TeamBstring,skipSpatAgg,eventsPanda,spatAggFolder,spatAggFname,debuggingMode,targetEvents,checkVictor,checkLars,skipSpatAggVictor,skipSpatAggLars):
 	tSpatAgg = time.time()
 	# Per Match (i.e., file)
 	# Per Team and for both teams
@@ -85,9 +85,12 @@ def process(rawDict,attributeDict,attributeLabel,TeamAstring,TeamBstring,skipSpa
 	# 	print('*****----- Time elapsed during spatialAggregation.vNorm(): %ss' %elapsed)
 	tSpatAgg_vNorm = time.time()
 
+	# print(checkLars,skipSpatAggLars)
+	# print(checkVictor,skipSpatAggVictor)
+
 	if checkLars:
 		attributeDict,attributeLabel = \
-		student_LT_spatialAggregation.process(rawDict,attributeDict,attributeLabel,TeamAstring,TeamBstring,skipSpatAgg)
+		student_LT_spatialAggregation.process(rawDict,attributeDict,attributeLabel,TeamAstring,TeamBstring,skipSpatAggLars)
 		if debuggingMode:
 			elapsed = str(round(time.time() - tSpatAgg_vNorm, 2))
 			print('*****----- Time elapsed during spatialAggregation.student_LT_spatialAggregation(): %ss' %elapsed)
@@ -95,7 +98,7 @@ def process(rawDict,attributeDict,attributeLabel,TeamAstring,TeamBstring,skipSpa
 
 	if checkVictor:
 		attributeDict,attributeLabel = \
-		student_VP_spatialAggregation.process(rawDict,attributeDict,attributeLabel,TeamAstring,TeamBstring,skipSpatAgg,targetEvents)
+		student_VP_spatialAggregation.process(rawDict,attributeDict,attributeLabel,TeamAstring,TeamBstring,skipSpatAggVictor,targetEvents)
 		if debuggingMode:
 			elapsed = str(round(time.time() - tSpatAgg_vNorm, 2))
 			print('*****----- Time elapsed during spatialAggregation.student_VP_spatialAggregation(): %ss' %elapsed)
@@ -106,7 +109,7 @@ def process(rawDict,attributeDict,attributeLabel,TeamAstring,TeamBstring,skipSpa
 	# pdb.set_trace()
 
 	# Spatially aggregated data
-	if not skipSpatAgg: #LT: terugzetten!
+	if not skipSpatAggLars or not skipSpatAggVictor:
 		spatAggPanda = pd.concat([rawDict, eventsPanda.loc[:, eventsPanda.columns != 'Ts'], attributeDict.loc[:, attributeDict.columns != 'Ts']], axis=1) # Skip the duplicate 'Ts' columns
 		spatAggPanda.to_csv(spatAggFolder + spatAggFname)
 
