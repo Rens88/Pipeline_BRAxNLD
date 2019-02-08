@@ -164,6 +164,7 @@ def process(csvFolder,xmlFolder,saveFolder,checkVictor,checkLars,tsText,playerTe
 		gc.collect() # not entirey sure what this does, but it's my attempt to avoid a MemoryError
 		if skipToDataSetLevel:
 			# Skipp immediately without verification
+			logging.critical(datetime.now().strftime("%Y-%m-%d %H:%M:%S") + ' - ' + basename(__file__) + '\nSkipped to datasetLevel without verifying whether matches from current batch were analyzed.')
 			warn('\nWARNING: Skipped to datasetLevel without verifying whether matches from current batch were analyzed.')
 			break
 
@@ -316,6 +317,8 @@ def process(csvFolder,xmlFolder,saveFolder,checkVictor,checkLars,tsText,playerTe
 		# os.rename(eventAggFolder + eventAggFname, backupEventAggFname)
 
 	if not isfile(backupEventAggFname):
+		messagebox.showerror('Backup event aggregatie kon niet worden gevonden \n\nOPLOSSING: Controleer of de data bestaat en importeer anders de data opnieuw')
+		logging.critical(datetime.now().strftime("%Y-%m-%d %H:%M:%S") + ' - ' + basename(__file__) + '\nCould not find backupEventAggFname')
 		warn('\nFATAL WARNING: Could not find backupEventAggFname:\n%s' %backupEventAggFname)
 		exit()
 
@@ -344,6 +347,7 @@ def process(csvFolder,xmlFolder,saveFolder,checkVictor,checkLars,tsText,playerTe
 					# More specific:
 					doesItExistIn_DDF = [True for j in DirtyDataFiles_backup if str(i) == str(j.split('_')[0])]
 					if not any(doesItExistIn_DDF):
+						logging.critical(datetime.now().strftime("%Y-%m-%d %H:%M:%S") + ' - ' + basename(__file__) + '\nDropped MatchID <%s> from eventAggregate backup as it did not exist in DirtyDataFiles.\nNote that it was only dropped from the automatic backup, in the original file the match can still be accessed.')
 						warn('\nWARNING: Dropped MatchID <%s> from eventAggregate backup as it did not exist in DirtyDataFiles.\nNote that it was only dropped from the automatic backup, in the original file the match can still be accessed.\n' %i)
 						chunk = chunk.drop(chunk[chunk['MatchID'] != i].index)
 
@@ -387,7 +391,9 @@ def process(csvFolder,xmlFolder,saveFolder,checkVictor,checkLars,tsText,playerTe
 	if allWindows_and_Lags != [(None,0)]:
 		iterateWindowsOverEventAgg.process(datasetEventsSpatAggExcerpt,attrLabel_asPanda,aggregateLevel,aggregateEvent,allWindows_and_Lags,aggregatePerPlayer,outputFolder,debuggingMode,dataFolder,parallelProcess,eventAggFname)
 
-		warn('\nWARNING: Due to implementation iterateWindowsOverEventAgg, plotting procedure might not work correctly.\n')
+		warn('\nWARNING: Due to implementation iterateWindowsOverEventAgg, plotting procedure might not work correctly.WARNING: Due to implementation iterateWindowsOverEventAgg, plotting procedure might not work correctly.\n')
+		logging.critical(datetime.now().strftime("%Y-%m-%d %H:%M:%S") + ' - ' + basename(__file__) + '\nDue to implementation iterateWindowsOverEventAgg, plotting procedure might not work correctly.WARNING: Due to implementation iterateWindowsOverEventAgg, plotting procedure might not work correctly.')
+
 
 	############################
 	# End dataSetLevel - stuff #

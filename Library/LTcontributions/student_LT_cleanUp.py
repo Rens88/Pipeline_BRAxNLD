@@ -175,7 +175,8 @@ def omitRowsWithout_XandY(df,x,y):
 
 	df_cleaned = df[rowsWith_XandY == True ]
 	df_omitted = df[rowsWith_XandY == False ]
-
+	
+	logging.critical(datetime.now().strftime("%Y-%m-%d %H:%M:%S") + ' - ' + basename(__file__) + '\nOmitted rows without X and Y. These could have been goupRows.\nConsider using <skip_blank_lines  = True> in pd.read_csv.')
 	warn('\nWARNING: Omitted rows without X and Y. These could have been goupRows.\nConsider using <skip_blank_lines  = True> in pd.read_csv.' )
 
 	return df_cleaned, df_omitted

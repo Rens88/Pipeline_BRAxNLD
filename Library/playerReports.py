@@ -441,6 +441,9 @@ def reportOffBall(rawPanda,attrPanda,TeamAstring,TeamBstring,playerReportFolder,
 	dataToCSVOffBall(allPlayerData,playerReportFolder,'Player',matchName,fourPeriods)
 
 	#max of all the players to make a good comparison between the players
+	maxDangerPlayer = math.ceil(max(allPlayerData)*10)/10
+
+	#max of all the players to make a good comparison between the players
 
 
 	#generate player individual graphs

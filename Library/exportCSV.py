@@ -91,6 +91,7 @@ def process(trialEventsSpatAggExcerpt,exportData,exportDataString,exportFullExpl
 		try:
 			combined_df.drop(['Unnamed: 0'],axis = 1,inplace=True)
 		except:
+			logging.critical(datetime.now().strftime("%Y-%m-%d %H:%M:%S") + ' - ' + basename(__file__) + '\nCouldnt find unnamed column.\nConsider specifying index column string to make it consistent.\nThis will result in a (mostly) empty column that should be named something with <Unnamed>.')
 			warn('\nWARN: Couldnt find unnamed column.\nConsider specifying index column string to make it consistent.\nThis will result in a (mostly) empty column that should be named something with <Unnamed>.\n')
 		
 		existingFirstColumns = [i for i in firstColumns if i in combined_df.keys()]
@@ -98,6 +99,7 @@ def process(trialEventsSpatAggExcerpt,exportData,exportDataString,exportFullExpl
 		strangeColumns = [i for i in notExistingFirstColumns if i not in ['TrialBasedIndex', 'eventTimeIndex', 'eventTime', 'Ts', 'X', 'Y', 'TeamID', 'PlayerID']]
 
 		if strangeColumns != []:
+			logging.critical(datetime.now().strftime("%Y-%m-%d %H:%M:%S") + ' - ' + basename(__file__) + '\nDuring export, these columns existed in the spatial aggregate, but were not exported:\n<%s>' %strangeColumns)
 			warn('\nWARNING: During export, these columns existed in the spatial aggregate, but were not exported:\n<%s>' %strangeColumns)
 
 		LastColumns = [i for i in combined_df.keys() if i not in existingFirstColumns]
@@ -107,6 +109,7 @@ def process(trialEventsSpatAggExcerpt,exportData,exportDataString,exportFullExpl
 		combined_df = combined_df[columnOrderAggregatedOutput]
 		combined_df.to_csv(aggregatedOutputFilename)
 	else:
+		logging.critical(datetime.now().strftime("%Y-%m-%d %H:%M:%S") + ' - ' + basename(__file__) + '\nIt was not the first time that exportCSV was run, but still, the aggregatedOutputFilename <%s> could not be found. This means that the data from the current file was not exported.' %aggregatedOutputFilename)
 		warn('\nFATAL WARNING: It was not the first time that exportCSV was run, but still, the aggregatedOutputFilename <%s> could not be found. This means that the data from the current file was not exported.' %aggregatedOutputFilename)
 
 	varDescription(outputDescriptionFilename,exportDataString,exportFullExplanation)
@@ -130,6 +133,7 @@ def process(trialEventsSpatAggExcerpt,exportData,exportDataString,exportFullExpl
 
 def eventAggregate(eventAggFolder,eventAggFname,appendEventAggregate,trialEventsSpatAggExcerpt,skipEventAgg_curFile,fileIdentifiers,columnOrder):
 	if skipEventAgg_curFile:
+		logging.critical(datetime.now().strftime("%Y-%m-%d %H:%M:%S") + ' - ' + basename(__file__) + '\nDid not export any new eventAggregate data.\nIf you want to add new (or revised) spatial aggregates, change <skipEventAgg> into <False>.\n')
 		warn('\nDid not export any new eventAggregate data.\nIf you want to add new (or revised) spatial aggregates, change <skipEventAgg> into <False>.\n')
 		return appendEventAggregate
 
@@ -155,6 +159,7 @@ def eventAggregate(eventAggFolder,eventAggFname,appendEventAggregate,trialEvents
 		# Check if current event already exists in datasetEventsSpatAggExcerpt
 		FileID = "_".join(fileIdentifiers)
 		if any(datasetEventsSpatAggExcerpt['EventUID'].str.contains(FileID)):
+			logging.critical(datetime.now().strftime("%Y-%m-%d %H:%M:%S") + ' - ' + basename(__file__) + '\ncurrent trialEventsSpatAggExcerpt already existed in datasetEventsSpatAggExcerpt.\nFileID = <%s>\nDropped it from the previously stored datasetEventsSpatAggExcerpt.\nIF THIS WAS UNINTENTIONAL, change appendEventAggregate to False (which creates an entirely new datasetEventsSpatAggExcerpt.' %FileID)
 			warn('\nWARNING: current trialEventsSpatAggExcerpt already existed in datasetEventsSpatAggExcerpt.\nFileID = <%s>\nDropped it from the previously stored datasetEventsSpatAggExcerpt.\nIF THIS WAS UNINTENTIONAL, change appendEventAggregate to False (which creates an entirely new datasetEventsSpatAggExcerpt.' %FileID)
 			## Drop previous version of the current trial
 			datasetEventsSpatAggExcerpt.drop(datasetEventsSpatAggExcerpt['EventUID'].str.contains(FileID).index, inplace = True)
@@ -210,6 +215,7 @@ def eventAggregate(eventAggFolder,eventAggFname,appendEventAggregate,trialEvents
 		appendEventAggregate = True
 
 	else: # apparently trialEventsSpatAggExcerpt was empty..
+	logging.critical(datetime.now().strftime("%Y-%m-%d %H:%M:%S") + ' - ' + basename(__file__) + '\nTargetevents were empty. \nNo Data exported.')
 		warn('\nWARNING: Targetevents were empty. \nNo Data exported.\n')
 		return appendEventAggregate
 
@@ -218,12 +224,14 @@ def eventAggregate(eventAggFolder,eventAggFname,appendEventAggregate,trialEvents
 	for ikey in combinedData.keys():
 		if not ikey in columnOrder:
 			# ikey wasnt in columnOrder, add it to the end
+			logging.critical(datetime.now().strftime("%Y-%m-%d %H:%M:%S") + ' - ' + basename(__file__) + '\n<%s> existed in the data, but was not given in columnOrder.\nTherefore, it was added to the end of columnOrder.' %ikey)
 			warn('\nWARNING: <%s> existed in the data, but was not given in columnOrder.\nTherefore, it was added to the end of columnOrder.' %ikey)
 			# columnOrder = columnOrder + ikey
 			columnOrder.append(ikey)
 	for ikey in columnOrder:
 		if not ikey in combinedData:
 			# ikey wasnt in columnOrder, remove it
+			logging.critical(datetime.now().strftime("%Y-%m-%d %H:%M:%S") + ' - ' + basename(__file__) + '\n<%s> existed in the columnOrder, but not in the data.\nTherefore, it was omitted from the columnOrder.' %ikey)
 			warn('\nWARNING: <%s> existed in the columnOrder, but not in the data.\nTherefore, it was omitted from the columnOrder.' %ikey)
 			columnOrder.remove(ikey)
 
@@ -304,6 +312,7 @@ def newOrAdd(fname,header,data,skippedData):
 	if not isfile(fname):
 		# write new
 		if skippedData:
+			logging.critical(datetime.now().strftime("%Y-%m-%d %H:%M:%S") + ' - ' + basename(__file__) + '\nWARNING first file had skipped data. Output file will be inconsistent, change order')
 			warn('\nWARNING first file had skipped data. Output file will be inconsistent, change order')
 		with open(fname, 'w',newline='') as myfile:
 			wr = csv.writer(myfile)
@@ -338,6 +347,7 @@ def newOrAdd(fname,header,data,skippedData):
 				data = newData['newData'].values.tolist()
 				# print(data)
 			else:
+				logging.critical(datetime.now().strftime("%Y-%m-%d %H:%M:%S") + ' - ' + basename(__file__) + '\noriginal file did not have the same number of columns as the newly exported data.\nConsider creating a new file or at least edit the existingHeaders.')
 				warn('\nWARNING: original file did not have the same number of columns as the newly exported data.\nConsider creating a new file or at least edit the existingHeaders.')
 
 		with open(fname, 'a',newline='') as myfile:

@@ -85,6 +85,7 @@ def buildUpLabels(rawPanda,attrPanda,targetEvents,TeamAstring,TeamBstring,eventC
 				attackEvents[attackIdx] = attackTuple
 				# print('-shotNotOnTargetLabel',attackTuple)
 			else:
+				logging.critical(datetime.now().strftime("%Y-%m-%d %H:%M:%S") + ' - ' + basename(__file__) + '\nShot Not on Target is not labeled to an attack')
 				warn('\nShot Not on Target is not labeled to an attack: ' + str(i))
 
 	if 'shotOnTarget' in targetEvents:
@@ -109,6 +110,7 @@ def buildUpLabels(rawPanda,attrPanda,targetEvents,TeamAstring,TeamBstring,eventC
 				attackEvents[attackIdx] = attackTuple
 				# print('-shotOnTargetLabel',attackTuple)
 			else:
+				logging.critical(datetime.now().strftime("%Y-%m-%d %H:%M:%S") + ' - ' + basename(__file__) + '\nShot on Target is not labeled to an attack')
 				warn('\nShot on Target is not labeled to an attack: ' + str(i))
 
 	if 'goal' in targetEvents:
@@ -132,6 +134,7 @@ def buildUpLabels(rawPanda,attrPanda,targetEvents,TeamAstring,TeamBstring,eventC
 				attackEvents[attackIdx] = attackTuple
 				# print('-Goal',attackTuple)
 			else:
+				logging.critical(datetime.now().strftime("%Y-%m-%d %H:%M:%S") + ' - ' + basename(__file__) + '\nGoal is not labeled to an attack')
 				warn('\nGoal is not labeled to an attack: ' + str(i))
 
 	for idx, i in enumerate(attackEvents):
@@ -192,13 +195,6 @@ def distanceToBall(rawDict,attributeDict):
 	attributeDict = pd.concat([attributeDict, newAttributes], axis=1)
 
 	tmpdistanceToBall = 'Distance from a player to the ball'
-
-	##### THE STRINGS #####
-	# Export a string label of each new attribute in the labels dictionary (useful for plotting purposes)
-	#attributeLabel_tmp = {'distanceToBall': tmpdistanceToBall}
-	#attributeLabel.update(attributeLabel_tmp)
-	#altogether = pd.concat([rawDict,attributeDict], axis=1)
-	#altogether.to_csv('/Users/Victor/Desktop/Universiteit/AnalyseKNVB/test.csv')
 
 	return attributeDict#,attributeLabel
 

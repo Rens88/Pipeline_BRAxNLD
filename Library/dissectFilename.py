@@ -111,6 +111,7 @@ def default(fname):
 	exportData = [fname]
 	exportDataString = ['filename']
 	exportDataFullExplanation = ['This is simply the complete filename.']
+	logging.critical(datetime.now().strftime("%Y-%m-%d %H:%M:%S") + ' - ' + basename(__file__) + '\nCould not identify match characteristics based on filename <%s>.\nInstead, filename itself was exported as match characteristic.' %fname)
 	warn('\nWARNING: Could not identify match characteristics based on filename <%s>.\nInstead, filename itself was exported as match characteristic.' %fname)
 
 	return exportData, exportDataString, exportDataFullExplanation

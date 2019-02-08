@@ -133,6 +133,8 @@ def setPlayerID(df,ID,Tid,ts):
 	ballIdx = (df[Tid].isnull()) & (df[ID] == 0) & (df['Shirt'] == 1)
 	if not any(ballIdx):
 		warn('\nFATAL ERROR: Can not identify the ball. TeamID has to be null, PlayerID has to be 0, Shirtnumber has to be 1.')
+		messagebox.showerror('Bal niet gevonden', 'Kan de bal niet identificeren. \n\nOPLOSSING: De TeamID van de bal moet leeg zijn, PlayerID = 0, ShirtNumber = 1.')
+		logging.critical(datetime.now().strftime("%Y-%m-%d %H:%M:%S") + ' - ' + basename(__file__) + '\nCan not identify the ball. TeamID has to be null, PlayerID has to be 0, Shirtnumber has to be 1.')
 		exit()
 	else:
 		df.loc[ballIdx,ID] = 'ball'
@@ -141,6 +143,8 @@ def setPlayerID(df,ID,Tid,ts):
 	players = (df[ts] == min(df[ts])) & (df[ID].notnull()) & (df[ID] != 0) & (df[Tid].notnull())
 	diff = df.loc[players,ID].count() - len(df.loc[players,ID].unique())
 	if diff > 0:
+		messagebox.showerror('Niet alle speler IDs zijn uniek. \n\nOPLOSSING: Controleer op dubbele waardes in de data.')
+		logging.critical(datetime.now().strftime("%Y-%m-%d %H:%M:%S") + ' - ' + basename(__file__) + '\nCnot all playerIDs are unique! This will cause problems in spatial and temporal aggregation. There are %s duplicated values.')
 		warn('\nFATAL ERROR: not all playerIDs are unique! This will cause problems in spatial and temporal aggregation. There are %s duplicated values.' %(diff))
 		exit()
 

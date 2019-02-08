@@ -233,25 +233,6 @@ def teamCentroid_panda(rawDict,attributeDict,attributeLabel,TeamAstring,TeamBstr
 		uniqueTs_TeamB_Rows = rawDict['Ts'][rawDict['TeamID'] == TeamBstring].unique()
 		ind_groupRowsB = [i for i in ind_groupRows if np.isin(rawDict['Ts'][i],uniqueTs_TeamB_Rows)]
 
-
-		# print(len(ind_groupRowsA))
-		# pdb.set_trace()
-
-		# ind_groupRows_to_be_removed = [i for i in ind_groupRows if not np.isin(rawDict['Ts'][i],uniqueTs_TeamA_Rows)]
-
-
-		# ind_groupRowsA = ind_groupRows[ind_groupRows != ind_groupRows_to_be_removed]
-		# print(len(ind_groupRowsA))
-		# print(ind_groupRows_to_be_removed)
-		# pdb.set_trace()
-
-		# uniqueTs_GroupRows = df_cleaned['Ts'][df_cleaned['PlayerID'] == 'groupRow'].unique()
-		# uniqueTs_TeamA_Rows = df_cleaned['Ts'][df_cleaned['TeamID'] == TeamAstring].unique()
-
-		# Ts_to_be_removed = [i for i in uniqueTs_GroupRows if not np.isin(i,uniqueTs_nonGroupRows)]
-
-		# ind_groupRows = attributeDict[rawDict['PlayerID'] == 'groupRow'].index
-
 	# Create empty DataFrame to store results, NB: columns need to be assigend beforehand.
 	# newAttributes = pd.DataFrame(index = ind_groupRows,columns = ['TeamCentXA', 'TeamCentYA', 'LengthA', 'WidthA', 'TeamCentXB', 'TeamCentYB', 'LengthB', 'WidthB'])
 	newAttributesA = pd.DataFrame(index = ind_groupRowsA,columns = ['TeamCentXA', 'TeamCentYA', 'LengthA', 'WidthA'])
@@ -383,8 +364,6 @@ def distanceToInPossession(rawDict,attributeDict,attributeLabel,TeamAstring,Team
 	# Export a string label of each new attribute in the labels dictionary (useful for plotting purposes)
 	attributeLabel_tmp = {'distanceToInPossession': tmpdistanceToInPossession}
 	attributeLabel.update(attributeLabel_tmp)
-	# altogether = pd.concat([rawDict,attributeDict], axis=1)
-	# altogether.to_csv('/Users/Victor/Desktop/Universiteit/AnalyseKNVB/test.csv')
 
 	return attributeDict,attributeLabel
 
@@ -561,8 +540,6 @@ def distanceToBall(rawDict,attributeDict,attributeLabel,TeamAstring,TeamBstring,
 	# Export a string label of each new attribute in the labels dictionary (useful for plotting purposes)
 	attributeLabel_tmp = {'distanceToBall': tmpdistanceToBall}
 	attributeLabel.update(attributeLabel_tmp)
-	# altogether = pd.concat([rawDict,attributeDict], axis=1)
-	# altogether.to_csv('/Users/Victor/Desktop/Universiteit/AnalyseKNVB/test.csv')
 
 	return attributeDict,attributeLabel
 
@@ -635,6 +612,8 @@ def determineSide(rawDict,attributeDict,attributeLabel,TeamAstring,TeamBstring):
 		goal_Y = 0
 		return TeamBstring, goal_A_X, goal_B_X, goal_Y
 	else:
+		messagebox.showerror('Kon niet bepalen aan welke kant de teams moeten scoren. omdat niet alle spelers zich bij de aftrap op dezelfde speelhelft bevonden. \n\nOPLOSSING: Controleer de data in Inmotio en kijk of er een gehele speelhelft wordt geanalyseerd.')
+		logging.critical(datetime.now().strftime("%Y-%m-%d %H:%M:%S") + ' - ' + basename(__file__) + '\nCannot determine the side, because the players of the teams are not on the same side at the first timestamp.')
 		warn('\nWARNING: Cannot determine the side, because the players of the teams are not on the same side at the first timestamp.\n')
 		return 'Err','Err','Err','Err'
 
@@ -688,12 +667,11 @@ def distanceToGoal(rawDict,attributeDict,attributeLabel,TeamAstring,TeamBstring,
 
 	tmpdistanceToOpponentGoal = 'Distance to opponent\'s goal'
 	tmpdistanceToOwnGoal = 'Distance to own goal'
-		##### THE STRINGS #####
+	
+	##### THE STRINGS #####
 	# Export a string label of each new attribute in the labels dictionary (useful for plotting purposes)
 	attributeLabel_tmp = {'distanceToOpponentGoal': tmpdistanceToOpponentGoal, 'distanceToOwnGoal': tmpdistanceToOwnGoal}
 	attributeLabel.update(attributeLabel_tmp)
-	# altogether = pd.concat([rawDict,attributeDict], axis=1)
-	# altogether.to_csv('/Users/Victor/Desktop/Universiteit/AnalyseKNVB/test.csv')
 
 	return attributeDict,attributeLabel
 
@@ -1078,8 +1056,6 @@ def playerPassedToRating(rawDict,attributeDict,attributeLabel,TeamAstring,TeamBs
 	# Export a string label of each new attribute in the labels dictionary (useful for plotting purposes)
 	attributeLabel_tmp = {'ballPassedTo': tmp_ballPassedTo,'passRating': tmp_passRating,'passDistanceToGoalRating': tmp_passDistanceToGoalRating,'passAngleRating': tmp_passAngleRating,'passDistToOpRating': tmp_passDistToOpRating,'passDistToPosRating': tmp_passDistToPosRating,'passDistanceToGoal': tmp_passDistanceToGoal,'passAngle': tmp_passAngle,'passDistToOp': tmp_passDistToOp,'passDistToPos': tmp_passDistToPos}
 	attributeLabel.update(attributeLabel_tmp)
-	# altogether = pd.concat([rawDict,attributeDict], axis=1)
-	# altogether.to_csv('/Users/Victor/Desktop/Universiteit/AnalyseKNVB/test.csv')
 
 	return attributeDict,attributeLabel
 
@@ -1273,6 +1249,8 @@ def determineFinalThird(leftSide,TeamAstring,TeamBstring,goal_A_X,goal_B_X):
 		zoneMin_B_X = goal_A_X - beginZone
 		zoneMax_B_X = goal_A_X
 	else:
+		messagebox.showerror('Het laatste derde kan niet worden gevonden, omdat de spelers zich bij de aftrap niet allemaal op dezelfde speelhelft bevinden. \n\nOPLOSSING: Controleer de data in Inmotio en kijk of er een gehele speelhelft wordt geanalyseerd.' )
+		logging.critical(datetime.now().strftime("%Y-%m-%d %H:%M:%S") + ' - ' + basename(__file__) + '\nCannot determine the final third, because the players of the teams are not on the same side at the first timestamp.')
 		warn('\nWARNING: Cannot determine the side, because the players of the teams are not on the same side at the first timestamp.\n')
 		return 'Err','Err','Err','Err','Err','Err','Err','Err'
 
@@ -1359,11 +1337,6 @@ def zone(rawDict,attributeDict,attributeLabel,TeamAstring,TeamBstring,skipSpatAg
 	attributeLabel_tmp = {'zone': tmpZone, 'inZone': tmpInZone, 'opponentsHalf': tmpOpponentsHalf}
 	attributeLabel.update(attributeLabel_tmp)
 
-	# altogether = pd.concat([rawDict,attributeDict], axis=1)
-	# altogether.to_csv('D:\\KNVB\\test.csv')
-
-	# pdb.set_trace()
-
 	return attributeDict,attributeLabel
 
 def lastBuildUpPassRating(rawDict,attributeDict,attributeLabel,TeamAstring,TeamBstring,skipSpatAgg,targetEvents):
@@ -1398,10 +1371,6 @@ def lastBuildUpPassRating(rawDict,attributeDict,attributeLabel,TeamAstring,TeamB
 		buildUpPossessions = buildUpPossessions[buildUpPossessions['Ts'] <= endTime]
 		passesDuringPossession = buildUpPossessions[buildUpPossessions['ballPassedTo'] == 1]
 		lastBuildUpPass = passesDuringPossession.tail(1)
-		#print(passesDuringPossession)
-		#print("*******")
-		#print(lastBuildUpPass)
-		#pdb.set_trace()
 		if(len(lastBuildUpPass) != 1):
 			continue
 		lastPassRating = lastBuildUpPass['curPositioningRating'].item()
@@ -1493,10 +1462,6 @@ def lastBuildUpPassRank(rawDict,attributeDict,attributeLabel,TeamAstring,TeamBst
 		buildUpPossessions = buildUpPossessions[buildUpPossessions['Ts'] <= endTime]
 		passesDuringPossession = buildUpPossessions[buildUpPossessions['ballPassedTo'] == 1]
 		lastBuildUpPass = passesDuringPossession.tail(1)
-		#print(passesDuringPossession)
-		#print("*******")
-		#print(lastBuildUpPass)
-		#pdb.set_trace()
 		if(len(lastBuildUpPass) != 1):
 			continue
 		lastPassRating = lastBuildUpPass['curPositioningRank'].item()
