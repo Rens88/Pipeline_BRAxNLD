@@ -11,6 +11,7 @@ def process(csvFolder,xmlFolder,saveFolder,checkVictor,checkLars,skipCleanup,ski
 	from os import listdir, stat, sep, rename#, path, makedirs
 	import logging
 	from datetime import datetime
+	from tkinter import messagebox
 	logging.basicConfig(filename='example.log',level=logging.DEBUG)
 	logging.info(datetime.now().strftime("%Y-%m-%d %H:%M:%S") + ' - ' + realpath(__file__) + ' - Start')
 	# logging.info('WE ZIJN GESTART!')

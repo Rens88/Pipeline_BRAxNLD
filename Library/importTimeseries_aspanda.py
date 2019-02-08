@@ -92,6 +92,8 @@ def existingAttributes(filename,folder,skipSpatAgg,headers,attrLabel,outputFolde
 
 	for i in colHeaders:
 		if not i in tmpHeaders:
+			messagebox.showerror('Kolomkoppen komen niet overeen', 'De kolomkop <%s> komt niet in de kolomkoppen van <%s> voor:\n%s\n\nOPLOSSING: Pas de user input op het tabblad \'parameters\' aan.\nHet programma wordt afgesloten.' %(i,cleanFname,tmpHeaders))
+			logging.critical(datetime.now().strftime("%Y-%m-%d %H:%M:%S") + ' - ' + basename(__file__) + '\nColumn header <%s> not in column headers of the file:\n%s\nSOLUTION: Change the user input in \'parameters\'.\n'%(i,tmpHeaders))
 			exit('EXIT: Column header <%s> not in column headers of the file:\n%s\n\nSOLUTION: Change the user input in \'process\' \n' %(i,tmpHeaders))
 
 	# Import existing attributes

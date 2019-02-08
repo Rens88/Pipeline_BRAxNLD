@@ -2,8 +2,8 @@ import tkinter as tk
 from tkinter import ttk
 from tkinter import filedialog
 from tkinter import messagebox
-from os import sep
-from os.path import isdir
+import os
+from os import sep,path
 import csv
 import process_Template
 
@@ -13,38 +13,44 @@ buttonWidth = 10
 csvFile = "settings.csv"
 
 def openSettingsFile():
-	"""Initializes the dirInfo[] with in the information stored in settings.csv."""
-	csvData = readCSV()
-	dirInfo[0].set(csvData[0][0])
-	dirInfo[1].set(csvData[0][1])
-	dirInfo[2].set(csvData[0][2])
-	parameterInfo[0].set(csvData[0][3])
-	parameterInfo[1].set(csvData[0][4])
-	parameterInfo[2].set(csvData[0][5])
-	parameterInfo[3].set(csvData[0][6])
-	parameterInfo[4].set(csvData[0][7])
-	parameterInfo[5].set(csvData[0][8])
-	parameterInfo[6].set(csvData[0][9])
-	parameterInfo[7].set(csvData[0][10])
-	parameterInfo[8].set(csvData[0][11])
+	# If CSV exists
+	if(os.path.isfile(os.getcwd() + sep + csvFile)):
+		"""Initializes the dirInfo[] with in the information stored in settings.csv."""
+		csvData = readCSV()
+		dirInfo[0].set(csvData[0][0])
+		dirInfo[1].set(csvData[0][1])
+		dirInfo[2].set(csvData[0][2])
+		parameterInfo[0].set(csvData[0][3])
+		parameterInfo[1].set(csvData[0][4])
+		parameterInfo[2].set(csvData[0][5])
+		parameterInfo[3].set(csvData[0][6])
+		parameterInfo[4].set(csvData[0][7])
+		parameterInfo[5].set(csvData[0][8])
+		parameterInfo[6].set(csvData[0][9])
+		parameterInfo[7].set(csvData[0][10])
+		parameterInfo[8].set(csvData[0][11])
+	else:
+		with open(csvFile, 'wb') as newCSV:
+			filewriter = csv.writer(newCSV, delimiter=',', quotechar='|', quoting=csv.QUOTE_MINIMAL)
+
 
 def saveSettingsFile():
 	"""Store the information from dirInfo[] to the settings.csv file."""
 	writeData = []
 
-	if isdir(dirInfo[0].get()):
+	if path.isdir(dirInfo[0].get()):
 		writeData.append(str(dirInfo[0].get()))
 	else:
 		messagebox.showerror("CSV locatie bestaat niet", "Opgegeven CSV locatie bestaat niet.")
 		return False
 
-	if isdir(dirInfo[1].get()):
+	if path.isdir(dirInfo[1].get()):
 		writeData.append(str(dirInfo[1].get()))
 	else:
 		messagebox.showerror("XML locatie bestaat niet", "Opgegeven XML locatie bestaat niet.")
 		return False
 
-	if isdir(dirInfo[2].get()):
+	if path.isdir(dirInfo[2].get()):
 		writeData.append(str(dirInfo[2].get()))
 	else:
 		messagebox.showerror("Opslaan locatie bestaat niet", "Opgegeven Opslaan locatie bestaat niet.")
