@@ -1,7 +1,10 @@
 import tkinter as tk
+from tkinter import *
 from tkinter import ttk
 from tkinter import filedialog
 from tkinter import messagebox
+from tkinter.ttk import Progressbar
+import time
 from os import sep
 from os.path import isdir
 import csv
