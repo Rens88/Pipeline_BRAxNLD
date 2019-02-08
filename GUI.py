@@ -19,7 +19,7 @@ def openSettingsFile():
 		csvData = readCSV()
 		dirInfo[0].set(csvData[0][0])
 		dirInfo[1].set(csvData[0][1])
-		dirInfo[2].set(csvData[0][2])
+		dirInfo[2].set(csvData[0][2])	
 		parameterInfo[0].set(csvData[0][3])
 		parameterInfo[1].set(csvData[0][4])
 		parameterInfo[2].set(csvData[0][5])
@@ -110,6 +110,10 @@ def saveFolder():
 	if not saveFilePath:
 		return
 	dirInfo[2].set(saveFilePath)
+
+# def updateProgressBox(txt):
+#     progressText.set(txt)
+#     return
 	
 def analyse(checkVictor,checkLars):#,checkCleanup,checkSpatAgg):
 	# print(checkVictor,checkLars)
@@ -121,7 +125,7 @@ def analyse(checkVictor,checkLars):#,checkCleanup,checkSpatAgg):
 		dirOpenXML = dirInfo[1].get().replace('/',sep).replace('\\',sep) + sep
 		dirSave = dirInfo[2].get().replace('/',sep).replace('\\',sep) + sep
 		# print(dirOpenCSV,dirOpenXML,dirSave)
-		if process_Template.process(dirOpenCSV,dirOpenXML,dirSave,checkVictor,checkLars,checkCleanup.get(),checkSpatAgg.get(),parameterInfo[0],parameterInfo[1],parameterInfo[2],parameterInfo[3],parameterInfo[4],parameterInfo[5],parameterInfo[6],parameterInfo[7],parameterInfo[8]):
+		if process_Template.process(dirOpenCSV,dirOpenXML,dirSave,checkVictor,checkLars,checkCleanup.get(),checkSpatAgg.get(),parameterInfo[0],parameterInfo[1],parameterInfo[2],parameterInfo[3],parameterInfo[4],parameterInfo[5],parameterInfo[6],parameterInfo[7],parameterInfo[8],root):
 			messagebox.showinfo("Export klaar", "Export gelukt!")
 
 root = tk.Tk()
@@ -208,11 +212,14 @@ distClosestAwayTextbox = tk.Entry(tab2,width = textboxWidth, textvariable=parame
 checkCleanup = tk.IntVar()
 checkSpatAgg = tk.IntVar()
 
-checkButtonCleanup = tk.Checkbutton(tab3,text = "Skip Cleanup", variable=checkCleanup, onvalue = 1, offvalue = 0, height=1, width = 20, anchor="w")
-checkButtonSpatAgg = tk.Checkbutton(tab3,text = "Skip Spatagg", variable=checkSpatAgg, onvalue = 1, offvalue = 0, height=1, width = 20, anchor="w")
+checkButtonCleanup = tk.Checkbutton(tab3,text="Skip Cleanup", variable=checkCleanup, onvalue = 1, offvalue = 0, height=1, width = 20, anchor="w")
+checkButtonSpatAgg = tk.Checkbutton(tab3,text="Skip Spatagg", variable=checkSpatAgg, onvalue = 1, offvalue = 0, height=1, width = 20, anchor="w")
 
 #######################   START    #########################
-startButton = tk.Button(tab1,text='Start', width = buttonWidth, command= lambda: analyse(checkVictor.get(),checkLars.get()))
+startButton = tk.Button(tab1,text='Start', width=buttonWidth, command=lambda: analyse(checkVictor.get(),checkLars.get()))
+# progressLabel = tk.Label(tab1, width=textboxWidth,anchor="nw", justify="left",text="Progressie:")
+# progressText = tk.StringVar()
+# progressBox = tk.Label(tab1, height=5, width=textboxWidth,borderwidth=2,relief="groove",anchor="nw", justify="left",textvariable=progressText)
 openSettingsFile()
 
 csvLabel.grid(row=0,column=0)
@@ -228,6 +235,8 @@ checkButtonVictor.grid(row=6,column=0)
 checkButtonLars.grid(row=7,column=0)
 #progressBar.grid(row=7,column=0)
 startButton.grid(row=8,column=0)
+# progressLabel.grid(row=9,column=0)
+# progressBox.grid(row=10,column=0)
 
 tsLabel.grid(row=0,column=0)
 tsTextbox.grid(row=0,column=1)

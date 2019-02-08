@@ -1,7 +1,7 @@
 # If you want to edit something in the code and you're not sure where it is,
 # just ask. l.a.meerhoff@liacs.leidenuniv.nl
 
-def process(csvFolder,xmlFolder,saveFolder,checkVictor,checkLars,skipCleanup,skipSpatAgg,tsText,playerText,teamText,xText,yText,shirtText,possText,speedText,distClosestAwayText):
+def process(csvFolder,xmlFolder,saveFolder,checkVictor,checkLars,skipCleanup,skipSpatAgg,tsText,playerText,teamText,xText,yText,shirtText,possText,speedText,distClosestAwayText,root):
 	# pre-initialization
 	from shutil import copyfile	
 	import pdb; #pdb.set_trace()
@@ -12,16 +12,17 @@ def process(csvFolder,xmlFolder,saveFolder,checkVictor,checkLars,skipCleanup,ski
 	import logging
 	from datetime import datetime
 	from tkinter import messagebox
-	logging.basicConfig(filename='example.log',level=logging.DEBUG)
+	# import GUI
+	progressWindow, progressList = initializeProgressBox(root)
+	logging.basicConfig(filename='Foutrapportage.log',level=logging.DEBUG)
 	logging.info(datetime.now().strftime("%Y-%m-%d %H:%M:%S") + ' - ' + realpath(__file__) + ' - Start')
 	# logging.info('WE ZIJN GESTART!')
 	# import logging
 	# import os
 	# from datetime import datetime
 	# logging.warning(datetime.now().strftime("%Y-%m-%d %H:%M:%S") + ' ' + os.path.basename(__file__) + ' ')
-
-	# print("GEHAALD!!!")
-	# return
+	# GUI.updateProgressBox("AAAAAA")
+	updateProgressBox(progressWindow, progressList,'Start speler analyse')
 	#########################
 	# USER INPUT ############
 	#########################
@@ -132,6 +133,7 @@ def process(csvFolder,xmlFolder,saveFolder,checkVictor,checkLars,skipCleanup,ski
 	# In this module, the library is added to the system path. 
 	# This allows Python to import the custom modules in our library. 
 	# If you add new subfolders in the library, they need to be added in addLibary (in initialization.py) as well.
+	updateProgressBox(progressWindow, progressList,'Initialiseren')
 	dataFolder,tmpFigFolder,outputFolder,cleanedFolder,spatAggFolder,eventAggFolder,aggregatedOutputFilename,outputDescriptionFilename,eventAggFname,backupEventAggFname,DirtyDataFiles,aggregateLevel,t,skipToDataSetLevel,skipCleanup,skipSpatAgg,skipEventAgg,includeTrialVisualization,rawHeaders, attrLabel,skipComputeEvents,DirtyDataFiles_backup,playerReportFolder = \
 	initialization.process(studentFolderLT,studentFolderVP,folder,aggregateEvent,allWindows_and_Lags,skipToDataSetLevel,skipCleanup,skipSpatAgg,skipEventAgg,includeTrialVisualization,timestampString,PlayerIDstring,TeamIDstring,XPositionString,YPositionString,readAttributeCols,readAttributeLabels,onlyAnalyzeFilesWithEventData,parallelProcess,skipComputeEvents,saveFolder,csvFolder,xmlFolder,skipEventAgg_MatchVerification = skipEventAgg_MatchVerification)
 
@@ -161,7 +163,7 @@ def process(csvFolder,xmlFolder,saveFolder,checkVictor,checkLars,skipCleanup,ski
 
 	for dirtyFname in DirtyDataFiles:
 		print(	'\nFILE: << %s >>' %dirtyFname[:-4])
-		t = estimateRemainingTime.printProgress(t)
+		t,progressString = estimateRemainingTime.printProgress(t)
 		gc.collect() # not entirey sure what this does, but it's my attempt to avoid a MemoryError
 		if skipToDataSetLevel:
 			# Skipp immediately without verification
@@ -174,15 +176,19 @@ def process(csvFolder,xmlFolder,saveFolder,checkVictor,checkLars,skipCleanup,ski
 		#########################
 		# IMPORTANT: During preparation you can use 'dataType' (although it's better to try not to) which allows you
 		# to prepare the data in a way that is specific for your dataset.
-			
 		# Prepare metadata of aggregated data to be exported:
+		updateProgressBox(progressWindow, progressList,dirtyFname+':')
+		updateProgressBox(progressWindow, progressList,'- Bestandsnaam uitlezen...')
 		exportData, exportDataString, exportDataFullExplanation,cleanFname,spatAggFname,TeamAstring,TeamBstring = \
 		dissectFilename.process(dirtyFname,dataType,TeamAstring,TeamBstring,debuggingMode)
 		fileIdentifiers = copy.copy(exportData)
+		# updateProgressBox(progressWindow, progressList,'-End Dissect Filename')
 
 		# Clean cleanFname (it only cleans data if there is no existing cleaned file of the current (dirty)file )
+		updateProgressBox(progressWindow, progressList,'- Positiedata opschonen...')
 		loadFolder,loadFname,fatalTimeStampIssue,skipSpatAgg_curFile,skipEventAgg_curFile,TeamAstring,TeamBstring,skipComputeEvents_curFile = \
 		cleanupData.process(dirtyFname,cleanFname,dataType,dataFolder,cleanedFolder,spatAggFname,spatAggFolder,eventAggFolder,eventAggFname,TeamAstring,TeamBstring,rawHeaders,readAttributeCols,timestampString,readEventColumns,conversionToMeter,skipCleanup,skipSpatAgg,skipEventAgg,exportData, exportDataString,includeCleanupInterpolation,datasetFramerate,debuggingMode,skipComputeEvents,aggregateLevel,csvFolder)
+		# updateProgressBox(progressWindow, progressList,'-End Cleanup Data')
 
 		# pdb.set_trace()
 		# perhaps write a separate function that decides to skip the file or not.
@@ -224,9 +230,11 @@ def process(csvFolder,xmlFolder,saveFolder,checkVictor,checkLars,skipCleanup,ski
 		# This can be used to import specific field dimensions.
 		# By default, it takes the field dimensions that should be typical with football data.
 		# This is the first example of using metadata. Probably will end up formalizing this in a 'importMetaData' module.
-		fieldDimensions = importFieldDimensions.process(dataFolder,dirtyFname,exportData,exportDataString,debuggingMode)
+		#LT: verwijderd, want wordt niet gebruikt.
+		# fieldDimensions = importFieldDimensions.process(dataFolder,dirtyFname,exportData,exportDataString,debuggingMode)
 		# TO DO: add code to rotate based on fieldDimensions !!!!!!!!!!!!!!!!
 		# TO DO: add filtering here. !!!!!!!!! THIS IS WHERE YOU SHOULD CONTINE
+		updateProgressBox(progressWindow, progressList,'- Positiedata inlezen...')
 		rawPanda,attrPanda,attrLabel,eventsPanda,eventsLabel,skipSpatAggLars,skipSpatAggVictor = \
 		importTimeseries_aspanda.process(loadFname,loadFolder,skipSpatAgg_curFile,readAttributeCols,readEventColumns,attrLabel,outputFolder,debuggingMode,checkLars,checkVictor)
 
@@ -235,13 +243,14 @@ def process(csvFolder,xmlFolder,saveFolder,checkVictor,checkLars,skipCleanup,ski
 		# Or, events can be imported from a separate file (metadata)
 		# Eventually, this separate file should be in a generic format. (using a cleanup module)
 		# This is the second example of using metadata. Probably will end up formalizing this in a 'importMetaData' module.
+		updateProgressBox(progressWindow, progressList,'- Eventdata inlezen...')
 		targetEventsImported = importEvents.process(rawPanda,eventsPanda,TeamAstring,TeamBstring,cleanFname,dataFolder,debuggingMode,skipComputeEvents_curFile,xmlFolder)
 		
 		########################################################################################
 		####### Compute new attributes #########################################################
 		########################################################################################
-
-		attrPanda,attrLabel = spatialAggregation.process(rawPanda,attrPanda,attrLabel,TeamAstring,TeamBstring,skipSpatAgg_curFile,eventsPanda,spatAggFolder,spatAggFname,debuggingMode,targetEventsImported,checkVictor,checkLars,skipSpatAggVictor,skipSpatAggLars)
+		updateProgressBox(progressWindow, progressList,'- Features berekenen...')
+		attrPanda,attrLabel = spatialAggregation.process(rawPanda,attrPanda,attrLabel,TeamAstring,TeamBstring,skipSpatAgg_curFile,eventsPanda,spatAggFolder,spatAggFname,debuggingMode,targetEventsImported,checkVictor,checkLars,skipSpatAggVictor,skipSpatAggLars,progressWindow,progressList,playerReportFolder,dirtyFname[:-4])
 		
 		# pdb.set_trace()
 		# NB: targetEVents is a dictionary with the key corresponding to the type of event.
@@ -249,11 +258,12 @@ def process(csvFolder,xmlFolder,saveFolder,checkVictor,checkLars,skipCleanup,ski
 		# --> in some cases there is also a starting time of the event and other information 
 		# (for example, possession contains the starting time and the nubmer of passes made within that possession)
 		# NB2: For attack - events, use the 4th place in the tuple for the label (e.g., 1 = no shot, 2 = shot off target, 3 = shot on target, 4 = goals)
-
+		updateProgressBox(progressWindow, progressList,'- Events bepalen...')
 		targetEvents,eventClassified,allDict = \
 		computeEvents.process(targetEventsImported,aggregateLevel,rawPanda,attrPanda,eventsPanda,TeamAstring,TeamBstring,dataFolder,cleanFname,debuggingMode,skipComputeEvents_curFile,checkVictor,checkLars)
 		#LT: Dit wordt nog gebruikt om de aanvallen te bepalen en seconds in final third per player te bepalen.
 
+		updateProgressBox(progressWindow, progressList,'- Spelersrapporten genereren...')
 		playerReports.process(rawPanda,attrPanda,TeamAstring,TeamBstring,playerReportFolder,dirtyFname[:-4],debuggingMode,skipPlayerReports,allDict,checkVictor,checkLars)
 		continue #LT: stoppen na playerReports
 
@@ -444,3 +454,32 @@ def process(csvFolder,xmlFolder,saveFolder,checkVictor,checkLars,skipCleanup,ski
 	print('     -----') 
 	print('      ---')
 	exit('       -')
+
+def initializeProgressBox(root):
+	import tkinter as tk
+	progressWindow = tk.Toplevel(root)
+	# progressFrame = tk.Frame()
+	progressWindow.winfo_toplevel().title("Progressie")
+	# progressText = tk.StringVar()
+	# progressBox = tk.Label(progressWindow, height=10, width=50,borderwidth=2,font="bold",relief="groove",anchor="nw", justify="left",textvariable=progressText)
+	# progressBox.pack()
+	progressWindow.lift()
+	scrollbar = tk.Scrollbar(progressWindow)
+	scrollbar.pack(side=tk.RIGHT, fill=tk.Y)
+	progressList = tk.Listbox(progressWindow, height=10, width=50, yscrollcommand = scrollbar.set)
+	progressList.pack( side = tk.LEFT, fill = tk.BOTH )
+	scrollbar.config( command = progressList.yview )
+	return progressWindow, progressList
+
+def updateProgressBox(progressWindow,progressList,txt):
+	import tkinter as tk
+	progressWindow.update()
+	# progressWindow.after(1000)
+	progressList.insert(tk.END, txt)
+	progressList.see(tk.END)
+	return
+	# if progressText.get() == '':
+	# 	progressText.set(txt)
+	# else:
+	# 	progressText.set(progressText.get() + '\n'+ txt)
+	# return

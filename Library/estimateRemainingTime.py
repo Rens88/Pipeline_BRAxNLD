@@ -53,5 +53,7 @@ def printProgress(t):
 	elapsedTime = str(round(elapsedTime, 2))
 	print('%s out of %s files (%s%%) analyzed in %ss.\nEstimated time remaining: %s\n-------------------------------\n' %(nthFile,totalFiles,percentageProgress,elapsedTime,remainingTimeInHHMMSS))
 	
+	progressString = print('%s van de %s bestanden (%s%%) geanalyseerd in %ss.\nGeschatte resterende tijd: %s' %(nthFile,totalFiles,percentageProgress,elapsedTime,remainingTimeInHHMMSS))
+
 	t = (timeStarted,nthFile + 1,totalFiles)
-	return t
+	return t,progressString
