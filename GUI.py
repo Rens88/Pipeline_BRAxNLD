@@ -5,8 +5,7 @@ from tkinter import filedialog
 from tkinter import messagebox
 from tkinter.ttk import Progressbar
 import time
-from os import sep
-from os.path import isdir
+import os
 import csv
 import process_Template
 
@@ -17,7 +16,7 @@ csvFile = "settings.csv"
 
 def openSettingsFile():
 	# If CSV exists
-	if(os.path.isfile(os.getcwd() + sep + csvFile)):
+	if(os.path.isfile(os.getcwd() + os.sep + csvFile)):
 		"""Initializes the dirInfo[] with in the information stored in settings.csv."""
 		csvData = readCSV()
 		dirInfo[0].set(csvData[0][0])
@@ -41,19 +40,19 @@ def saveSettingsFile():
 	"""Store the information from dirInfo[] to the settings.csv file."""
 	writeData = []
 
-	if path.isdir(dirInfo[0].get()):
+	if os.path.isdir(dirInfo[0].get()):
 		writeData.append(str(dirInfo[0].get()))
 	else:
 		messagebox.showerror("CSV locatie bestaat niet", "Opgegeven CSV locatie bestaat niet.")
 		return False
 
-	if path.isdir(dirInfo[1].get()):
+	if os.path.isdir(dirInfo[1].get()):
 		writeData.append(str(dirInfo[1].get()))
 	else:
 		messagebox.showerror("XML locatie bestaat niet", "Opgegeven XML locatie bestaat niet.")
 		return False
 
-	if path.isdir(dirInfo[2].get()):
+	if os.path.isdir(dirInfo[2].get()):
 		writeData.append(str(dirInfo[2].get()))
 	else:
 		messagebox.showerror("Opslaan locatie bestaat niet", "Opgegeven Opslaan locatie bestaat niet.")
@@ -120,9 +119,9 @@ def analyse(checkVictor,checkLars):#,checkCleanup,checkSpatAgg):
 		messagebox.showwarning("Geen selectie", "Maak een selectie voor Off-ball Performance of Dangerousity.")
 		return
 	if saveSettingsFile():
-		dirOpenCSV = dirInfo[0].get().replace('/',sep).replace('\\',sep) + sep
-		dirOpenXML = dirInfo[1].get().replace('/',sep).replace('\\',sep) + sep
-		dirSave = dirInfo[2].get().replace('/',sep).replace('\\',sep) + sep
+		dirOpenCSV = dirInfo[0].get().replace('/',os.sep).replace('\\',os.sep) + os.sep
+		dirOpenXML = dirInfo[1].get().replace('/',os.sep).replace('\\',os.sep) + os.sep
+		dirSave = dirInfo[2].get().replace('/',os.sep).replace('\\',os.sep) + os.sep
 		# print(dirOpenCSV,dirOpenXML,dirSave)
 		if process_Template.process(dirOpenCSV,dirOpenXML,dirSave,checkVictor,checkLars,checkCleanup.get(),checkSpatAgg.get(),parameterInfo[0],parameterInfo[1],parameterInfo[2],parameterInfo[3],parameterInfo[4],parameterInfo[5],parameterInfo[6],parameterInfo[7],parameterInfo[8],root):
 			messagebox.showinfo("Export klaar", "Export gelukt!")
