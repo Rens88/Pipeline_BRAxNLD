@@ -73,9 +73,9 @@ def existingAttributes(filename,folder,skipSpatAgg,headers,attrLabel,outputFolde
 		elif checkVictor and 'passPopRank' in tmpHeaders:
 			colHeaders = tmpHeaders[1:]
 			skipSpatAggVictor = True
-		else:
-			print("ERRROORRRR")
-			return
+		#else:
+			#print("ERRROORRRR")
+			#return
 		# Import all headers
 		# colHeaders = tmpHeaders[1:] # Skip the index column which is empty
 		## EDIT: Instead of exporting the attributes labels,

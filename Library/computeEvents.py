@@ -124,6 +124,9 @@ def process(targetEvents,aggregateLevel,rawPanda,attrPanda,eventsPanda,TeamAstri
 	if checkLars:
 		targetEvents,eventClassified,allDict = \
 		student_LT_computeEvents.process(targetEvents,aggregateLevel,rawPanda,attrPanda,eventsPanda,TeamAstring,TeamBstring,eventClassified)
+	else:
+		allDict = pd.concat([rawPanda, attrPanda], axis=1)
+		allDict = allDict.loc[:,~allDict.columns.duplicated()]
 
 	# if checkVictor:
 	# 	targetEvents,eventClassified,allDict = \

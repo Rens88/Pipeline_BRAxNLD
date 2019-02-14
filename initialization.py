@@ -10,6 +10,8 @@ from warnings import warn
 import time
 import numpy as np
 import re
+import filecmp
+from tkinter import messagebox
 
 
 if __name__ == '__main__':
@@ -119,7 +121,15 @@ def addLibrary(studentFolder):
 
 def checkFolders(folder,aggregateEvent,aggregateWindow,aggregateLag,onlyAnalyzeFilesWithEventData,parallelProcess,saveFolder,csvFolder,xmlFolder):
 	aggregateLevel = (aggregateEvent,aggregateWindow,aggregateLag)
-
+	
+	#Check if XML files exist
+	for f in listdir(csvFolder):
+		if isfile(csvFolder + f):
+			xmlFile = xmlFolder + f[:-4] + "_Events.xml"
+			if not exists(xmlFile):
+				messagebox.showwarning("XML niet gevonden", "Het XML bestand staat niet in de map " + xmlFolder + " met de naam " + f[:-4] + "_Events.xml" + ". \n \n OPLOSSING: plaats het XML bestand in deze map. \n \n Het programma wordt nu afgesloten.")
+				exit("XML files not exist.")
+			
 	if folder[-1:] != sep:
 		warn('\n<folder> did not end with <%s>. \nOriginal input <%s>\nReplaced with <%s>' %(sep,folder,folder+sep))
 		folder = folder + sep

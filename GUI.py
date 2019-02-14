@@ -21,7 +21,7 @@ def openSettingsFile():
 		csvData = readCSV()
 		dirInfo[0].set(csvData[0][0])
 		dirInfo[1].set(csvData[0][1])
-		dirInfo[2].set(csvData[0][2])	
+		dirInfo[2].set(csvData[0][2])
 		parameterInfo[0].set(csvData[0][3])
 		parameterInfo[1].set(csvData[0][4])
 		parameterInfo[2].set(csvData[0][5])
@@ -170,7 +170,7 @@ tsLabel = tk.Label(tab2,width = labelWidth, anchor='w', text="Timestamp")
 parameterInfo.append(tk.StringVar())
 tsTextbox = tk.Entry(tab2,width = textboxWidth, textvariable=parameterInfo[0])
 
-playerLabel = tk.Label(tab2,width = labelWidth, anchor='w', text="Player")
+playerLabel = tk.Label(tab2,width = labelWidth, anchor='w', text="Speler")
 parameterInfo.append(tk.StringVar())
 playerTextbox = tk.Entry(tab2,width = textboxWidth, textvariable=parameterInfo[1])
 
@@ -190,15 +190,15 @@ shirtLabel = tk.Label(tab2,width = labelWidth, anchor='w', text="Shirt Nr.")
 parameterInfo.append(tk.StringVar())
 shirtTextbox = tk.Entry(tab2,width = textboxWidth, textvariable=parameterInfo[5])
 
-possLabel = tk.Label(tab2,width = labelWidth, anchor='w', text="Ball Possession")
+possLabel = tk.Label(tab2,width = labelWidth, anchor='w', text="Balbezit")
 parameterInfo.append(tk.StringVar())
 possTextbox = tk.Entry(tab2,width = textboxWidth, textvariable=parameterInfo[6])
 
-speedLabel = tk.Label(tab2,width = labelWidth, anchor='w', text="Speed")
+speedLabel = tk.Label(tab2,width = labelWidth, anchor='w', text="Snelheid")
 parameterInfo.append(tk.StringVar())
 speedTextbox = tk.Entry(tab2,width = textboxWidth, textvariable=parameterInfo[7])
 
-distClosestAwayLabel = tk.Label(tab2,width = labelWidth, anchor='w', text="Dist Closest Away")
+distClosestAwayLabel = tk.Label(tab2,width = labelWidth, anchor='w', text="Afstand tegenst.")
 parameterInfo.append(tk.StringVar())
 distClosestAwayTextbox = tk.Entry(tab2,width = textboxWidth, textvariable=parameterInfo[8])
 
